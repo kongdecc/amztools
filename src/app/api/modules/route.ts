@@ -1,0 +1,110 @@
+import { NextResponse } from 'next/server'
+import { db } from '@/lib/db'
+import type { Prisma } from '@prisma/client'
+
+const defaults = [
+  { key: 'ad-calc', title: '广告竞价计算', desc: '亚马逊广告策略实时出价计算，支持Fixed/Dynamic策略', status: '启用', views: 0, color: 'blue', order: 1 },
+  { key: 'editor', title: '可视化编辑器', desc: '所见即所得的HTML编辑器，支持一键复制源码', status: '启用', views: 0, color: 'indigo', order: 2 },
+  { key: 'unit', title: '单位换算', desc: '长度、重量、体积等多维度单位快速换算', status: '启用', views: 0, color: 'cyan', order: 3 },
+  { key: 'case', title: '大小写转换', desc: '文本大小写一键转换，支持首字母大写', status: '启用', views: 0, color: 'violet', order: 4 },
+  { key: 'word-count', title: '词频统计', desc: '分析英文文本，统计单词出现频率和字符数', status: '维护', views: 0, color: 'sky', order: 5 },
+  { key: 'char-count', title: '字符统计', desc: '统计字符并提供清理复制等操作', status: '启用', views: 0, color: 'purple', order: 6 },
+  { key: 'delivery', title: '美国站配送费计算', desc: '按2025/2026规则计算配送费用', status: '下架', views: 0, color: 'orange', order: 7 }
+]
+
+let cache: Array<any> | null = null
+
+export async function GET() {
+  try {
+    const rows = await (db as any).toolModule.findMany({ orderBy: { order: 'asc' } })
+    if (!rows.length) {
+      const created = await db.$transaction(defaults.map(d => (db as any).toolModule.upsert({
+        where: { key: d.key },
+        update: d,
+        create: d
+      })))
+      return NextResponse.json(created)
+    }
+    return NextResponse.json(rows)
+  } catch {
+    const data = (cache || defaults).slice().sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
+    return NextResponse.json(data)
+  }
+}
+
+export async function PUT(request: Request) {
+  const cookie = request.headers.get('cookie') || ''
+  const token = cookie.match(/admin_session=([^;]+)/)?.[1]
+  if (!token) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+  let list: Array<any> = []
+  try {
+    list = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'bad_request' }, { status: 400 })
+  }
+  try {
+    const existing = await (db as any).toolModule.findMany({ select: { key: true } })
+    const keepKeys = new Set(list.map(item => item.key))
+    const toDelete = existing.map((r: any) => r.key).filter((k: any) => !keepKeys.has(k))
+    const ops: Array<any> = []
+    if (toDelete.length) ops.push((db as any).toolModule.deleteMany({ where: { key: { in: toDelete } } }))
+    ops.push(...list.map(item => (db as any).toolModule.upsert({
+      where: { key: item.key },
+      update: { title: item.title, desc: item.desc, status: item.status, views: item.views ?? 0, color: item.color ?? 'blue', order: item.order ?? 0 },
+      create: { key: item.key, title: item.title, desc: item.desc, status: item.status ?? '启用', views: item.views ?? 0, color: item.color ?? 'blue', order: item.order ?? 0 }
+    })))
+    await db.$transaction(ops)
+    cache = null
+    return NextResponse.json({ ok: true })
+  } catch {
+    cache = list.map((x, i) => ({ ...x, id: x.key, updatedAt: new Date().toISOString(), order: Number(x.order ?? i + 1) }))
+    return NextResponse.json({ ok: true, dev: true })
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json()
+    const key = body?.key
+    if (!key) return NextResponse.json({ error: 'bad_request' }, { status: 400 })
+    try {
+      const row = await (db as any).toolModule.update({ where: { key }, data: { views: { increment: 1 } } })
+      cache = null
+      return NextResponse.json({ ok: true, views: row.views })
+    } catch {
+      const arr = (cache || defaults).slice()
+      const idx = arr.findIndex(x => x.key === key)
+      if (idx >= 0) arr[idx] = { ...arr[idx], views: Number(arr[idx].views || 0) + 1 }
+      cache = arr
+      return NextResponse.json({ ok: true, dev: true })
+    }
+  } catch {
+    return NextResponse.json({ error: 'bad_request' }, { status: 400 })
+  }
+}
+export async function PATCH(request: Request) {
+  const cookie = request.headers.get('cookie') || ''
+  const token = cookie.match(/admin_session=([^;]+)/)?.[1]
+  if (!token) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+  let item: any = null
+  try { item = await request.json() } catch { return NextResponse.json({ error: 'bad_request' }, { status: 400 }) }
+  const key = item?.key
+  if (!key) return NextResponse.json({ error: 'bad_request' }, { status: 400 })
+  try {
+    await (db as any).toolModule.upsert({
+      where: { key },
+      update: { title: item.title, desc: item.desc, status: item.status, views: item.views ?? 0, color: item.color ?? 'blue', order: item.order ?? 0 },
+      create: { key, title: item.title, desc: item.desc, status: item.status ?? '启用', views: item.views ?? 0, color: item.color ?? 'blue', order: item.order ?? 0 }
+    })
+    cache = null
+    return NextResponse.json({ ok: true, key })
+  } catch {
+    const arr = (cache || defaults).slice()
+    const idx = arr.findIndex(x => x.key === key)
+    const next = { ...item, id: key, updatedAt: new Date().toISOString() }
+    if (idx >= 0) arr[idx] = { ...arr[idx], ...next }
+    else arr.push(next)
+    cache = arr
+    return NextResponse.json({ ok: true, dev: true, key })
+  }
+}

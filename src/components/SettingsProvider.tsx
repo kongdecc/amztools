@@ -1,0 +1,115 @@
+'use client'
+
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+
+type SiteSettings = {
+  siteName: string
+  logoUrl: string
+  siteDescription: string
+  siteKeywords: string
+  analyticsHeadHtml?: string
+  analyticsBodyHtml?: string
+  copyrightText?: string
+  homeHeroTitle?: string
+  homeHeroSubtitle?: string
+  hideHomeHeroIfEmpty?: string
+  friendLinks?: string
+  privacyPolicy?: string
+  showFriendLinksLabel?: string
+  aboutTitle?: string
+  aboutContent?: string
+  seoDescription?: string
+  sitemapEnabled?: string
+  robotsContent?: string
+  robotsDisallowQuery?: string
+  robotsDisallowAdmin?: string
+  robotsDisallowPageParam?: string
+  robotsDisallowUtmParams?: string
+}
+
+type Ctx = {
+  settings: SiteSettings
+  loading: boolean
+  refreshSettings: () => Promise<void>
+}
+
+const defaults: SiteSettings = {
+  siteName: '运营魔方 ToolBox',
+  logoUrl: '',
+  siteDescription: '为跨境运营人员打造的免费在线工具箱',
+  siteKeywords: '工具箱, 广告计算, 文本处理',
+  analyticsHeadHtml: '',
+  analyticsBodyHtml: '',
+  copyrightText: '© 2025 运营魔方 ToolBox. All rights reserved.',
+  homeHeroTitle: '一站式图像与运营处理工具',
+  homeHeroSubtitle: '轻松处理您的数据，提升工作效率',
+  hideHomeHeroIfEmpty: 'false',
+  friendLinks: '[]',
+  privacyPolicy: '我们重视您的隐私。此页面说明我们收集哪些数据、如何使用以及您的权利。我们仅收集提供服务所需的基础信息，不出售个人数据，并提供访问、更正或删除数据的途径。',
+  showFriendLinksLabel: 'false',
+  aboutTitle: '关于我们',
+  aboutContent: '',
+  seoDescription: '',
+  sitemapEnabled: 'true',
+  robotsContent: 'User-agent: *\nAllow: /',
+  robotsDisallowQuery: 'true',
+  robotsDisallowAdmin: 'true',
+  robotsDisallowPageParam: 'true',
+  robotsDisallowUtmParams: 'true'
+}
+
+const SettingsContext = createContext<Ctx | undefined>(undefined)
+
+export function SettingsProvider({ children }: { children: ReactNode }) {
+  const [settings, setSettings] = useState<SiteSettings>(defaults)
+  const [loading, setLoading] = useState(true)
+
+  const fetchSettings = async () => {
+    try {
+      const r = await fetch('/api/settings', { cache: 'no-store' })
+      if (r.ok) {
+        const data = await r.json()
+        setSettings({ ...defaults, ...data })
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('settings_cache')
+      if (raw) {
+        const obj = JSON.parse(raw)
+        if (obj && typeof obj === 'object') setSettings(prev => ({ ...prev, ...obj }))
+      }
+    } catch {}
+    fetchSettings()
+  }, [])
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'settings_updated') refreshSettings()
+      if (e.key === 'settings_cache' && e.newValue) {
+        try { const obj = JSON.parse(e.newValue); if (obj && typeof obj === 'object') setSettings(prev => ({ ...prev, ...obj })) } catch {}
+      }
+    }
+    const onVisible = () => { if (document.visibilityState === 'visible') refreshSettings() }
+    window.addEventListener('storage', onStorage)
+    document.addEventListener('visibilitychange', onVisible)
+    return () => { window.removeEventListener('storage', onStorage); document.removeEventListener('visibilitychange', onVisible) }
+  }, [])
+
+  const refreshSettings = async () => { setLoading(true); await fetchSettings() }
+
+  return (
+    <SettingsContext.Provider value={{ settings, loading, refreshSettings }}>
+      {children}
+    </SettingsContext.Provider>
+  )
+}
+
+export function useSettings() {
+  const ctx = useContext(SettingsContext)
+  if (!ctx) return { settings: defaults, loading: true, refreshSettings: async () => {} }
+  return ctx
+}
