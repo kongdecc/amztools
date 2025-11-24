@@ -334,12 +334,14 @@ const LayoutComponent = () => {
               </button>
             ))}
           </div>
-          <div className="p-4 border-t border-gray-100">
-            <div className="flex gap-2">
-              <div className="h-8 w-8 rounded-full bg-gray-800 text-white flex items-center justify-center text-xs font-bold">N</div>
-              <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center"><ChevronDown className="h-4 w-4 text-gray-600" /></div>
+          {process.env.NODE_ENV !== 'production' && (
+            <div className="p-4 border-t border-gray-100">
+              <div className="flex gap-2">
+                <div className="h-8 w-8 rounded-full bg-gray-800 text-white flex items-center justify-center text-xs font-bold">N</div>
+                <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center"><ChevronDown className="h-4 w-4 text-gray-600" /></div>
+              </div>
             </div>
-          </div>
+          )}
         </aside>
         <main className="flex-1 p-8 overflow-y-auto h-[calc(100vh-3.5rem)]">
           <div className="max-w-6xl mx-auto">{renderContent()}</div>
