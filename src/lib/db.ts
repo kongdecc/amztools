@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined }
-const url = process.env.PRISMA_DATABASE_URL ?? process.env.POSTGRES_URL ?? process.env.DATABASE_URL
+const url = process.env.POSTGRES_PRISMA_URL ?? process.env.PRISMA_DATABASE_URL ?? process.env.POSTGRES_URL ?? process.env.DATABASE_URL
 
 function createPrisma(): PrismaClient {
   return new PrismaClient(url ? { datasources: { db: { url } } } : undefined)
