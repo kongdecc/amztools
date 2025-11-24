@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "prisma generate && prisma db push && next build",
     "start": "next start",
-    "vercel-build": "prisma generate && next build",
+    "vercel-build": "prisma generate && prisma db push && next build",
     "postinstall": "prisma generate"
   },
   "dependencies": {
