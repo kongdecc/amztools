@@ -5,13 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate --no-engine && prisma db push && next build",
+    "build": "prisma generate && prisma db push && next build",
     "start": "next start",
-    "vercel-build": "prisma generate --no-engine && prisma db push && next build",
+    "vercel-build": "prisma generate && prisma db push && next build",
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@prisma/client": "5.19.0",
+    "@prisma/client": "^6.18.0",
     "dompurify": "^3.3.0",
     "isomorphic-dompurify": "^2.33.0",
     "lucide-react": "0.446.0",
@@ -27,7 +27,7 @@
     "@types/react": "19.2.6",
     "eslint": "9.14.0",
     "eslint-config-next": "16.0.0",
-    "prisma": "5.19.0",
+    "prisma": "^6.18.0",
     "tailwindcss": "^4",
     "typescript": "5.6.3"
   }
