@@ -70,6 +70,14 @@ model BlogPost {
   status    String   @default("draft")
   order     Int      @default(0)
   views     Int      @default(0)
+  coverUrl  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Suggest {
+  id        String   @id @default(cuid())
+  nickname  String
+  content   String
+  createdAt DateTime @default(now())
 }
