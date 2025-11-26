@@ -216,26 +216,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
   const [activeTab, setActiveTab] = useState('home')
   const [modules, setModules] = useState<Array<any>>(initialModules || [])
   const [navItems, setNavItems] = useState<Array<any>>(initialNavItems || [])
-  useEffect(() => {
-    const run = async () => {
-      try {
-        const r = await fetch('/api/modules', { cache: 'no-store' })
-        const d = await r.json()
-        setModules(d)
-      } catch {}
-    }
-    run()
-  }, [])
-  useEffect(() => {
-    const loadNav = async () => {
-      try {
-        const r = await fetch('/api/navigation', { cache: 'no-store' })
-        const d = await r.json()
-        setNavItems(Array.isArray(d) ? d : [])
-      } catch {}
-    }
-    loadNav()
-  }, [])
+  
   const iconMap: Record<string, any> = {
     'ad-calc': Calculator,
     'editor': Type,
