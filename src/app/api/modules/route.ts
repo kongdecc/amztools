@@ -4,6 +4,7 @@ import fs from 'fs'
 import path from 'path'
 
 const DATA_FILE = path.join(process.cwd(), 'data', 'modules.json')
+const VISITS_FILE = path.join(process.cwd(), 'data', 'visits.json')
 
 const defaults = [
   { key: 'ad-calc', title: '广告竞价计算', desc: '亚马逊广告策略实时出价计算，支持Fixed/Dynamic策略', status: '启用', views: 0, color: 'blue', order: 1 },
@@ -32,6 +33,41 @@ function saveLocalData(data: Array<any>) {
       fs.mkdirSync(dir, { recursive: true })
     }
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2))
+  } catch {}
+}
+
+function readVisitData(): Record<string, any> {
+  try {
+    if (fs.existsSync(VISITS_FILE)) {
+      const content = fs.readFileSync(VISITS_FILE, 'utf-8')
+      const obj = JSON.parse(content)
+      if (obj && typeof obj === 'object') return obj
+    }
+  } catch {}
+  return {}
+}
+
+function writeVisitData(obj: Record<string, any>) {
+  try {
+    const dir = path.dirname(VISITS_FILE)
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+    fs.writeFileSync(VISITS_FILE, JSON.stringify(obj, null, 2))
+  } catch {}
+}
+
+function trackVisit(key: string) {
+  try {
+    const today = new Date()
+    const y = today.getFullYear()
+    const m = String(today.getMonth() + 1).padStart(2, '0')
+    const d = String(today.getDate()).padStart(2, '0')
+    const date = `${y}-${m}-${d}`
+    const obj = readVisitData()
+    const row = obj[date] || { total: 0, byModule: {} }
+    row.total = Number(row.total || 0) + 1
+    row.byModule[key] = Number(row.byModule[key] || 0) + 1
+    obj[date] = row
+    writeVisitData(obj)
   } catch {}
 }
 
@@ -91,12 +127,14 @@ export async function POST(request: Request) {
     if (!key) return NextResponse.json({ error: 'bad_request' }, { status: 400 })
     try {
       const row = await (db as any).toolModule.update({ where: { key }, data: { views: { increment: 1 } } })
+      try { trackVisit(String(key)) } catch {}
       return NextResponse.json({ ok: true, views: row.views })
     } catch {
       const arr = (getLocalData() || defaults).slice()
       const idx = arr.findIndex((x: any) => x.key === key)
       if (idx >= 0) arr[idx] = { ...arr[idx], views: Number(arr[idx].views || 0) + 1 }
       saveLocalData(arr)
+      try { trackVisit(String(key)) } catch {}
       return NextResponse.json({ ok: true, dev: true })
     }
   } catch {

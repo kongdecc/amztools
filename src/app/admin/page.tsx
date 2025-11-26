@@ -18,6 +18,8 @@ export default function AdminPage() {
   const [showAnalytics, setShowAnalytics] = useState(true)
   const [copyrightText, setCopyrightText] = useState('')
   const [analyticsData, setAnalyticsData] = useState<{ trend: Array<any>; bounceRate: number; avgDuration: string }>({ trend: [], bounceRate: 0, avgDuration: '' })
+  const [visitRange, setVisitRange] = useState<'7d'|'30d'|'1y'>('7d')
+  const [visitItems, setVisitItems] = useState<Array<any>>([])
   useEffect(() => {
     (async () => {
       try {
@@ -47,6 +49,16 @@ export default function AdminPage() {
       } catch {}
     })()
   }, [])
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch(`/api/visits?range=${visitRange}`, { cache: 'no-store' })
+        const d = await r.json()
+        const arr = Array.isArray(d?.items) ? d.items : []
+        setVisitItems(arr)
+      } catch {}
+    })()
+  }, [visitRange])
   const analytics = React.useMemo(() => {
     if (!showAnalytics) return { trend: [], bounceRate: 0, avgDuration: '' }
     if (Array.isArray(analyticsData.trend) && analyticsData.trend.length) return analyticsData
@@ -140,7 +152,36 @@ export default function AdminPage() {
                 )
               })()}
             </div>
-            
+            <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-gray-800 flex items-center gap-2"><Activity size={18} className="text-purple-600" />按日期访问</h3>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => setVisitRange('7d')} className={`px-3 py-1 rounded text-sm ${visitRange==='7d'?'bg-indigo-600 text-white':'bg-gray-100 text-gray-700'}`}>近7天</button>
+                  <button onClick={() => setVisitRange('30d')} className={`px-3 py-1 rounded text-sm ${visitRange==='30d'?'bg-indigo-600 text白':'bg-gray-100 text-gray-700'}`}>近1个月</button>
+                  <button onClick={() => setVisitRange('1y')} className={`px-3 py-1 rounded text-sm ${visitRange==='1y'?'bg-indigo-600 text白':'bg-gray-100 text-gray-700'}`}>近1年</button>
+                </div>
+              </div>
+              {(() => {
+                const items = Array.isArray(visitItems) ? visitItems : []
+                if (!items.length) return <div className="h-64 w-full flex items-center justify-center text-sm text-gray-500">暂无数据</div>
+                const max = Math.max(0, ...items.map((x: any) => Number(x.total || 0)))
+                return (
+                  <div className="space-y-3">
+                    {items.map((it: any) => (
+                      <div key={it.date} className="flex items-center justify-between">
+                        <span className="text-sm text-gray-700 w-24">{it.date}</span>
+                        <div className="flex items-center gap-3 flex-1">
+                          <div className="w-full h-2 bg-gray-100 rounded overflow-hidden">
+                            <div className="h-2 bg-purple-500" style={{ width: `${max>0? Math.round(Number(it.total||0)/max*100) : 0}%` }} />
+                          </div>
+                          <span className="text-sm text-gray-600 w-14 text-right">{Number(it.total||0).toLocaleString()}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )
+              })()}
+            </div>
           </div>
           )}
 
