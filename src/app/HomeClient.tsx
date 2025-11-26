@@ -5,6 +5,7 @@ import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, B
 import { useSettings } from '@/components/SettingsProvider'
 import Head from 'next/head'
 import Link from 'next/link'
+import EditorPage from '../components/EditorPage'
 
 const Card = ({ children, className = "", onClick, ...props }: any) => (
   <div onClick={onClick} className={`bg-white rounded-xl border border-gray-100 shadow-sm ${className}`} {...props}>{children}</div>
@@ -857,7 +858,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
               (() => {
                 if (activeTab === 'ad-calc') return <AdCalculatorPage />
                 if (activeTab === 'unit') return <UnitConverterPage />
-                if (activeTab === 'editor') return <PlaceholderPage title="可视化编辑器" icon={Type} />
+                if (activeTab === 'editor') return <EditorPage />
                 if (activeTab === 'case') return <CaseConverterPage />
                 if (activeTab === 'word-count') return <WordCountPage />
                 if (activeTab === 'char-count') return <CharCountPage />
