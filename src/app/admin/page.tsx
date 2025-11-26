@@ -59,7 +59,7 @@ export default function AdminPage() {
     const bounceRate = Math.min(95, Math.max(5, Math.round((disabledCount / Math.max(1, modules.length)) * 10000) / 100))
     const avgSeconds = Math.max(30, Math.round(totalViews / Math.max(1, modules.length)))
     const avgDuration = `${Math.floor(avgSeconds / 60)}m ${avgSeconds % 60}s`
-    const base = Math.round(totalViews / 7)
+    const base = totalViews > 0 ? Math.max(5, Math.ceil(totalViews / 7)) : 0
     const week = ['周一','周二','周三','周四','周五','周六','周日']
     const trend = week.map((name, i) => ({ name, uv: Math.max(0, base + Math.round(Math.sin(i) * base * 0.2)) }))
     setAnalytics({ trend, bounceRate, avgDuration })

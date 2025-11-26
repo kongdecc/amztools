@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import type { Prisma } from '@prisma/client'
+import fs from 'fs'
+import path from 'path'
+
+const DATA_FILE = path.join(process.cwd(), 'data', 'modules.json')
 
 const defaults = [
   { key: 'ad-calc', title: '广告竞价计算', desc: '亚马逊广告策略实时出价计算，支持Fixed/Dynamic策略', status: '启用', views: 0, color: 'blue', order: 1 },
@@ -12,7 +15,25 @@ const defaults = [
   { key: 'delivery', title: '美国站配送费计算', desc: '按2025/2026规则计算配送费用', status: '下架', views: 0, color: 'orange', order: 7 }
 ]
 
-let cache: Array<any> | null = null
+function getLocalData() {
+  try {
+    if (fs.existsSync(DATA_FILE)) {
+      const content = fs.readFileSync(DATA_FILE, 'utf-8')
+      return JSON.parse(content)
+    }
+  } catch {}
+  return null
+}
+
+function saveLocalData(data: Array<any>) {
+  try {
+    const dir = path.dirname(DATA_FILE)
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true })
+    }
+    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2))
+  } catch {}
+}
 
 export async function GET() {
   try {
@@ -27,7 +48,8 @@ export async function GET() {
     }
     return NextResponse.json(rows)
   } catch {
-    const data = (cache || defaults).slice().sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
+    const local = getLocalData()
+    const data = (local || defaults).slice().sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
     return NextResponse.json(data)
   }
 }
@@ -54,10 +76,10 @@ export async function PUT(request: Request) {
       create: { key: item.key, title: item.title, desc: item.desc, status: item.status ?? '启用', views: item.views ?? 0, color: item.color ?? 'blue', order: item.order ?? 0 }
     })))
     await db.$transaction(ops)
-    cache = null
     return NextResponse.json({ ok: true })
   } catch {
-    cache = list.map((x, i) => ({ ...x, id: x.key, updatedAt: new Date().toISOString(), order: Number(x.order ?? i + 1) }))
+    const mapped = list.map((x, i) => ({ ...x, id: x.key, updatedAt: new Date().toISOString(), order: Number(x.order ?? i + 1) }))
+    saveLocalData(mapped)
     return NextResponse.json({ ok: true, dev: true })
   }
 }
@@ -69,13 +91,12 @@ export async function POST(request: Request) {
     if (!key) return NextResponse.json({ error: 'bad_request' }, { status: 400 })
     try {
       const row = await (db as any).toolModule.update({ where: { key }, data: { views: { increment: 1 } } })
-      cache = null
       return NextResponse.json({ ok: true, views: row.views })
     } catch {
-      const arr = (cache || defaults).slice()
-      const idx = arr.findIndex(x => x.key === key)
+      const arr = (getLocalData() || defaults).slice()
+      const idx = arr.findIndex((x: any) => x.key === key)
       if (idx >= 0) arr[idx] = { ...arr[idx], views: Number(arr[idx].views || 0) + 1 }
-      cache = arr
+      saveLocalData(arr)
       return NextResponse.json({ ok: true, dev: true })
     }
   } catch {
@@ -96,15 +117,14 @@ export async function PATCH(request: Request) {
       update: { title: item.title, desc: item.desc, status: item.status, views: item.views ?? 0, color: item.color ?? 'blue', order: item.order ?? 0 },
       create: { key, title: item.title, desc: item.desc, status: item.status ?? '启用', views: item.views ?? 0, color: item.color ?? 'blue', order: item.order ?? 0 }
     })
-    cache = null
     return NextResponse.json({ ok: true, key })
   } catch {
-    const arr = (cache || defaults).slice()
-    const idx = arr.findIndex(x => x.key === key)
+    const arr = (getLocalData() || defaults).slice()
+    const idx = arr.findIndex((x: any) => x.key === key)
     const next = { ...item, id: key, updatedAt: new Date().toISOString() }
     if (idx >= 0) arr[idx] = { ...arr[idx], ...next }
     else arr.push(next)
-    cache = arr
+    saveLocalData(arr)
     return NextResponse.json({ ok: true, dev: true, key })
   }
 }

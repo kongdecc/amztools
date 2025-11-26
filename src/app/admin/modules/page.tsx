@@ -70,7 +70,31 @@ function StatusBadge({ status }: any) {
               setSavedHint('')
               try {
                 const keys = Object.keys(selected).filter(k => selected[k])
-                if (keys.length === 0) { setSavedHint('请先选择要保存的记录'); return }
+                if (keys.length === 0) { 
+                  if (isDirty) {
+                    const payload = list.map(x => ({
+                      key: x.key,
+                      title: x.title,
+                      desc: x.desc,
+                      status: x.status,
+                      views: Number(x.views || 0),
+                      color: x.color || 'blue',
+                      order: Number(x.order || 0)
+                    }))
+                    const r = await fetch('/api/modules', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), credentials: 'include' })
+                    if (!r.ok) throw new Error('保存失败')
+                    setSavedHint('已保存全部更改')
+                    const rr = await fetch('/api/modules', { cache: 'no-store' })
+                    const d = await rr.json()
+                    const mapped = (d || []).map((x: any, i: number) => ({ ...x, order: typeof x.order === 'number' && x.order > 0 ? x.order : i + 1 }))
+                    setList(mapped)
+                    setServerSnap(mapped.map((x: any) => ({ key: x.key, title: x.title, desc: x.desc, status: x.status, views: Number(x.views || 0), color: x.color || 'blue', order: Number(x.order || 0) })))
+                    setSelected({})
+                    setOriginals({})
+                    return
+                  }
+                  setSavedHint('请先选择要保存的记录'); return 
+                }
                 const rows = list.filter((x) => keys.includes(uidOf(x)))
                 for (const row of rows) {
                   const payload = { key: row.key, title: row.title, desc: row.desc, status: row.status, views: Number(row.views || 0), color: row.color || 'blue', order: Number(row.order || 0) }
@@ -91,7 +115,7 @@ function StatusBadge({ status }: any) {
                 setSaving(false)
                 setTimeout(() => setSavedHint(''), 2000)
               }
-            }} className={`bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm flex items-center gap-1 transition-colors shadow-sm font-medium ${saving ? 'opacity-70 cursor-not-allowed' : ''}`}><Save size={16} /> 保存所选{savedHint ? `（${savedHint}）` : ''}</button>
+            }} className={`bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm flex items-center gap-1 transition-colors shadow-sm font-medium ${saving ? 'opacity-70 cursor-not-allowed' : ''}`}><Save size={16} /> {isDirty && Object.keys(selected).filter(k => selected[k]).length === 0 ? '保存全部更改' : '保存所选'}{savedHint ? `（${savedHint}）` : ''}</button>
             <button onClick={async () => {
               if (isDirty) {
                 const ok = confirm('有未保存的更改，返回将不保存，确认返回？')

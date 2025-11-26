@@ -11,6 +11,7 @@ build/
 
 # Local data (DB/file fallback, sessions, uploads)
 .data/
+data/
 
 # Logs
 npm-debug.log*
