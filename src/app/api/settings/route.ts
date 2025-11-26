@@ -32,7 +32,7 @@ const defaults = {
 }
 
 const globalForSettings = globalThis as unknown as { memSettings?: Record<string, string> }
-const memSettings: Record<string, string> = globalForSettings.memSettings ?? { ...defaults }
+const memSettings: Record<string, string> = globalForSettings.memSettings ?? {}
 globalForSettings.memSettings = memSettings
 
 const dataDir = path.join(process.cwd(), '.data')
@@ -57,10 +57,10 @@ function writeFileSettings(obj: Record<string, string>) {
 export async function GET() {
   try {
     const rows = await db.siteSettings.findMany()
-    const obj: Record<string, string> = { ...defaults }
-    rows.forEach(r => { obj[r.key] = r.value })
+    const dbObj: Record<string, string> = {}
+    rows.forEach(r => { dbObj[r.key] = r.value })
     const fileObj = readFileSettings()
-    const merged = { ...obj, ...fileObj, ...memSettings }
+    const merged = { ...defaults, ...fileObj, ...memSettings, ...dbObj }
     return NextResponse.json(merged, { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } })
   } catch {
     const fileObj = readFileSettings()
