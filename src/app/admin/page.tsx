@@ -17,6 +17,7 @@ export default function AdminPage() {
   const [modules, setModules] = useState<Array<any>>([])
   const [showAnalytics, setShowAnalytics] = useState(true)
   const [copyrightText, setCopyrightText] = useState('')
+  const [analyticsData, setAnalyticsData] = useState<{ trend: Array<any>; bounceRate: number; avgDuration: string }>({ trend: [], bounceRate: 0, avgDuration: '' })
   useEffect(() => {
     (async () => {
       try {
@@ -28,8 +29,27 @@ export default function AdminPage() {
       }
     })()
   }, [])
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch('/api/settings', { cache: 'no-store' })
+        const d = await r.json()
+        const flag = String(d?.showAnalytics || 'false') === 'true'
+        setShowAnalytics(flag)
+        setCopyrightText(String(d?.copyrightText || ''))
+        if (flag) {
+          try {
+            const a = await fetch('/api/analytics', { cache: 'no-store' })
+            const ad = await a.json()
+            if (Array.isArray(ad?.trend)) setAnalyticsData({ trend: ad.trend, bounceRate: Number(ad?.bounceRate || 0), avgDuration: String(ad?.avgDuration || '') })
+          } catch {}
+        }
+      } catch {}
+    })()
+  }, [])
   const analytics = React.useMemo(() => {
     if (!showAnalytics) return { trend: [], bounceRate: 0, avgDuration: '' }
+    if (Array.isArray(analyticsData.trend) && analyticsData.trend.length) return analyticsData
     const totalViews = modules.reduce((s: number, x: any) => s + Number(x.views || 0), 0)
     const enabledCount = modules.filter((m: any) => m.status === '启用').length
     const disabledCount = modules.length - enabledCount
@@ -40,7 +60,7 @@ export default function AdminPage() {
     const week = ['周一','周二','周三','周四','周五','周六','周日']
     const trend = week.map((name, i) => ({ name, uv: Math.max(0, base + Math.round(Math.sin(i) * base * 0.2)) }))
     return { trend, bounceRate, avgDuration }
-  }, [showAnalytics, modules])
+  }, [showAnalytics, modules, analyticsData])
 
   return (
     <div className="min-h-screen bg-[#f0f2f5] flex font-sans text-gray-800">
@@ -97,13 +117,20 @@ export default function AdminPage() {
               <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2"><BarChart2 size={18} className="text-blue-600" />热门工具排行 (Top 6)</h3>
               <div className="h-64 w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={modules.slice().sort((a: any, b: any) => Number(b.views||0) - Number(a.views||0)).slice(0,6).map((x: any) => ({ name: x.title, views: Number(x.views||0) }))} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f0f0f0" />
-                    <XAxis type="number" hide />
-                    <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 12, fill: '#666' }} axisLine={false} tickLine={false} />
-                    <Tooltip cursor={{ fill: '#f8f9fa' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                    <Bar dataKey="views" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={20} />
-                  </BarChart>
+                  {(() => {
+                    const data = modules.slice().sort((a: any, b: any) => Number(b.views||0) - Number(a.views||0)).slice(0,6).map((x: any) => ({ name: x.title, views: Number(x.views||0) }))
+                    const has = data.some((d: any) => Number(d.views) > 0)
+                    if (!has) return <div className="flex items-center justify-center h-full text-sm text-gray-500">暂无数据</div>
+                    return (
+                      <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f0f0f0" />
+                        <XAxis type="number" hide />
+                        <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 12, fill: '#666' }} axisLine={false} tickLine={false} />
+                        <Tooltip cursor={{ fill: '#f8f9fa' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                        <Bar dataKey="views" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={20} />
+                      </BarChart>
+                    )
+                  })()}
                 </ResponsiveContainer>
               </div>
             </div>
@@ -111,13 +138,20 @@ export default function AdminPage() {
               <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2"><Activity size={18} className="text-purple-600" />近7日访问趋势</h3>
               <div className="h-64 w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={analytics.trend}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-                    <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#666' }} axisLine={false} tickLine={false} dy={10} />
-                    <YAxis tick={{ fontSize: 12, fill: '#666' }} axisLine={false} tickLine={false} />
-                    <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                    <Line type="monotone" dataKey="uv" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4, fill: '#fff', strokeWidth: 2 }} activeDot={{ r: 6 }} />
-                  </LineChart>
+                  {(() => {
+                    const data = Array.isArray(analytics.trend) ? analytics.trend : []
+                    const has = data.some((d: any) => Number(d.uv) > 0)
+                    if (!has) return <div className="flex items-center justify-center h-full text-sm text-gray-500">暂无数据</div>
+                    return (
+                      <LineChart data={data}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                        <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#666' }} axisLine={false} tickLine={false} dy={10} />
+                        <YAxis tick={{ fontSize: 12, fill: '#666' }} axisLine={false} tickLine={false} />
+                        <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                        <Line type="monotone" dataKey="uv" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4, fill: '#fff', strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                      </LineChart>
+                    )
+                  })()}
                 </ResponsiveContainer>
               </div>
             </div>
