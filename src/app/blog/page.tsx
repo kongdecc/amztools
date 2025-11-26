@@ -15,7 +15,15 @@ export default async function Page() {
   try {
     const row = await db.siteSettings.findUnique({ where: { key: 'navigation' } })
     const arr = row && row.value ? JSON.parse(row.value) : []
-    navItems = Array.isArray(arr) ? arr : []
+    if (Array.isArray(arr) && arr.length > 0) {
+      navItems = arr
+    } else {
+      navItems = [
+        { id: 'about', label: '关于', href: '/about', order: 1, isExternal: false, active: true },
+        { id: 'blog', label: '博客', href: '/blog', order: 2, isExternal: false, active: true },
+        { id: 'suggest', label: '提需求', href: '/suggest', order: 3, isExternal: false, active: true }
+      ]
+    }
   } catch {
     navItems = [
       { id: 'about', label: '关于', href: '/about', order: 1, isExternal: false, active: true },

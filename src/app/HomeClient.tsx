@@ -1,25 +1,10 @@
 'use client'
+
 import React, { useEffect, useState } from 'react'
-import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, Menu, ChevronDown, Hammer, ArrowLeftRight } from 'lucide-react'
-import { SettingsProvider, useSettings } from '@/components/SettingsProvider'
+import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight } from 'lucide-react'
+import { useSettings } from '@/components/SettingsProvider'
 import Head from 'next/head'
 import Link from 'next/link'
-
-const DEFAULT_NAV_ITEMS = [
-  { id: 'about', label: '关于', href: '/about', order: 1, isExternal: false, active: true },
-  { id: 'blog', label: '博客', href: '/blog', order: 2, isExternal: false, active: true },
-  { id: 'suggest', label: '提需求', href: '/suggest', order: 3, isExternal: false, active: true }
-]
-
-const DEFAULT_MODULES = [
-  { key: 'ad-calc', title: '广告竞价计算', desc: '亚马逊广告策略实时出价计算，支持Fixed/Dynamic策略', status: '启用', views: 0, color: 'blue', order: 1 },
-  { key: 'editor', title: '可视化编辑器', desc: '所见即所得的HTML编辑器，支持一键复制源码', status: '启用', views: 0, color: 'indigo', order: 2 },
-  { key: 'unit', title: '单位换算', desc: '长度、重量、体积等多维度单位快速换算', status: '启用', views: 0, color: 'cyan', order: 3 },
-  { key: 'case', title: '大小写转换', desc: '文本大小写一键转换，支持首字母大写', status: '启用', views: 0, color: 'violet', order: 4 },
-  { key: 'word-count', title: '词频统计', desc: '分析英文文本，统计单词出现频率和字符数', status: '维护', views: 0, color: 'sky', order: 5 },
-  { key: 'char-count', title: '字符统计', desc: '统计字符并提供清理复制等操作', status: '启用', views: 0, color: 'purple', order: 6 },
-  { key: 'delivery', title: '美国站配送费计算', desc: '按2025/2026规则计算配送费用', status: '下架', views: 0, color: 'orange', order: 7 }
-]
 
 const Card = ({ children, className = "", onClick, ...props }: any) => (
   <div onClick={onClick} className={`bg-white rounded-xl border border-gray-100 shadow-sm ${className}`} {...props}>{children}</div>
@@ -30,7 +15,7 @@ const Input = ({ className = "", ...props }: any) => (
 )
 
 const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; modules: Array<any> }) => {
-  const { settings, loading } = useSettings()
+  const { settings } = useSettings()
   const safeOrigin = (typeof window !== 'undefined' && (window as any).location) ? (window as any).location.origin : ''
   const iconMap: Record<string, any> = {
     'ad-calc': Calculator,
@@ -227,10 +212,10 @@ const PlaceholderPage = ({ title, icon: Icon }: { title: string; icon: any }) =>
   </div>
 )
 
-const LayoutComponent = () => {
+export default function HomeLayoutClient({ initialModules, initialNavItems }: { initialModules: any[]; initialNavItems: any[] }) {
   const [activeTab, setActiveTab] = useState('home')
-  const [modules, setModules] = useState<Array<any>>(DEFAULT_MODULES)
-  const [navItems, setNavItems] = useState<Array<any>>(DEFAULT_NAV_ITEMS)
+  const [modules, setModules] = useState<Array<any>>(initialModules || [])
+  const [navItems, setNavItems] = useState<Array<any>>(initialNavItems || [])
   useEffect(() => {
     const run = async () => {
       try {
@@ -269,15 +254,7 @@ const LayoutComponent = () => {
       try { fetch('/api/modules', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: activeTab }) }) } catch {}
     }
   }, [activeTab])
-  const renderContent = () => {
-    if (activeTab === 'home') return <HomePage onNavigate={setActiveTab} modules={modules} />
-    if (activeTab === 'ad-calc') return <AdCalculatorPage />
-    if (activeTab === 'unit') return <UnitConverterPage />
-    const currentItem = menuItems.find(item => item.id === activeTab)
-    const I = currentItem?.icon || Hammer
-    return <PlaceholderPage title={currentItem?.label || '未知模块'} icon={I} />
-  }
-  const { settings, loading } = useSettings()
+  const { settings } = useSettings()
   const safeOrigin = (typeof window !== 'undefined' && (window as any).location) ? (window as any).location.origin : ''
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -360,7 +337,7 @@ const LayoutComponent = () => {
           )}
         </aside>
         <main className="flex-1 p-8 overflow-y-auto h-[calc(100vh-3.5rem)]">
-          <div className="max-w-6xl mx-auto">{renderContent()}</div>
+          <div className="max-w-6xl mx-auto"><HomePage onNavigate={setActiveTab} modules={modules} /></div>
           <div className="mt-12 text-center">
             <footer className="text-xs text-gray-400">
               {settings.copyrightText || '© 2025 运营魔方 ToolBox. All rights reserved.'}
@@ -394,13 +371,5 @@ const LayoutComponent = () => {
         </main>
       </div>
     </div>
-  )
-}
-
-export default function Page() {
-  return (
-    <SettingsProvider>
-      <LayoutComponent />
-    </SettingsProvider>
   )
 }
