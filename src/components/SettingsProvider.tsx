@@ -60,8 +60,8 @@ const defaults: SiteSettings = {
 
 const SettingsContext = createContext<Ctx | undefined>(undefined)
 
-export function SettingsProvider({ children }: { children: ReactNode }) {
-  const [settings, setSettings] = useState<SiteSettings>(defaults)
+export function SettingsProvider({ children, initial }: { children: ReactNode; initial?: Partial<SiteSettings> }) {
+  const [settings, setSettings] = useState<SiteSettings>(initial ? { ...defaults, ...initial } as SiteSettings : defaults)
   const [loading, setLoading] = useState(true)
 
   const fetchSettings = async () => {
@@ -78,10 +78,12 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem('settings_cache')
-      if (raw) {
-        const obj = JSON.parse(raw)
-        if (obj && typeof obj === 'object') setSettings(prev => ({ ...prev, ...obj }))
+      if (!initial) {
+        const raw = localStorage.getItem('settings_cache')
+        if (raw) {
+          const obj = JSON.parse(raw)
+          if (obj && typeof obj === 'object') setSettings(prev => ({ ...prev, ...obj }))
+        }
       }
     } catch {}
     fetchSettings()
