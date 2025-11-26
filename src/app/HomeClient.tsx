@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight } from 'lucide-react'
+import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 import Head from 'next/head'
 import Link from 'next/link'
@@ -93,22 +93,91 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
 }
 
 const AdCalculatorPage = () => {
-  const renderRow = (strategyLabel: string, position: string, multiplier: string, isFirst = false) => (
-    <tr className="text-sm border-b border-gray-200 hover:bg-gray-50">
-      {isFirst && (
-        <td className={`p-3 border-r border-gray-200 font-medium ${strategyLabel.includes('Fixed') ? 'text-red-500' : strategyLabel.includes('up') ? 'text-purple-600' : 'text-blue-500'}`}>{strategyLabel.split(' ')[0]} bids</td>
-      )}
-      {!isFirst && <td className="border-r border-gray-200"></td>}
-      <td className="p-3 border-r border-gray-200 text-center text-gray-700">{position}</td>
-      <td className="p-3 border-r border-gray-200 text-center text-gray-700">{multiplier}</td>
-      <td className="p-2 border-r border-gray-200"><Input placeholder="0" className="text-center" /></td>
-      <td className="p-2 border-r border-gray-200"><Input placeholder="0" className="text-center" /></td>
-      <td className="p-2 border-r border-gray-200"><Input placeholder="0" className="text-center" /></td>
-      <td className="p-2 border-r border-gray-200"><Input placeholder="0" className="text-center" /></td>
-      <td className="p-3 border-r border-gray-200 bg-red-50/30"></td>
-      <td className="p-3 bg-red-50/30"></td>
-    </tr>
+  const [data, setData] = useState(
+    [
+      { strategy: 'Fixed bids', position: 'TOP', multiplier: 1 },
+      { strategy: 'Fixed bids', position: 'Product pages', multiplier: 1 },
+      { strategy: 'Fixed bids', position: 'Rest of search', multiplier: 1 },
+      { strategy: 'up and down', position: 'TOP', multiplier: 2 },
+      { strategy: 'up and down', position: 'Product pages', multiplier: 1.5 },
+      { strategy: 'up and down', position: 'Rest of search', multiplier: 1.5 },
+      { strategy: 'down only', position: 'TOP', multiplier: 1 },
+      { strategy: 'down only', position: 'Product pages', multiplier: 1 },
+      { strategy: 'down only', position: 'Rest of search', multiplier: 1 },
+    ].map(item => ({ ...item, bidOld: '', bidNew: '', percentOld: '', percentNew: '' }))
   )
+
+  const updateField = (index: number, field: string, value: string) => {
+    const newData = [...data]
+    newData[index] = { ...newData[index], [field]: value }
+    setData(newData)
+  }
+
+  const calculateCPC = (bid: string, percent: string, multiplier: number) => {
+    const b = parseFloat(bid)
+    const p = parseFloat(percent)
+    if (isNaN(b)) return ''
+    const pct = isNaN(p) ? 0 : p
+    return (b * (1 + pct / 100) * multiplier).toFixed(3)
+  }
+
+  const renderRow = (index: number, isFirst = false) => {
+    const row = data[index]
+    const cpcOld = calculateCPC(row.bidOld, row.percentOld, row.multiplier)
+    const cpcNew = calculateCPC(row.bidNew, row.percentNew, row.multiplier)
+
+    return (
+      <tr key={index} className="text-sm border-b border-gray-200 hover:bg-gray-50">
+        {isFirst && (
+          <td className={`p-3 border-r border-gray-200 font-medium ${row.strategy.includes('Fixed') ? 'text-red-500' : row.strategy.includes('up') ? 'text-purple-600' : 'text-blue-500'}`}>
+            {row.strategy.split(' ')[0]} bids
+          </td>
+        )}
+        {!isFirst && <td className="border-r border-gray-200"></td>}
+        <td className="p-3 border-r border-gray-200 text-center text-gray-700">{row.position}</td>
+        <td className="p-3 border-r border-gray-200 text-center text-gray-700">{row.multiplier}</td>
+        <td className="p-2 border-r border-gray-200">
+          <Input 
+            type="number" 
+            value={row.bidOld} 
+            onChange={(e: any) => updateField(index, 'bidOld', e.target.value)} 
+            placeholder="0" 
+            className="text-center" 
+          />
+        </td>
+        <td className="p-2 border-r border-gray-200">
+          <Input 
+            type="number" 
+            value={row.bidNew} 
+            onChange={(e: any) => updateField(index, 'bidNew', e.target.value)} 
+            placeholder="0" 
+            className="text-center" 
+          />
+        </td>
+        <td className="p-2 border-r border-gray-200">
+          <Input 
+            type="number" 
+            value={row.percentOld} 
+            onChange={(e: any) => updateField(index, 'percentOld', e.target.value)} 
+            placeholder="0" 
+            className="text-center" 
+          />
+        </td>
+        <td className="p-2 border-r border-gray-200">
+          <Input 
+            type="number" 
+            value={row.percentNew} 
+            onChange={(e: any) => updateField(index, 'percentNew', e.target.value)} 
+            placeholder="0" 
+            className="text-center" 
+          />
+        </td>
+        <td className="p-3 border-r border-gray-200 bg-red-50/30 text-center text-red-600 font-medium">{cpcOld}</td>
+        <td className="p-3 bg-red-50/30 text-center text-red-600 font-medium">{cpcNew}</td>
+      </tr>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 mb-2">
@@ -135,21 +204,21 @@ const AdCalculatorPage = () => {
               <tr className="bg-red-50 border-b border-red-100">
                 <td colSpan={9} className="p-2 text-xs font-bold text-red-600 pl-3">Fixed bids (固定竞价)</td>
               </tr>
-              {renderRow('Fixed bids', 'TOP', '1', true)}
-              {renderRow('Fixed bids', 'Product pages', '1')}
-              {renderRow('Fixed bids', 'Rest of search', '1')}
+              {renderRow(0, true)}
+              {renderRow(1)}
+              {renderRow(2)}
               <tr className="bg-purple-50 border-b border-purple-100">
                 <td colSpan={9} className="p-2 text-xs font-bold text-purple-600 pl-3">up and down (动态竞价-提高和降低)</td>
               </tr>
-              {renderRow('up and down', 'TOP', '2', true)}
-              {renderRow('up and down', 'Product pages', '1.5')}
-              {renderRow('up and down', 'Rest of search', '1.5')}
+              {renderRow(3, true)}
+              {renderRow(4)}
+              {renderRow(5)}
               <tr className="bg-blue-50 border-b border-blue-100">
                 <td colSpan={9} className="p-2 text-xs font-bold text-blue-600 pl-3">down only (动态竞价-仅降低)</td>
               </tr>
-              {renderRow('down only', 'TOP', '1', true)}
-              {renderRow('down only', 'Product pages', '1')}
-              {renderRow('down only', 'Rest of search', '1')}
+              {renderRow(6, true)}
+              {renderRow(7)}
+              {renderRow(8)}
             </tbody>
           </table>
         </div>
@@ -158,6 +227,8 @@ const AdCalculatorPage = () => {
           <ul className="list-disc list-inside space-y-1 ml-1">
             <li>输入原出价/新出价/原百分比/新百分比，会自动计算对应的原CPC和新CPC。</li>
             <li>实际最高CPC = Bid × (1 + 百分比/100) × 最高倍数。</li>
+            <li>百分比输入如“28”即代表28%，不需要输入%号。</li>
+            <li>最高倍数由策略和广告位决定（TOP/1.5/2等）。</li>
           </ul>
         </div>
       </Card>
@@ -166,19 +237,153 @@ const AdCalculatorPage = () => {
 }
 
 const UnitConverterPage = () => {
-  const UnitGroup = ({ title, units }: { title: string; units: { label: string }[] }) => (
+  const [length, setLength] = useState<any>({ cm: '', in: '', m: '', ft: '', mm: '' })
+  const [weight, setWeight] = useState<any>({ kg: '', oz: '', g: '', lb: '', t: '' })
+  const [volume, setVolume] = useState<any>({ m3: '', l: '', ml: '', ft3: '', gal: '' })
+
+  const convertLength = (field: string, val: string) => {
+    if (val === '') {
+      setLength({ cm: '', in: '', m: '', ft: '', mm: '' })
+      return
+    }
+    const v = parseFloat(val)
+    if (isNaN(v)) return
+
+    let n: any = {}
+    if (field === 'cm') {
+      n.cm = val
+      n.in = (v / 2.54).toFixed(2)
+      n.m = (v / 100).toFixed(2)
+      n.ft = (v / 30.48).toFixed(2)
+      n.mm = (v * 10).toFixed(2)
+    } else if (field === 'in') {
+      n.in = val
+      n.cm = (v * 2.54).toFixed(2)
+      n.m = (v * 0.0254).toFixed(2)
+      n.ft = (v / 12).toFixed(2)
+      n.mm = (v * 25.4).toFixed(2)
+    } else if (field === 'm') {
+      n.m = val
+      n.cm = (v * 100).toFixed(2)
+      n.in = (v / 0.0254).toFixed(2)
+      n.ft = (v * 3.28084).toFixed(2)
+      n.mm = (v * 1000).toFixed(2)
+    } else if (field === 'ft') {
+      n.ft = val
+      n.cm = (v * 30.48).toFixed(2)
+      n.in = (v * 12).toFixed(2)
+      n.m = (v / 3.28084).toFixed(2)
+      n.mm = (v * 304.8).toFixed(2)
+    } else if (field === 'mm') {
+      n.mm = val
+      n.cm = (v / 10).toFixed(2)
+      n.in = (v / 25.4).toFixed(2)
+      n.m = (v / 1000).toFixed(2)
+      n.ft = (v / 304.8).toFixed(2)
+    }
+    setLength(n)
+  }
+
+  const convertWeight = (field: string, val: string) => {
+    if (val === '') {
+      setWeight({ kg: '', oz: '', g: '', lb: '', t: '' })
+      return
+    }
+    const v = parseFloat(val)
+    if (isNaN(v)) return
+
+    let n: any = {}
+    if (field === 'kg') {
+      n.kg = val
+      n.oz = (v * 35.274).toFixed(2)
+      n.g = (v * 1000).toFixed(2)
+      n.lb = (v * 2.20462).toFixed(2)
+      n.t = (v / 1000).toFixed(2)
+    } else if (field === 'oz') {
+      n.oz = val
+      n.kg = (v / 35.274).toFixed(2)
+      n.g = (v * 28.3495).toFixed(2)
+      n.lb = (v / 16).toFixed(2)
+      n.t = (v / 35274).toFixed(6)
+    } else if (field === 'g') {
+      n.g = val
+      n.kg = (v / 1000).toFixed(2)
+      n.oz = (v / 28.3495).toFixed(2)
+      n.lb = (v / 453.592).toFixed(2)
+      n.t = (v / 1e6).toFixed(6)
+    } else if (field === 'lb') {
+      n.lb = val
+      n.kg = (v / 2.20462).toFixed(2)
+      n.oz = (v * 16).toFixed(2)
+      n.g = (v * 453.592).toFixed(2)
+      n.t = (v / 2204.62).toFixed(6)
+    } else if (field === 't') {
+      n.t = val
+      n.kg = (v * 1000).toFixed(2)
+      n.oz = (v * 35274).toFixed(2)
+      n.g = (v * 1e6).toFixed(2)
+      n.lb = (v * 2204.62).toFixed(2)
+    }
+    setWeight(n)
+  }
+
+  const convertVolume = (field: string, val: string) => {
+    if (val === '') {
+      setVolume({ m3: '', l: '', ml: '', ft3: '', gal: '' })
+      return
+    }
+    const v = parseFloat(val)
+    if (isNaN(v)) return
+
+    let n: any = {}
+    if (field === 'm3') {
+      n.m3 = val
+      n.l = (v * 1000).toFixed(2)
+      n.ml = (v * 1e6).toFixed(2)
+      n.ft3 = (v * 35.3147).toFixed(2)
+      n.gal = (v * 264.172).toFixed(2)
+    } else if (field === 'l') {
+      n.l = val
+      n.m3 = (v / 1000).toFixed(6)
+      n.ml = (v * 1000).toFixed(2)
+      n.ft3 = (v / 28.3168).toFixed(2)
+      n.gal = (v / 3.78541).toFixed(2)
+    } else if (field === 'ml') {
+      n.ml = val
+      n.m3 = (v / 1e6).toFixed(6)
+      n.l = (v / 1000).toFixed(2)
+      n.ft3 = (v / 28316.8).toFixed(6)
+      n.gal = (v / 3785.41).toFixed(6)
+    } else if (field === 'ft3') {
+      n.ft3 = val
+      n.m3 = (v / 35.3147).toFixed(6)
+      n.l = (v * 28.3168).toFixed(2)
+      n.ml = (v * 28316.8).toFixed(2)
+      n.gal = (v * 7.48052).toFixed(2)
+    } else if (field === 'gal') {
+      n.gal = val
+      n.m3 = (v / 264.172).toFixed(6)
+      n.l = (v * 3.78541).toFixed(2)
+      n.ml = (v * 3785.41).toFixed(2)
+      n.ft3 = (v / 7.48052).toFixed(2)
+    }
+    setVolume(n)
+  }
+
+  const UnitGroup = ({ title, units, state, handler }: any) => (
     <div className="space-y-4">
       <h3 className="font-bold text-gray-700 text-sm">{title}</h3>
       <div className="space-y-3">
-        {units.map(unit => (
-          <div key={unit.label} className="flex items-center gap-3">
-            <label className="w-24 text-sm text-gray-600">{unit.label}</label>
-            <Input />
+        {units.map((u: any) => (
+          <div key={u.key} className="flex items-center gap-3">
+            <label className="w-24 text-sm text-gray-600">{u.label}</label>
+            <Input type="number" value={state[u.key]} onChange={(e: any) => handler(u.key, e.target.value)} />
           </div>
         ))}
       </div>
     </div>
   )
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 mb-2">
@@ -187,11 +392,154 @@ const UnitConverterPage = () => {
       </div>
       <Card className="p-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-          <UnitGroup title="长度换算 (cm/in/m/ft/mm)" units={[{ label: '厘米 (cm)' }, { label: '英寸 (in)' }, { label: '米 (m)' }, { label: '英尺 (ft)' }, { label: '毫米 (mm)' }]} />
-          <UnitGroup title="重量换算 (kg/oz/g/lb/t)" units={[{ label: '公斤 (kg)' }, { label: '盎司 (oz)' }, { label: '克 (g)' }, { label: '磅 (lb)' }, { label: '吨 (t)' }]} />
-          <UnitGroup title="体积换算 (m³/L/mL/ft³/gal)" units={[{ label: '立方米 (m³)' }, { label: '升 (L)' }, { label: '毫升 (mL)' }, { label: '立方英尺 (ft³)' }, { label: '加仑 (gal)' }]} />
+          <UnitGroup 
+            title="长度换算" 
+            units={[{ key: 'cm', label: '厘米 (cm)' }, { key: 'in', label: '英寸 (in)' }, { key: 'm', label: '米 (m)' }, { key: 'ft', label: '英尺 (ft)' }, { key: 'mm', label: '毫米 (mm)' }]} 
+            state={length}
+            handler={convertLength}
+          />
+          <UnitGroup 
+            title="重量换算" 
+            units={[{ key: 'kg', label: '公斤 (kg)' }, { key: 'oz', label: '盎司 (oz)' }, { key: 'g', label: '克 (g)' }, { key: 'lb', label: '磅 (lb)' }, { key: 't', label: '吨 (t)' }]} 
+            state={weight}
+            handler={convertWeight}
+          />
+          <UnitGroup 
+            title="体积换算" 
+            units={[{ key: 'm3', label: '立方米 (m³)' }, { key: 'l', label: '升 (L)' }, { key: 'ml', label: '毫升 (mL)' }, { key: 'ft3', label: '立方英尺 (ft³)' }, { key: 'gal', label: '加仑 (gal)' }]} 
+            state={volume}
+            handler={convertVolume}
+          />
         </div>
       </Card>
+    </div>
+  )
+}
+
+const CaseConverterPage = () => {
+  const [text, setText] = useState('')
+  const [result, setResult] = useState('')
+
+  const convert = (type: string) => {
+    if (type === 'upper') setResult(text.toUpperCase())
+    else if (type === 'lower') setResult(text.toLowerCase())
+    else if (type === 'capitalize') {
+      setResult(text.replace(/[a-zA-Z]+/g, word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()))
+    }
+  }
+
+  const copy = () => {
+    navigator.clipboard.writeText(result)
+    alert('结果已复制到剪贴板！')
+  }
+
+  const clear = () => {
+    setText('')
+    setResult('')
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-2 mb-2">
+        <CaseSensitive className="h-6 w-6 text-blue-600" />
+        <h2 className="text-xl font-bold text-gray-800">大小写转换</h2>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-[1fr,auto,1fr] gap-6">
+        <Card className="p-4 bg-gray-50/50">
+          <textarea 
+            className="w-full h-96 p-4 bg-transparent border-none resize-none focus:ring-0 text-sm"
+            placeholder="要转换的文本"
+            value={text}
+            onChange={e => setText(e.target.value)}
+          />
+        </Card>
+        <div className="flex flex-col justify-center gap-3">
+          <button onClick={() => convert('upper')} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">全部转大写</button>
+          <button onClick={() => convert('lower')} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">全部转小写</button>
+          <button onClick={() => convert('capitalize')} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">首字转大写</button>
+          <button onClick={copy} className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium flex items-center justify-center gap-2">
+            <Copy className="h-4 w-4" /> 复制结果
+          </button>
+          <button onClick={clear} className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm font-medium flex items-center justify-center gap-2">
+            <Trash2 className="h-4 w-4" /> 清空
+          </button>
+        </div>
+        <Card className="p-4 bg-gray-50/50">
+          <textarea 
+            className="w-full h-96 p-4 bg-transparent border-none resize-none focus:ring-0 text-sm"
+            readOnly
+            value={result}
+            placeholder="转换结果"
+          />
+        </Card>
+      </div>
+    </div>
+  )
+}
+
+const CharCountPage = () => {
+  const [text, setText] = useState('')
+
+  const copy = () => {
+    navigator.clipboard.writeText(text)
+    alert('文本已复制到剪贴板！')
+  }
+
+  const trim = () => {
+    setText(text.trim())
+  }
+
+  const removeBreaks = () => {
+    setText(text.replace(/[\r\n]+/g, ' '))
+  }
+
+  const clear = () => {
+    setText('')
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-2 mb-2">
+        <BarChart3 className="h-6 w-6 text-blue-600" />
+        <h2 className="text-xl font-bold text-gray-800">字符统计</h2>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <Card className="p-4 bg-gray-50/50">
+            <textarea 
+              className="w-full h-80 p-4 bg-transparent border-none resize-none focus:ring-0 text-sm"
+              placeholder="请输入统计字符的英文"
+              value={text}
+              onChange={e => setText(e.target.value)}
+            />
+          </Card>
+          <div className="flex flex-wrap gap-3">
+            <button onClick={copy} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium flex items-center gap-2"><Copy className="h-4 w-4" /> 一键复制</button>
+            <button onClick={trim} className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium flex items-center gap-2"><Eraser className="h-4 w-4" /> 清空首尾空白</button>
+            <button onClick={removeBreaks} className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium flex items-center gap-2"><Type className="h-4 w-4" /> 清空换行符</button>
+            <button onClick={clear} className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm font-medium flex items-center gap-2"><Trash2 className="h-4 w-4" /> 清空</button>
+          </div>
+        </div>
+        <Card className="p-6 bg-indigo-50/50 border-indigo-100">
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <h3 className="font-bold text-gray-800">温馨提示，在亚马逊卖家后台中：</h3>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li className="flex items-center gap-2"><div className="h-1.5 w-1.5 rounded-full bg-blue-400"></div>Product Title最多不超过 200（包括空格）字符</li>
+                <li className="flex items-center gap-2"><div className="h-1.5 w-1.5 rounded-full bg-blue-400"></div>Bullet Point每行最多不超过 500 字符</li>
+                <li className="flex items-center gap-2"><div className="h-1.5 w-1.5 rounded-full bg-blue-400"></div>Search Terms每行最多不超过 250 字符</li>
+              </ul>
+            </div>
+            <div className="pt-6 border-t border-indigo-200">
+              <h3 className="font-bold text-gray-800 mb-4">字符统计结果：</h3>
+              <div className="flex items-baseline gap-2">
+                <span className="text-gray-600 text-sm">当前字符数 CHARACTERS:</span>
+                <span className="text-4xl font-bold text-green-600">{text.length}</span>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
     </div>
   )
 }
@@ -326,9 +674,9 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
                 if (activeTab === 'ad-calc') return <AdCalculatorPage />
                 if (activeTab === 'unit') return <UnitConverterPage />
                 if (activeTab === 'editor') return <PlaceholderPage title="可视化编辑器" icon={Type} />
-                if (activeTab === 'case') return <PlaceholderPage title="大小写转换" icon={CaseSensitive} />
+                if (activeTab === 'case') return <CaseConverterPage />
                 if (activeTab === 'word-count') return <PlaceholderPage title="词频统计" icon={ListOrdered} />
-                if (activeTab === 'char-count') return <PlaceholderPage title="字符统计" icon={BarChart3} />
+                if (activeTab === 'char-count') return <CharCountPage />
                 if (activeTab === 'delivery') return <PlaceholderPage title="美国站配送费计算" icon={Truck} />
                 return <PlaceholderPage title="功能开发中" icon={Hammer} />
               })()
