@@ -45,6 +45,34 @@ function StatusBadge({ status }: any) {
   return <span className={`px-2 py-0.5 text-xs rounded border ${styles[status]}`}>{status}</span>
 }
 
+  const saveAll = async (newList: any[]) => {
+    setSaving(true)
+    setSavedHint('')
+    try {
+      const payload = newList.map(x => ({
+        key: x.key,
+        title: x.title,
+        desc: x.desc,
+        status: x.status,
+        views: Number(x.views || 0),
+        color: x.color || 'blue',
+        order: Number(x.order || 0)
+      }))
+      const r = await fetch('/api/modules', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), credentials: 'include' })
+      if (!r.ok) throw new Error('保存失败')
+      setSavedHint('已保存更改')
+      // Update snapshots
+      setServerSnap(newList.map((x: any) => ({ key: x.key, title: x.title, desc: x.desc, status: x.status, views: Number(x.views || 0), color: x.color || 'blue', order: Number(x.order || 0) })))
+      setSelected({})
+      setOriginals({})
+    } catch {
+      setSavedHint('保存失败')
+    } finally {
+      setSaving(false)
+      setTimeout(() => setSavedHint(''), 2000)
+    }
+  }
+
   return (
     <div className="p-8">
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 flex flex-col min-h-[600px]">
@@ -66,35 +94,14 @@ function StatusBadge({ status }: any) {
               setEditingId(item.id)
             }} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm flex items-center gap-1 transition-colors shadow-sm font-medium"><Plus size={16} /> 新建功能</button>
             <button onClick={async () => {
+              if (Object.keys(selected).filter(k => selected[k]).length === 0) {
+                 await saveAll(list)
+                 return
+              }
               setSaving(true)
-              setSavedHint('')
+              // ... existing batch logic for selected items ...
               try {
                 const keys = Object.keys(selected).filter(k => selected[k])
-                if (keys.length === 0) { 
-                  if (isDirty) {
-                    const payload = list.map(x => ({
-                      key: x.key,
-                      title: x.title,
-                      desc: x.desc,
-                      status: x.status,
-                      views: Number(x.views || 0),
-                      color: x.color || 'blue',
-                      order: Number(x.order || 0)
-                    }))
-                    const r = await fetch('/api/modules', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), credentials: 'include' })
-                    if (!r.ok) throw new Error('保存失败')
-                    setSavedHint('已保存全部更改')
-                    const rr = await fetch('/api/modules', { cache: 'no-store' })
-                    const d = await rr.json()
-                    const mapped = (d || []).map((x: any, i: number) => ({ ...x, order: typeof x.order === 'number' && x.order > 0 ? x.order : i + 1 }))
-                    setList(mapped)
-                    setServerSnap(mapped.map((x: any) => ({ key: x.key, title: x.title, desc: x.desc, status: x.status, views: Number(x.views || 0), color: x.color || 'blue', order: Number(x.order || 0) })))
-                    setSelected({})
-                    setOriginals({})
-                    return
-                  }
-                  setSavedHint('请先选择要保存的记录'); return 
-                }
                 const rows = list.filter((x) => keys.includes(uidOf(x)))
                 for (const row of rows) {
                   const payload = { key: row.key, title: row.title, desc: row.desc, status: row.status, views: Number(row.views || 0), color: row.color || 'blue', order: Number(row.order || 0) }
@@ -102,6 +109,7 @@ function StatusBadge({ status }: any) {
                   if (!r.ok) throw new Error('保存失败')
                 }
                 setSavedHint('已保存选中')
+                // Refresh data
                 const rr = await fetch('/api/modules', { cache: 'no-store' })
                 const d = await rr.json()
                 const mapped = (d || []).map((x: any, i: number) => ({ ...x, order: typeof x.order === 'number' && x.order > 0 ? x.order : i + 1 }))
@@ -220,27 +228,27 @@ function StatusBadge({ status }: any) {
                   <td className="p-4 text-gray-400 text-xs">{row.updatedAt?.slice?.(0,10) || ''}</td>
                   <td className="p-4">
                     <div className="flex items-center justify-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => {
-                        setList((prev) => {
-                          const idx0 = prev.findIndex((x) => (x.id ?? x.key) === (row.id ?? row.key))
-                          if (idx0 <= 0) return prev
-                          const copy = [...prev]
-                          const tmp = copy[idx0 - 1]
-                          copy[idx0 - 1] = copy[idx0]
-                          copy[idx0] = tmp
-                          return copy.map((x, i) => ({ ...x, order: i + 1 }))
-                        })
+                      <button onClick={async () => {
+                        const idx0 = list.findIndex((x) => (x.id ?? x.key) === (row.id ?? row.key))
+                        if (idx0 <= 0) return
+                        const copy = [...list]
+                        const tmp = copy[idx0 - 1]
+                        copy[idx0 - 1] = copy[idx0]
+                        copy[idx0] = tmp
+                        const mapped = copy.map((x, i) => ({ ...x, order: i + 1 }))
+                        setList(mapped)
+                        await saveAll(mapped)
                       }} className="p-1.5 hover:bg-gray-100 rounded text-gray-400 hover:text-blue-600" title="上移"><ArrowUp size={14} /></button>
-                      <button onClick={() => {
-                        setList((prev) => {
-                          const idx0 = prev.findIndex((x) => (x.id ?? x.key) === (row.id ?? row.key))
-                          if (idx0 < 0 || idx0 >= prev.length - 1) return prev
-                          const copy = [...prev]
-                          const tmp = copy[idx0 + 1]
-                          copy[idx0 + 1] = copy[idx0]
-                          copy[idx0] = tmp
-                          return copy.map((x, i) => ({ ...x, order: i + 1 }))
-                        })
+                      <button onClick={async () => {
+                        const idx0 = list.findIndex((x) => (x.id ?? x.key) === (row.id ?? row.key))
+                        if (idx0 < 0 || idx0 >= list.length - 1) return
+                        const copy = [...list]
+                        const tmp = copy[idx0 + 1]
+                        copy[idx0 + 1] = copy[idx0]
+                        copy[idx0] = tmp
+                        const mapped = copy.map((x, i) => ({ ...x, order: i + 1 }))
+                        setList(mapped)
+                        await saveAll(mapped)
                       }} className="p-1.5 hover:bg-gray-100 rounded text-gray-400 hover:text-blue-600" title="下移"><ArrowDown size={14} /></button>
                       <div className="w-px h-3 bg-gray-200 mx-1"></div>
                       {editingId === uidOf(row) ? (

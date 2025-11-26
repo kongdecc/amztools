@@ -15,44 +15,21 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 export default function AdminPage() {
   const [active, setActive] = useState<'dashboard'|'modules'|'navigation'|'about'|'settings'|'seo'|'account'|'blog'|'suggest'>('dashboard')
   const [modules, setModules] = useState<Array<any>>([])
-  const [showAnalytics, setShowAnalytics] = useState(false)
+  const [showAnalytics, setShowAnalytics] = useState(true)
   const [copyrightText, setCopyrightText] = useState('')
-  const [analytics, setAnalytics] = useState<{ trend: Array<any>, bounceRate: number, avgDuration: string }>({ trend: [], bounceRate: 0, avgDuration: '' })
   useEffect(() => {
-    const check = async () => {
-      const r = await fetch('/api/auth/me', { credentials: 'include' })
-      if (r.status === 401) {
-        window.location.href = '/login?from=/admin'
-      }
-    }
-    check()
-  }, [])
-  useEffect(() => {
-    const load = async () => {
+    (async () => {
       try {
         const r = await fetch('/api/modules', { cache: 'no-store' })
         const d = await r.json()
-        setModules(Array.isArray(d) ? d : [])
-      } catch {}
-    }
-    load()
+        setModules(d || [])
+      } catch (e) {
+        console.error(e)
+      }
+    })()
   }, [])
-  useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const r = await fetch('/api/settings', { cache: 'no-store', credentials: 'include' })
-        const d = await r.json()
-        setShowAnalytics(String(d.showAnalytics || 'false') === 'true')
-        setCopyrightText(String(d.copyrightText || ''))
-      } catch {}
-    }
-    loadSettings()
-  }, [])
-  useEffect(() => {
-    if (!showAnalytics) {
-      setAnalytics({ trend: [], bounceRate: 0, avgDuration: '' })
-      return
-    }
+  const analytics = React.useMemo(() => {
+    if (!showAnalytics) return { trend: [], bounceRate: 0, avgDuration: '' }
     const totalViews = modules.reduce((s: number, x: any) => s + Number(x.views || 0), 0)
     const enabledCount = modules.filter((m: any) => m.status === '启用').length
     const disabledCount = modules.length - enabledCount
@@ -62,7 +39,7 @@ export default function AdminPage() {
     const base = totalViews > 0 ? Math.max(5, Math.ceil(totalViews / 7)) : 0
     const week = ['周一','周二','周三','周四','周五','周六','周日']
     const trend = week.map((name, i) => ({ name, uv: Math.max(0, base + Math.round(Math.sin(i) * base * 0.2)) }))
-    setAnalytics({ trend, bounceRate, avgDuration })
+    return { trend, bounceRate, avgDuration }
   }, [showAnalytics, modules])
 
   return (
