@@ -115,45 +115,41 @@ export default function AdminPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm">
               <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2"><BarChart2 size={18} className="text-blue-600" />热门工具排行 (Top 6)</h3>
-              {(() => {
-                const data = modules.slice().sort((a: any, b: any) => Number(b.views||0) - Number(a.views||0)).slice(0,6).map((x: any) => ({ name: x.title, views: Number(x.views||0) }))
-                const has = data.some((d: any) => Number(d.views) > 0)
-                if (!has) return <div className="h-64 w-full flex items-center justify-center text-sm text-gray-500">暂无数据</div>
-                return (
-                  <div className="h-64 w-full">
-                    <ResponsiveContainer width="100%" height="100%">
+              <div className="h-64 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  {(() => {
+                    const data = modules.slice().sort((a: any, b: any) => Number(b.views||0) - Number(a.views||0)).slice(0,6).map((x: any) => ({ name: x.title, views: Number(x.views||0) }))
+                    return (
                       <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f0f0f0" />
-                        <XAxis type="number" hide />
-                        <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 12, fill: '#666' }} axisLine={false} tickLine={false} />
+                        <XAxis type="number" domain={[0, 'dataMax']} />
+                        <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 12, fill: '#666' }} axisLine={false} tickLine={false} />
                         <Tooltip cursor={{ fill: '#f8f9fa' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                        <Bar dataKey="views" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={20} />
+                        <Bar dataKey="views" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={22} />
                       </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                )
-              })()}
+                    )
+                  })()}
+                </ResponsiveContainer>
+              </div>
             </div>
             <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm">
               <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2"><Activity size={18} className="text-purple-600" />近7日访问趋势</h3>
-              {(() => {
-                const data = Array.isArray(analytics.trend) ? analytics.trend : []
-                const has = data.some((d: any) => Number(d.uv) > 0)
-                if (!has) return <div className="h-64 w-full flex items-center justify-center text-sm text-gray-500">暂无数据</div>
-                return (
-                  <div className="h-64 w-full">
-                    <ResponsiveContainer width="100%" height="100%">
+              <div className="h-64 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  {(() => {
+                    const data = Array.isArray(analytics.trend) ? analytics.trend : []
+                    return (
                       <LineChart data={data}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                         <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#666' }} axisLine={false} tickLine={false} dy={10} />
-                        <YAxis tick={{ fontSize: 12, fill: '#666' }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fontSize: 12, fill: '#666' }} axisLine={false} tickLine={false} domain={[0, 'dataMax']} />
                         <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
                         <Line type="monotone" dataKey="uv" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4, fill: '#fff', strokeWidth: 2 }} activeDot={{ r: 6 }} />
                       </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                )
-              })()}
+                    )
+                  })()}
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
           )}
