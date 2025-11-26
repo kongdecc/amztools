@@ -4,7 +4,6 @@ import BlogDetailClient from '../BlogDetailClient'
 import fs from 'fs'
 import path from 'path'
 import { marked } from 'marked'
-import DOMPurify from 'isomorphic-dompurify'
 export const dynamic = 'force-dynamic'
 
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
@@ -38,7 +37,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
   }
   const content = String(item?.content || '')
   let initialHtml = ''
-  try { initialHtml = DOMPurify.sanitize(String(marked.parse(content))) } catch { initialHtml = '' }
+  try { initialHtml = String(marked.parse(content)) } catch { initialHtml = '' }
   let initialSettings: Record<string, any> = {}
   try {
     const rows = await (db as any).siteSettings.findMany()

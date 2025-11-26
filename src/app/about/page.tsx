@@ -1,7 +1,6 @@
 import { SettingsProvider } from '@/components/SettingsProvider'
 import { db } from '@/lib/db'
 import { marked } from 'marked'
-import DOMPurify from 'isomorphic-dompurify'
 import AboutClient from '@/app/about/AboutClient'
 export const dynamic = 'force-dynamic'
 
@@ -33,7 +32,7 @@ export default async function Page() {
   }
   const aboutContent = String(initialSettings['aboutContent'] || '')
   let initialHtml = ''
-  try { initialHtml = DOMPurify.sanitize(String(marked.parse(aboutContent))) } catch { initialHtml = '' }
+  try { initialHtml = String(marked.parse(aboutContent)) } catch { initialHtml = '' }
   return (
     <SettingsProvider initial={initialSettings}>
       <AboutClient initialNavItems={navItems} initialHtml={initialHtml} />
