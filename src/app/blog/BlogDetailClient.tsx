@@ -2,18 +2,18 @@
 
 import Head from 'next/head'
 import Link from 'next/link'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { LayoutDashboard } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 import { marked } from 'marked'
 
 type Post = { id: string; title: string; slug: string; content: string; status: string; order?: number; views?: number; createdAt?: string; updatedAt?: string; coverUrl?: string }
 
-export default function BlogDetailClient({ item, initialNavItems }: { item: Post | null; initialNavItems: any[] }) {
+export default function BlogDetailClient({ item, initialNavItems, initialHtml }: { item: Post | null; initialNavItems: any[]; initialHtml?: string }) {
   const { settings } = useSettings()
   const [navItems] = useState<Array<any>>(initialNavItems || [])
   const [origin, setOrigin] = useState('')
-  const [html, setHtml] = useState('')
+  const [html, setHtml] = useState(initialHtml || '')
   const [desc, setDesc] = useState('')
   const [views, setViews] = useState<number>(Number(item?.views || 0))
 

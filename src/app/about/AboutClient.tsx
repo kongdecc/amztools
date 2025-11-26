@@ -7,11 +7,11 @@ import { LayoutDashboard } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 import { marked } from 'marked'
 
-export default function AboutClient({ initialNavItems }: { initialNavItems: any[] }) {
+export default function AboutClient({ initialNavItems, initialHtml }: { initialNavItems: any[]; initialHtml?: string }) {
   const { settings } = useSettings()
   const title = String(settings.aboutTitle || '关于我们')
   const content = String(settings.aboutContent || '欢迎使用本工具箱。这里将介绍项目背景、目标与联系方式。')
-  const [html, setHtml] = useState('')
+  const [html, setHtml] = useState(initialHtml || '')
   const [navItems] = useState<Array<any>>(initialNavItems || [])
   const [origin, setOrigin] = useState('')
   useEffect(() => {

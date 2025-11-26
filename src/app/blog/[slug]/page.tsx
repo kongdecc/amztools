@@ -3,6 +3,8 @@ import { db } from '@/lib/db'
 import BlogDetailClient from '../BlogDetailClient'
 import fs from 'fs'
 import path from 'path'
+import { marked } from 'marked'
+import DOMPurify from 'isomorphic-dompurify'
 export const dynamic = 'force-dynamic'
 
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
@@ -34,6 +36,9 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
       }
     } catch {}
   }
+  const content = String(item?.content || '')
+  let initialHtml = ''
+  try { initialHtml = DOMPurify.sanitize(String(marked.parse(content))) } catch { initialHtml = '' }
   let initialSettings: Record<string, any> = {}
   try {
     const rows = await (db as any).siteSettings.findMany()
@@ -61,7 +66,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
   }
   return (
     <SettingsProvider initial={initialSettings}>
-      <BlogDetailClient item={item} initialNavItems={navItems} />
+      <BlogDetailClient item={item} initialNavItems={navItems} initialHtml={initialHtml} />
     </SettingsProvider>
   )
 }
