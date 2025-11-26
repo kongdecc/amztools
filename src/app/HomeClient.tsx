@@ -318,7 +318,22 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
           )}
         </aside>
         <main className="flex-1 p-8 overflow-y-auto h-[calc(100vh-3.5rem)]">
-          <div className="max-w-6xl mx-auto"><HomePage onNavigate={setActiveTab} modules={modules} /></div>
+          <div className="max-w-6xl mx-auto">
+            {activeTab === 'home' ? (
+              <HomePage onNavigate={setActiveTab} modules={modules} />
+            ) : (
+              (() => {
+                if (activeTab === 'ad-calc') return <AdCalculatorPage />
+                if (activeTab === 'unit') return <UnitConverterPage />
+                if (activeTab === 'editor') return <PlaceholderPage title="可视化编辑器" icon={Type} />
+                if (activeTab === 'case') return <PlaceholderPage title="大小写转换" icon={CaseSensitive} />
+                if (activeTab === 'word-count') return <PlaceholderPage title="词频统计" icon={ListOrdered} />
+                if (activeTab === 'char-count') return <PlaceholderPage title="字符统计" icon={BarChart3} />
+                if (activeTab === 'delivery') return <PlaceholderPage title="美国站配送费计算" icon={Truck} />
+                return <PlaceholderPage title="功能开发中" icon={Hammer} />
+              })()
+            )}
+          </div>
           <div className="mt-12 text-center">
             <footer className="text-xs text-gray-400">
               {settings.copyrightText || '© 2025 运营魔方 ToolBox. All rights reserved.'}
