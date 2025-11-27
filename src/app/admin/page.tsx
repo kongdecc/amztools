@@ -224,14 +224,6 @@ export default function AdminPage() {
           <div className="bg-white p-5 rounded-lg border border-gray-100 shadow-sm flex items-center justify-between"><div><p className="text-gray-500 text-xs font-medium uppercase">本月新增工具</p><h3 className="text-2xl font-bold text-gray-800 mt-1">{modules.filter((m: any) => { try { const t = new Date(m.updatedAt); const now = new Date(); return t.getMonth() === now.getMonth() && t.getFullYear() === now.getFullYear() } catch { return false } }).length}</h3></div><div className="p-3 bg-purple-50 rounded-full text-purple-600"><Box size={20} /></div></div>
           
           <div className="bg-white p-5 rounded-lg border border-gray-100 shadow-sm flex items-center justify-between"><div><p className="text-gray-500 text-xs font-medium uppercase">系统状态</p><h3 className="text-2xl font-bold text-green-600 mt-1">正常</h3></div><div className="p-3 bg-orange-50 rounded-full text-orange-600"><Activity size={20} /></div></div>
-        
-          {/* Debug Info */}
-          <div className="fixed bottom-4 right-4 bg-black/80 text-white p-4 text-xs rounded z-50 pointer-events-none opacity-50 hover:opacity-100 transition-opacity">
-            <p className="font-bold mb-1">Debug Info:</p>
-            <p>Date Range: {dateRange.start} ~ {dateRange.end}</p>
-            <p>API URL: /api/analytics/visits?start={dateRange.start}&end={dateRange.end}</p>
-            <p>Stats: {JSON.stringify(visitStats)}</p>
-          </div>
         </div>
         )}
 
