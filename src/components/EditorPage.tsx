@@ -382,7 +382,7 @@ const EditorPage = () => {
   const [historyStep, setHistoryStep] = useState(-1)
   
   useEffect(() => {
-    loadFromLocal()
+    loadFromLocal(false)
     const tipsExpanded = localStorage.getItem('tipsExpanded')
     if (tipsExpanded !== 'false') {
       setIsTipsExpanded(true)
@@ -410,7 +410,8 @@ const EditorPage = () => {
     try { alert('已保存到本地') } catch {}
   }
 
-  const loadFromLocal = () => {
+  const loadFromLocal = (arg?: unknown) => {
+    const showToast = typeof arg === 'boolean' ? arg : true
     const savedContent = localStorage.getItem('editorContent')
     const savedHistory = localStorage.getItem('editorHistory')
     const savedStep = localStorage.getItem('historyStep')
@@ -422,7 +423,9 @@ const EditorPage = () => {
         editorRef.current.innerHTML = savedContent
       }
       updateContent()
-      try { alert('已从本地加载') } catch {}
+      if (showToast) {
+        try { alert('已从本地加载') } catch {}
+      }
     }
     
     if (savedHistory) {
@@ -602,28 +605,27 @@ ${editorRef.current.innerHTML}
     })
   }
 
-  const applyColorToSelection = (prop: 'color' | 'backgroundColor', value: string) => {
-    const selection = window.getSelection()
-    if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
-      try { alert('请先选择需要设置的文字') } catch {}
-      return
-    }
-    const range = selection.getRangeAt(0)
-    const span = document.createElement('span')
-    if (prop === 'color') span.style.color = value
-    else span.style.backgroundColor = value
-    span.appendChild(range.extractContents())
-    range.insertNode(span)
-    range.setStartAfter(span)
-    range.collapse(true)
-    selection.removeAllRanges()
-    selection.addRange(range)
+  const setTextColor = (value: string) => {
+    document.execCommand('styleWithCSS', false, 'true')
+    document.execCommand('foreColor', false, value)
+    document.execCommand('styleWithCSS', false, 'false')
     updateContent()
+    if (editorRef.current) {
+      editorRef.current.focus()
+    }
     saveHistory()
   }
 
-  const setTextColor = (value: string) => applyColorToSelection('color', value)
-  const setBgColor = (value: string) => applyColorToSelection('backgroundColor', value)
+  const setBgColor = (value: string) => {
+    document.execCommand('styleWithCSS', false, 'true')
+    document.execCommand('hiliteColor', false, value)
+    document.execCommand('styleWithCSS', false, 'false')
+    updateContent()
+    if (editorRef.current) {
+      editorRef.current.focus()
+    }
+    saveHistory()
+  }
 
   const toggleTips = () => {
     const newState = !isTipsExpanded
