@@ -227,7 +227,8 @@ export default function FBACalculatorPage() {
     batchInvestment: 0,
     batchNetProfit: 0,
     batchPayout: 0,
-    batchROI: 0
+    batchROI: 0,
+    referralFee: 0
   });
 
   const [history, setHistory] = useState<any[]>([]);
