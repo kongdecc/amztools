@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { LayoutDashboard, Box, BarChart2, Search, Bell, Eye, Activity, Settings, Globe, User, Menu, Info, FileText, Send } from 'lucide-react'
+import { LayoutDashboard, Box, BarChart2, Search, Bell, Eye, Activity, Settings, Globe, User, Menu, Info, FileText, Send, Calendar as CalendarIcon } from 'lucide-react'
 import AdminModules from '@/app/admin/modules/page'
 import AdminSettings from '@/app/admin/settings/page'
 import AdminSeo from '@/app/admin/seo/page'
@@ -18,6 +18,9 @@ export default function AdminPage() {
   const [showAnalytics, setShowAnalytics] = useState(true)
   const [copyrightText, setCopyrightText] = useState('')
   const [analyticsData, setAnalyticsData] = useState<{ trend: Array<any>; bounceRate: number; avgDuration: string }>({ trend: [], bounceRate: 0, avgDuration: '' })
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0])
+  const [dailyVisits, setDailyVisits] = useState<number>(0)
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
 
   useEffect(() => {
     (async () => {
@@ -30,6 +33,21 @@ export default function AdminPage() {
       }
     })()
   }, [])
+
+  useEffect(() => {
+    fetchDailyVisits(selectedDate)
+  }, [selectedDate])
+
+  const fetchDailyVisits = async (date: string) => {
+    try {
+      const r = await fetch(`/api/analytics/visits?date=${date}`, { cache: 'no-store' })
+      const d = await r.json()
+      setDailyVisits(Number(d?.total || 0))
+    } catch {
+      setDailyVisits(0)
+    }
+  }
+
   useEffect(() => {
     (async () => {
       try {
@@ -106,7 +124,28 @@ export default function AdminPage() {
         {active==='dashboard' && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-white p-5 rounded-lg border border-gray-100 shadow-sm flex items-center justify-between"><div><p className="text-gray-500 text-xs font-medium uppercase">总工具数</p><h3 className="text-2xl font-bold text-gray-800 mt-1">{modules.length}</h3></div><div className="p-3 bg-blue-50 rounded-full text-blue-600"><LayoutDashboard size={20} /></div></div>
-          <div className="bg-white p-5 rounded-lg border border-gray-100 shadow-sm flex items-center justify-between"><div><p className="text-gray-500 text-xs font-medium uppercase">今日访问</p><h3 className="text-2xl font-bold text-gray-800 mt-1">{modules.reduce((s: number, x: any) => s + Number(x.views || 0), 0).toLocaleString()}</h3></div><div className="p-3 bg-green-50 rounded-full text-green-600"><Eye size={20} /></div></div>
+          <div className="bg-white p-5 rounded-lg border border-gray-100 shadow-sm flex items-center justify-between">
+            <div className="relative">
+              <p className="text-gray-500 text-xs font-medium uppercase flex items-center gap-1 cursor-pointer hover:text-blue-600" onClick={() => setIsCalendarOpen(!isCalendarOpen)}>
+                {selectedDate === new Date().toISOString().split('T')[0] ? '今日访问' : `${selectedDate} 访问`} <CalendarIcon size={12} />
+              </p>
+              {isCalendarOpen && (
+                <div className="absolute top-6 left-0 bg-white border border-gray-200 shadow-lg rounded p-2 z-10">
+                  <input 
+                    type="date" 
+                    value={selectedDate} 
+                    onChange={(e) => {
+                      setSelectedDate(e.target.value)
+                      setIsCalendarOpen(false)
+                    }}
+                    className="text-sm border border-gray-300 rounded p-1"
+                  />
+                </div>
+              )}
+              <h3 className="text-2xl font-bold text-gray-800 mt-1">{dailyVisits.toLocaleString()}</h3>
+            </div>
+            <div className="p-3 bg-green-50 rounded-full text-green-600"><Eye size={20} /></div>
+          </div>
           <div className="bg-white p-5 rounded-lg border border-gray-100 shadow-sm flex items-center justify-between"><div><p className="text-gray-500 text-xs font-medium uppercase">本月新增工具</p><h3 className="text-2xl font-bold text-gray-800 mt-1">{modules.filter((m: any) => { try { const t = new Date(m.updatedAt); const now = new Date(); return t.getMonth() === now.getMonth() && t.getFullYear() === now.getFullYear() } catch { return false } }).length}</h3></div><div className="p-3 bg-purple-50 rounded-full text-purple-600"><Box size={20} /></div></div>
           
           <div className="bg-white p-5 rounded-lg border border-gray-100 shadow-sm flex items-center justify-between"><div><p className="text-gray-500 text-xs font-medium uppercase">系统状态</p><h3 className="text-2xl font-bold text-green-600 mt-1">正常</h3></div><div className="p-3 bg-orange-50 rounded-full text-orange-600"><Activity size={20} /></div></div>

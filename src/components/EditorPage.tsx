@@ -907,6 +907,7 @@ ${editorRef.current.innerHTML}
             <button 
                 onClick={clearFormat}
                 className="flex items-center gap-1 hover:text-red-600 transition-colors"
+                title="清除选中文字效果（全选可清除所有）"
             >
                 <RefreshCw className="h-3 w-3" />
                 <span>清除文字效果</span>
