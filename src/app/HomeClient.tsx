@@ -765,7 +765,13 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
   ]
   useEffect(() => {
     if (activeTab && activeTab !== 'home') {
-      try { fetch('/api/modules', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: activeTab }) }) } catch {}
+      try { 
+        fetch('/api/analytics/visits', { 
+          method: 'POST', 
+          headers: { 'Content-Type': 'application/json' }, 
+          body: JSON.stringify({ module: activeTab }) 
+        }) 
+      } catch {}
     }
   }, [activeTab])
   const { settings } = useSettings()
