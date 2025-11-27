@@ -245,6 +245,13 @@ export default function FBACalculatorPage() {
     }
   }, []);
 
+  const [sortedCategories, setSortedCategories] = useState<string[]>([]);
+
+  useEffect(() => {
+    const sorted = Object.keys(REFERRAL_RULES).sort((a,b) => REFERRAL_RULES[a].name.localeCompare(REFERRAL_RULES[b].name, 'zh'));
+    setSortedCategories(sorted);
+  }, []);
+
   // Update logic
   useEffect(() => {
     calculateAll();
@@ -769,7 +776,7 @@ export default function FBACalculatorPage() {
                   <label className="text-xs text-gray-500 mb-1 block">商品类目</label>
                   <select className="w-full h-9 rounded-md border border-gray-300 bg-transparent px-3 py-1 text-sm shadow-sm" value={inputs.categorySelect} onChange={(e:any) => updateInput('categorySelect', e.target.value)}>
                     <option value="custom">-- 自定义 (Custom) --</option>
-                    {Object.keys(REFERRAL_RULES).sort((a,b) => REFERRAL_RULES[a].name.localeCompare(REFERRAL_RULES[b].name, 'zh')).map(key => (
+                    {sortedCategories.map(key => (
                         <option key={key} value={key}>{REFERRAL_RULES[key].name} ({key})</option>
                     ))}
                   </select>
