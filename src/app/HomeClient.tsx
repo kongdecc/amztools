@@ -764,7 +764,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
     ...modules.filter((m: any) => m.status !== '下架').map((m: any) => ({ id: m.key, label: m.status === '维护' ? `${m.title}（维护）` : m.title, icon: iconMap[m.key] || Hammer }))
   ]
   useEffect(() => {
-    if (activeTab && activeTab !== 'home') {
+    if (activeTab) {
       try { 
         fetch('/api/analytics/visits', { 
           method: 'POST', 

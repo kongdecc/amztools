@@ -20,7 +20,13 @@ export default function AdminPage() {
   const [analyticsData, setAnalyticsData] = useState<{ trend: Array<any>; bounceRate: number; avgDuration: string }>({ trend: [], bounceRate: 0, avgDuration: '' })
   
   // Date Range State
-  const todayStr = new Date().toISOString().split('T')[0]
+  const formatDate = (date: Date) => {
+    const y = date.getFullYear()
+    const m = String(date.getMonth() + 1).padStart(2, '0')
+    const d = String(date.getDate()).padStart(2, '0')
+    return `${y}-${m}-${d}`
+  }
+  const todayStr = formatDate(new Date())
   const [dateRange, setDateRange] = useState({ start: todayStr, end: todayStr })
   const [rangeLabel, setRangeLabel] = useState('今日')
   const [visitStats, setVisitStats] = useState({ total: 0, byModule: {} })
@@ -78,8 +84,8 @@ export default function AdminPage() {
       label = '近一年'
     }
 
-    const s = start.toISOString().split('T')[0]
-    const e = end.toISOString().split('T')[0]
+    const s = formatDate(start)
+    const e = formatDate(end)
     setDateRange({ start: s, end: e })
     setRangeLabel(label)
     setIsCalendarOpen(false)
