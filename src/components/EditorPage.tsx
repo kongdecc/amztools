@@ -6,7 +6,7 @@ import {
   List, ListOrdered, AlignLeft, AlignCenter, AlignRight, 
   Link as LinkIcon, Image as ImageIcon, Save, FolderOpen, 
   FileCode, FileText, X, RefreshCw, ChevronDown, ChevronUp,
-  Search, Copy
+  Search, Copy, Upload, Trash2
 } from 'lucide-react'
 
 const Card = ({ children, className = "", ...props }: React.HTMLAttributes<HTMLDivElement>) => (
@@ -377,6 +377,7 @@ const EditorPage = () => {
   const [htmlCode, setHtmlCode] = useState('')
   
   const editorRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   
   const [history, setHistory] = useState<string[]>([])
   const [historyStep, setHistoryStep] = useState(-1)
@@ -434,6 +435,47 @@ const EditorPage = () => {
     
     if (savedStep) {
       setHistoryStep(parseInt(savedStep))
+    }
+  }
+
+  const handleOpenFile = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click()
+    }
+  }
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const content = e.target?.result as string
+      if (isCodeView) {
+        setHtmlCode(content)
+      } else if (editorRef.current) {
+        editorRef.current.innerHTML = content
+      }
+      updateContent()
+      saveHistory()
+    }
+    reader.readAsText(file)
+    event.target.value = '' // Reset input
+  }
+
+  const handleClearAll = () => {
+    if (confirm('确定要清空所有内容吗？这将无法恢复。')) {
+      if (editorRef.current) {
+        editorRef.current.innerHTML = ''
+      }
+      setHtmlCode('')
+      setHistory([])
+      setHistoryStep(-1)
+      updateContent()
+      
+      localStorage.removeItem('editorContent')
+      localStorage.removeItem('editorHistory')
+      localStorage.removeItem('historyStep')
     }
   }
 
@@ -552,12 +594,12 @@ const EditorPage = () => {
   }
 
   const clearFormat = () => {
+    document.execCommand('removeFormat')
+    updateContent()
     if (editorRef.current) {
-      const text = editorRef.current.innerText || editorRef.current.textContent
-      editorRef.current.innerHTML = text || ''
-      updateContent()
-      saveHistory()
+      editorRef.current.focus()
     }
+    saveHistory()
   }
 
   const exportAsHTML = () => {
@@ -792,8 +834,15 @@ ${editorRef.current.innerHTML}
 
             
             <div className="flex items-center gap-1">
-                <button onClick={saveToLocalExplicit} className="p-1.5 rounded hover:bg-gray-200 text-gray-700" title="保存到本地"><Save className="h-4 w-4" /></button>
-                <button onClick={loadFromLocal} className="p-1.5 rounded hover:bg-gray-200 text-gray-700" title="从本地加载"><FolderOpen className="h-4 w-4" /></button>
+                <button onClick={exportAsHTML} className="p-1.5 rounded hover:bg-gray-200 text-gray-700" title="保存为HTML文件"><Save className="h-4 w-4" /></button>
+                <button onClick={handleOpenFile} className="p-1.5 rounded hover:bg-gray-200 text-gray-700" title="打开文件"><FolderOpen className="h-4 w-4" /></button>
+                <input 
+                  type="file" 
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  accept=".html,.htm,.txt"
+                  className="hidden"
+                />
             </div>
 
             <div className="w-px h-6 bg-gray-300 mx-1"></div>
@@ -802,6 +851,7 @@ ${editorRef.current.innerHTML}
             <div className="flex items-center gap-1">
                 <button onClick={exportAsHTML} className="p-1.5 rounded hover:bg-gray-200 text-green-600" title="导出HTML"><FileCode className="h-4 w-4" /></button>
                 <button onClick={exportAsText} className="p-1.5 rounded hover:bg-gray-200 text-green-600" title="导出文本"><FileText className="h-4 w-4" /></button>
+                <button onClick={handleClearAll} className="p-1.5 rounded hover:bg-red-100 text-red-600" title="清空所有内容"><Trash2 className="h-4 w-4" /></button>
             </div>
         </div>
 
