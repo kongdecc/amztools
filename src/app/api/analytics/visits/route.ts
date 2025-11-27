@@ -84,35 +84,36 @@ export async function GET(request: Request) {
     const allData = readVisitData()
     
     if (date) {
-      // Return specific date data
       const dayData = allData[date] || { total: 0, byModule: {} }
       return NextResponse.json(dayData)
     } else if (start && end) {
-      // Return range aggregate data
+      const parseYMD = (s: string) => {
+        const [yy, mm, dd] = s.split('-').map(x => Number(x))
+        return new Date(yy, (mm || 1) - 1, dd || 1)
+      }
+      const formatYMD = (d: Date) => {
+        const y = d.getFullYear()
+        const m = String(d.getMonth() + 1).padStart(2, '0')
+        const day = String(d.getDate()).padStart(2, '0')
+        return `${y}-${m}-${day}`
+      }
+      let s = parseYMD(start)
+      let e = parseYMD(end)
+      if (s > e) { const tmp = s; s = e; e = tmp }
       let total = 0
       const byModule: Record<string, number> = {}
-      
-      const startDate = new Date(start)
-      const endDate = new Date(end)
-      
-      // Loop through all keys in allData and check if they are within range
-      // This is more efficient than iterating dates if data is sparse, but iterating dates is safer for order
-      // Given it's a JSON file, iterating keys is fine
-      
-      Object.keys(allData).forEach(key => {
-        const d = new Date(key)
-        if (d >= startDate && d <= endDate) {
-          const dayData = allData[key]
-          total += Number(dayData.total || 0)
-          
-          if (dayData.byModule) {
-            Object.keys(dayData.byModule).forEach(modKey => {
-              byModule[modKey] = (byModule[modKey] || 0) + Number(dayData.byModule[modKey] || 0)
-            })
+      const cur = new Date(s)
+      while (cur <= e) {
+        const key = formatYMD(cur)
+        const dayData = allData[key] || { total: 0, byModule: {} }
+        total += Number(dayData.total || 0)
+        if (dayData.byModule) {
+          for (const modKey of Object.keys(dayData.byModule)) {
+            byModule[modKey] = (byModule[modKey] || 0) + Number(dayData.byModule[modKey] || 0)
           }
         }
-      })
-      
+        cur.setDate(cur.getDate() + 1)
+      }
       return NextResponse.json({ total, byModule })
     } else {
       // Return today's data by default
