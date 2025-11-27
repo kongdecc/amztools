@@ -18,8 +18,12 @@ export default function AdminPage() {
   const [showAnalytics, setShowAnalytics] = useState(true)
   const [copyrightText, setCopyrightText] = useState('')
   const [analyticsData, setAnalyticsData] = useState<{ trend: Array<any>; bounceRate: number; avgDuration: string }>({ trend: [], bounceRate: 0, avgDuration: '' })
-  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0])
-  const [dailyVisits, setDailyVisits] = useState<number>(0)
+  
+  // Date Range State
+  const todayStr = new Date().toISOString().split('T')[0]
+  const [dateRange, setDateRange] = useState({ start: todayStr, end: todayStr })
+  const [rangeLabel, setRangeLabel] = useState('今日')
+  const [visitStats, setVisitStats] = useState({ total: 0, byModule: {} })
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
 
   useEffect(() => {
@@ -35,17 +39,60 @@ export default function AdminPage() {
   }, [])
 
   useEffect(() => {
-    fetchDailyVisits(selectedDate)
-  }, [selectedDate])
+    fetchVisitStats(dateRange.start, dateRange.end)
+  }, [dateRange])
 
-  const fetchDailyVisits = async (date: string) => {
+  const fetchVisitStats = async (start: string, end: string) => {
     try {
-      const r = await fetch(`/api/analytics/visits?date=${date}`, { cache: 'no-store' })
+      const r = await fetch(`/api/analytics/visits?start=${start}&end=${end}`, { cache: 'no-store' })
       const d = await r.json()
-      setDailyVisits(Number(d?.total || 0))
+      setVisitStats(d || { total: 0, byModule: {} })
     } catch {
-      setDailyVisits(0)
+      setVisitStats({ total: 0, byModule: {} })
     }
+  }
+
+  const handleQuickSelect = (type: 'today' | 'yesterday' | '7d' | '30d' | '180d' | '365d') => {
+    const today = new Date()
+    let start = new Date()
+    let end = new Date()
+    let label = ''
+
+    if (type === 'today') {
+      label = '今日'
+    } else if (type === 'yesterday') {
+      start.setDate(today.getDate() - 1)
+      end.setDate(today.getDate() - 1)
+      label = '昨日'
+    } else if (type === '7d') {
+      start.setDate(today.getDate() - 6)
+      label = '近7天'
+    } else if (type === '30d') {
+      start.setDate(today.getDate() - 29)
+      label = '近30天'
+    } else if (type === '180d') {
+      start.setDate(today.getDate() - 179)
+      label = '近半年'
+    } else if (type === '365d') {
+      start.setDate(today.getDate() - 364)
+      label = '近一年'
+    }
+
+    const s = start.toISOString().split('T')[0]
+    const e = end.toISOString().split('T')[0]
+    setDateRange({ start: s, end: e })
+    setRangeLabel(label)
+    setIsCalendarOpen(false)
+  }
+
+  const handleCustomDateChange = (type: 'start' | 'end', val: string) => {
+    const newRange = { ...dateRange, [type]: val }
+    if (newRange.start > newRange.end) {
+      if (type === 'start') newRange.end = val
+      else newRange.start = val
+    }
+    setDateRange(newRange)
+    setRangeLabel(`${newRange.start} 至 ${newRange.end}`)
   }
 
   useEffect(() => {
@@ -126,23 +173,43 @@ export default function AdminPage() {
           <div className="bg-white p-5 rounded-lg border border-gray-100 shadow-sm flex items-center justify-between"><div><p className="text-gray-500 text-xs font-medium uppercase">总工具数</p><h3 className="text-2xl font-bold text-gray-800 mt-1">{modules.length}</h3></div><div className="p-3 bg-blue-50 rounded-full text-blue-600"><LayoutDashboard size={20} /></div></div>
           <div className="bg-white p-5 rounded-lg border border-gray-100 shadow-sm flex items-center justify-between">
             <div className="relative">
-              <p className="text-gray-500 text-xs font-medium uppercase flex items-center gap-1 cursor-pointer hover:text-blue-600" onClick={() => setIsCalendarOpen(!isCalendarOpen)}>
-                {selectedDate === new Date().toISOString().split('T')[0] ? '今日访问' : `${selectedDate} 访问`} <CalendarIcon size={12} />
+              <p 
+                className="text-gray-500 text-xs font-medium uppercase flex items-center gap-1 cursor-pointer hover:text-blue-600" 
+                onClick={() => setIsCalendarOpen(!isCalendarOpen)}
+              >
+                {rangeLabel} 访问 <CalendarIcon size={12} />
               </p>
               {isCalendarOpen && (
-                <div className="absolute top-6 left-0 bg-white border border-gray-200 shadow-lg rounded p-2 z-10">
-                  <input 
-                    type="date" 
-                    value={selectedDate} 
-                    onChange={(e) => {
-                      setSelectedDate(e.target.value)
-                      setIsCalendarOpen(false)
-                    }}
-                    className="text-sm border border-gray-300 rounded p-1"
-                  />
+                <div className="absolute top-6 left-0 bg-white border border-gray-200 shadow-lg rounded-lg p-4 z-20 min-w-[300px]">
+                  <div className="grid grid-cols-3 gap-2 mb-4">
+                    <button onClick={() => handleQuickSelect('today')} className="text-xs px-2 py-1 bg-gray-50 hover:bg-blue-50 text-gray-600 hover:text-blue-600 rounded transition-colors">今日</button>
+                    <button onClick={() => handleQuickSelect('yesterday')} className="text-xs px-2 py-1 bg-gray-50 hover:bg-blue-50 text-gray-600 hover:text-blue-600 rounded transition-colors">昨日</button>
+                    <button onClick={() => handleQuickSelect('7d')} className="text-xs px-2 py-1 bg-gray-50 hover:bg-blue-50 text-gray-600 hover:text-blue-600 rounded transition-colors">近7天</button>
+                    <button onClick={() => handleQuickSelect('30d')} className="text-xs px-2 py-1 bg-gray-50 hover:bg-blue-50 text-gray-600 hover:text-blue-600 rounded transition-colors">近30天</button>
+                    <button onClick={() => handleQuickSelect('180d')} className="text-xs px-2 py-1 bg-gray-50 hover:bg-blue-50 text-gray-600 hover:text-blue-600 rounded transition-colors">近半年</button>
+                    <button onClick={() => handleQuickSelect('365d')} className="text-xs px-2 py-1 bg-gray-50 hover:bg-blue-50 text-gray-600 hover:text-blue-600 rounded transition-colors">近一年</button>
+                  </div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <input 
+                      type="date" 
+                      value={dateRange.start} 
+                      onChange={(e) => handleCustomDateChange('start', e.target.value)}
+                      className="w-full text-xs border border-gray-300 rounded p-1.5 focus:outline-none focus:border-blue-500 transition-colors"
+                    />
+                    <span className="text-gray-400">-</span>
+                    <input 
+                      type="date" 
+                      value={dateRange.end} 
+                      onChange={(e) => handleCustomDateChange('end', e.target.value)}
+                      className="w-full text-xs border border-gray-300 rounded p-1.5 focus:outline-none focus:border-blue-500 transition-colors"
+                    />
+                  </div>
+                  <div className="text-right border-t border-gray-100 pt-2">
+                      <button onClick={() => setIsCalendarOpen(false)} className="text-xs text-blue-600 hover:text-blue-800 font-medium">关闭</button>
+                  </div>
                 </div>
               )}
-              <h3 className="text-2xl font-bold text-gray-800 mt-1">{dailyVisits.toLocaleString()}</h3>
+              <h3 className="text-2xl font-bold text-gray-800 mt-1">{visitStats.total.toLocaleString()}</h3>
             </div>
             <div className="p-3 bg-green-50 rounded-full text-green-600"><Eye size={20} /></div>
           </div>

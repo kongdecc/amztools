@@ -19,6 +19,8 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const date = searchParams.get('date') // YYYY-MM-DD
+    const start = searchParams.get('start') // YYYY-MM-DD
+    const end = searchParams.get('end') // YYYY-MM-DD
     
     const allData = readVisitData()
     
@@ -26,6 +28,33 @@ export async function GET(request: Request) {
       // Return specific date data
       const dayData = allData[date] || { total: 0, byModule: {} }
       return NextResponse.json(dayData)
+    } else if (start && end) {
+      // Return range aggregate data
+      let total = 0
+      const byModule: Record<string, number> = {}
+      
+      const startDate = new Date(start)
+      const endDate = new Date(end)
+      
+      // Loop through all keys in allData and check if they are within range
+      // This is more efficient than iterating dates if data is sparse, but iterating dates is safer for order
+      // Given it's a JSON file, iterating keys is fine
+      
+      Object.keys(allData).forEach(key => {
+        const d = new Date(key)
+        if (d >= startDate && d <= endDate) {
+          const dayData = allData[key]
+          total += Number(dayData.total || 0)
+          
+          if (dayData.byModule) {
+            Object.keys(dayData.byModule).forEach(modKey => {
+              byModule[modKey] = (byModule[modKey] || 0) + Number(dayData.byModule[modKey] || 0)
+            })
+          }
+        }
+      })
+      
+      return NextResponse.json({ total, byModule })
     } else {
       // Return today's data by default
       const today = new Date()
