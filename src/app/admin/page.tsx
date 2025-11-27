@@ -52,7 +52,26 @@ export default function AdminPage() {
     try {
       const r = await fetch(`/api/analytics/visits?start=${start}&end=${end}`, { cache: 'no-store' })
       const d = await r.json()
-      setVisitStats(d || { total: 0, byModule: {} })
+      const t = Number(d?.total || 0)
+      if (t > 0) {
+        setVisitStats(d)
+      } else {
+        try {
+          const r2 = await fetch('/api/visits?range=7d', { cache: 'no-store' })
+          const d2 = await r2.json()
+          const items = Array.isArray(d2?.items) ? d2.items : []
+          const today = new Date()
+          const y = today.getFullYear()
+          const m = String(today.getMonth() + 1).padStart(2, '0')
+          const dd = String(today.getDate()).padStart(2, '0')
+          const key = `${y}-${m}-${dd}`
+          const found = items.find((x: any) => String(x?.date) === key)
+          if (found) setVisitStats({ total: Number(found.total || 0), byModule: found.byModule || {} })
+          else setVisitStats({ total: 0, byModule: {} })
+        } catch {
+          setVisitStats({ total: 0, byModule: {} })
+        }
+      }
     } catch {
       setVisitStats({ total: 0, byModule: {} })
     }
