@@ -394,12 +394,20 @@ const EditorPage = () => {
     return () => clearInterval(interval)
   }, [history, historyStep])
 
+  const getCurrentHtml = () => (isCodeView ? htmlCode : (editorRef.current?.innerHTML || ''))
+
   const saveToLocal = () => {
-    if (editorRef.current) {
-      localStorage.setItem('editorContent', editorRef.current.innerHTML)
+    try {
+      const content = getCurrentHtml()
+      localStorage.setItem('editorContent', content)
       localStorage.setItem('editorHistory', JSON.stringify(history))
       localStorage.setItem('historyStep', historyStep.toString())
-    }
+    } catch {}
+  }
+
+  const saveToLocalExplicit = () => {
+    saveToLocal()
+    try { alert('已保存到本地') } catch {}
   }
 
   const loadFromLocal = () => {
@@ -407,9 +415,14 @@ const EditorPage = () => {
     const savedHistory = localStorage.getItem('editorHistory')
     const savedStep = localStorage.getItem('historyStep')
     
-    if (savedContent && editorRef.current) {
-      editorRef.current.innerHTML = savedContent
+    if (savedContent) {
+      if (isCodeView) {
+        setHtmlCode(savedContent)
+      } else if (editorRef.current) {
+        editorRef.current.innerHTML = savedContent
+      }
       updateContent()
+      try { alert('已从本地加载') } catch {}
     }
     
     if (savedHistory) {
@@ -589,6 +602,29 @@ ${editorRef.current.innerHTML}
     })
   }
 
+  const applyColorToSelection = (prop: 'color' | 'backgroundColor', value: string) => {
+    const selection = window.getSelection()
+    if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+      try { alert('请先选择需要设置的文字') } catch {}
+      return
+    }
+    const range = selection.getRangeAt(0)
+    const span = document.createElement('span')
+    if (prop === 'color') span.style.color = value
+    else span.style.backgroundColor = value
+    span.appendChild(range.extractContents())
+    range.insertNode(span)
+    range.setStartAfter(span)
+    range.collapse(true)
+    selection.removeAllRanges()
+    selection.addRange(range)
+    updateContent()
+    saveHistory()
+  }
+
+  const setTextColor = (value: string) => applyColorToSelection('color', value)
+  const setBgColor = (value: string) => applyColorToSelection('backgroundColor', value)
+
   const toggleTips = () => {
     const newState = !isTipsExpanded
     setIsTipsExpanded(newState)
@@ -712,7 +748,7 @@ ${editorRef.current.innerHTML}
                     <span className="text-xs text-gray-500">字:</span>
                     <input 
                         type="color" 
-                        onChange={(e) => formatText('foreColor', e.target.value)} 
+                        onChange={(e) => setTextColor(e.target.value)} 
                         className="w-6 h-6 p-0 border-0 rounded cursor-pointer"
                         title="文字颜色"
                     />
@@ -721,7 +757,7 @@ ${editorRef.current.innerHTML}
                     <span className="text-xs text-gray-500">底:</span>
                     <input 
                         type="color" 
-                        onChange={(e) => formatText('backColor', e.target.value)} 
+                        onChange={(e) => setBgColor(e.target.value)} 
                         className="w-6 h-6 p-0 border-0 rounded cursor-pointer"
                         title="背景颜色"
                     />
@@ -754,7 +790,7 @@ ${editorRef.current.innerHTML}
 
             
             <div className="flex items-center gap-1">
-                <button onClick={saveToLocal} className="p-1.5 rounded hover:bg-gray-200 text-gray-700" title="保存到本地"><Save className="h-4 w-4" /></button>
+                <button onClick={saveToLocalExplicit} className="p-1.5 rounded hover:bg-gray-200 text-gray-700" title="保存到本地"><Save className="h-4 w-4" /></button>
                 <button onClick={loadFromLocal} className="p-1.5 rounded hover:bg-gray-200 text-gray-700" title="从本地加载"><FolderOpen className="h-4 w-4" /></button>
             </div>
 
@@ -870,3 +906,4 @@ ${editorRef.current.innerHTML}
 }
 
 export default EditorPage
+  
