@@ -6,7 +6,7 @@ import {
   List, ListOrdered, AlignLeft, AlignCenter, AlignRight, 
   Link as LinkIcon, Image as ImageIcon, Save, FolderOpen, 
   FileCode, FileText, X, RefreshCw, ChevronDown, ChevronUp,
-  Search, Copy, Upload, Trash2
+  Search, Copy, Upload, Trash2, Download
 } from 'lucide-react'
 
 const Card = ({ children, className = "", ...props }: React.HTMLAttributes<HTMLDivElement>) => (
@@ -647,26 +647,42 @@ ${editorRef.current.innerHTML}
     })
   }
 
-  const setTextColor = (value: string) => {
-    document.execCommand('styleWithCSS', false, 'true')
-    document.execCommand('foreColor', false, value)
-    document.execCommand('styleWithCSS', false, 'false')
+  const applyColorToSelection = (prop: 'color' | 'backgroundColor', value: string) => {
+    const selection = window.getSelection()
+    if (!selection || selection.rangeCount === 0) return
+
+    const range = selection.getRangeAt(0)
+    if (range.collapsed) return
+
+    const span = document.createElement('span')
+    span.style[prop] = value
+    
+    const content = range.extractContents()
+    span.appendChild(content)
+    
+    range.insertNode(span)
+    
+    selection.removeAllRanges()
+    range.setStartAfter(span)
+    range.setEndAfter(span)
+    selection.addRange(range)
+    
     updateContent()
-    if (editorRef.current) {
-      editorRef.current.focus()
-    }
     saveHistory()
   }
 
-  const setBgColor = (value: string) => {
-    document.execCommand('styleWithCSS', false, 'true')
-    document.execCommand('hiliteColor', false, value)
-    document.execCommand('styleWithCSS', false, 'false')
-    updateContent()
+  const setTextColor = (value: string) => {
+    applyColorToSelection('color', value)
     if (editorRef.current) {
       editorRef.current.focus()
     }
-    saveHistory()
+  }
+
+  const setBgColor = (value: string) => {
+    applyColorToSelection('backgroundColor', value)
+    if (editorRef.current) {
+      editorRef.current.focus()
+    }
   }
 
   const toggleTips = () => {
@@ -834,7 +850,14 @@ ${editorRef.current.innerHTML}
 
             
             <div className="flex items-center gap-1">
-                <button onClick={exportAsHTML} className="p-1.5 rounded hover:bg-gray-200 text-gray-700" title="保存为HTML文件"><Save className="h-4 w-4" /></button>
+                <button onClick={saveToLocalExplicit} className="p-1.5 rounded hover:bg-gray-200 text-gray-700" title="保存到本地"><Save className="h-4 w-4" /></button>
+                <button onClick={() => loadFromLocal(true)} className="p-1.5 rounded hover:bg-gray-200 text-gray-700" title="从本地加载"><Upload className="h-4 w-4" /></button>
+            </div>
+
+            <div className="w-px h-6 bg-gray-300 mx-1"></div>
+
+            <div className="flex items-center gap-1">
+                <button onClick={exportAsHTML} className="p-1.5 rounded hover:bg-gray-200 text-gray-700" title="保存为HTML文件"><Download className="h-4 w-4" /></button>
                 <button onClick={handleOpenFile} className="p-1.5 rounded hover:bg-gray-200 text-gray-700" title="打开文件"><FolderOpen className="h-4 w-4" /></button>
                 <input 
                   type="file" 

@@ -6,6 +6,7 @@ import { useSettings } from '@/components/SettingsProvider'
 import Head from 'next/head'
 import Link from 'next/link'
 import EditorPage from '../components/EditorPage'
+import FBACalculatorPage from '../components/FBACalculator'
 
 const Card = ({ children, className = "", onClick, ...props }: any) => (
   <div onClick={onClick} className={`bg-white rounded-xl border border-gray-100 shadow-sm ${className}`} {...props}>{children}</div>
@@ -868,7 +869,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
                 if (activeTab === 'case') return <CaseConverterPage />
                 if (activeTab === 'word-count') return <WordCountPage />
                 if (activeTab === 'char-count') return <CharCountPage />
-                if (activeTab === 'delivery') return <PlaceholderPage title="美国站配送费计算" icon={Truck} />
+                if (activeTab === 'delivery') return <FBACalculatorPage />
                 return <PlaceholderPage title="功能开发中" icon={Hammer} />
               })()
             )}
