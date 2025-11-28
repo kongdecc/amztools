@@ -28,6 +28,17 @@ export default async function Page() {
   let modules: any[] = []
   try {
     modules = await (db as any).toolModule.findMany({ orderBy: { order: 'asc' } })
+    const ensure = (arr: any[]) => {
+      const keys = new Set(arr.map((x: any) => x.key))
+      const need = [
+        { key: 'delivery', title: '美国站配送费计算', desc: '按2025/2026规则计算配送费用', status: '启用', views: 0, color: 'orange', order: 7 },
+        { key: 'returns-v2', title: '退货报告分析V2', desc: '上传退货报告，原因/趋势/仓库/评论多维分析', status: '启用', views: 0, color: 'blue', order: 8 }
+      ]
+      const merged = arr.slice()
+      for (const d of need) if (!keys.has(d.key)) merged.push(d)
+      return merged
+    }
+    modules = ensure(Array.isArray(modules) ? modules : [])
     if (!Array.isArray(modules) || modules.length === 0) {
       modules = [
         { key: 'ad-calc', title: '广告竞价计算', desc: '亚马逊广告策略实时出价计算，支持Fixed/Dynamic策略', status: '启用', views: 0, color: 'blue', order: 1 },

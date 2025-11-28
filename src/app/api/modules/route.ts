@@ -74,14 +74,16 @@ function trackVisit(key: string) {
 
 export async function GET() {
   try {
-    const rows = await (db as any).toolModule.findMany({ orderBy: { order: 'asc' } })
-    if (!rows.length) {
-      const created = await db.$transaction(defaults.map(d => (db as any).toolModule.upsert({
+    let rows = await (db as any).toolModule.findMany({ orderBy: { order: 'asc' } })
+    const existing = new Set(rows.map((r: any) => r.key))
+    const missing = defaults.filter(d => !existing.has(d.key))
+    if (missing.length) {
+      await db.$transaction(missing.map(d => (db as any).toolModule.upsert({
         where: { key: d.key },
         update: d,
         create: d
       })))
-      return NextResponse.json(created)
+      rows = await (db as any).toolModule.findMany({ orderBy: { order: 'asc' } })
     }
     return NextResponse.json(rows)
   } catch {

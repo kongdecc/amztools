@@ -870,10 +870,28 @@ export default function FBACalculatorPage() {
 
   const loadFromHistory = (item: any) => {
     const loaded = { ...item.inputs };
-    if (loaded.manualFBAFee === undefined || loaded.manualFBAFee === null) {
-      if (typeof loaded.fbaFeeInput !== 'undefined' && loaded.fbaFeeInput !== null) {
-        loaded.manualFBAFee = loaded.fbaFeeInput;
+    const tryGet = (...keys: string[]) => {
+      for (const k of keys) {
+        const v: any = (loaded as any)[k];
+        if (v !== undefined && v !== null && String(v).trim() !== '') {
+          const num = typeof v === 'number' ? v : parseFloat(String(v));
+          return isNaN(num) ? v : num;
+        }
       }
+      return null;
+    };
+    if (loaded.manualFBAFee === undefined || loaded.manualFBAFee === null || String(loaded.manualFBAFee).trim() === '') {
+      const v = tryGet(
+        'manualFBAFee',
+        'fbaFeeInput',
+        'FBAFeeManual',
+        'fbaFee',
+        'manual_fba_fee',
+        'FBA_Fee',
+        'shippingFeeManual',
+        'shipping_fee_manual'
+      );
+      if (v !== null) (loaded as any).manualFBAFee = v;
     }
     setInputs(loaded);
     setShowHistory(false);
