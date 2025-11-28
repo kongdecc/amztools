@@ -7,7 +7,7 @@ import Head from 'next/head'
 import Link from 'next/link'
 import EditorPage from '../components/EditorPage'
 import FBACalculatorPage from '../components/FBACalculator'
-import { PieChart, Pie, Cell, Tooltip as RTooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, Legend, ResponsiveContainer } from 'recharts'
+import { useRef } from 'react'
 
 const Card = ({ children, className = "", onClick, ...props }: any) => (
   <div onClick={onClick} className={`bg-white rounded-xl border border-gray-100 shadow-sm ${className}`} {...props}>{children}</div>
@@ -921,8 +921,17 @@ const ReturnsV2Page = () => {
   const [comments, setComments] = useState<any[]>([])
   const [selectAll, setSelectAll] = useState(false)
   const [selectedIdx, setSelectedIdx] = useState<Set<number>>(new Set())
-
+  const chartsRef = useRef<Record<string, any>>({})
+  const ChartRef = useRef<any>(null)
   const COLORS = ['#FF9900','#232F3E','#37475A','#FF6600','#FFA724','#FFD814','#C45500','#8B9DC3']
+
+  const ensureChartLib = async () => {
+    if (!ChartRef.current) {
+      const mod = await import('chart.js/auto')
+      ChartRef.current = mod.default || (mod as any)
+    }
+    return ChartRef.current
+  }
 
   const handleFile = async (file: File) => {
     const data = await file.arrayBuffer()
@@ -972,7 +981,7 @@ const ReturnsV2Page = () => {
     analyze(originalData)
   }
 
-  const analyze = (arr: any[]) => {
+  const analyze = async (arr: any[]) => {
     const totalReturns = arr.length
     const totalQuantity = arr.reduce((s:number, i:any) => s + (parseInt(i.quantity) || 1), 0)
     const totalAsins = new Set(arr.map((i:any) => i.asin).filter(Boolean)).size
@@ -990,32 +999,62 @@ const ReturnsV2Page = () => {
     setComments(cs)
     setSelectedIdx(new Set())
     setSelectAll(false)
-  }
 
-  const reasonData = (() => {
-    const map: Record<string, number> = {}
-    filteredData.forEach((i:any)=>{ if(i.reason) map[i.reason]=(map[i.reason]||0)+1 })
-    return Object.entries(map).map(([name,value],idx)=>({ name, value, color: COLORS[idx % COLORS.length] }))
-  })()
+    const Chart = await ensureChartLib()
+    const reasonCtx = (document.getElementById('reasonChart') as HTMLCanvasElement)?.getContext('2d')
+    const asinCtx = (document.getElementById('asinChart') as HTMLCanvasElement)?.getContext('2d')
+    const fcCtx = (document.getElementById('fcChart') as HTMLCanvasElement)?.getContext('2d')
+    const trendCtx = (document.getElementById('trendChart') as HTMLCanvasElement)?.getContext('2d')
 
-  const asinData = (() => {
-    const stats: Record<string, number> = {}
-    filteredData.forEach((i:any)=>{ if(i.asin) stats[i.asin]=(stats[i.asin]||0)+1 })
-    const arr = Object.entries(stats).map(([asin,count])=>({ asin, count })).sort((a:any,b:any)=>b.count-a.count).slice(0,10)
-    return arr
-  })()
+    if (chartsRef.current.reason) chartsRef.current.reason.destroy()
+    if (chartsRef.current.asin) chartsRef.current.asin.destroy()
+    if (chartsRef.current.fc) chartsRef.current.fc.destroy()
+    if (chartsRef.current.trend) chartsRef.current.trend.destroy()
 
-  const fcData = (() => {
-    const stats: Record<string, number> = {}
-    filteredData.forEach((i:any)=>{ const fc=i['fulfillment-center-id']; if(fc) stats[fc]=(stats[fc]||0)+1 })
-    return Object.entries(stats).map(([fc,count],idx)=>({ fc, count, color: COLORS[idx % COLORS.length] }))
-  })()
+    const reasonLabels = Object.keys(reasonCounts)
+    const reasonValues = Object.values(reasonCounts)
+    if (reasonCtx) {
+      chartsRef.current.reason = new Chart(reasonCtx, {
+        type: 'pie',
+        data: { labels: reasonLabels, datasets: [{ data: reasonValues, backgroundColor: COLORS }] },
+        options: { responsive: true, maintainAspectRatio: false }
+      })
+    }
 
-  const trendData = (() => {
+    const asinStats: Record<string, number> = {}
+    arr.forEach((i:any)=>{ if(i.asin) asinStats[i.asin]=(asinStats[i.asin]||0)+1 })
+    const asinEntries = Object.entries(asinStats).map(([asin,count])=>({ asin, count })).sort((a:any,b:any)=>b.count-a.count).slice(0,10)
+    if (asinCtx) {
+      chartsRef.current.asin = new Chart(asinCtx, {
+        type: 'bar',
+        data: { labels: asinEntries.map(e=>e.asin), datasets: [{ label: '退货数量', data: asinEntries.map(e=>e.count), backgroundColor: '#FF9900', borderColor: '#FF6600', borderWidth: 1 }] },
+        options: { responsive: true, maintainAspectRatio: false }
+      })
+    }
+
+    const fcCounts: Record<string, number> = {}
+    arr.forEach((i:any)=>{ const fc=i['fulfillment-center-id']; if(fc) fcCounts[fc]=(fcCounts[fc]||0)+1 })
+    const fcLabels = Object.keys(fcCounts)
+    const fcValues = Object.values(fcCounts)
+    if (fcCtx) {
+      chartsRef.current.fc = new Chart(fcCtx, {
+        type: 'doughnut',
+        data: { labels: fcLabels, datasets: [{ data: fcValues, backgroundColor: COLORS }] },
+        options: { responsive: true, maintainAspectRatio: false }
+      })
+    }
+
     const daily: Record<string, number> = {}
-    filteredData.forEach((i:any)=>{ const d=new Date(i['return-date']); if(!isNaN(d as any)){ const k=d.toISOString().split('T')[0]; daily[k]=(daily[k]||0)+1 } })
-    return Object.keys(daily).sort().map((date)=>({ date, count: daily[date] }))
-  })()
+    arr.forEach((i:any)=>{ const d=new Date(i['return-date']); if(!isNaN(d as any)){ const k=d.toISOString().split('T')[0]; daily[k]=(daily[k]||0)+1 } })
+    const datesSorted = Object.keys(daily).sort()
+    if (trendCtx) {
+      chartsRef.current.trend = new Chart(trendCtx, {
+        type: 'line',
+        data: { labels: datesSorted, datasets: [{ label: '每日退货数量', data: datesSorted.map(d=>daily[d]), borderColor: '#FF9900', backgroundColor: 'rgba(255,153,0,0.1)', tension: 0.1 }] },
+        options: { responsive: true, maintainAspectRatio: false }
+      })
+    }
+  }
 
   const downloadText = (filename: string, text: string) => {
     const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
@@ -1121,6 +1160,49 @@ const ReturnsV2Page = () => {
     }))
   }
 
+  const downloadCharts = async () => {
+    const ids = ['reasonChart','asinChart','fcChart','trendChart']
+    const canvases = ids.map(id => document.getElementById(id) as HTMLCanvasElement).filter(Boolean)
+    if (!canvases.length) return
+    const exportWidth = 1600
+    const margin = 60
+    const gap = 40
+    const headerTitleHeight = 32
+    const headerSubHeight = 22
+    const innerWidth = exportWidth - margin * 2
+    const scaled = canvases.map((c) => {
+      const img = new Image()
+      img.src = c.toDataURL('image/png')
+      return { img, w: innerWidth, h: Math.round(innerWidth * (c.height / c.width)) }
+    })
+    const chartsTotalHeight = scaled.reduce((sum, s) => sum + s.h, 0) + gap * (scaled.length - 1)
+    const exportHeight = margin + headerTitleHeight + headerSubHeight + margin + chartsTotalHeight + margin
+    const canvas = document.createElement('canvas')
+    canvas.width = exportWidth
+    canvas.height = exportHeight
+    const ctx = canvas.getContext('2d')!
+    ctx.fillStyle = 'white'
+    ctx.fillRect(0,0,canvas.width,canvas.height)
+    ctx.textAlign = 'center'
+    ctx.fillStyle = '#232F3E'
+    ctx.font = 'bold 28px Arial'
+    ctx.fillText('亚马逊退货分析图表', exportWidth/2, margin + headerTitleHeight - 4)
+    ctx.fillStyle = '#666'
+    ctx.font = '16px Arial'
+    ctx.fillText('作者：達哥', exportWidth/2, margin + headerTitleHeight + headerSubHeight)
+    let y = margin + headerTitleHeight + headerSubHeight + margin
+    for (const s of scaled) {
+      await new Promise<void>((resolve) => { s.img.onload = () => resolve() })
+      const x = Math.round((exportWidth - s.w)/2)
+      ctx.drawImage(s.img, x, y, s.w, s.h)
+      y += s.h + gap
+    }
+    const a = document.createElement('a')
+    a.download = `亚马逊退货分析图表_${new Date().toISOString().split('T')[0]}.png`
+    a.href = canvas.toDataURL('image/png')
+    a.click()
+  }
+
   const UploadArea = () => (
     <div className="bg-white p-6 rounded-xl border border-gray-100 text-center">
       <div 
@@ -1193,63 +1275,19 @@ const ReturnsV2Page = () => {
           <div className="space-y-6">
             <div className="bg-white p-6 rounded-xl border">
               <h3 className="font-bold text-gray-700">退货原因分布</h3>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={reasonData} dataKey="value" nameKey="name" innerRadius={0} outerRadius={120}>
-                      {reasonData.map((entry:any, index:number) => (<Cell key={`cell-${index}`} fill={entry.color} />))}
-                    </Pie>
-                    <Legend />
-                    <RTooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
+              <div className="h-80"><canvas id="reasonChart"></canvas></div>
             </div>
-
             <div className="bg-white p-6 rounded-xl border">
               <h3 className="font-bold text-gray-700">ASIN退货数量排行（前10）</h3>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={asinData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="asin" interval={0} angle={-15} height={60} tick={{ fontSize: 10 }} />
-                    <YAxis allowDecimals={false} />
-                    <Bar dataKey="count" fill="#FF9900" />
-                    <RTooltip />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+              <div className="h-80"><canvas id="asinChart"></canvas></div>
             </div>
-
             <div className="bg-white p-6 rounded-xl border">
               <h3 className="font-bold text-gray-700">配送中心退货分布</h3>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={fcData} dataKey="count" nameKey="fc" innerRadius={60} outerRadius={120}>
-                      {fcData.map((entry:any, index:number) => (<Cell key={`cell-fc-${index}`} fill={entry.color} />))}
-                    </Pie>
-                    <Legend />
-                    <RTooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
+              <div className="h-80"><canvas id="fcChart"></canvas></div>
             </div>
-
             <div className="bg-white p-6 rounded-xl border">
               <h3 className="font-bold text-gray-700">退货趋势分析</h3>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={trendData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" interval={Math.max(0, Math.floor(trendData.length/10))} />
-                    <YAxis allowDecimals={false} />
-                    <Line type="monotone" dataKey="count" stroke="#FF9900" strokeWidth={2} dot={false} />
-                    <Legend />
-                    <RTooltip />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
+              <div className="h-80"><canvas id="trendChart"></canvas></div>
             </div>
           </div>
 
@@ -1338,8 +1376,9 @@ const ReturnsV2Page = () => {
             </div>
           </div>
 
-          <div className="text-center">
+          <div className="text-center space-x-2">
             <button className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded text-sm" onClick={exportAnalysis}>导出分析报告</button>
+            <button className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded text-sm" onClick={downloadCharts}>下载图表</button>
           </div>
         </>
       )}
