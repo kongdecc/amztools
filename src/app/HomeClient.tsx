@@ -1461,6 +1461,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
           <div id="section-download" className="text-center space-x-2">
             <button className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded text-sm" onClick={exportAnalysis}>导出分析报告</button>
             <button className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded text-sm" onClick={downloadCharts}>下载图表</button>
+            <button className="border border-orange-300 text-orange-700 hover:bg-orange-500 hover:text-white px-4 py-2 rounded text-sm" onClick={()=>scrollTo('top-nav')}>返回顶部</button>
           </div>
         </>
       )}
