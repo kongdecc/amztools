@@ -914,17 +914,18 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
   )
 }
 
-const ReturnsV2Page = () => {
-  const [originalData, setOriginalData] = useState<any[]>([])
-  const [filteredData, setFilteredData] = useState<any[]>([])
-  const [filters, setFilters] = useState<any>({ startDate: '', endDate: '', asin: '', reason: '', fc: '' })
-  const [stats, setStats] = useState<any>({ totalReturns: 0, totalQuantity: 0, totalAsins: 0, totalSkus: 0, avgDaily: '0.0', topReason: '-' })
-  const [comments, setComments] = useState<any[]>([])
-  const [selectAll, setSelectAll] = useState(false)
-  const [selectedIdx, setSelectedIdx] = useState<Set<number>>(new Set())
-  const chartsRef = useRef<Record<string, any>>({})
-  const ChartRef = useRef<any>(null)
-  const COLORS = ['#FF9900','#232F3E','#37475A','#FF6600','#FFA724','#FFD814','#C45500','#8B9DC3']
+  const ReturnsV2Page = () => {
+    const [originalData, setOriginalData] = useState<any[]>([])
+    const [filteredData, setFilteredData] = useState<any[]>([])
+    const [filters, setFilters] = useState<any>({ startDate: '', endDate: '', asin: '', reason: '', fc: '' })
+    const [stats, setStats] = useState<any>({ totalReturns: 0, totalQuantity: 0, totalAsins: 0, totalSkus: 0, avgDaily: '0.0', topReason: '-' })
+    const [comments, setComments] = useState<any[]>([])
+    const [selectAll, setSelectAll] = useState(false)
+    const [selectedIdx, setSelectedIdx] = useState<Set<number>>(new Set())
+    const chartsRef = useRef<Record<string, any>>({})
+    const ChartRef = useRef<any>(null)
+    const COLORS = ['#FF9900','#232F3E','#37475A','#FF6600','#FFA724','#FFD814','#C45500','#8B9DC3']
+    const [asinSkuTop, setAsinSkuTop] = useState<Array<{ asin: string, list: Array<{ sku: string, count: number }> }>>([])
 
   const ensureChartLib = async () => {
     if (!ChartRef.current) {
@@ -1023,7 +1024,15 @@ const ReturnsV2Page = () => {
     }
 
     const asinStats: Record<string, number> = {}
-    arr.forEach((i:any)=>{ if(i.asin) asinStats[i.asin]=(asinStats[i.asin]||0)+1 })
+    const skuStatsByAsin: Record<string, Record<string, number>> = {}
+    arr.forEach((i:any)=>{ 
+      if(i.asin) {
+        asinStats[i.asin]=(asinStats[i.asin]||0)+1 
+        const sku = i.sku || '-'
+        if (!skuStatsByAsin[i.asin]) skuStatsByAsin[i.asin] = {}
+        skuStatsByAsin[i.asin][sku] = (skuStatsByAsin[i.asin][sku]||0)+1
+      }
+    })
     const asinEntries = Object.entries(asinStats).map(([asin,count])=>({ asin, count })).sort((a:any,b:any)=>b.count-a.count).slice(0,10)
     if (asinCtx) {
       chartsRef.current.asin = new Chart(asinCtx, {
@@ -1032,6 +1041,12 @@ const ReturnsV2Page = () => {
         options: { responsive: true, maintainAspectRatio: false }
       })
     }
+    const asinSkuList = asinEntries.map(e => {
+      const m = skuStatsByAsin[e.asin] || {}
+      const tops = Object.entries(m).map(([sku, count])=>({ sku, count })).sort((a:any,b:any)=>b.count-a.count).slice(0,3)
+      return { asin: e.asin, list: tops }
+    })
+    setAsinSkuTop(asinSkuList)
 
     const fcCounts: Record<string, number> = {}
     arr.forEach((i:any)=>{ const fc=i['fulfillment-center-id']; if(fc) fcCounts[fc]=(fcCounts[fc]||0)+1 })
@@ -1204,8 +1219,13 @@ const ReturnsV2Page = () => {
     a.click()
   }
 
-  const UploadArea = () => (
-    <div className="bg-white p-6 rounded-xl border border-gray-100 text-center">
+    const scrollTo = (id: string) => {
+      const el = document.getElementById(id)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+
+    const UploadArea = () => (
+      <div className="bg-white p-6 rounded-xl border border-gray-100 text-center">
       <div 
         className="border-2 border-dashed border-orange-400 rounded-xl p-10 cursor-pointer hover:bg-orange-50"
         onClick={() => document.getElementById('returnsFileInput')?.click()}
@@ -1259,6 +1279,15 @@ const ReturnsV2Page = () => {
                   {(filters.fcOptions||[]).map((c:string)=>(<option key={c} value={c}>{c}</option>))}
                 </select>
               </div>
+              <div className="flex-1 flex flex-wrap gap-2">
+                <button onClick={()=>scrollTo('section-reason')} className="px-2.5 py-1 border border-gray-200 rounded text-xs text-gray-700 hover:bg-gray-50">原因分布</button>
+                <button onClick={()=>scrollTo('section-asin')} className="px-2.5 py-1 border border-gray-200 rounded text-xs text-gray-700 hover:bg-gray-50">ASIN排行</button>
+                <button onClick={()=>scrollTo('section-fc')} className="px-2.5 py-1 border border-gray-200 rounded text-xs text-gray-700 hover:bg-gray-50">配送中心分布</button>
+                <button onClick={()=>scrollTo('section-trend')} className="px-2.5 py-1 border border-gray-200 rounded text-xs text-gray-700 hover:bg-gray-50">退货趋势</button>
+                <button onClick={()=>scrollTo('section-product')} className="px-2.5 py-1 border border-gray-200 rounded text-xs text-gray-700 hover:bg-gray-50">产品分析</button>
+                <button onClick={()=>scrollTo('section-fc-table')} className="px-2.5 py-1 border border-gray-200 rounded text-xs text-gray-700 hover:bg-gray-50">配送中心分析</button>
+                <button onClick={()=>scrollTo('section-comments')} className="px-2.5 py-1 border border-gray-200 rounded text-xs text-gray-700 hover:bg-gray-50">客户评论</button>
+              </div>
               <button onClick={applyFilters} className="ml-auto bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded text-sm">应用筛选</button>
               <button onClick={resetFilters} className="border border-gray-200 text-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-50">重置</button>
             </div>
@@ -1274,25 +1303,49 @@ const ReturnsV2Page = () => {
           </div>
 
           <div className="space-y-6">
-            <div className="bg-white p-6 rounded-xl border">
+            <div id="section-reason" className="bg-white p-6 rounded-xl border">
               <h3 className="font-bold text-gray-700">退货原因分布</h3>
               <div className="h-80"><canvas id="reasonChart"></canvas></div>
             </div>
-            <div className="bg-white p-6 rounded-xl border">
+            <div id="section-asin" className="bg-white p-6 rounded-xl border">
               <h3 className="font-bold text-gray-700">ASIN退货数量排行（前10）</h3>
               <div className="h-80"><canvas id="asinChart"></canvas></div>
+              <div className="mt-4 overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead className="bg-gray-100 text-gray-600">
+                    <tr>
+                      <th className="p-2 text-left">ASIN</th>
+                      <th className="p-2 text-left">SKU</th>
+                      <th className="p-2 text-left">数量</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {asinSkuTop.length === 0 ? (
+                      <tr><td colSpan={3} className="p-2 text-center text-gray-400">暂无数据</td></tr>
+                    ) : (
+                      asinSkuTop.flatMap((row:any) => row.list.map((s:any, idx:number) => (
+                        <tr key={`${row.asin}-${s.sku}-${idx}`} className="border-b">
+                          <td className="p-2">{row.asin}</td>
+                          <td className="p-2">{s.sku}</td>
+                          <td className="p-2">{s.count}</td>
+                        </tr>
+                      )))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
-            <div className="bg-white p-6 rounded-xl border">
+            <div id="section-fc" className="bg-white p-6 rounded-xl border">
               <h3 className="font-bold text-gray-700">配送中心退货分布</h3>
               <div className="h-80"><canvas id="fcChart"></canvas></div>
             </div>
-            <div className="bg-white p-6 rounded-xl border">
+            <div id="section-trend" className="bg-white p-6 rounded-xl border">
               <h3 className="font-bold text-gray-700">退货趋势分析</h3>
               <div className="h-80"><canvas id="trendChart"></canvas></div>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-xl border">
+          <div id="section-product" className="bg-white p-6 rounded-xl border">
             <h3 className="font-bold text-gray-700 mb-3">产品退货分析</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -1328,7 +1381,7 @@ const ReturnsV2Page = () => {
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-xl border">
+          <div id="section-fc-table" className="bg-white p-6 rounded-xl border">
             <h3 className="font-bold text-gray-700 mb-3">配送中心分析</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -1356,7 +1409,7 @@ const ReturnsV2Page = () => {
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-xl border">
+          <div id="section-comments" className="bg-white p-6 rounded-xl border">
             <h3 className="font-bold text-gray-700">客户评论分析</h3>
             <p className="text-xs text-gray-500">共收集到 <span className="font-medium">{comments.length}</span> 条客户反馈</p>
             <div className="flex items-center gap-3 my-2 flex-wrap">

@@ -853,6 +853,9 @@ export default function FBACalculatorPage() {
   const saveToHistory = () => {
     const name = inputs.productName || '未命名商品';
     const time = new Date().toLocaleString('zh-CN', { hour12: false });
+    const finalFBAFeeForSave = inputs.manualFBAFee !== null && String(inputs.manualFBAFee).trim() !== ''
+      ? (parseFloat(String(inputs.manualFBAFee)) || 0)
+      : (typeof results.totalShippingFee === 'number' ? results.totalShippingFee : parseFloat(String(results.totalShippingFee)) || 0);
     const newItem = {
         id: Date.now(),
         time,
@@ -860,7 +863,7 @@ export default function FBACalculatorPage() {
         price: inputs.priceUSD,
         netProfit: results.netProfit.toFixed(2),
         margin: (results.margin * 100).toFixed(2) + '%',
-        inputs: { ...inputs }
+        inputs: { ...inputs, fbaFeeInput: finalFBAFeeForSave }
     };
     const newHistory = [newItem, ...history].slice(0, 20);
     setHistory(newHistory);
