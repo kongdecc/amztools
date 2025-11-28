@@ -517,6 +517,7 @@ export default function FBACalculatorPage() {
     totalShippingFee: 0,
     surchargeSuggest: false,
     amazonPayout: 0,
+    productCostUSD: 0,
     totalCost: 0,
     grossProfit: 0,
     adsCost: 0,
@@ -834,6 +835,7 @@ export default function FBACalculatorPage() {
       totalShippingFee,
       surchargeSuggest,
       amazonPayout,
+      productCostUSD,
       totalCost: productCostUSD + referralFee + finalFBAFee + totalOperatingCost,
       grossProfit: realGrossProfit,
       adsCost,
@@ -1363,7 +1365,7 @@ export default function FBACalculatorPage() {
             <div className="bg-green-50 border border-green-100 rounded-lg p-4 text-sm text-gray-700 space-y-2">
                {renderChart()}
               <div className="flex justify-between"><span>亚马逊回款:</span> <span className="font-medium">${results.amazonPayout.toFixed(2)} <span className="ml-2 text-xs text-gray-500">({( (parseFloat(inputs.profitPrice)||0) > 0 ? ((results.amazonPayout / (parseFloat(inputs.profitPrice)||0)) * 100).toFixed(1) + '%' : '--' )})</span></span></div>
-              <div className="flex justify-between"><span>总成本:</span> <span className="font-medium">${results.totalCost.toFixed(2)} <span className="ml-2 text-xs text-gray-500">({( (parseFloat(inputs.profitPrice)||0) > 0 ? ((results.totalCost / (parseFloat(inputs.profitPrice)||0)) * 100).toFixed(1) + '%' : '--' )})</span></span></div>
+              <div className="flex justify-between"><span>总成本:</span> <span className="font-medium">${results.productCostUSD.toFixed(2)} <span className="ml-2 text-xs text-gray-500">({( (parseFloat(inputs.profitPrice)||0) > 0 ? ((results.productCostUSD / (parseFloat(inputs.profitPrice)||0)) * 100).toFixed(1) + '%' : '--' )})</span></span></div>
               <div className="flex justify-between"><span>毛利润:</span> <span className="font-medium">${results.grossProfit.toFixed(2)} <span className="ml-2 text-xs text-gray-500">({( (parseFloat(inputs.profitPrice)||0) > 0 ? ((results.grossProfit / (parseFloat(inputs.profitPrice)||0)) * 100).toFixed(1) + '%' : '--' )})</span></span></div>
               <div className="flex justify-between"><span>广告费:</span> <span className="font-medium">${results.adsCost.toFixed(2)} <span className="ml-2 text-xs text-gray-500">({( (parseFloat(inputs.profitPrice)||0) > 0 ? ((results.adsCost / (parseFloat(inputs.profitPrice)||0)) * 100).toFixed(1) + '%' : '--' )})</span></span></div>
               <div className="flex justify-between"><span>退货损失:</span> <span className="font-medium">${results.returnLoss.toFixed(2)} <span className="ml-2 text-xs text-gray-500">({( (parseFloat(inputs.profitPrice)||0) > 0 ? ((results.returnLoss / (parseFloat(inputs.profitPrice)||0)) * 100).toFixed(1) + '%' : '--' )})</span></span></div>
