@@ -535,6 +535,39 @@ export default function FBACalculatorPage() {
   const [history, setHistory] = useState<any[]>([]);
   const [showHistory, setShowHistory] = useState(false);
 
+  const resetAll = () => {
+    setInputs({
+      productName: '',
+      shipmentQty: 1,
+      length: 0, width: 0, height: 0,
+      lengthUnit: 'in', widthUnit: 'in', heightUnit: 'in',
+      actualWeight: 0, weightUnit: 'oz',
+      productType: 'normal',
+      hasLithium: false,
+      priceUSD: 0,
+      season: 'non_peak',
+      version: '2025',
+      autoSeason: true,
+      surchargeUSD: 0,
+      profitPrice: 0,
+      exchangeRate: 7.2,
+      productCostCNY: 0,
+      shippingCostCNY: 0,
+      categorySelect: 'custom',
+      manualReferralFee: null,
+      manualFBAFee: null,
+      referralRateCustom: 0.15,
+      fbaFeeInput: 0,
+      storageFee: 0,
+      otherFee: 0,
+      returnRate: 5,
+      unsellableRate: 0,
+      acos: 10,
+      returnRateSlider: 5,
+      acosSlider: 10
+    });
+  };
+
   // Load history on mount
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -836,7 +869,13 @@ export default function FBACalculatorPage() {
   };
 
   const loadFromHistory = (item: any) => {
-    setInputs(item.inputs);
+    const loaded = { ...item.inputs };
+    if (loaded.manualFBAFee === undefined || loaded.manualFBAFee === null) {
+      if (typeof loaded.fbaFeeInput !== 'undefined' && loaded.fbaFeeInput !== null) {
+        loaded.manualFBAFee = loaded.fbaFeeInput;
+      }
+    }
+    setInputs(loaded);
     setShowHistory(false);
   };
 
@@ -916,6 +955,9 @@ export default function FBACalculatorPage() {
         <Card className="p-6 space-y-6">
           <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
              <h3 className="font-bold text-gray-700">📦 配送费计算</h3>
+             <div className="ml-auto">
+               <button onClick={resetAll} className="text-xs px-3 py-1.5 rounded border border-gray-200 text-gray-600 hover:bg-gray-50">重置</button>
+             </div>
           </div>
 
           <div className="space-y-4">
