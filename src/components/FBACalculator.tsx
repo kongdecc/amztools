@@ -803,7 +803,9 @@ export default function FBACalculatorPage() {
     const returnRate = (parseFloat(inputs.returnRate) || 0) / 100;
     const unsellableRate = (parseFloat(inputs.unsellableRate) || 0) / 100;
     const refundAdminFeeUnit = Math.min(5.00, referralFee * 0.20);
-    const returnLoss = (profitPrice + finalFBAFee) * returnRate * unsellableRate + refundAdminFeeUnit * returnRate;
+    const returnLossUnsellable = (profitPrice + finalFBAFee) * returnRate * unsellableRate;
+    const returnLossAdmin = refundAdminFeeUnit * returnRate;
+    const returnLoss = returnLossUnsellable + returnLossAdmin;
     
     const acos = (parseFloat(inputs.acos) || 0) / 100;
     const adsCost = profitPrice * acos;
@@ -840,10 +842,14 @@ export default function FBACalculatorPage() {
       grossProfit: realGrossProfit,
       adsCost,
       returnLoss,
+      returnLossUnsellable,
+      returnLossAdmin,
+      refundAdminFeeUnit,
       netProfit,
       margin: netProfitMargin,
       breakEvenACoS,
       netProfitCNY,
+      operatingCostTotal: totalOperatingCost,
       batchInvestment: totalInvestmentCNY,
       batchNetProfit: totalNetProfitCNY,
       batchPayout: totalPayoutUSD,
@@ -1364,11 +1370,16 @@ export default function FBACalculatorPage() {
             {/* Results */}
             <div className="bg-green-50 border border-green-100 rounded-lg p-4 text-sm text-gray-700 space-y-2">
                {renderChart()}
-              <div className="flex justify-between"><span>亚马逊回款:</span> <span className="font-medium">${results.amazonPayout.toFixed(2)} <span className="ml-2 text-xs text-gray-500">({( (parseFloat(inputs.profitPrice)||0) > 0 ? ((results.amazonPayout / (parseFloat(inputs.profitPrice)||0)) * 100).toFixed(1) + '%' : '--' )})</span></span></div>
-              <div className="flex justify-between"><span>总成本:</span> <span className="font-medium">${results.productCostUSD.toFixed(2)} <span className="ml-2 text-xs text-gray-500">({( (parseFloat(inputs.profitPrice)||0) > 0 ? ((results.productCostUSD / (parseFloat(inputs.profitPrice)||0)) * 100).toFixed(1) + '%' : '--' )})</span></span></div>
-              <div className="flex justify-between"><span>毛利润:</span> <span className="font-medium">${results.grossProfit.toFixed(2)} <span className="ml-2 text-xs text-gray-500">({( (parseFloat(inputs.profitPrice)||0) > 0 ? ((results.grossProfit / (parseFloat(inputs.profitPrice)||0)) * 100).toFixed(1) + '%' : '--' )})</span></span></div>
-              <div className="flex justify-between"><span>广告费:</span> <span className="font-medium">${results.adsCost.toFixed(2)} <span className="ml-2 text-xs text-gray-500">({( (parseFloat(inputs.profitPrice)||0) > 0 ? ((results.adsCost / (parseFloat(inputs.profitPrice)||0)) * 100).toFixed(1) + '%' : '--' )})</span></span></div>
-              <div className="flex justify-between"><span>退货损失:</span> <span className="font-medium">${results.returnLoss.toFixed(2)} <span className="ml-2 text-xs text-gray-500">({( (parseFloat(inputs.profitPrice)||0) > 0 ? ((results.returnLoss / (parseFloat(inputs.profitPrice)||0)) * 100).toFixed(1) + '%' : '--' )})</span></span></div>
+              <div className="flex justify-between"><span>亚马逊回款:</span> <span className="font-medium">${results.amazonPayout.toFixed(2)}</span></div>
+              <div className="flex justify-between"><span>总成本:</span> <span className="font-medium">${results.productCostUSD.toFixed(2)}</span></div>
+              <div className="flex justify-between"><span>毛利润:</span> <span className="font-medium">${results.grossProfit.toFixed(2)}</span></div>
+              <div className="flex justify-between"><span>广告费:</span> <span className="font-medium">${results.adsCost.toFixed(2)}</span></div>
+              <div className="flex justify-between"><span>退货损失:</span> <span className="font-medium">${results.returnLoss.toFixed(2)}</span></div>
+              <div className="pl-2 text-xs text-gray-600">不可售损失: ${results.returnLossUnsellable?.toFixed(2) || '0.00'}</div>
+              <div className="pl-2 text-xs text-gray-600">退款管理费损失: ${results.returnLossAdmin?.toFixed(2) || '0.00'} (单位: ${results.refundAdminFeeUnit?.toFixed(2) || '0.00'})</div>
+              <div className="flex justify-between"><span>总运营成本:</span> <span className="font-medium">${results.operatingCostTotal?.toFixed(2) || '0.00'}</span></div>
+              <div className="pl-2 text-xs text-gray-600">仓储费: ${parseFloat(inputs.storageFee||0).toFixed(2)}</div>
+              <div className="pl-2 text-xs text-gray-600">其他杂费: ${parseFloat(inputs.otherFee||0).toFixed(2)}</div>
                <div className="border-t border-green-200 pt-2 mt-2 flex justify-between text-lg font-bold">
                  <span>净利润:</span> 
                  <span className={results.netProfit >= 0 ? "text-green-700" : "text-red-600"}>${results.netProfit.toFixed(2)} {results.margin > 0.2 ? '😊' : (results.margin > 0.05 ? '😐' : '😩')}</span>
