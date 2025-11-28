@@ -1428,16 +1428,7 @@ export default function FBACalculatorPage() {
                  {formulaOpen['adsCost'] && <div className="absolute right-0 top-6 z-10 bg-white border border-gray-200 rounded-md shadow px-2 py-1 text-xs text-gray-700">公式: {formulaText('adsCost')}</div>}
                </div>
                <div className="flex justify-between"><span>促销费用:</span> <span className="font-medium">${results.promotionCost?.toFixed(2) || '0.00'}</span></div>
-               <div className="flex justify-between items-center relative">
-                 <span className="flex items-center gap-2">
-                   <span>退货损失:</span>
-                   <button onClick={()=>toggleFormula('returnLoss')} className="w-5 h-5 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 text-xs">?</button>
-                 </span>
-                 <span className="font-medium">${results.returnLoss.toFixed(2)}</span>
-                 {formulaOpen['returnLoss'] && <div className="absolute right-0 top-6 z-10 bg-white border border-gray-200 rounded-md shadow px-2 py-1 text-xs text-gray-700 whitespace-pre">公式: {formulaText('returnLoss')}</div>}
-               </div>
-               <div className="pl-2 text-xs text-gray-600">不可售损失: ${results.returnLossUnsellable?.toFixed(2) || '0.00'}</div>
-               <div className="pl-2 text-xs text-gray-600">退款管理费损失: ${results.returnLossAdmin?.toFixed(2) || '0.00'} (单位: ${results.refundAdminFeeUnit?.toFixed(2) || '0.00'})</div>
+               
                <div className="border-t border-green-200 pt-2">
                  <div className="flex items-center justify-between relative">
                    <span className="flex items-center gap-2">
