@@ -39,6 +39,13 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
     sky: 'bg-sky-500',
     purple: 'bg-indigo-500',
     orange: 'bg-orange-500',
+    emerald: 'bg-emerald-600',
+    teal: 'bg-teal-600',
+    rose: 'bg-rose-600',
+    red: 'bg-red-600',
+    amber: 'bg-amber-500',
+    lime: 'bg-lime-600',
+    fuchsia: 'bg-fuchsia-600',
   }
   const colorTextMap: Record<string, string> = {
     blue: 'text-blue-600',
@@ -48,6 +55,13 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
     sky: 'text-sky-500',
     purple: 'text-indigo-500',
     orange: 'text-orange-500',
+    emerald: 'text-emerald-600',
+    teal: 'text-teal-600',
+    rose: 'text-rose-600',
+    red: 'text-red-600',
+    amber: 'text-amber-500',
+    lime: 'text-lime-600',
+    fuchsia: 'text-fuchsia-600',
   }
   const visible = modules.filter((m: any) => m.status !== '下架')
   return (
@@ -73,25 +87,39 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
         </div>
       </Card>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {visible.map((tool: any) => (
-          <Card key={tool.key} className="group relative p-6 hover:shadow-xl transition-all duration-300 cursor-pointer border-transparent hover:border-gray-100 bg-white overflow-hidden" onClick={() => onNavigate(tool.key)}>
-            <div className="flex items-start gap-4 mb-4">
-              <div className={`w-12 h-12 rounded-xl ${colorSolidMap[tool.color] || 'bg-blue-600'} flex items-center justify-center shadow-md shrink-0 group-hover:scale-105 transition-transform duration-300`}>
-                {(() => {
-                  const I = iconMap[tool.key] || Hammer
-                  return <I className="h-6 w-6 text-white" />
-                })()}
+        {visible.map((tool: any) => {
+          const colorOverride: Record<string, string> = {
+            'ad-calc': 'blue',
+            'editor': 'fuchsia',
+            'unit': 'emerald',
+            'case': 'violet',
+            'word-count': 'sky',
+            'char-count': 'rose',
+            'delivery': 'orange',
+            'returns-v2': 'red',
+            'listing-check': 'teal',
+          }
+          const colorKey = colorOverride[tool.key] || tool.color
+          return (
+            <Card key={tool.key} className="group relative p-6 hover:shadow-xl transition-all duration-300 cursor-pointer border-transparent hover:border-gray-100 bg-white overflow-hidden" onClick={() => onNavigate(tool.key)}>
+              <div className="flex items-start gap-4 mb-4">
+                <div className={`w-12 h-12 rounded-xl ${colorSolidMap[colorKey] || 'bg-blue-600'} flex items-center justify-center shadow-md shrink-0 group-hover:scale-105 transition-transform duration-300`}>
+                  {(() => {
+                    const I = iconMap[tool.key] || Hammer
+                    return <I className="h-6 w-6 text-white" />
+                  })()}
+                </div>
+                <h3 className="text-lg font-bold text-gray-800 pt-1 group-hover:text-gray-900">{tool.title}</h3>
+                {tool.status === '维护' && <span className="ml-auto px-2 py-0.5 text-xs rounded border bg-yellow-50 text-yellow-600 border-yellow-200">维护中</span>}
               </div>
-              <h3 className="text-lg font-bold text-gray-800 pt-1 group-hover:text-gray-900">{tool.title}</h3>
-              {tool.status === '维护' && <span className="ml-auto px-2 py-0.5 text-xs rounded border bg-yellow-50 text-yellow-600 border-yellow-200">维护中</span>}
-            </div>
-            <p className="text-sm text-gray-500 leading-relaxed mb-8 line-clamp-2">{tool.desc}</p>
-            <div className={`absolute bottom-6 left-6 flex items-center gap-2 text-sm font-bold ${colorTextMap[tool.color] || 'text-blue-600'} opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300`}>
-              <span>立即使用</span>
-              <ArrowLeftRight className="h-4 w-4" />
-            </div>
-          </Card>
-        ))}
+              <p className="text-sm text-gray-500 leading-relaxed mb-8 line-clamp-2">{tool.desc}</p>
+              <div className={`absolute bottom-6 left-6 flex items-center gap-2 text-sm font-bold ${colorTextMap[colorKey] || 'text-blue-600'} opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300`}>
+                <span>立即使用</span>
+                <ArrowLeftRight className="h-4 w-4" />
+              </div>
+            </Card>
+          )
+        })}
       </div>
     </div>
   )
