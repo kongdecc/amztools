@@ -536,6 +536,8 @@ export default function FBACalculatorPage() {
 
   const [history, setHistory] = useState<any[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [showOpCost, setShowOpCost] = useState(false);
+  const [formulaOpen, setFormulaOpen] = useState<any>({});
 
   const resetAll = () => {
     setInputs({
@@ -634,6 +636,22 @@ export default function FBACalculatorPage() {
     }
 
     setInputs(newInputs);
+  };
+
+  const toggleFormula = (k: string) => {
+    setFormulaOpen((p: any) => ({ ...p, [k]: !p[k] }));
+  };
+
+  const formulaText = (k: string) => {
+    if (k === 'amazonPayout') return '售价 - 佣金 - FBA配送费';
+    if (k === 'productCostUSD') return '(采购成本 + 头程运费) ÷ 汇率';
+    if (k === 'grossProfit') return '亚马逊回款 - (采购成本 + 头程运费)';
+    if (k === 'adsCost') return '售价 × ACoS';
+    if (k === 'returnLoss') return '(售价 + FBA配送费) × 退货率 × 不可售比例 + 退款管理费 × 退货率';
+    if (k === 'operatingCostTotal') return '广告 + 促销 + 仓储 + 退货损失 + 其他';
+    if (k === 'netProfit') return '毛利润 - 总运营成本';
+    if (k === 'breakEvenACoS') return '毛利润 ÷ 售价';
+    return '';
   };
 
   const calculateAll = () => {
@@ -1383,30 +1401,83 @@ export default function FBACalculatorPage() {
                </div>
             </div>
 
-            {/* Results */}
-              <div className="bg-green-50 border border-green-100 rounded-lg p-4 text-sm text-gray-700 space-y-2">
+            <div className="bg-green-50 border border-green-100 rounded-lg p-4 text-sm text-gray-700 space-y-2">
                {renderChart()}
-              <div className="flex justify-between"><span>亚马逊回款:</span> <span className="font-medium">${results.amazonPayout.toFixed(2)}</span></div>
-              <div className="flex justify-between"><span>总成本:</span> <span className="font-medium">${results.productCostUSD.toFixed(2)}</span></div>
-              <div className="flex justify-between"><span>毛利润:</span> <span className="font-medium">${results.grossProfit.toFixed(2)}</span></div>
-              <div className="flex justify-between"><span>广告费:</span> <span className="font-medium">${results.adsCost.toFixed(2)}</span></div>
-              <div className="flex justify-between"><span>促销费用:</span> <span className="font-medium">${results.promotionCost?.toFixed(2) || '0.00'}</span></div>
-              <div className="flex justify-between"><span>退货损失:</span> <span className="font-medium">${results.returnLoss.toFixed(2)}</span></div>
-              <div className="pl-2 text-xs text-gray-600">不可售损失: ${results.returnLossUnsellable?.toFixed(2) || '0.00'}</div>
-              <div className="pl-2 text-xs text-gray-600">退款管理费损失: ${results.returnLossAdmin?.toFixed(2) || '0.00'} (单位: ${results.refundAdminFeeUnit?.toFixed(2) || '0.00'})</div>
-              <div className="flex justify-between"><span>总运营成本:</span> <span className="font-medium">${results.operatingCostTotal?.toFixed(2) || '0.00'}</span></div>
-              <div className="pl-2 text-xs text-gray-600">仓储费: ${parseFloat(inputs.storageFee||0).toFixed(2)}</div>
-              <div className="pl-2 text-xs text-gray-600">其他杂费: ${parseFloat(inputs.otherFee||0).toFixed(2)}</div>
-               <div className="border-t border-green-200 pt-2 mt-2 flex justify-between text-lg font-bold">
-                 <span>净利润:</span> 
-                 <span className={results.netProfit >= 0 ? "text-green-700" : "text-red-600"}>${results.netProfit.toFixed(2)} {results.margin > 0.2 ? '😊' : (results.margin > 0.05 ? '😐' : '😩')}</span>
+               <div className="flex justify-between items-center relative">
+                 <span className="flex items-center gap-2">
+                   <span>亚马逊回款:</span>
+                   <button onClick={()=>toggleFormula('amazonPayout')} className="w-5 h-5 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 text-xs">?</button>
+                 </span>
+                 <span className="font-medium">${results.amazonPayout.toFixed(2)}</span>
+                 {formulaOpen['amazonPayout'] && <div className="absolute right-0 top-6 z-10 bg-white border border-gray-200 rounded-md shadow px-2 py-1 text-xs text-gray-700">公式: {formulaText('amazonPayout')}</div>}
                </div>
-               <div className="flex justify-between text-xs text-gray-500"><span>净利率:</span> <span>{(results.margin * 100).toFixed(2)}%</span></div>
-               <div className="flex justify-between text-xs text-gray-500"><span>盈亏平衡ACoS:</span> <span>{(results.breakEvenACoS * 100).toFixed(2)}%</span></div>
-               <div className="border-t border-green-200 pt-2 text-center text-gray-600">
-                  人民币净利润: <span className="font-bold">¥{results.netProfitCNY.toFixed(2)}</span>
+               <div className="flex justify-between items-center relative">
+                 <span className="flex items-center gap-2">
+                   <span>总成本:</span>
+                   <button onClick={()=>toggleFormula('productCostUSD')} className="w-5 h-5 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 text-xs">?</button>
+                 </span>
+                 <span className="font-medium">${results.productCostUSD.toFixed(2)}</span>
+                 {formulaOpen['productCostUSD'] && <div className="absolute right-0 top-6 z-10 bg-white border border-gray-200 rounded-md shadow px-2 py-1 text-xs text-gray-700">公式: {formulaText('productCostUSD')}</div>}
                </div>
-
+               <div className="flex justify-between items-center relative">
+                 <span className="flex items-center gap-2">
+                   <span>广告费:</span>
+                   <button onClick={()=>toggleFormula('adsCost')} className="w-5 h-5 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 text-xs">?</button>
+                 </span>
+                 <span className="font-medium">${results.adsCost.toFixed(2)}</span>
+                 {formulaOpen['adsCost'] && <div className="absolute right-0 top-6 z-10 bg-white border border-gray-200 rounded-md shadow px-2 py-1 text-xs text-gray-700">公式: {formulaText('adsCost')}</div>}
+               </div>
+               <div className="flex justify-between"><span>促销费用:</span> <span className="font-medium">${results.promotionCost?.toFixed(2) || '0.00'}</span></div>
+               <div className="flex justify-between items-center relative">
+                 <span className="flex items-center gap-2">
+                   <span>退货损失:</span>
+                   <button onClick={()=>toggleFormula('returnLoss')} className="w-5 h-5 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 text-xs">?</button>
+                 </span>
+                 <span className="font-medium">${results.returnLoss.toFixed(2)}</span>
+                 {formulaOpen['returnLoss'] && <div className="absolute right-0 top-6 z-10 bg-white border border-gray-200 rounded-md shadow px-2 py-1 text-xs text-gray-700 whitespace-pre">公式: {formulaText('returnLoss')}</div>}
+               </div>
+               <div className="pl-2 text-xs text-gray-600">不可售损失: ${results.returnLossUnsellable?.toFixed(2) || '0.00'}</div>
+               <div className="pl-2 text-xs text-gray-600">退款管理费损失: ${results.returnLossAdmin?.toFixed(2) || '0.00'} (单位: ${results.refundAdminFeeUnit?.toFixed(2) || '0.00'})</div>
+               <div className="border-t border-green-200 pt-2">
+                 <div className="flex items-center justify-between relative">
+                   <span className="flex items-center gap-2">
+                     <span>总运营成本:</span>
+                     <button onClick={()=>toggleFormula('operatingCostTotal')} className="w-5 h-5 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 text-xs">?</button>
+                   </span>
+                   <span className="font-medium">${results.operatingCostTotal?.toFixed(2) || '0.00'}</span>
+                   <button onClick={()=>setShowOpCost(!showOpCost)} className="ml-2 text-xs text-orange-600 hover:text-orange-700 flex items-center gap-1">{showOpCost ? '收起' : '详情'} {showOpCost ? <ChevronUp className="w-3 h-3"/> : <ChevronDown className="w-3 h-3"/>}</button>
+                   {formulaOpen['operatingCostTotal'] && <div className="absolute right-0 top-6 z-10 bg-white border border-gray-200 rounded-md shadow px-2 py-1 text-xs text-gray-700">公式: {formulaText('operatingCostTotal')}</div>}
+                 </div>
+                 {showOpCost && (
+                   <div className="mt-2 space-y-1 text-xs text-gray-600">
+                     <div className="flex justify-between"><span>广告</span><span>${results.adsCost.toFixed(2)}</span></div>
+                     <div className="flex justify-between"><span>促销</span><span>${results.promotionCost?.toFixed(2) || '0.00'}</span></div>
+                     <div className="flex justify-between"><span>仓储</span><span>${parseFloat(inputs.storageFee||0).toFixed(2)}</span></div>
+                     <div className="flex justify-between"><span>退货损失</span><span>${results.returnLoss.toFixed(2)}</span></div>
+                     <div className="pl-2">不可售损失: ${results.returnLossUnsellable?.toFixed(2) || '0.00'}</div>
+                     <div className="pl-2">退款管理费损失: ${results.returnLossAdmin?.toFixed(2) || '0.00'} (单位: ${results.refundAdminFeeUnit?.toFixed(2) || '0.00'})</div>
+                     <div className="flex justify-between"><span>其他</span><span>${parseFloat(inputs.otherFee||0).toFixed(2)}</span></div>
+                   </div>
+                 )}
+               </div>
+               <div className="border-t border-green-200 pt-2 mt-2 space-y-1">
+                 <div className="flex justify-between items-center relative">
+                   <span className="flex items-center gap-2"><span>毛利润:</span><button onClick={()=>toggleFormula('grossProfit')} className="w-5 h-5 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 text-xs">?</button></span>
+                   <span className="font-medium">${results.grossProfit.toFixed(2)}</span>
+                   {formulaOpen['grossProfit'] && <div className="absolute right-0 top-6 z-10 bg-white border border-gray-200 rounded-md shadow px-2 py-1 text-xs text-gray-700">公式: {formulaText('grossProfit')}</div>}
+                 </div>
+                 <div className="flex justify-between items-center relative text-lg font-bold">
+                   <span className="flex items-center gap-2"><span>净利润:</span><button onClick={()=>toggleFormula('netProfit')} className="w-5 h-5 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 text-xs">?</button></span>
+                   <span className={results.netProfit >= 0 ? "text-green-700" : "text-red-600"}>${results.netProfit.toFixed(2)} {results.margin > 0.2 ? '😊' : (results.margin > 0.05 ? '😐' : '😩')}</span>
+                   {formulaOpen['netProfit'] && <div className="absolute right-0 top-6 z-10 bg-white border border-gray-200 rounded-md shadow px-2 py-1 text-xs text-gray-700">公式: {formulaText('netProfit')}</div>}
+                 </div>
+                 <div className="flex justify-between items-center relative text-xs text-gray-500"><span className="flex items-center gap-2"><span>盈亏平衡ACoS:</span><button onClick={()=>toggleFormula('breakEvenACoS')} className="w-5 h-5 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 text-xs">?</button></span> <span>{(results.breakEvenACoS * 100).toFixed(2)}%</span>{formulaOpen['breakEvenACoS'] && <div className="absolute right-0 top-6 z-10 bg-white border border-gray-200 rounded-md shadow px-2 py-1 text-xs text-gray-700">公式: {formulaText('breakEvenACoS')}</div>}</div>
+                 <div className="flex justify-between text-xs text-gray-500"><span>净利率:</span> <span>{(results.margin * 100).toFixed(2)}%</span></div>
+                 <div className="text-center text-gray-600">
+                   人民币净利润: <span className="font-bold">¥{results.netProfitCNY.toFixed(2)}</span>
+                 </div>
+               </div>
+               
                <div className="mt-2 bg-blue-50 border border-blue-100 p-3 rounded">
                   <div className="font-bold text-blue-800 text-xs mb-2">📋 整批利润分析 (Batch Analysis)</div>
                   <div className="flex justify-between text-sm"><span>总资金投入:</span><span>¥{results.batchInvestment.toFixed(2)}</span></div>
