@@ -1241,7 +1241,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
   )
 
   return (
-    <div className="space-y-6">
+    <div id="top-nav" className="space-y-6">
       <div className="flex items-center gap-2 mb-2">
         <Trash2 className="h-6 w-6 text-blue-600" />
         <h2 className="text-xl font-bold text-gray-800">亚马逊退货报告分析工具 V2</h2>
@@ -1280,13 +1280,20 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
                 </select>
               </div>
               <div className="flex-1 flex flex-wrap gap-2">
-                <button onClick={()=>scrollTo('section-reason')} className="px-2.5 py-1 border border-gray-200 rounded text-xs text-gray-700 hover:bg-gray-50">原因分布</button>
-                <button onClick={()=>scrollTo('section-asin')} className="px-2.5 py-1 border border-gray-200 rounded text-xs text-gray-700 hover:bg-gray-50">ASIN排行</button>
-                <button onClick={()=>scrollTo('section-fc')} className="px-2.5 py-1 border border-gray-200 rounded text-xs text-gray-700 hover:bg-gray-50">配送中心分布</button>
-                <button onClick={()=>scrollTo('section-trend')} className="px-2.5 py-1 border border-gray-200 rounded text-xs text-gray-700 hover:bg-gray-50">退货趋势</button>
-                <button onClick={()=>scrollTo('section-product')} className="px-2.5 py-1 border border-gray-200 rounded text-xs text-gray-700 hover:bg-gray-50">产品分析</button>
-                <button onClick={()=>scrollTo('section-fc-table')} className="px-2.5 py-1 border border-gray-200 rounded text-xs text-gray-700 hover:bg-gray-50">配送中心分析</button>
-                <button onClick={()=>scrollTo('section-comments')} className="px-2.5 py-1 border border-gray-200 rounded text-xs text-gray-700 hover:bg-gray-50">客户评论</button>
+                {[
+                  { id: 'section-reason', label: '原因分布' },
+                  { id: 'section-asin', label: 'ASIN排行' },
+                  { id: 'section-fc', label: '配送中心分布' },
+                  { id: 'section-trend', label: '退货趋势' },
+                  { id: 'section-product', label: '产品分析' },
+                  { id: 'section-fc-table', label: '配送中心分析' },
+                  { id: 'section-comments', label: '客户评论' },
+                  { id: 'section-download', label: '下载' },
+                ].map(b => (
+                  <button key={b.id} onClick={()=>scrollTo(b.id)} className="cursor-pointer px-3 py-1 rounded-full border border-orange-300 text-xs text-orange-700 hover:bg-orange-500 hover:text-white hover:border-orange-500 transition-colors">
+                    {b.label}
+                  </button>
+                ))}
               </div>
               <button onClick={applyFilters} className="ml-auto bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded text-sm">应用筛选</button>
               <button onClick={resetFilters} className="border border-gray-200 text-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-50">重置</button>
@@ -1304,11 +1311,17 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
 
           <div className="space-y-6">
             <div id="section-reason" className="bg-white p-6 rounded-xl border">
-              <h3 className="font-bold text-gray-700">退货原因分布</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-gray-700">退货原因分布</h3>
+                <button onClick={()=>scrollTo('top-nav')} className="text-xs text-orange-600 hover:text-orange-700">返回顶部</button>
+              </div>
               <div className="h-80"><canvas id="reasonChart"></canvas></div>
             </div>
             <div id="section-asin" className="bg-white p-6 rounded-xl border">
-              <h3 className="font-bold text-gray-700">ASIN退货数量排行（前10）</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-gray-700">ASIN退货数量排行（前10）</h3>
+                <button onClick={()=>scrollTo('top-nav')} className="text-xs text-orange-600 hover:text-orange-700">返回顶部</button>
+              </div>
               <div className="h-80"><canvas id="asinChart"></canvas></div>
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full text-xs">
@@ -1336,17 +1349,26 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
               </div>
             </div>
             <div id="section-fc" className="bg-white p-6 rounded-xl border">
-              <h3 className="font-bold text-gray-700">配送中心退货分布</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-gray-700">配送中心退货分布</h3>
+                <button onClick={()=>scrollTo('top-nav')} className="text-xs text-orange-600 hover:text-orange-700">返回顶部</button>
+              </div>
               <div className="h-80"><canvas id="fcChart"></canvas></div>
             </div>
             <div id="section-trend" className="bg-white p-6 rounded-xl border">
-              <h3 className="font-bold text-gray-700">退货趋势分析</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-gray-700">退货趋势分析</h3>
+                <button onClick={()=>scrollTo('top-nav')} className="text-xs text-orange-600 hover:text-orange-700">返回顶部</button>
+              </div>
               <div className="h-80"><canvas id="trendChart"></canvas></div>
             </div>
           </div>
 
           <div id="section-product" className="bg-white p-6 rounded-xl border">
-            <h3 className="font-bold text-gray-700 mb-3">产品退货分析</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-bold text-gray-700">产品退货分析</h3>
+              <button onClick={()=>scrollTo('top-nav')} className="text-xs text-orange-600 hover:text-orange-700">返回顶部</button>
+            </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-gray-100 text-gray-600">
@@ -1382,7 +1404,10 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
           </div>
 
           <div id="section-fc-table" className="bg-white p-6 rounded-xl border">
-            <h3 className="font-bold text-gray-700 mb-3">配送中心分析</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-bold text-gray-700">配送中心分析</h3>
+              <button onClick={()=>scrollTo('top-nav')} className="text-xs text-orange-600 hover:text-orange-700">返回顶部</button>
+            </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-gray-100 text-gray-600">
@@ -1410,7 +1435,10 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
           </div>
 
           <div id="section-comments" className="bg-white p-6 rounded-xl border">
-            <h3 className="font-bold text-gray-700">客户评论分析</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-gray-700">客户评论分析</h3>
+              <button onClick={()=>scrollTo('top-nav')} className="text-xs text-orange-600 hover:text-orange-700">返回顶部</button>
+            </div>
             <p className="text-xs text-gray-500">共收集到 <span className="font-medium">{comments.length}</span> 条客户反馈</p>
             <div className="flex items-center gap-3 my-2 flex-wrap">
               <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={selectAll} onChange={(e:any)=>{ const v=e.target.checked; setSelectAll(v); const s=new Set<number>(); if(v) comments.forEach((_,i)=>s.add(i)); setSelectedIdx(s) }} /> 全选</label>
@@ -1430,7 +1458,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
             </div>
           </div>
 
-          <div className="text-center space-x-2">
+          <div id="section-download" className="text-center space-x-2">
             <button className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded text-sm" onClick={exportAnalysis}>导出分析报告</button>
             <button className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded text-sm" onClick={downloadCharts}>下载图表</button>
           </div>
