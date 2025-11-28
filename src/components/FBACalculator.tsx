@@ -185,8 +185,10 @@ const FeeTable = ({ initialSeason, initialVersion }: any) => {
   const [tab, setTab] = useState('normal');
   const [season, setSeason] = useState(initialSeason);
   const [version, setVersion] = useState(initialVersion);
+  useEffect(() => { setSeason(initialSeason); setVersion(initialVersion); }, [initialSeason, initialVersion]);
 
-  const currentData = feeData[tab]?.[`${season}_${version}`];
+  const seasonKey = season === 'peak' ? 'peak_2025' : (version === '2026' ? 'non_peak_2026' : 'non_peak_2025');
+  const currentData = feeData[tab]?.[seasonKey];
 
   const renderRows = () => {
     if (!currentData) return <tr><td colSpan={5} className="p-4 text-center text-gray-500">暂无数据</td></tr>;
@@ -495,6 +497,7 @@ export default function FBACalculatorPage() {
     shippingCostCNY: 0,
     categorySelect: 'custom',
     manualReferralFee: null,
+    manualFBAFee: null,
     referralRateCustom: 0.15,
     fbaFeeInput: 0,
     storageFee: 0,
@@ -551,6 +554,25 @@ export default function FBACalculatorPage() {
     setSortedCategories(sorted);
   }, []);
 
+  useEffect(() => {
+    const now = new Date();
+    const toNum = (yy:number, mm:number, dd:number) => yy * 10000 + mm * 100 + dd;
+    const inRange = (sY:number,sM:number,sD:number,eY:number,eM:number,eD:number) => {
+      const cur = toNum(now.getFullYear(), now.getMonth()+1, now.getDate());
+      const s = toNum(sY,sM,sD);
+      const e = toNum(eY,eM,eD);
+      return cur >= s && cur <= e;
+    };
+    if (inputs.autoSeason) {
+      let season = 'non_peak';
+      let version = '2025';
+      if (inRange(2025,10,15,2026,1,14)) { season = 'peak'; version = '2025'; }
+      else if (toNum(now.getFullYear(), now.getMonth()+1, now.getDate()) >= toNum(2026,1,15)) { season = 'non_peak'; version = '2026'; }
+      else { season = 'non_peak'; version = '2025'; }
+      setInputs((prev:any) => ({ ...prev, season, version }));
+    }
+  }, [inputs.autoSeason]);
+
   // Update logic
   useEffect(() => {
     calculateAll();
@@ -568,13 +590,9 @@ export default function FBACalculatorPage() {
     if (key === 'returnRateSlider') newInputs.returnRate = value;
     if (key === 'acos') newInputs.acosSlider = value;
     if (key === 'acosSlider') newInputs.acos = value;
-    
-    // Auto Season Logic (simplified)
-    if (key === 'autoSeason' && value === true) {
-      // Implement auto detect logic here if needed, or just rely on manual
-      // For now, let's just keep it simple as in the original code
-      const now = new Date();
-      // ... (Auto detect logic omitted for brevity, can add if strictly required)
+    if (key === 'productType' && value === 'danger') newInputs.hasLithium = false;
+    if (key === 'autoSeason' && value === false) {
+      newInputs.autoSeason = false;
     }
 
     setInputs(newInputs);
@@ -744,7 +762,7 @@ export default function FBACalculatorPage() {
     // Actually, let's just use `totalShippingFee` for now as the "FBA Fee" in profit calc,
     // and display it. If we want manual override, we'd need a separate "manualFBAFee" state or similar.
     // For simplicity and to match the HTML behavior where it auto-updates:
-    const finalFBAFee = totalShippingFee;
+    const finalFBAFee = inputs.manualFBAFee !== null ? (parseFloat(inputs.manualFBAFee) || 0) : totalShippingFee;
 
     const storageFee = parseFloat(inputs.storageFee) || 0;
     const otherFee = parseFloat(inputs.otherFee) || 0;
@@ -978,9 +996,9 @@ export default function FBACalculatorPage() {
                       <option value="danger">危险品 (Dangerous)</option>
                     </select>
                  </div>
-                 <div className="flex items-center pt-5">
-                    <input type="checkbox" checked={inputs.hasLithium} onChange={(e:any) => updateInput('hasLithium', e.target.checked)} className="mr-2" />
-                    <span className="text-sm text-gray-700">含锂电池</span>
+                <div className="flex items-center pt-5">
+                   <input type="checkbox" checked={inputs.hasLithium} onChange={(e:any) => updateInput('hasLithium', e.target.checked)} className="mr-2" disabled={inputs.productType === 'danger'} />
+                   <span className="text-sm text-gray-700">含锂电池</span>
                  </div>
                </div>
              </div>
@@ -1110,15 +1128,31 @@ export default function FBACalculatorPage() {
                   </div>
                </div>
                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs text-gray-500 mb-1 block">FBA配送费($)</label>
-                    <Input type="number" value={results.totalShippingFee.toFixed(2)} readOnly className="bg-gray-100 text-gray-500" />
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">FBA配送费($)</label>
+                  <div className="relative">
+                    <Input 
+                      type="number" 
+                      value={inputs.manualFBAFee !== null ? inputs.manualFBAFee : results.totalShippingFee.toFixed(2)} 
+                      onChange={(e:any) => updateInput('manualFBAFee', e.target.value)} 
+                      className={inputs.manualFBAFee !== null ? "bg-white pr-8" : "bg-gray-100 text-gray-500"} 
+                    />
+                    {inputs.manualFBAFee !== null && (
+                      <button 
+                        onClick={() => updateInput('manualFBAFee', null)} 
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600" 
+                        title="重置为自动计算"
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
-                  <div>
-                    <label className="text-xs text-gray-500 mb-1 block">月仓储费($)</label>
-                    <Input type="number" value={inputs.storageFee} onChange={(e:any) => updateInput('storageFee', e.target.value)} />
-                  </div>
-               </div>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">月仓储费($)</label>
+                  <Input type="number" value={inputs.storageFee} onChange={(e:any) => updateInput('storageFee', e.target.value)} />
+                </div>
+              </div>
             </div>
 
             {/* Operations */}
@@ -1173,6 +1207,14 @@ export default function FBACalculatorPage() {
                <div className="flex justify-between text-xs text-gray-500"><span>盈亏平衡ACoS:</span> <span>{(results.breakEvenACoS * 100).toFixed(2)}%</span></div>
                <div className="border-t border-green-200 pt-2 text-center text-gray-600">
                   人民币净利润: <span className="font-bold">¥{results.netProfitCNY.toFixed(2)}</span>
+               </div>
+
+               <div className="mt-2 bg-blue-50 border border-blue-100 p-3 rounded">
+                  <div className="font-bold text-blue-800 text-xs mb-2">📋 整批利润分析 (Batch Analysis)</div>
+                  <div className="flex justify-between text-sm"><span>总资金投入:</span><span>¥{results.batchInvestment.toFixed(2)}</span></div>
+                  <div className="flex justify-between text-sm"><span>预计总净利:</span><span className={results.batchNetProfit >= 0 ? 'text-green-700 font-medium' : 'text-red-600 font-medium'}>¥{results.batchNetProfit.toFixed(2)}</span></div>
+                  <div className="flex justify-between text-sm"><span>最后回款:</span><span>${results.batchPayout.toFixed(2)}</span></div>
+                  <div className="flex justify-between text-sm"><span>投资回报率:</span><span className={results.batchROI >= 0 ? 'text-green-700 font-medium' : 'text-red-600 font-medium'}>{(results.batchROI * 100).toFixed(2)}%</span></div>
                </div>
             </div>
             
