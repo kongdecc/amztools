@@ -502,8 +502,9 @@ export default function FBACalculatorPage() {
     fbaFeeInput: 0,
     storageFee: 0,
     otherFee: 0,
+    promotionCost: 0,
     returnRate: 5,
-    unsellableRate: 0,
+    unsellableRate: 30,
     acos: 10,
     returnRateSlider: 5,
     acosSlider: 10
@@ -561,8 +562,9 @@ export default function FBACalculatorPage() {
       fbaFeeInput: 0,
       storageFee: 0,
       otherFee: 0,
+      promotionCost: 0,
       returnRate: 5,
-      unsellableRate: 0,
+      unsellableRate: 30,
       acos: 10,
       returnRateSlider: 5,
       acosSlider: 10
@@ -618,6 +620,8 @@ export default function FBACalculatorPage() {
     
     // Sync Logic
     if (key === 'categorySelect') newInputs.manualReferralFee = null;
+    if (key === 'returnRateSlider') newInputs.returnRate = value;
+    if (key === 'acosSlider') newInputs.acos = value;
     if (key === 'priceUSD') newInputs.profitPrice = value;
     if (key === 'profitPrice') newInputs.priceUSD = value;
     if (key === 'returnRate') newInputs.returnRateSlider = value;
@@ -811,7 +815,8 @@ export default function FBACalculatorPage() {
     const adsCost = profitPrice * acos;
 
     const amazonPayout = profitPrice - referralFee - finalFBAFee;
-    const totalOperatingCost = adsCost + storageFee + returnLoss + otherFee;
+    const promotionCost = parseFloat(inputs.promotionCost) || 0;
+    const totalOperatingCost = adsCost + storageFee + returnLoss + otherFee + promotionCost;
     const realGrossProfit = amazonPayout - productCostUSD;
     const netProfit = realGrossProfit - totalOperatingCost;
     const netProfitMargin = profitPrice > 0 ? (netProfit / profitPrice) : 0;
@@ -841,6 +846,7 @@ export default function FBACalculatorPage() {
       totalCost: productCostUSD + referralFee + finalFBAFee + totalOperatingCost,
       grossProfit: realGrossProfit,
       adsCost,
+      promotionCost,
       returnLoss,
       returnLossUnsellable,
       returnLossAdmin,
@@ -1279,7 +1285,7 @@ export default function FBACalculatorPage() {
                   </select>
                </div>
                <div className="grid grid-cols-2 gap-4">
-                  <div>
+                 <div>
                     <label className="text-xs text-gray-500 mb-1 block">佣金费($)</label>
                     <div className="relative">
                         <Input 
@@ -1329,6 +1335,16 @@ export default function FBACalculatorPage() {
                   <Input type="number" value={inputs.storageFee} onChange={(e:any) => updateInput('storageFee', e.target.value)} />
                 </div>
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">其他杂费($)</label>
+                  <Input type="number" value={inputs.otherFee} onChange={(e:any) => updateInput('otherFee', e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">促销费用($)</label>
+                  <Input type="number" value={inputs.promotionCost} onChange={(e:any) => updateInput('promotionCost', e.target.value)} />
+                </div>
+              </div>
             </div>
 
             {/* Operations */}
@@ -1368,12 +1384,13 @@ export default function FBACalculatorPage() {
             </div>
 
             {/* Results */}
-            <div className="bg-green-50 border border-green-100 rounded-lg p-4 text-sm text-gray-700 space-y-2">
+              <div className="bg-green-50 border border-green-100 rounded-lg p-4 text-sm text-gray-700 space-y-2">
                {renderChart()}
               <div className="flex justify-between"><span>亚马逊回款:</span> <span className="font-medium">${results.amazonPayout.toFixed(2)}</span></div>
               <div className="flex justify-between"><span>总成本:</span> <span className="font-medium">${results.productCostUSD.toFixed(2)}</span></div>
               <div className="flex justify-between"><span>毛利润:</span> <span className="font-medium">${results.grossProfit.toFixed(2)}</span></div>
               <div className="flex justify-between"><span>广告费:</span> <span className="font-medium">${results.adsCost.toFixed(2)}</span></div>
+              <div className="flex justify-between"><span>促销费用:</span> <span className="font-medium">${results.promotionCost?.toFixed(2) || '0.00'}</span></div>
               <div className="flex justify-between"><span>退货损失:</span> <span className="font-medium">${results.returnLoss.toFixed(2)}</span></div>
               <div className="pl-2 text-xs text-gray-600">不可售损失: ${results.returnLossUnsellable?.toFixed(2) || '0.00'}</div>
               <div className="pl-2 text-xs text-gray-600">退款管理费损失: ${results.returnLossAdmin?.toFixed(2) || '0.00'} (单位: ${results.refundAdminFeeUnit?.toFixed(2) || '0.00'})</div>
