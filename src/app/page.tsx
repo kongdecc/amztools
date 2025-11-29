@@ -3,7 +3,7 @@ import HomeLayoutClient from './HomeClient'
 import { db } from '@/lib/db'
 export const dynamic = 'force-dynamic'
 
-export default async function Page() {
+export default async function Page({ searchParams }: { searchParams?: Record<string, string> }) {
   let initialSettings: Record<string, any> = {}
   try {
     const rows = await (db as any).siteSettings.findMany()
@@ -70,9 +70,11 @@ export default async function Page() {
       { key: 'duplicate-remover', title: '去除重复文本工具', desc: '智能去重，多种模式，支持按行、空格、逗号等分隔符，支持排序和过滤', status: '启用', views: 0, color: 'purple', order: 11 }
     ]
   }
+  const initialActiveTab = String(searchParams?.tab || '')
+  const initialFull = String(searchParams?.full || '') === '1'
   return (
     <SettingsProvider initial={initialSettings}>
-      <HomeLayoutClient initialModules={modules} initialNavItems={navItems} />
+      <HomeLayoutClient initialModules={modules} initialNavItems={navItems} initialActiveTab={initialActiveTab} initialFull={initialFull} />
     </SettingsProvider>
   )
 }

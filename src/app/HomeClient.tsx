@@ -801,23 +801,9 @@ const PlaceholderPage = ({ title, icon: Icon }: { title: string; icon: any }) =>
   </div>
 )
 
-export default function HomeLayoutClient({ initialModules, initialNavItems }: { initialModules: any[]; initialNavItems: any[] }) {
-  const [activeTab, setActiveTab] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const qs = new URLSearchParams(window.location.search)
-        const tab = qs.get('tab') || (window.location.hash ? window.location.hash.replace('#','') : '')
-        return tab || 'home'
-      } catch {}
-    }
-    return 'home'
-  })
-  const [isFull, setIsFull] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      try { const qs = new URLSearchParams(window.location.search); return qs.get('full') === '1' } catch {}
-    }
-    return false
-  })
+export default function HomeLayoutClient({ initialModules, initialNavItems, initialActiveTab, initialFull }: { initialModules: any[]; initialNavItems: any[]; initialActiveTab?: string; initialFull?: boolean }) {
+  const [activeTab, setActiveTab] = useState<string>(initialActiveTab || 'home')
+  const [isFull, setIsFull] = useState<boolean>(Boolean(initialFull))
   const [modules, setModules] = useState<Array<any>>(initialModules || [])
   const [navItems, setNavItems] = useState<Array<any>>(initialNavItems || [])
   const mainRef = useRef<HTMLDivElement>(null)
@@ -1022,7 +1008,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
           )}
         </aside>
         )}
-        <main ref={mainRef} className="flex-1 p-8 overflow-y-auto h-[calc(100vh-3.5rem)]">
+        <main ref={mainRef} className="flex-1 p-8">
           <div className="max-w-7xl mx-auto">
             {activeTab === 'home' ? (
               <HomePage onNavigate={setActiveTab} modules={modules} />
