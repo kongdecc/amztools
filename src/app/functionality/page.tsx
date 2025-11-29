@@ -83,7 +83,7 @@ function FunctionalityClient() {
   }
 
   const handleNavigate = (key: string) => {
-    window.location.href = `/functionality/${key}`
+    window.location.href = `/?tab=${key}&full=1`
   }
 
   return (
@@ -94,6 +94,7 @@ function FunctionalityClient() {
           <span>{settings.siteName}</span>
         </div>
         <nav className="ml-auto mr-6 flex items-center gap-6">
+          <a href="/" className="text-sm text-white/90 hover:text-white">首页</a>
           {navItems.map((item:any) => {
             const isFuncMenu = String(item.label || '').includes('功能分类') || String(item.id || '') === 'functionality'
             if (isFuncMenu) {

@@ -137,7 +137,7 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
       {showMore && (
         <div className="text-center mt-8">
           <button 
-            onClick={() => onNavigate('functionality')}
+            onClick={() => { try { (window as any).location.href = '/functionality' } catch {} }}
             className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-lg font-medium hover:shadow-lg transform hover:-translate-y-1 transition-all flex items-center gap-2 mx-auto"
           >
             查看更多工具
@@ -812,6 +812,12 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
     }
     return 'home'
   })
+  const [isFull, setIsFull] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      try { const qs = new URLSearchParams(window.location.search); return qs.get('full') === '1' } catch {}
+    }
+    return false
+  })
   const [modules, setModules] = useState<Array<any>>(initialModules || [])
   const [navItems, setNavItems] = useState<Array<any>>(initialNavItems || [])
   const mainRef = useRef<HTMLDivElement>(null)
@@ -987,6 +993,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
         </nav>
       </header>
       <div className="flex flex-1">
+        {!isFull && (
         <aside className="w-64 bg-white border-r border-gray-200 flex-shrink-0 hidden md:flex flex-col">
           <div className="p-4 space-y-1 flex-1 overflow-y-auto">
             {menuItems.filter(item => item.id !== 'functionality').map(item => (
@@ -1010,6 +1017,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
             </div>
           )}
         </aside>
+        )}
         <main ref={mainRef} className="flex-1 p-8 overflow-y-auto h-[calc(100vh-3.5rem)]">
           <div className="max-w-7xl mx-auto">
             {activeTab === 'home' ? (
