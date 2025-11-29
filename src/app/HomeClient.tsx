@@ -73,7 +73,7 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
   }
   const visible = modules.filter((m: any) => m.status !== '下架')
   // 首页显示的卡片数量，默认6个
-  const homeCardLimit = 6
+  const homeCardLimit = Number(settings.homeCardLimit || 6)
   const showMore = visible.length > homeCardLimit
   const displayedTools = showMore ? visible.slice(0, homeCardLimit) : visible
 

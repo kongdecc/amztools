@@ -94,12 +94,11 @@ export async function GET(request: Request) {
     console.log('[API] Visits Request:', { date, start, end })
 
     const allData = readVisitData()
-    console.log('[API] All Data Keys:', Object.keys(allData).length)
     
     if (date) {
       const dayData = allData[date] || { total: 0, byModule: {} }
       return NextResponse.json(dayData)
-  } else if (start && end) {
+    } else if (start && end) {
       const parseYMD = (s: string) => {
         const [yy, mm, dd] = s.split('-').map(x => Number(x))
         return new Date(yy, (mm || 1) - 1, dd || 1)

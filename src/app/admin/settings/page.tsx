@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react'
 
 export default function AdminSettings() {
-  const [form, setForm] = useState({ siteName: '', logoUrl: '', analyticsHeadHtml: '', analyticsBodyHtml: '', showAnalytics: false, copyrightText: '', homeHeroTitle: '', homeHeroSubtitle: '', hideHomeHeroIfEmpty: false, friendLinks: '[]', privacyPolicy: '', showFriendLinksLabel: false, functionalityTitle: '', functionalitySubtitle: '' })
+  const [form, setForm] = useState({ siteName: '', logoUrl: '', analyticsHeadHtml: '', analyticsBodyHtml: '', showAnalytics: false, copyrightText: '', homeHeroTitle: '', homeHeroSubtitle: '', hideHomeHeroIfEmpty: false, homeCardLimit: 6, friendLinks: '[]', privacyPolicy: '', showFriendLinksLabel: false, functionalityTitle: '', functionalitySubtitle: '' })
   const [loading, setLoading] = useState(true)
   const [msg, setMsg] = useState('')
 
@@ -22,6 +22,7 @@ export default function AdminSettings() {
         homeHeroTitle: data.homeHeroTitle || '',
         homeHeroSubtitle: data.homeHeroSubtitle || '',
         hideHomeHeroIfEmpty: String(data.hideHomeHeroIfEmpty || 'false') === 'true',
+        homeCardLimit: Number(data.homeCardLimit || 6),
         friendLinks: data.friendLinks || '[]',
         privacyPolicy: data.privacyPolicy || '',
         showFriendLinksLabel: String(data.showFriendLinksLabel || 'false') === 'true',
@@ -88,6 +89,12 @@ export default function AdminSettings() {
           <div className="flex items-center gap-2">
             <input id="hideHomeHeroIfEmpty" type="checkbox" checked={form.hideHomeHeroIfEmpty} onChange={e => set('hideHomeHeroIfEmpty', e.target.checked)} />
             <label htmlFor="hideHomeHeroIfEmpty" className="text-sm text-gray-600">当标题或副标题为空时不显示</label>
+          </div>
+          
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">首页工具卡片显示数量</label>
+            <input type="number" min="1" max="100" className="w-full border rounded px-3 py-2 text-sm" value={form.homeCardLimit} onChange={e => set('homeCardLimit', parseInt(e.target.value) || 6)} />
+            <p className="text-xs text-gray-400 mt-1">默认显示 6 个，超过部分需点击"查看更多"展开</p>
           </div>
           
           {/* 功能中心设置 */}
