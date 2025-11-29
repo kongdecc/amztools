@@ -7,7 +7,7 @@ import Head from 'next/head'
 import Link from 'next/link'
 import EditorPage from '../components/EditorPage'
 import FBACalculatorPage from '../components/FBACalculator'
-import ForbiddenWordsChecker from '../components/ForbiddenWordsChecker'
+import ForbiddenWordsChecker from '@/components/ForbiddenWordsChecker'
 import TextComparator from '../components/TextComparator'
 import DuplicateRemover from '../components/DuplicateRemover'
 import ContentFilter from '../components/ContentFilter'
@@ -137,7 +137,7 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
       {showMore && (
         <div className="text-center mt-8">
           <button 
-            onClick={() => window.location.href = '/functionality'}
+            onClick={() => onNavigate('functionality')}
             className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-lg font-medium hover:shadow-lg transform hover:-translate-y-1 transition-all flex items-center gap-2 mx-auto"
           >
             查看更多工具
@@ -847,10 +847,9 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
     }
     // 页面切换时滚动到顶部
     setTimeout(() => {
+      try { window.scrollTo({ top: 0, behavior: 'auto' }) } catch {}
       if (mainRef.current) {
-        mainRef.current.scrollTop = 0;
-      } else {
-        window.scrollTo(0, 0);
+        try { (mainRef.current as any).scrollTo({ top: 0, behavior: 'auto' }) } catch { mainRef.current.scrollTop = 0 }
       }
     }, 0);
   }, [activeTab])
@@ -900,42 +899,58 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
           <span>{settings.siteName}</span>
         </div>
         <nav className="ml-auto mr-6 flex items-center gap-6">
-          {/* 功能分类下拉菜单 */}
-          <div className="relative group">
-            <button className="text-sm text-white/90 hover:text-white flex items-center gap-1">
-              功能分类
-              <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
-            </button>
-            <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-              <div className="p-2 space-y-1">
-                {modules.filter((m: any) => m.status !== '下架').map((m: any) => (
-                  <button 
-                    key={m.key}
-                    onClick={() => setActiveTab(m.key)}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
-                  >
-                    {m.title}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-          
-          {/* 其他导航项 */}
           {navItems
             .slice()
             .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
-            .map((item: any) => (
-              item.isExternal ? (
+            .map((item: any) => {
+              const hasChildren = Array.isArray(item.children) && item.children.length > 0
+              if (hasChildren) {
+                return (
+                  <div key={item.id} className="relative group">
+                    <button className="text-sm text-white/90 hover:text-white flex items-center gap-1">
+                      {item.label}
+                      <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
+                    </button>
+                    <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                      <div className="p-2 space-y-1">
+                        {item.children.map((c: any) => (
+                          c.isExternal ? (
+                            <a key={c.id} href={c.href || '#'} target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg">
+                              {c.label}
+                            </a>
+                          ) : (
+                            c.href ? (
+                              <Link key={c.id} href={c.href} className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg">
+                                {c.label}
+                              </Link>
+                            ) : (
+                              <button key={c.id} onClick={() => setActiveTab(c.id)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg">
+                                {c.label}
+                              </button>
+                            )
+                          )
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )
+              }
+              return item.isExternal ? (
                 <a key={item.id} href={item.href || '#'} target="_blank" rel="noopener noreferrer" className="text-sm text-white/90 hover:text-white">
                   {item.label}
                 </a>
               ) : (
-                <Link key={item.id} href={item.href || '/'} className="text-sm text-white/90 hover:text-white">
-                  {item.label}
-                </Link>
+                item.href ? (
+                  <Link key={item.id} href={item.href} className="text-sm text-white/90 hover:text-white">
+                    {item.label}
+                  </Link>
+                ) : (
+                  <button key={item.id} onClick={() => setActiveTab(item.id)} className="text-sm text-white/90 hover:text-white">
+                    {item.label}
+                  </button>
+                )
               )
-            ))}
+            })}
         </nav>
       </header>
       <div className="flex flex-1">
@@ -970,8 +985,11 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
               <div className="space-y-6">
                 <div className="flex items-center gap-2 mb-2">
                   <LayoutGrid className="h-6 w-6 text-blue-600" />
-                  <h2 className="text-xl font-bold text-gray-800">功能中心</h2>
+                  <h2 className="text-xl font-bold text-gray-800">{String(settings.functionalityTitle || '功能中心')}</h2>
                 </div>
+                {String(settings.functionalitySubtitle || '').trim().length > 0 && (
+                  <p className="text-sm text-gray-500">{String(settings.functionalitySubtitle)}</p>
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {modules.filter((m: any) => m.status !== '下架').map((m: any) => {
                     const colorOverride: Record<string, string> = {
@@ -1059,37 +1077,38 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
               })()
             )}
           </div>
-          <div className="mt-12 text-center">
-            <footer className="text-xs text-gray-400">
-              {settings.copyrightText || '© 2025 运营魔方 ToolBox. All rights reserved.'}
-              <span className="mx-2">|</span>
-              <a href="/privacy" className="hover:text-blue-600">隐私说明</a>
-            </footer>
-            {(() => {
-              try {
-                const arr = JSON.parse(String(settings.friendLinks || '[]'))
-                const list = Array.isArray(arr) ? arr : []
-                if (list.length === 0) return null
-                return (
-                  <div className="mt-2 text-xs text-gray-500">
-                    {String(settings.showFriendLinksLabel || 'false') === 'true' && <span>友情链接： </span>}
-                    {list
-                      .slice()
-                      .sort((a: any, b: any) => (Number(a.order || 0) - Number(b.order || 0)))
-                      .map((l: any, i: number) => (
-                        <span key={i}>
-                          <a href={l.href || '#'} target={l.isExternal ? '_blank' : '_self'} rel={l.isExternal ? 'noopener noreferrer' : undefined} className="hover:text-blue-600">
-                            {l.label || '友链'}
-                          </a>
-                          {i < list.length - 1 ? ', ' : ''}
-                        </span>
-                      ))}
-                  </div>
-                )
-              } catch { return null }
-            })()}
-          </div>
+          
         </main>
+      </div>
+      <div className="mt-auto text-center py-6">
+        <footer className="text-xs text-gray-400">
+          {settings.copyrightText || '© 2025 运营魔方 ToolBox. All rights reserved.'}
+          <span className="mx-2">|</span>
+          <a href="/privacy" className="hover:text-blue-600">隐私说明</a>
+        </footer>
+        {(() => {
+          try {
+            const arr = JSON.parse(String(settings.friendLinks || '[]'))
+            const list = Array.isArray(arr) ? arr : []
+            if (list.length === 0) return null
+            return (
+              <div className="mt-2 text-xs text-gray-500">
+                {String(settings.showFriendLinksLabel || 'false') === 'true' && <span>友情链接： </span>}
+                {list
+                  .slice()
+                  .sort((a: any, b: any) => (Number(a.order || 0) - Number(b.order || 0)))
+                  .map((l: any, i: number) => (
+                    <span key={i}>
+                      <a href={l.href || '#'} target={l.isExternal ? '_blank' : '_self'} rel={l.isExternal ? 'noopener noreferrer' : undefined} className="hover:text-blue-600">
+                        {l.label || '友链'}
+                      </a>
+                      {i < list.length - 1 ? ', ' : ''}
+                    </span>
+                  ))}
+              </div>
+            )
+          } catch { return null }
+        })()}
       </div>
     </div>
   )
