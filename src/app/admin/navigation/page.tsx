@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
-import { Plus, Search, Edit3, Trash2, Save, Ban, CheckCircle, Link as LinkIcon, Globe, ArrowUp, ArrowDown } from 'lucide-react'
+import React, { useEffect, useMemo, useState, useRef } from 'react'
+import { Plus, Search, Edit3, Trash2, Save, Ban, CheckCircle, Link as LinkIcon, Globe, ArrowUp, ArrowDown, GripVertical } from 'lucide-react'
 
 type NavItem = { id: string; label: string; href: string; order: number; isExternal?: boolean; active?: boolean }
 
@@ -13,6 +13,58 @@ export default function AdminNavigation() {
   const [savedHint, setSavedHint] = useState('')
   const [selected, setSelected] = useState<Record<string, boolean>>({})
   const [serverSnap, setServerSnap] = useState<NavItem[]>([])
+  const [draggingId, setDraggingId] = useState<string>('')
+  const [dragOverId, setDragOverId] = useState<string>('')
+
+  // 拖拽开始
+  const handleDragStart = (e: React.DragEvent, id: string) => {
+    setDraggingId(id)
+    e.dataTransfer.effectAllowed = 'move'
+  }
+
+  // 拖拽进入
+  const handleDragEnter = (e: React.DragEvent, id: string) => {
+    e.preventDefault()
+    if (draggingId !== id) {
+      setDragOverId(id)
+    }
+  }
+
+  // 拖拽结束
+  const handleDragEnd = () => {
+    setDraggingId('')
+    setDragOverId('')
+  }
+
+  // 拖拽放置
+  const handleDrop = (e: React.DragEvent, id: string) => {
+    e.preventDefault()
+    if (draggingId === id) return
+
+    const draggingItem = list.find(item => item.id === draggingId)
+    const targetItem = list.find(item => item.id === id)
+
+    if (!draggingItem || !targetItem) return
+
+    // 重新排序
+    const sorted = list.slice().sort((a, b) => a.order - b.order)
+    const draggingIndex = sorted.findIndex(item => item.id === draggingId)
+    const targetIndex = sorted.findIndex(item => item.id === id)
+
+    const newSorted = [...sorted]
+    newSorted.splice(draggingIndex, 1)
+    newSorted.splice(targetIndex, 0, draggingItem)
+
+    // 更新order值
+    const updatedList = newSorted.map((item, index) => ({
+      ...item,
+      order: index + 1
+    }))
+
+    setList(updatedList)
+    setDraggingId('')
+    setDragOverId('')
+  }
 
   useEffect(() => {
     (async () => {
@@ -62,7 +114,16 @@ export default function AdminNavigation() {
               setSaving(true)
               setSavedHint('')
               try {
-                const payload = list.map(x => ({ id: x.id, label: x.label, href: x.href, order: Number(x.order || 0), isExternal: Boolean(x.isExternal), active: x.active === false ? false : true }))
+                // 确保order值唯一且连续
+                const sorted = list.slice().sort((a, b) => a.order - b.order)
+                const payload = sorted.map((x, index) => ({
+                  id: x.id, 
+                  label: x.label, 
+                  href: x.href, 
+                  order: index + 1, 
+                  isExternal: Boolean(x.isExternal), 
+                  active: x.active === false ? false : true 
+                }))
                 const r = await fetch('/api/navigation', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), credentials: 'include' })
                 if (!r.ok) throw new Error('保存失败')
                 const rr = await fetch('/api/navigation?includeInactive=true', { cache: 'no-store' })
@@ -124,16 +185,33 @@ export default function AdminNavigation() {
             </thead>
             <tbody>
               {filtered.map(row => (
-                <tr key={row.id} className="group border-b">
+                <tr 
+                  key={row.id} 
+                  className={`group border-b transition-all duration-200 ${draggingId === row.id ? 'opacity-50' : ''} ${dragOverId === row.id ? 'bg-blue-50' : ''}`}
+                  draggable={editingId !== row.id}
+                  onDragStart={(e) => handleDragStart(e, row.id)}
+                  onDragEnter={(e) => handleDragEnter(e, row.id)}
+                  onDragEnd={handleDragEnd}
+                  onDrop={(e) => handleDrop(e, row.id)}
+                  onDragOver={(e) => e.preventDefault()}
+                >
                   <td className="p-4">
                     <input type="checkbox" checked={!!selected[row.id]} onChange={e => setSelected(prev => ({ ...prev, [row.id]: e.target.checked }))} />
                   </td>
                   <td className="p-4">
-                    {editingId === row.id ? (
-                      <input type="number" value={row.order ?? 0} onChange={e => setList(prev => prev.map(x => x.id === row.id ? { ...x, order: Number(e.target.value || 0) } : x))} className="w-20 border rounded px-2 py-1 text-sm text-right" />
-                    ) : (
-                      <span className="text-gray-700">{row.order ?? 0}</span>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {editingId !== row.id && (
+                        <GripVertical 
+                          size={16} 
+                          className="text-gray-400 cursor-grab active:cursor-grabbing hover:text-gray-600 transition-colors"
+                        />
+                      )}
+                      {editingId === row.id ? (
+                        <input type="number" value={row.order ?? 0} onChange={e => setList(prev => prev.map(x => x.id === row.id ? { ...x, order: Number(e.target.value || 0) } : x))} className="w-20 border rounded px-2 py-1 text-sm text-right" />
+                      ) : (
+                        <span className="text-gray-700">{row.order ?? 0}</span>
+                      )}
+                    </div>
                   </td>
                   <td className="p-4">
                     {editingId === row.id ? (

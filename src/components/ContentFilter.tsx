@@ -525,10 +525,10 @@ const ContentFilter: React.FC = () => {
         <h2 className="text-xl font-bold text-gray-800">英文文本过滤工具</h2>
       </div>
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-        <div className="p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        <div className="p-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
             {/* 输入区域 */}
-            <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
+            <div className="lg:col-span-6 bg-gray-50 p-5 rounded-lg border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b-2 border-blue-500">📝 文本输入</h3>
               <textarea
                 value={inputText}
@@ -642,23 +642,23 @@ const ContentFilter: React.FC = () => {
             </div>
             
             {/* 中间控制按钮 */}
-            <div className="flex flex-col gap-3 items-center justify-center min-w-[120px]">
+            <div className="lg:col-span-1 flex flex-col gap-3 items-center justify-center min-w-[100px]">
               <button 
                 onClick={processText} 
-                className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transform hover:-translate-y-1 transition-all flex items-center gap-2"
+                className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-3 rounded-lg font-medium hover:shadow-lg transform hover:-translate-y-1 transition-all flex items-center gap-2 w-full justify-center"
               >
                 🚀 开始过滤
               </button>
               <button 
                 onClick={clearAll} 
-                className="bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors flex items-center gap-2"
+                className="bg-gray-200 text-gray-800 px-4 py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors flex items-center gap-2 w-full justify-center"
               >
                 🗑️ 清空所有
               </button>
             </div>
             
             {/* 输出区域 */}
-            <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
+            <div className="lg:col-span-5 bg-gray-50 p-5 rounded-lg border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b-2 border-blue-500">📄 过滤结果</h3>
               <textarea
                 value={outputText}

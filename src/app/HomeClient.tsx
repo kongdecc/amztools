@@ -789,6 +789,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
   const [activeTab, setActiveTab] = useState('home')
   const [modules, setModules] = useState<Array<any>>(initialModules || [])
   const [navItems, setNavItems] = useState<Array<any>>(initialNavItems || [])
+  const mainRef = useRef<HTMLDivElement>(null)
   
   const iconMap: Record<string, any> = {
     'ad-calc': Calculator,
@@ -819,7 +820,13 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
       } catch {}
     }
     // 页面切换时滚动到顶部
-    window.scrollTo(0, 0);
+    setTimeout(() => {
+      if (mainRef.current) {
+        mainRef.current.scrollTo(0, 0);
+      } else {
+        window.scrollTo(0, 0);
+      }
+    }, 0);
   }, [activeTab])
   const { settings } = useSettings()
   const safeOrigin = (typeof window !== 'undefined' && (window as any).location) ? (window as any).location.origin : ''
@@ -903,8 +910,8 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
             </div>
           )}
         </aside>
-        <main className="flex-1 p-8 overflow-y-auto h-[calc(100vh-3.5rem)]">
-          <div className="max-w-6xl mx-auto">
+        <main ref={mainRef} className="flex-1 p-8 overflow-y-auto h-[calc(100vh-3.5rem)]">
+          <div className="max-w-7xl mx-auto">
             {activeTab === 'home' ? (
               <HomePage onNavigate={setActiveTab} modules={modules} />
             ) : (
