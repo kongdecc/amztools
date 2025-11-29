@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import fs from 'fs'
 import path from 'path'
+import { db } from '@/lib/db'
 
 const VISITS_FILE = path.join(process.cwd(), 'data', 'visits.json')
 const MODULES_FILE = path.join(process.cwd(), 'data', 'modules.json')
@@ -24,20 +25,29 @@ function writeVisitData(obj: Record<string, any>) {
   } catch {}
 }
 
-function updateModuleViews(key: string) {
+async function updateModuleViews(key: string) {
   try {
-    if (fs.existsSync(MODULES_FILE)) {
-      const content = fs.readFileSync(MODULES_FILE, 'utf-8')
-      const modules = JSON.parse(content)
-      if (Array.isArray(modules)) {
-        const module = modules.find((m: any) => m.key === key)
-        if (module) {
-          module.views = Number(module.views || 0) + 1
-          fs.writeFileSync(MODULES_FILE, JSON.stringify(modules, null, 2))
+    // Try to update database first
+    await (db as any).toolModule.update({
+      where: { key },
+      data: { views: { increment: 1 } }
+    })
+  } catch {
+    // Fallback to file update if database fails
+    try {
+      if (fs.existsSync(MODULES_FILE)) {
+        const content = fs.readFileSync(MODULES_FILE, 'utf-8')
+        const modules = JSON.parse(content)
+        if (Array.isArray(modules)) {
+          const module = modules.find((m: any) => m.key === key)
+          if (module) {
+            module.views = Number(module.views || 0) + 1
+            fs.writeFileSync(MODULES_FILE, JSON.stringify(modules, null, 2))
+          }
         }
       }
-    }
-  } catch {}
+    } catch {}
+  }
 }
 
 export async function POST(request: Request) {
@@ -65,8 +75,8 @@ export async function POST(request: Request) {
     allData[dateStr] = dayData
     writeVisitData(allData)
     
-    // Also update total views in modules.json
-    updateModuleViews(module)
+    // Also update total views in database or modules.json
+    await updateModuleViews(module)
     
     return NextResponse.json({ success: true, count: dayData.byModule[module] })
   } catch (e) {
