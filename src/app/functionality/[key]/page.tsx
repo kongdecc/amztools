@@ -12,6 +12,7 @@ import ForbiddenWordsChecker from '@/components/ForbiddenWordsChecker'
 import TextComparator from '@/components/TextComparator'
 import DuplicateRemover from '@/components/DuplicateRemover'
 import ContentFilter from '@/components/ContentFilter'
+import ImageResizer from '@/components/ImageResizer'
 
 const DetailClient = () => {
   const { key } = useParams<{ key: string }>()
@@ -35,6 +36,8 @@ const DetailClient = () => {
         return <DuplicateRemover />
       case 'content-filter':
         return <ContentFilter />
+      case 'image-resizer':
+        return <ImageResizer />
       default:
         return (
           <div className="bg-white p-6 rounded-xl border">

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download, AlertCircle, CheckCircle, Filter, LayoutGrid, Maximize2, Minimize2 } from 'lucide-react'
+import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download, AlertCircle, CheckCircle, Filter, LayoutGrid, Maximize2, Minimize2, Image as ImageIcon } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 import Head from 'next/head'
 import Link from 'next/link'
@@ -11,6 +11,7 @@ import ForbiddenWordsChecker from '@/components/ForbiddenWordsChecker'
 import TextComparator from '../components/TextComparator'
 import DuplicateRemover from '../components/DuplicateRemover'
 import ContentFilter from '../components/ContentFilter'
+import ImageResizer from '@/components/ImageResizer'
 import { useRef } from 'react'
 
 const Card = ({ children, className = "", onClick, ...props }: any) => (
@@ -38,6 +39,7 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
     'text-compare': Search,
     'duplicate-remover': CheckCircle,
     'content-filter': Filter,
+    'image-resizer': ImageIcon,
   }
   const colorSolidMap: Record<string, string> = {
     blue: 'bg-blue-600',
@@ -845,6 +847,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
     'text-compare': Search,
     'duplicate-remover': CheckCircle,
     'content-filter': Filter,
+    'image-resizer': ImageIcon,
   }
   const menuItems = [
     { id: 'home', label: '首页', icon: LayoutDashboard },
@@ -1152,6 +1155,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                 if (activeTab === 'text-compare') return <TextComparator />
                 if (activeTab === 'duplicate-remover') return <DuplicateRemover />
                 if (activeTab === 'content-filter') return <ContentFilter />
+                if (activeTab === 'image-resizer') return <ImageResizer />
                 return <PlaceholderPage title="功能开发中" icon={Hammer} />
               })()
             )}
