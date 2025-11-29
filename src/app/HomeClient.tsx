@@ -922,8 +922,8 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
           <div className="bg-white/20 p-1 rounded"><LayoutDashboard className="h-5 w-5" /></div>
           <span>{settings.siteName}</span>
         </div>
-        <nav className="ml-auto mr-6 flex items-center gap-6">
-          <Link href="/" className="text-sm text-white/90 hover:text-white">首页</Link>
+        <nav className="ml-auto mr-6 flex items-center gap-6 overflow-x-auto md:overflow-visible whitespace-nowrap scrollbar-hide max-w-[60vw] md:max-w-none">
+          <button onClick={() => { setActiveTab('home'); setIsFull(false) }} className="text-sm text-white/90 hover:text-white cursor-pointer">首页</button>
           {navItems
             .slice()
             .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
@@ -1031,15 +1031,32 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
           )}
         </aside>
         )}
-        <main ref={mainRef} className="flex-1 p-8 relative">
+        <main ref={mainRef} className="flex-1 p-4 md:p-8 relative">
           {activeTab !== 'home' && (
-            <button
-              onClick={() => setIsFull(!isFull)}
-              className="absolute top-4 right-4 p-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 text-gray-600 z-10"
-              title={isFull ? "退出全屏" : "全屏模式"}
-            >
-              {isFull ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
-            </button>
+            <div className="flex items-center justify-between mb-4 bg-white p-3 rounded-lg border border-gray-100 shadow-sm md:hidden">
+               <span className="text-sm font-bold text-gray-700">功能详情</span>
+               <button
+                onClick={() => setIsFull(!isFull)}
+                className="flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded hover:bg-blue-100 transition-colors"
+              >
+                {isFull ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+                {isFull ? "退出全屏" : "全屏显示"}
+              </button>
+            </div>
+          )}
+          {activeTab !== 'home' && (
+            <div className="hidden md:flex absolute top-4 right-8 z-10 items-center gap-2">
+               <div className="bg-black/75 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                 点击切换全屏模式
+               </div>
+               <button
+                onClick={() => setIsFull(!isFull)}
+                className="group p-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 text-gray-600 transition-all hover:text-blue-600"
+                title={isFull ? "退出全屏" : "最大化页面"}
+              >
+                {isFull ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+              </button>
+            </div>
           )}
           <div className="max-w-7xl mx-auto">
             {activeTab === 'home' ? (
