@@ -15,7 +15,8 @@ const defaults = [
   { key: 'char-count', title: '字符统计', desc: '统计字符并提供清理复制等操作', status: '启用', views: 0, color: 'rose', order: 6 },
   { key: 'delivery', title: '美国站配送费计算', desc: '按2025/2026规则计算配送费用', status: '启用', views: 0, color: 'orange', order: 7 },
   { key: 'returns-v2', title: '退货报告分析V2', desc: '上传退货报告，原因/趋势/仓库/评论多维分析', status: '启用', views: 0, color: 'red', order: 8 },
-  { key: 'listing-check', title: 'Listing文案合规', desc: '标题/五点/ST/长描述合规与关键词埋入检查', status: '启用', views: 0, color: 'teal', order: 9 }
+  { key: 'listing-check', title: 'Listing文案合规', desc: '标题/五点/ST/长描述合规与关键词埋入检查', status: '启用', views: 0, color: 'teal', order: 9 },
+  { key: 'forbidden-words', title: '亚马逊文案违禁词检测', desc: '检测亚马逊文案中的违禁词，支持自定义词库和批量替换', status: '启用', views: 0, color: 'red', order: 10 }
 ]
 
 function getLocalData() {
