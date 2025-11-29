@@ -12,9 +12,13 @@ export const metadata: Metadata = {
 
 async function getSettings() {
   try {
-    const rows = await (db as any).siteSettings.findMany()
-    const settings: any = {}
-    for (const r of rows as any) settings[String((r as any).key)] = String((r as any).value ?? '')
+    let settings: any = {}
+    try {
+      const rows = await (db as any).siteSettings.findMany()
+      for (const r of rows as any) settings[String((r as any).key)] = String((r as any).value ?? '')
+    } catch (e) {
+      console.error('Error fetching site settings:', e)
+    }
     
     // Get navigation
     let navItems: any[] = []
@@ -40,6 +44,13 @@ async function getSettings() {
       navItems.splice(0, 0, { id: 'functionality', label: '功能分类', order: 0, children: [] })
     }
 
+    let modules: any[] = []
+    try {
+      modules = await (db as any).toolModule.findMany({ orderBy: { order: 'asc' } })
+    } catch (e) {
+      console.error('Error fetching modules:', e)
+    }
+
     return {
       siteName: settings.siteName || '运营魔方 ToolBox',
       copyrightText: settings.copyrightText || '© 2025 运营魔方 ToolBox. All rights reserved.',
@@ -47,9 +58,10 @@ async function getSettings() {
       showFriendLinksLabel: String(settings.showFriendLinksLabel || 'false') === 'true',
       rewardDescription: settings.rewardDescription || '如果您觉得本工具箱对您有帮助，欢迎打赏支持我们继续维护和开发！',
       navItems,
-      modules: await (db as any).toolModule.findMany({ orderBy: { order: 'asc' } })
+      modules
     }
-  } catch {
+  } catch (e) {
+    console.error('Critical error in getSettings:', e)
     return {
       siteName: '运营魔方 ToolBox',
       copyrightText: '© 2025 运营魔方 ToolBox. All rights reserved.',
