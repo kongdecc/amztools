@@ -99,14 +99,16 @@ export async function GET(request: Request) {
     if (date) {
       const dayData = allData[date] || { total: 0, byModule: {} }
       return NextResponse.json(dayData)
-    } else if (start && end) {
-      // Use UTC to avoid timezone issues
+  } else if (start && end) {
       const parseYMD = (s: string) => {
         const [yy, mm, dd] = s.split('-').map(x => Number(x))
-        return new Date(Date.UTC(yy, (mm || 1) - 1, dd || 1))
+        return new Date(yy, (mm || 1) - 1, dd || 1)
       }
       const formatYMD = (d: Date) => {
-        return d.toISOString().split('T')[0]
+        const y = d.getFullYear()
+        const m = String(d.getMonth() + 1).padStart(2, '0')
+        const dd = String(d.getDate()).padStart(2, '0')
+        return `${y}-${m}-${dd}`
       }
       
       let s = parseYMD(start)
@@ -117,8 +119,6 @@ export async function GET(request: Request) {
       const byModule: Record<string, number> = {}
       const cur = new Date(s)
       
-      // console.log('[API] Range (UTC):', s.toISOString(), 'to', e.toISOString())
-      
       while (cur <= e) {
         const key = formatYMD(cur)
         const dayData = allData[key] || { total: 0, byModule: {} }
@@ -128,9 +128,19 @@ export async function GET(request: Request) {
             byModule[modKey] = (byModule[modKey] || 0) + Number(dayData.byModule[modKey] || 0)
           }
         }
-        cur.setUTCDate(cur.getUTCDate() + 1)
+        cur.setDate(cur.getDate() + 1)
       }
-      // console.log('[API] Result:', { total })
+      
+      if (total === 0 && Object.keys(byModule).length === 0) {
+        try {
+          const { db } = await import('@/lib/db')
+          const mods = await (db as any).toolModule.findMany()
+          const sum = mods.reduce((s: number, x: any) => s + Number(x.views || 0), 0)
+          const dist: Record<string, number> = {}
+          for (const m of mods) dist[m.key] = Number(m.views || 0)
+          return NextResponse.json({ total: sum, byModule: dist })
+        } catch {}
+      }
       return NextResponse.json({ total, byModule })
     } else {
       // Return today's data by default

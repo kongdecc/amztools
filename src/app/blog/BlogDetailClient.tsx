@@ -106,17 +106,17 @@ export default function BlogDetailClient({ item, initialNavItems, initialHtml }:
           <span>{settings.siteName}</span>
         </div>
         <nav className="ml-auto mr-6 flex items-center gap-6">
-          <Link href="/" className="text-sm text-white/90 hover:text-white">首页</Link>
+          <Link href="/" className="text-sm text白/90 hover:text-white">首页</Link>
           {navItems
             .slice()
             .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
             .map((item: any) => (
               item.isExternal ? (
-                <a key={item.id} href={item.href || '#'} target="_blank" rel="noopener noreferrer" className="text-sm text-white/90 hover:text-white">
+                <a key={item.id} href={item.href || '#'} target="_blank" rel="noopener noreferrer" className="text-sm text白/90 hover:text-white">
                   {item.label}
                 </a>
               ) : (
-                <Link key={item.id} href={item.href || '/'} className="text-sm text-white/90 hover:text-white">
+                <Link key={item.id} href={item.href || '/'} className="text-sm text白/90 hover:text-white">
                   {item.label}
                 </Link>
               )

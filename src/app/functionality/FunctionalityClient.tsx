@@ -65,14 +65,14 @@ export default function FunctionalityClient({ initialNavItems, initialModules }:
             if (isFuncMenu) {
               return (
                 <div key={item.id || 'function-menu'} className="relative group">
-                  <button onClick={()=>{ try { (window as any).location.href = '/functionality' } catch {} }} className="text-sm text-white/90 hover:text-white flex items-center gap-1">
+                  <button onClick={()=>{ try { (window as any).location.href = '/functionality' } catch {} }} className="text-sm text-white/90 hover:text-white flex items-center gap-1 cursor-pointer">
                     {item.label || '功能分类'}
                     <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
                   </button>
                   <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                     <div className="p-2 space-y-1">
                       {modules.map((m: any) => (
-                        <button key={m.key} onClick={() => handleNavigate(m.key)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors">{m.title}</button>
+                        <button key={m.key} onClick={() => handleNavigate(m.key)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer">{m.title}</button>
                       ))}
                     </div>
                   </div>

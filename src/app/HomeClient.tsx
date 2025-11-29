@@ -816,7 +816,14 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
   const [isFull, setIsFull] = useState<boolean>(() => {
     if (typeof initialFull === 'boolean') return Boolean(initialFull)
     if (typeof window !== 'undefined') {
-      try { const qs = new URLSearchParams(window.location.search); return qs.get('full') === '1' } catch {}
+      try {
+        const qs = new URLSearchParams(window.location.search)
+        const fullParam = qs.get('full')
+        if (fullParam === '1') return true
+        if (fullParam === '0') return false
+        const tab = qs.get('tab') || (window.location.hash ? window.location.hash.replace('#','') : '')
+        return Boolean(tab && tab !== 'home')
+      } catch {}
     }
     return false
   })
@@ -926,7 +933,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
               if (isFuncMenu) {
                 return (
                   <div key={item.id || 'function-menu'} className="relative group">
-                    <button onClick={()=>{ try { (window as any).location.href = '/functionality' } catch {} }} className="text-sm text-white/90 hover:text-white flex items-center gap-1">
+                    <button onClick={()=>{ try { (window as any).location.href = '/functionality' } catch {} }} className="text-sm text-white/90 hover:text-white flex items-center gap-1 cursor-pointer">
                       {item.label || '功能分类'}
                       <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
                     </button>
@@ -939,7 +946,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                               if (isFull) { try { (window as any).location.href = `/?tab=${m.key}&full=1` } catch {} }
                               else { setActiveTab(m.key) }
                             }}
-                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer"
                           >
                             {m.title}
                           </button>
@@ -952,7 +959,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
               if (hasChildren) {
                 return (
                   <div key={item.id} className="relative group">
-                    <button className="text-sm text-white/90 hover:text-white flex items-center gap-1">
+                    <button className="text-sm text-white/90 hover:text-white flex items-center gap-1 cursor-pointer">
                       {item.label}
                       <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
                     </button>
@@ -969,7 +976,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                                 {c.label}
                               </Link>
                             ) : (
-                              <button key={c.id} onClick={() => setActiveTab(c.id)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg">
+                              <button key={c.id} onClick={() => setActiveTab(c.id)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg cursor-pointer">
                                 {c.label}
                               </button>
                             )
@@ -990,7 +997,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                     {item.label}
                   </Link>
                 ) : (
-                  <button key={item.id} onClick={() => setActiveTab(item.id)} className="text-sm text-white/90 hover:text-white">
+                  <button key={item.id} onClick={() => setActiveTab(item.id)} className="text-sm text-white/90 hover:text-white cursor-pointer">
                     {item.label}
                   </button>
                 )
