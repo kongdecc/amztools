@@ -5,11 +5,11 @@ import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, B
 import { useSettings } from '@/components/SettingsProvider'
 import Head from 'next/head'
 import Link from 'next/link'
-import EditorPage from '../components/EditorPage'
-import FBACalculatorPage from '../components/FBACalculator'
-import ForbiddenWordsChecker from '../components/ForbiddenWordsChecker'
-import TextComparator from '../components/TextComparator'
-import DuplicateRemover from '../components/DuplicateRemover'
+import EditorPage from '@/components/EditorPage'
+import FBACalculatorPage from '@/components/FBACalculator'
+import ForbiddenWordsChecker from '@/components/ForbiddenWordsChecker'
+import TextComparator from '@/components/TextComparator'
+import DuplicateRemover from '@/components/DuplicateRemover'
 import { useRef } from 'react'
 
 const Card = ({ children, className = "", onClick, ...props }: any) => (
