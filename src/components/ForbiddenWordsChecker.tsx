@@ -390,13 +390,6 @@ const ForbiddenWordsChecker = () => {
     setSelectedPresetWords([...presetForbiddenWords]);
   }, []);
 
-  // 保存自定义违禁词到本地存储
-  useEffect(() => {
-    localStorage.setItem('forbiddenWordsCustom', JSON.stringify(customForbiddenWords));
-  }, [customForbiddenWords]);
-  
-  
-  
   // 词库搜索状态
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   
@@ -408,6 +401,11 @@ const ForbiddenWordsChecker = () => {
   const filteredCustomWords = customForbiddenWords.filter(word => 
     word.toLowerCase().includes(searchKeyword.toLowerCase())
   );
+  
+  // 保存自定义违禁词到本地存储
+  useEffect(() => {
+    localStorage.setItem('forbiddenWordsCustom', JSON.stringify(customForbiddenWords));
+  }, [customForbiddenWords]);
 
   // 工具函数：转义正则特殊字符
   const escapeRegExp = (string: string) => {
@@ -895,6 +893,20 @@ const ForbiddenWordsChecker = () => {
             
             {activeContentTab === 'text' ? (
               <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-500">文本输入</span>
+                  {content && (
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => setContent('')}
+                      className="ml-auto"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      清零
+                    </Button>
+                  )}
+                </div>
                 <textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
