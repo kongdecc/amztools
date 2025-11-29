@@ -1,12 +1,13 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download } from 'lucide-react'
+import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download, AlertCircle } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 import Head from 'next/head'
 import Link from 'next/link'
 import EditorPage from '../components/EditorPage'
 import FBACalculatorPage from '../components/FBACalculator'
+import ForbiddenWordsChecker from '../components/ForbiddenWordsChecker'
 import { useRef } from 'react'
 
 const Card = ({ children, className = "", onClick, ...props }: any) => (
@@ -30,6 +31,7 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
     'delivery': Truck,
     'returns-v2': Trash2,
     'listing-check': LayoutDashboard,
+    'forbidden-words': AlertCircle,
   }
   const colorSolidMap: Record<string, string> = {
     blue: 'bg-blue-600',
@@ -904,6 +906,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
                 if (activeTab === 'delivery') return <FBACalculatorPage />
                 if (activeTab === 'returns-v2') return <ReturnsV2Page />
                 if (activeTab === 'listing-check') return <ListingCheckerPage />
+                if (activeTab === 'forbidden-words') return <ForbiddenWordsChecker />
                 return <PlaceholderPage title="功能开发中" icon={Hammer} />
               })()
             )}
