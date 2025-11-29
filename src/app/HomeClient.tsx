@@ -802,8 +802,24 @@ const PlaceholderPage = ({ title, icon: Icon }: { title: string; icon: any }) =>
 )
 
 export default function HomeLayoutClient({ initialModules, initialNavItems, initialActiveTab, initialFull }: { initialModules: any[]; initialNavItems: any[]; initialActiveTab?: string; initialFull?: boolean }) {
-  const [activeTab, setActiveTab] = useState<string>(initialActiveTab || 'home')
-  const [isFull, setIsFull] = useState<boolean>(Boolean(initialFull))
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    if (initialActiveTab && String(initialActiveTab).trim()) return String(initialActiveTab)
+    if (typeof window !== 'undefined') {
+      try {
+        const qs = new URLSearchParams(window.location.search)
+        const tab = qs.get('tab') || (window.location.hash ? window.location.hash.replace('#','') : '')
+        return tab || 'home'
+      } catch {}
+    }
+    return 'home'
+  })
+  const [isFull, setIsFull] = useState<boolean>(() => {
+    if (typeof initialFull === 'boolean') return Boolean(initialFull)
+    if (typeof window !== 'undefined') {
+      try { const qs = new URLSearchParams(window.location.search); return qs.get('full') === '1' } catch {}
+    }
+    return false
+  })
   const [modules, setModules] = useState<Array<any>>(initialModules || [])
   const [navItems, setNavItems] = useState<Array<any>>(initialNavItems || [])
   const mainRef = useRef<HTMLDivElement>(null)

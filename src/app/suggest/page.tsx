@@ -9,10 +9,10 @@ import { LayoutDashboard, Send } from 'lucide-react'
 
  
 
-function SuggestContent() {
+function SuggestContent({ initialNavItems }: { initialNavItems?: any[] }) {
   const { settings } = useSettings()
   const [modules, setModules] = useState<any[]>([])
-  const [navItems, setNavItems] = useState<any[]>(() => {
+  const [navItems, setNavItems] = useState<any[]>(initialNavItems || (() => {
     try {
       const raw = localStorage.getItem('settings_cache')
       if (raw) {
@@ -24,7 +24,7 @@ function SuggestContent() {
       }
     } catch {}
     return []
-  })
+  })())
   const [origin, setOrigin] = useState('')
   const [nickname, setNickname] = useState('')
   const [content, setContent] = useState('')
@@ -161,10 +161,20 @@ function SuggestContent() {
   )
 }
 
-export default function Page() {
+export default async function Page() {
+  let initialSettings: Record<string, any> = {}
+  let navItems: any[] = []
+  try {
+    const { db } = await import('@/lib/db')
+    const rows = await (db as any).siteSettings.findMany()
+    for (const r of rows as any) initialSettings[String((r as any).key)] = String((r as any).value ?? '')
+    const row = await (db as any).siteSettings.findUnique({ where: { key: 'navigation' } })
+    const arr = row && (row as any).value ? JSON.parse(String((row as any).value)) : []
+    navItems = Array.isArray(arr) ? arr : []
+  } catch { navItems = [] }
   return (
-    <SettingsProvider>
-      <SuggestContent />
+    <SettingsProvider initial={initialSettings}>
+      <SuggestContent initialNavItems={navItems} />
     </SettingsProvider>
   )
 }
