@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download, AlertCircle, CheckCircle } from 'lucide-react'
+import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download, AlertCircle, CheckCircle, Filter } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 import Head from 'next/head'
 import Link from 'next/link'
@@ -10,6 +10,7 @@ import FBACalculatorPage from '@/components/FBACalculator'
 import ForbiddenWordsChecker from '@/components/ForbiddenWordsChecker'
 import TextComparator from '@/components/TextComparator'
 import DuplicateRemover from '@/components/DuplicateRemover'
+import ContentFilter from '@/components/ContentFilter'
 import { useRef } from 'react'
 
 const Card = ({ children, className = "", onClick, ...props }: any) => (
@@ -36,6 +37,7 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
     'forbidden-words': AlertCircle,
     'text-compare': Search,
     'duplicate-remover': CheckCircle,
+    'content-filter': Filter,
   }
   const colorSolidMap: Record<string, string> = {
     blue: 'bg-blue-600',
@@ -914,6 +916,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
                 if (activeTab === 'forbidden-words') return <ForbiddenWordsChecker />
                 if (activeTab === 'text-compare') return <TextComparator />
                 if (activeTab === 'duplicate-remover') return <DuplicateRemover />
+                if (activeTab === 'content-filter') return <ContentFilter />
                 return <PlaceholderPage title="功能开发中" icon={Hammer} />
               })()
             )}
