@@ -394,6 +394,20 @@ const ForbiddenWordsChecker = () => {
   useEffect(() => {
     localStorage.setItem('forbiddenWordsCustom', JSON.stringify(customForbiddenWords));
   }, [customForbiddenWords]);
+  
+  
+  
+  // 词库搜索状态
+  const [searchKeyword, setSearchKeyword] = useState<string>('');
+  
+  // 过滤后的词库列表
+  const filteredPresetWords = presetForbiddenWords.filter(word => 
+    word.toLowerCase().includes(searchKeyword.toLowerCase())
+  );
+  
+  const filteredCustomWords = customForbiddenWords.filter(word => 
+    word.toLowerCase().includes(searchKeyword.toLowerCase())
+  );
 
   // 工具函数：转义正则特殊字符
   const escapeRegExp = (string: string) => {
@@ -673,16 +687,27 @@ const ForbiddenWordsChecker = () => {
   const renderPresetWordList = () => {
     return (
       <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <span className="text-sm font-medium text-gray-700">
-            当前预设词库：{presetForbiddenWords.length}个词（已选择：{selectedPresetWords.length}个）
-          </span>
-          <Button variant="secondary" size="sm" onClick={toggleAllPresetWords}>
-            全选/取消全选
-          </Button>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex-1">
+            <input
+              type="text"
+              placeholder="搜索预设违禁词..."
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
+              当前预设词库：{presetForbiddenWords.length}个词（已选择：{selectedPresetWords.length}个）
+            </span>
+            <Button variant="secondary" size="sm" onClick={toggleAllPresetWords}>
+              全选/取消全选
+            </Button>
+          </div>
         </div>
         <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3 space-y-2">
-          {presetForbiddenWords.map((word, index) => (
+          {filteredPresetWords.map((word, index) => (
             <div key={index} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
               <div className="flex items-center gap-2">
                 <input
@@ -695,6 +720,11 @@ const ForbiddenWordsChecker = () => {
               </div>
             </div>
           ))}
+          {filteredPresetWords.length === 0 && (
+            <div className="text-center text-gray-500 py-4">
+              未找到匹配的违禁词
+            </div>
+          )}
         </div>
       </div>
     );
@@ -704,37 +734,51 @@ const ForbiddenWordsChecker = () => {
   const renderCustomWordList = () => {
     return (
       <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <span className="text-sm font-medium text-gray-700">
-            当前自定义词库：{customForbiddenWords.length}个词
-          </span>
-          {customForbiddenWords.length > 0 && (
-            <Button variant="danger" size="sm" onClick={clearCustomWords}>
-              <Trash2 className="h-4 w-4" />
-              清空
-            </Button>
-          )}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex-1">
+            <input
+              type="text"
+              placeholder="搜索自定义违禁词..."
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
+              当前自定义词库：{customForbiddenWords.length}个词
+            </span>
+            {customForbiddenWords.length > 0 && (
+              <Button variant="danger" size="sm" onClick={clearCustomWords}>
+                <Trash2 className="h-4 w-4" />
+                清空
+              </Button>
+            )}
+          </div>
         </div>
         
         <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3 space-y-2">
-          {customForbiddenWords.length === 0 ? (
+          {filteredCustomWords.length === 0 ? (
             <div className="text-center text-gray-500 py-4">
-              暂无自定义违禁词，请在下方添加
+              {customForbiddenWords.length === 0 ? '暂无自定义违禁词，请在下方添加' : '未找到匹配的违禁词'}
             </div>
           ) : (
-            customForbiddenWords.map((word, index) => (
-              <div key={index} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
-                <span className="text-sm text-gray-700">{word}</span>
-                <Button
-                  variant="danger"
-                  size="sm"
-                  onClick={() => deleteCustomWord(index)}
-                  className="h-7 px-2"
-                >
-                  <Trash2 className="h-3 w-3" />
-                </Button>
-              </div>
-            ))
+            filteredCustomWords.map((word, index) => {
+              const originalIndex = customForbiddenWords.indexOf(word);
+              return (
+                <div key={originalIndex} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
+                  <span className="text-sm text-gray-700">{word}</span>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => deleteCustomWord(originalIndex)}
+                    className="h-7 px-2"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+              );
+            })
           )}
         </div>
         
@@ -795,7 +839,6 @@ const ForbiddenWordsChecker = () => {
                 </ul>
               </li>
               <li>预设词管理：支持选择/全选/删除预设词</li>
-              <li>本工具完全在本地运行，无需联网，可直接分享HTML文件给他人使用</li>
             </ul>
           </div>
         )}
@@ -861,7 +904,7 @@ const ForbiddenWordsChecker = () => {
               </div>
             ) : (
               <div className="space-y-3">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-wrap">
                   <label className="flex items-center gap-2 cursor-pointer bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg text-sm text-gray-700 transition-colors">
                     <input
                       type="file"
@@ -873,6 +916,19 @@ const ForbiddenWordsChecker = () => {
                     选择文件
                   </label>
                   <span className="text-sm text-gray-500">{fileName}</span>
+                  {fileName !== '未选择文件' && (
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => {
+                        setFileName('未选择文件');
+                        setFileContent('');
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      清零
+                    </Button>
+                  )}
                 </div>
                 {fileContent && (
                   <div className="max-h-32 overflow-y-auto border border-gray-200 rounded-lg p-3 text-sm bg-gray-50">
