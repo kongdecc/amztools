@@ -1,54 +1,5 @@
 import { NextResponse } from 'next/server'
-import fs from 'fs'
-import path from 'path'
 import { db } from '@/lib/db'
-
-const VISITS_FILE = path.join(process.cwd(), 'data', 'visits.json')
-const MODULES_FILE = path.join(process.cwd(), 'data', 'modules.json')
-
-function readVisitData(): Record<string, any> {
-  try {
-    if (fs.existsSync(VISITS_FILE)) {
-      const content = fs.readFileSync(VISITS_FILE, 'utf-8')
-      const obj = JSON.parse(content)
-      if (obj && typeof obj === 'object') return obj
-    }
-  } catch {}
-  return {}
-}
-
-function writeVisitData(obj: Record<string, any>) {
-  try {
-    const dir = path.dirname(VISITS_FILE)
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
-    fs.writeFileSync(VISITS_FILE, JSON.stringify(obj, null, 2))
-  } catch {}
-}
-
-async function updateModuleViews(key: string) {
-  try {
-    // Try to update database first
-    await (db as any).toolModule.update({
-      where: { key },
-      data: { views: { increment: 1 } }
-    })
-  } catch {
-    // Fallback to file update if database fails
-    try {
-      if (fs.existsSync(MODULES_FILE)) {
-        const content = fs.readFileSync(MODULES_FILE, 'utf-8')
-        const modules = JSON.parse(content)
-        if (Array.isArray(modules)) {
-          const module = modules.find((m: any) => m.key === key)
-          if (module) {
-            module.views = Number(module.views || 0) + 1
-            fs.writeFileSync(MODULES_FILE, JSON.stringify(modules, null, 2))
-          }
-        }
-      }
-    } catch {}
-  }
-}
 
 export async function POST(request: Request) {
   try {
@@ -65,20 +16,31 @@ export async function POST(request: Request) {
     const d = String(today.getDate()).padStart(2, '0')
     const dateStr = `${y}-${m}-${d}`
 
-    const allData = readVisitData()
-    const dayData = allData[dateStr] || { total: 0, byModule: {} }
+    // Update DB daily visits
+    await (db as any).dailyVisit.upsert({
+      where: { date_module: { date: dateStr, module } },
+      update: { count: { increment: 1 } },
+      create: { date: dateStr, module, count: 1 }
+    })
+
+    // Also track total 'all' visits for the day if it's a specific module
+    if (module !== 'all') {
+       await (db as any).dailyVisit.upsert({
+        where: { date_module: { date: dateStr, module: 'total' } },
+        update: { count: { increment: 1 } },
+        create: { date: dateStr, module: 'total', count: 1 }
+      })
+    }
     
-    dayData.total = Number(dayData.total || 0) + 1
-    dayData.byModule = dayData.byModule || {}
-    dayData.byModule[module] = Number(dayData.byModule[module] || 0) + 1
+    // Update module total views
+    try {
+      await (db as any).toolModule.update({
+        where: { key: module },
+        data: { views: { increment: 1 } }
+      })
+    } catch {}
     
-    allData[dateStr] = dayData
-    writeVisitData(allData)
-    
-    // Also update total views in database or modules.json
-    await updateModuleViews(module)
-    
-    return NextResponse.json({ success: true, count: dayData.byModule[module] })
+    return NextResponse.json({ success: true })
   } catch (e) {
     return NextResponse.json({ error: 'Failed to track visit' }, { status: 500 })
   }
@@ -91,44 +53,32 @@ export async function GET(request: Request) {
     const start = searchParams.get('start') // YYYY-MM-DD
     const end = searchParams.get('end') // YYYY-MM-DD
     
-    console.log('[API] Visits Request:', { date, start, end })
-
-    const allData = readVisitData()
-    
     if (date) {
-      const dayData = allData[date] || { total: 0, byModule: {} }
-      return NextResponse.json(dayData)
+      const rows = await (db as any).dailyVisit.findMany({ where: { date } })
+      const totalRow = rows.find((r: any) => r.module === 'total')
+      const total = totalRow ? totalRow.count : 0
+      const byModule: Record<string, number> = {}
+      rows.forEach((r: any) => {
+        if (r.module !== 'total') byModule[r.module] = r.count
+      })
+      return NextResponse.json({ total, byModule })
     } else if (start && end) {
-      const parseYMD = (s: string) => {
-        const [yy, mm, dd] = s.split('-').map(x => Number(x))
-        return new Date(yy, (mm || 1) - 1, dd || 1)
-      }
-      const formatYMD = (d: Date) => {
-        const y = d.getFullYear()
-        const m = String(d.getMonth() + 1).padStart(2, '0')
-        const dd = String(d.getDate()).padStart(2, '0')
-        return `${y}-${m}-${dd}`
-      }
-      
-      let s = parseYMD(start)
-      let e = parseYMD(end)
-      if (s > e) { const tmp = s; s = e; e = tmp }
+      const rows = await (db as any).dailyVisit.findMany({
+        where: {
+          date: { gte: start, lte: end }
+        }
+      })
       
       let total = 0
       const byModule: Record<string, number> = {}
-      const cur = new Date(s)
       
-      while (cur <= e) {
-        const key = formatYMD(cur)
-        const dayData = allData[key] || { total: 0, byModule: {} }
-        total += Number(dayData.total || 0)
-        if (dayData.byModule) {
-          for (const modKey of Object.keys(dayData.byModule)) {
-            byModule[modKey] = (byModule[modKey] || 0) + Number(dayData.byModule[modKey] || 0)
-          }
+      rows.forEach((r: any) => {
+        if (r.module === 'total') {
+          total += r.count
+        } else {
+          byModule[r.module] = (byModule[r.module] || 0) + r.count
         }
-        cur.setDate(cur.getDate() + 1)
-      }
+      })
       
       return NextResponse.json({ total, byModule })
     } else {
@@ -139,8 +89,14 @@ export async function GET(request: Request) {
       const d = String(today.getDate()).padStart(2, '0')
       const todayStr = `${y}-${m}-${d}`
       
-      const todayData = allData[todayStr] || { total: 0, byModule: {} }
-      return NextResponse.json(todayData)
+      const rows = await (db as any).dailyVisit.findMany({ where: { date: todayStr } })
+      const totalRow = rows.find((r: any) => r.module === 'total')
+      const total = totalRow ? totalRow.count : 0
+      const byModule: Record<string, number> = {}
+      rows.forEach((r: any) => {
+        if (r.module !== 'total') byModule[r.module] = r.count
+      })
+      return NextResponse.json({ total, byModule })
     }
   } catch (e) {
     return NextResponse.json({ total: 0, byModule: {} })

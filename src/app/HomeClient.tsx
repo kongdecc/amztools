@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download, AlertCircle, CheckCircle, Filter, LayoutGrid } from 'lucide-react'
+import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download, AlertCircle, CheckCircle, Filter, LayoutGrid, Maximize2, Minimize2 } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 import Head from 'next/head'
 import Link from 'next/link'
@@ -1006,7 +1006,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
         </nav>
       </header>
       <div className="flex flex-1">
-        {!isFull && activeTab === 'home' && (
+        {!isFull && (
         <aside className="w-64 bg-white border-r border-gray-200 flex-shrink-0 hidden md:flex flex-col">
           <div className="p-4 space-y-1 flex-1 overflow-y-auto">
             {menuItems.filter(item => item.id !== 'functionality').map(item => (
@@ -1031,7 +1031,16 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
           )}
         </aside>
         )}
-        <main ref={mainRef} className="flex-1 p-8">
+        <main ref={mainRef} className="flex-1 p-8 relative">
+          {activeTab !== 'home' && (
+            <button
+              onClick={() => setIsFull(!isFull)}
+              className="absolute top-4 right-4 p-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 text-gray-600 z-10"
+              title={isFull ? "退出全屏" : "全屏模式"}
+            >
+              {isFull ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+            </button>
+          )}
           <div className="max-w-7xl mx-auto">
             {activeTab === 'home' ? (
               <HomePage onNavigate={setActiveTab} modules={modules} />
