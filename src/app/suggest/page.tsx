@@ -12,7 +12,19 @@ import { LayoutDashboard, Send } from 'lucide-react'
 function SuggestContent() {
   const { settings } = useSettings()
   const [modules, setModules] = useState<any[]>([])
-  const [navItems, setNavItems] = useState<any[]>([])
+  const [navItems, setNavItems] = useState<any[]>(() => {
+    try {
+      const raw = localStorage.getItem('settings_cache')
+      if (raw) {
+        const obj = JSON.parse(raw)
+        if (obj && obj.navigation) {
+          const arr = JSON.parse(String(obj.navigation))
+          if (Array.isArray(arr)) return arr
+        }
+      }
+    } catch {}
+    return []
+  })
   const [origin, setOrigin] = useState('')
   const [nickname, setNickname] = useState('')
   const [content, setContent] = useState('')

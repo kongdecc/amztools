@@ -914,6 +914,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
           <span>{settings.siteName}</span>
         </div>
         <nav className="ml-auto mr-6 flex items-center gap-6">
+          <Link href="/" className="text-sm text-white/90 hover:text-white">首页</Link>
           {navItems
             .slice()
             .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
@@ -932,7 +933,10 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
                         {modules.filter((m: any) => m.status !== '下架').map((m: any) => (
                           <button 
                             key={m.key}
-                            onClick={() => setActiveTab(m.key)}
+                            onClick={() => {
+                              if (isFull) { try { (window as any).location.href = `/?tab=${m.key}&full=1` } catch {} }
+                              else { setActiveTab(m.key) }
+                            }}
                             className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
                           >
                             {m.title}
