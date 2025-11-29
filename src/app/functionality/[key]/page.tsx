@@ -55,17 +55,17 @@ const DetailClient = () => {
           <span>{settings.siteName}</span>
         </div>
         <nav className="ml-auto mr-6 flex items-center gap-6">
-          <Link href="/" className="text-sm text-white/90 hover:text白">首页</Link>
+          <Link href="/" className="text-sm text-white/90 hover:text-white">首页</Link>
           {navItems.map((item:any) => {
             const isFuncMenu = String(item.label || '').includes('功能分类') || String(item.id || '') === 'functionality'
             if (isFuncMenu) {
               return (
                 <div key={item.id || 'function-menu'} className="relative group">
-                  <button className="text-sm text白/90 hover:text白 flex items-center gap-1">
+                  <button onClick={()=>{ try { (window as any).location.href = '/functionality' } catch {} }} className="text-sm text-white/90 hover:text-white flex items-center gap-1">
                     {item.label || '功能分类'}
                     <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
                   </button>
-                  <div className="absolute top-full right-0 mt-2 w-64 bg白 rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                  <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                     <div className="p-2 space-y-1">
                       {modules.map((m:any)=>(
                         <button key={m.key} onClick={() => { try { (window as any).location.href = `/?tab=${m.key}&full=1` } catch {} }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors">{m.title}</button>
@@ -76,9 +76,9 @@ const DetailClient = () => {
               )
             }
             return item.isExternal ? (
-              <a key={item.id} href={item.href || '#'} target="_blank" rel="noopener noreferrer" className="text-sm text白/90 hover:text白">{item.label}</a>
+              <a key={item.id} href={item.href || '#'} target="_blank" rel="noopener noreferrer" className="text-sm text-white/90 hover:text-white">{item.label}</a>
             ) : (
-              <a key={item.id} href={item.href || '/'} className="text-sm text白/90 hover:text白">{item.label}</a>
+              <a key={item.id} href={item.href || '/'} className="text-sm text-white/90 hover:text-white">{item.label}</a>
             )
           })}
         </nav>

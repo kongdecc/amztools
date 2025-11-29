@@ -3,7 +3,7 @@
 import Head from 'next/head'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
-import { LayoutDashboard } from 'lucide-react'
+import { LayoutDashboard, ChevronDown } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 import { marked } from 'marked'
 
@@ -65,8 +65,9 @@ export default function AboutClient({ initialNavItems, initialHtml }: { initialN
               if (isFuncMenu) {
                 return (
                   <div key={item.id || 'function-menu'} className="relative group">
-                    <button className="text-sm text-white/90 hover:text-white flex items-center gap-1">
+                    <button onClick={()=>{ try { (window as any).location.href = '/functionality' } catch {} }} className="text-sm text-white/90 hover:text-white flex items-center gap-1">
                       {item.label || '功能分类'}
+                      <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
                     </button>
                     <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                       <div className="p-2 space-y-1">

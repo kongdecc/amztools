@@ -18,8 +18,8 @@ interface Module {
   order: number
 }
 
-export default function FunctionalityClient({ initialNavItems }: { initialNavItems: any[] }) {
-  const [modules, setModules] = useState<Module[]>([])
+export default function FunctionalityClient({ initialNavItems, initialModules }: { initialNavItems: any[]; initialModules?: Module[] }) {
+  const [modules, setModules] = useState<Module[]>(initialModules || [])
   const [keyword, setKeyword] = useState('')
   const { settings } = useSettings()
   const [navItems, setNavItems] = useState<Array<any>>(initialNavItems || [])
@@ -30,7 +30,8 @@ export default function FunctionalityClient({ initialNavItems }: { initialNavIte
         const r = await fetch('/api/modules', { cache: 'no-store' })
         const d = await r.json()
         const arr: Module[] = Array.isArray(d) ? d : []
-        setModules(arr.filter(m => m.status !== '下架').sort((a, b) => a.order - b.order))
+        const next = arr.filter(m => m.status !== '下架').sort((a, b) => a.order - b.order)
+        setModules(next.length ? next : (initialModules || []))
       } catch { setModules([]) }
     })()
   }, [])
@@ -64,7 +65,7 @@ export default function FunctionalityClient({ initialNavItems }: { initialNavIte
             if (isFuncMenu) {
               return (
                 <div key={item.id || 'function-menu'} className="relative group">
-                  <button className="text-sm text-white/90 hover:text-white flex items-center gap-1">
+                  <button onClick={()=>{ try { (window as any).location.href = '/functionality' } catch {} }} className="text-sm text-white/90 hover:text-white flex items-center gap-1">
                     {item.label || '功能分类'}
                     <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
                   </button>
