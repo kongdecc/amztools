@@ -13,8 +13,10 @@ const ImageResizer = () => {
   const [batchFormat, setBatchFormat] = useState('image/jpeg')
   const [isProcessing, setIsProcessing] = useState(false)
   const [progress, setProgress] = useState({ current: 0, total: 0 })
+  const [isDragging, setIsDragging] = useState(false)
   
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const dropZoneRef = useRef<HTMLDivElement>(null)
 
   // Clean up object URLs on unmount
   useEffect(() => {
@@ -26,69 +28,92 @@ const ImageResizer = () => {
     }
   }, [])
 
+  const processFiles = (files: FileList | File[]) => {
+    const newFiles = Array.from(files).filter(file => file.type.startsWith('image/'))
+      
+    if (newFiles.length === 0) {
+      alert('请选择有效的图片文件')
+      return
+    }
+
+    if (images.length + newFiles.length > 100) {
+      alert('图片总数不能超过100张')
+      return
+    }
+
+    const newImages = newFiles.map(file => ({
+      id: Math.random().toString(36).substr(2, 9),
+      file,
+      previewUrl: URL.createObjectURL(file),
+      originalWidth: 0,
+      originalHeight: 0,
+      width: 0,
+      height: 0,
+      keepRatio: true,
+      format: file.type, // Default to original format or closest
+      resizedUrl: null,
+      resizedSize: 0,
+      status: 'pending' // pending, resized
+    }))
+
+    // Load dimensions
+    newImages.forEach(imgObj => {
+      const img = new Image()
+      img.onload = () => {
+        setImages(prev => prev.map(p => {
+          if (p.id === imgObj.id) {
+            return {
+              ...p,
+              originalWidth: img.width,
+              originalHeight: img.height,
+              width: img.width,
+              height: img.height
+            }
+          }
+          return p
+        }))
+      }
+      img.src = imgObj.previewUrl
+    })
+
+    setImages(prev => [...prev, ...newImages])
+  }
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const newFiles = Array.from(e.target.files).filter(file => file.type.startsWith('image/'))
-      
-      if (newFiles.length === 0) {
-        alert('请选择有效的图片文件')
-        return
-      }
-
-      if (images.length + newFiles.length > 30) {
-        alert('图片总数不能超过30张')
-        return
-      }
-
-      const newImages = newFiles.map(file => ({
-        id: Math.random().toString(36).substr(2, 9),
-        file,
-        previewUrl: URL.createObjectURL(file),
-        originalWidth: 0,
-        originalHeight: 0,
-        width: 0,
-        height: 0,
-        keepRatio: true,
-        format: file.type, // Default to original format or closest
-        resizedUrl: null,
-        resizedSize: 0,
-        status: 'pending' // pending, resized
-      }))
-
-      // Load dimensions
-      newImages.forEach(imgObj => {
-        const img = new Image()
-        img.onload = () => {
-          setImages(prev => prev.map(p => {
-            if (p.id === imgObj.id) {
-              return {
-                ...p,
-                originalWidth: img.width,
-                originalHeight: img.height,
-                width: img.width,
-                height: img.height
-              }
-            }
-            return p
-          }))
-          
-          // If this is the first image, set batch defaults
-          if (images.length === 0 && newImages[0].id === imgObj.id) {
-             // Logic handled in effect or just let user set it
-          }
-        }
-        img.src = imgObj.previewUrl
-      })
-
-      setImages(prev => [...prev, ...newImages])
-      
-      // Set batch format from first new file if not set
-      if (images.length === 0 && newFiles.length > 0) {
-         // Maybe keep default or set to first file type
-      }
+      processFiles(e.target.files)
     }
     // Reset input
     if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  // Drag and Drop handlers
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(true)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+    
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      processFiles(e.dataTransfer.files)
+    }
   }
 
   const handleDelete = (id: string) => {
@@ -100,6 +125,18 @@ const ImageResizer = () => {
       }
       return prev.filter(img => img.id !== id)
     })
+  }
+  
+  const handleClearAll = () => {
+    if (confirm('确定要清空所有图片吗？')) {
+      images.forEach(img => {
+        if (img.previewUrl) URL.revokeObjectURL(img.previewUrl)
+        if (img.resizedUrl) URL.revokeObjectURL(img.resizedUrl)
+      })
+      setImages([])
+      setBatchWidth('')
+      setBatchHeight('')
+    }
   }
 
   const handleResize = async (id: string) => {
@@ -271,34 +308,39 @@ const ImageResizer = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
-  // Update height when width changes if keep ratio is on (for batch)
-  useEffect(() => {
-    if (batchKeepRatio && batchWidth && images.length > 0) {
-       // Use the first image's aspect ratio as reference? 
-       // The original script used the first image loaded for batch aspect ratio.
-       // Here we might want to be careful.
-       // Let's just stick to the user input logic. 
-       // If user sets batch width, we can't auto set height unless we have a reference aspect ratio.
-       // But images might have different aspect ratios.
-       // The original script: "if (imageFiles.length === newFiles.length) ... batchAspectRatio = this.width / this.height"
-       // It sets a global batchAspectRatio based on the FIRST image.
-    }
-  }, [batchWidth, batchKeepRatio])
-  
-  // We'll implement aspect ratio logic in the inputs directly
-  
   return (
     <div className="space-y-8">
-      <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm text-center">
+      <div className="flex items-center gap-2 mb-2">
+        <ImageIcon className="h-6 w-6 text-blue-600" />
+        <h2 className="text-xl font-bold text-gray-800">图片尺寸修改工具</h2>
+      </div>
+      
+      <div 
+        ref={dropZoneRef}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+        className={`bg-white p-12 rounded-xl border-2 border-dashed transition-colors text-center ${
+          isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
+        }`}
+      >
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">图片尺寸调整工具</h2>
-          <p className="text-gray-500">支持批量调整图片大小、格式转换和压缩</p>
+          <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Upload className="w-8 h-8 text-blue-600" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-800 mb-2">
+            拖拽图片到这里，或者点击上传
+          </h3>
+          <p className="text-gray-500 text-sm">
+            支持 JPEG, PNG, GIF 格式，单次最多支持 100 张图片
+          </p>
         </div>
         
         <label className="inline-block">
-          <div className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg cursor-pointer flex items-center gap-2 transition-colors shadow-md">
+          <div className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg cursor-pointer flex items-center gap-2 transition-colors shadow-sm font-medium">
             <Upload size={20} />
-            <span>选择图片（最多30张）</span>
+            <span>选择图片</span>
           </div>
           <input 
             type="file" 
@@ -409,6 +451,18 @@ const ImageResizer = () => {
           </div>
         </div>
       )}
+      
+      {images.length > 0 && (
+        <div className="flex justify-end">
+           <button 
+             onClick={handleClearAll}
+             className="text-red-500 hover:text-red-600 text-sm flex items-center gap-1"
+           >
+             <Trash2 size={16} />
+             清空所有图片
+           </button>
+        </div>
+      )}
 
       {/* Progress Modal */}
       {isProcessing && (
@@ -510,9 +564,9 @@ const ImageResizer = () => {
                               updates.width = Math.round(h * (p.originalWidth / p.originalHeight))
                             }
                             return { ...p, ...updates }
-                          }
-                          return p
-                        }))
+                           }
+                           return p
+                         }))
                       }}
                       className="w-full text-sm border border-gray-300 rounded px-2 py-1"
                     />
