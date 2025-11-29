@@ -25,6 +25,8 @@ type SiteSettings = {
   robotsDisallowAdmin?: string
   robotsDisallowPageParam?: string
   robotsDisallowUtmParams?: string
+  functionalityTitle?: string
+  functionalitySubtitle?: string
 }
 
 type Ctx = {
@@ -55,7 +57,9 @@ const defaults: SiteSettings = {
   robotsDisallowQuery: 'true',
   robotsDisallowAdmin: 'true',
   robotsDisallowPageParam: 'true',
-  robotsDisallowUtmParams: 'true'
+  robotsDisallowUtmParams: 'true',
+  functionalityTitle: '功能中心',
+  functionalitySubtitle: '探索我们提供的所有工具和功能，帮助您更高效地管理亚马逊业务'
 }
 
 const SettingsContext = createContext<Ctx | undefined>(undefined)

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react'
 
 export default function AdminSettings() {
-  const [form, setForm] = useState({ siteName: '', logoUrl: '', analyticsHeadHtml: '', analyticsBodyHtml: '', showAnalytics: false, copyrightText: '', homeHeroTitle: '', homeHeroSubtitle: '', hideHomeHeroIfEmpty: false, friendLinks: '[]', privacyPolicy: '', showFriendLinksLabel: false })
+  const [form, setForm] = useState({ siteName: '', logoUrl: '', analyticsHeadHtml: '', analyticsBodyHtml: '', showAnalytics: false, copyrightText: '', homeHeroTitle: '', homeHeroSubtitle: '', hideHomeHeroIfEmpty: false, friendLinks: '[]', privacyPolicy: '', showFriendLinksLabel: false, functionalityTitle: '', functionalitySubtitle: '' })
   const [loading, setLoading] = useState(true)
   const [msg, setMsg] = useState('')
 
@@ -24,7 +24,9 @@ export default function AdminSettings() {
         hideHomeHeroIfEmpty: String(data.hideHomeHeroIfEmpty || 'false') === 'true',
         friendLinks: data.friendLinks || '[]',
         privacyPolicy: data.privacyPolicy || '',
-        showFriendLinksLabel: String(data.showFriendLinksLabel || 'false') === 'true'
+        showFriendLinksLabel: String(data.showFriendLinksLabel || 'false') === 'true',
+        functionalityTitle: data.functionalityTitle || '',
+        functionalitySubtitle: data.functionalitySubtitle || ''
       })
     } finally {
       setLoading(false)
@@ -86,6 +88,19 @@ export default function AdminSettings() {
           <div className="flex items-center gap-2">
             <input id="hideHomeHeroIfEmpty" type="checkbox" checked={form.hideHomeHeroIfEmpty} onChange={e => set('hideHomeHeroIfEmpty', e.target.checked)} />
             <label htmlFor="hideHomeHeroIfEmpty" className="text-sm text-gray-600">当标题或副标题为空时不显示</label>
+          </div>
+          
+          {/* 功能中心设置 */}
+          <div className="pt-6 border-t border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">功能中心设置</h3>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">功能中心标题</label>
+              <input className="w-full border rounded px-3 py-2 text-sm" value={form.functionalityTitle} onChange={e => set('functionalityTitle', e.target.value)} />
+            </div>
+            <div className="mt-3">
+              <label className="block text-sm text-gray-600 mb-1">功能中心副标题</label>
+              <input className="w-full border rounded px-3 py-2 text-sm" value={form.functionalitySubtitle} onChange={e => set('functionalitySubtitle', e.target.value)} />
+            </div>
           </div>
           <div>
             <label className="block text-sm text-gray-600 mb-1">页脚版权</label>

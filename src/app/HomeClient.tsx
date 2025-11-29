@@ -848,7 +848,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
     // 页面切换时滚动到顶部
     setTimeout(() => {
       if (mainRef.current) {
-        mainRef.current.scrollTo(0, 0);
+        mainRef.current.scrollTop = 0;
       } else {
         window.scrollTo(0, 0);
       }
