@@ -74,10 +74,15 @@ export async function POST(request: Request) {
     const dest = path.join(dataDir, `reward-qr.${ext}`)
     fs.writeFileSync(dest, buf)
     
+    // Double check file exists and size
+    if (!fs.existsSync(dest) || fs.statSync(dest).size === 0) {
+      return NextResponse.json({ error: 'write_failed' }, { status: 500 })
+    }
+    
     const url = `/api/reward-qr?ts=${Date.now()}`
     return NextResponse.json({ ok: true, url })
   } catch (e) {
-    console.error(e)
-    return NextResponse.json({ error: 'failed' }, { status: 500 })
+    console.error('Upload error:', e)
+    return NextResponse.json({ error: 'failed', message: String(e) }, { status: 500 })
   }
 }

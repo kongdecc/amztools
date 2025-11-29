@@ -119,7 +119,25 @@ export default function AdminSettings() {
             <div>
               <label className="block text-sm text-gray-600 mb-1">打赏二维码</label>
               <div className="mt-2 flex items-center gap-3">
-                <input type="file" accept="image/*" onChange={async e => { const f = e.target.files?.[0]; if (f) { try { const fd = new FormData(); fd.append('file', f); const r = await fetch('/api/reward-qr', { method: 'POST', body: fd, credentials: 'include' }); const d = await r.json().catch(()=>({})); if (r.ok && d?.url) { setRewardQrUrl(d.url) } } catch {} } }} />
+                <input type="file" accept="image/*" onChange={async e => { 
+                  const f = e.target.files?.[0]; 
+                  if (f) { 
+                    try { 
+                      const fd = new FormData(); 
+                      fd.append('file', f); 
+                      const r = await fetch('/api/reward-qr', { method: 'POST', body: fd, credentials: 'include' }); 
+                      const d = await r.json().catch(()=>({})); 
+                      if (r.ok && d?.url) { 
+                        setRewardQrUrl(d.url) 
+                        setMsg('二维码上传成功')
+                      } else {
+                        setMsg('上传失败: ' + (d?.error || r.statusText))
+                      }
+                    } catch (e) {
+                      setMsg('上传出错')
+                    } 
+                  } 
+                }} />
                 {rewardQrUrl && (<img src={rewardQrUrl} alt="Reward QR" className="h-24 w-auto rounded border" />)}
               </div>
             </div>
