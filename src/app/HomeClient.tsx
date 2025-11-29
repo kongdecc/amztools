@@ -828,32 +828,8 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
     return false
   })
   const [modules, setModules] = useState<Array<any>>(initialModules || [])
-  const [navItems, setNavItems] = useState<Array<any>>([])
+  const [navItems, setNavItems] = useState<Array<any>>(initialNavItems || [])
   
-  // 合并 initialNavItems 和 modules 来构造最终的导航菜单
-  useEffect(() => {
-    let items = initialNavItems || []
-    // 如果 initialNavItems 为空或者没有功能分类，尝试构造默认导航
-    if (items.length === 0) {
-       items = [
-        { id: 'about', label: '关于', href: '/about', order: 1, isExternal: false, active: true },
-        { id: 'blog', label: '博客', href: '/blog', order: 2, isExternal: false, active: true },
-        { id: 'suggest', label: '提需求', href: '/suggest', order: 3, isExternal: false, active: true }
-      ]
-    }
-    
-    // 检查是否已存在功能分类菜单，如果不存在则添加
-    const hasFuncMenu = items.some((item: any) => String(item.label || '').includes('功能分类') || String(item.id || '') === 'functionality')
-    if (!hasFuncMenu) {
-        // 在适当位置插入功能分类，例如放在"关于"之前
-        const newItems = [...items]
-        newItems.splice(0, 0, { id: 'functionality', label: '功能分类', order: 0, children: [] })
-        items = newItems
-    }
-    
-    setNavItems(items)
-  }, [initialNavItems])
-
   const mainRef = useRef<HTMLDivElement>(null)
   
   const iconMap: Record<string, any> = {

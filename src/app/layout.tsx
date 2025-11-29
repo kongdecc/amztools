@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react'
 import './globals.css'
 import { db } from '@/lib/db'
+import { Metadata } from 'next'
 
-export default async function RootLayout({ children }: { children: ReactNode }) {
+export async function generateMetadata(): Promise<Metadata> {
   let logoUrl = ''
-  let siteName = ''
+  let siteName = '运营魔方 ToolBox'
   let googleVerification = ''
   let baiduVerification = ''
 
@@ -13,18 +14,24 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     const settings: any = {}
     for (const r of rows as any) settings[String((r as any).key)] = String((r as any).value ?? '')
     logoUrl = settings.logoUrl || ''
-    siteName = settings.siteName || ''
+    siteName = settings.siteName || siteName
     googleVerification = settings.googleVerification || ''
     baiduVerification = settings.baiduVerification || ''
   } catch {}
 
+  return {
+    title: siteName,
+    icons: logoUrl ? { icon: logoUrl } : undefined,
+    verification: {
+      google: googleVerification || undefined,
+      other: baiduVerification ? { 'baidu-site-verification': baiduVerification } : undefined
+    }
+  }
+}
+
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="zh-CN">
-      <head>
-        {logoUrl && <link rel="icon" href={logoUrl} />}
-        {googleVerification && <meta name="google-site-verification" content={googleVerification} />}
-        {baiduVerification && <meta name="baidu-site-verification" content={baiduVerification} />}
-      </head>
       <body suppressHydrationWarning={true}>{children}</body>
     </html>
   )

@@ -70,6 +70,13 @@ export default async function Page({ searchParams }: { searchParams?: Record<str
       { key: 'duplicate-remover', title: '去除重复文本工具', desc: '智能去重，多种模式，支持按行、空格、逗号等分隔符，支持排序和过滤', status: '启用', views: 0, color: 'purple', order: 11 }
     ]
   }
+
+  // Ensure "Functionality" menu item exists
+  const hasFuncMenu = navItems.some((item: any) => String(item.label || '').includes('功能分类') || String(item.id || '') === 'functionality')
+  if (!hasFuncMenu) {
+    navItems.splice(0, 0, { id: 'functionality', label: '功能分类', order: 0, children: [] })
+  }
+
   const initialActiveTab = String(searchParams?.tab || '')
   const initialFull = String(searchParams?.full || '') === '1'
   return (
