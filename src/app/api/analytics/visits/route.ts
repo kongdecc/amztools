@@ -131,16 +131,6 @@ export async function GET(request: Request) {
         cur.setDate(cur.getDate() + 1)
       }
       
-      if (total === 0 && Object.keys(byModule).length === 0) {
-        try {
-          const { db } = await import('@/lib/db')
-          const mods = await (db as any).toolModule.findMany()
-          const sum = mods.reduce((s: number, x: any) => s + Number(x.views || 0), 0)
-          const dist: Record<string, number> = {}
-          for (const m of mods) dist[m.key] = Number(m.views || 0)
-          return NextResponse.json({ total: sum, byModule: dist })
-        } catch {}
-      }
       return NextResponse.json({ total, byModule })
     } else {
       // Return today's data by default

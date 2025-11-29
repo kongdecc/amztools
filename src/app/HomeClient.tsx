@@ -1006,7 +1006,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
         </nav>
       </header>
       <div className="flex flex-1">
-        {!isFull && (
+        {!isFull && activeTab === 'home' && (
         <aside className="w-64 bg-white border-r border-gray-200 flex-shrink-0 hidden md:flex flex-col">
           <div className="p-4 space-y-1 flex-1 overflow-y-auto">
             {menuItems.filter(item => item.id !== 'functionality').map(item => (
