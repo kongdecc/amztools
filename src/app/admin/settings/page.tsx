@@ -3,10 +3,9 @@
 import React, { useEffect, useState } from 'react'
 
 export default function AdminSettings() {
-  const [form, setForm] = useState({ siteName: '', logoUrl: '', analyticsHeadHtml: '', analyticsBodyHtml: '', showAnalytics: false, copyrightText: '', homeHeroTitle: '', homeHeroSubtitle: '', hideHomeHeroIfEmpty: false, homeCardLimit: 6, friendLinks: '[]', privacyPolicy: '', showFriendLinksLabel: false, functionalityTitle: '', functionalitySubtitle: '', rewardDescription: '' })
+  const [form, setForm] = useState({ siteName: '', logoUrl: '', analyticsHeadHtml: '', analyticsBodyHtml: '', showAnalytics: false, copyrightText: '', homeHeroTitle: '', homeHeroSubtitle: '', hideHomeHeroIfEmpty: false, homeCardLimit: 6, friendLinks: '[]', privacyPolicy: '', showFriendLinksLabel: false, functionalityTitle: '', functionalitySubtitle: '' })
   const [loading, setLoading] = useState(true)
   const [msg, setMsg] = useState('')
-  const [rewardQrUrl, setRewardQrUrl] = useState('')
 
   const load = async () => {
     setLoading(true)
@@ -28,12 +27,8 @@ export default function AdminSettings() {
         privacyPolicy: data.privacyPolicy || '',
         showFriendLinksLabel: String(data.showFriendLinksLabel || 'false') === 'true',
         functionalityTitle: data.functionalityTitle || '',
-        functionalitySubtitle: data.functionalitySubtitle || '',
-        rewardDescription: data.rewardDescription || ''
+        functionalitySubtitle: data.functionalitySubtitle || ''
       })
-      // Check reward QR
-      const qrRes = await fetch('/api/reward-qr', { method: 'HEAD' })
-      if (qrRes.ok) setRewardQrUrl(`/api/reward-qr?ts=${Date.now()}`)
     } finally {
       setLoading(false)
     }
@@ -112,38 +107,6 @@ export default function AdminSettings() {
             <div className="mt-3">
               <label className="block text-sm text-gray-600 mb-1">功能中心副标题</label>
               <input className="w-full border rounded px-3 py-2 text-sm" value={form.functionalitySubtitle} onChange={e => set('functionalitySubtitle', e.target.value)} />
-            </div>
-          </div>
-          <div className="pt-6 border-t border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">打赏设置</h3>
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">打赏二维码</label>
-              <div className="mt-2 flex items-center gap-3">
-                <input type="file" accept="image/*" onChange={async e => { 
-                  const f = e.target.files?.[0]; 
-                  if (f) { 
-                    try { 
-                      const fd = new FormData(); 
-                      fd.append('file', f); 
-                      const r = await fetch('/api/reward-qr', { method: 'POST', body: fd, credentials: 'include' }); 
-                      const d = await r.json().catch(()=>({})); 
-                      if (r.ok && d?.url) { 
-                        setRewardQrUrl(d.url) 
-                        setMsg('二维码上传成功')
-                      } else {
-                        setMsg('上传失败: ' + (d?.error || r.statusText))
-                      }
-                    } catch (e) {
-                      setMsg('上传出错')
-                    } 
-                  } 
-                }} />
-                {rewardQrUrl && (<img src={rewardQrUrl} alt="Reward QR" className="h-24 w-auto rounded border" />)}
-              </div>
-            </div>
-            <div className="mt-4">
-              <label className="block text-sm text-gray-600 mb-1">打赏说明文字</label>
-              <textarea className="w-full border rounded px-3 py-2 text-sm h-24" value={form.rewardDescription} onChange={e => set('rewardDescription', e.target.value)} placeholder="感谢您的支持，您的打赏将用于..." />
             </div>
           </div>
 
