@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { LayoutDashboard, Search } from 'lucide-react'
-import { useSettings } from '@/components/SettingsProvider'
+import { LayoutDashboard, ChevronDown, Search } from 'lucide-react'
+import { SettingsProvider, useSettings } from '@/components/SettingsProvider'
 
 const Card = ({ children, className = "", onClick, ...props }: any) => (
   <div onClick={onClick} className={`bg-white rounded-xl border border-gray-100 shadow-sm ${className}`} {...props}>{children}</div>
@@ -18,10 +18,11 @@ interface Module {
   order: number
 }
 
-export default function FunctionalityPage() {
+function FunctionalityClient() {
   const [modules, setModules] = useState<Module[]>([])
   const [keyword, setKeyword] = useState('')
   const { settings } = useSettings()
+  const [navItems, setNavItems] = useState<Array<any>>([])
 
   useEffect(() => {
     (async () => {
@@ -31,6 +32,15 @@ export default function FunctionalityPage() {
       setModules(arr.filter(m => m.status !== '下架').sort((a, b) => a.order - b.order))
     })()
   }, [])
+
+  useEffect(() => {
+    try {
+      const raw = (settings as any).navigation
+      const arr = raw ? JSON.parse(String(raw)) : []
+      const items = Array.isArray(arr) ? arr : []
+      setNavItems(items.filter((i:any) => i.active !== false))
+    } catch {}
+  }, [settings])
 
   const filtered = modules.filter(module => {
     if (!keyword.trim()) return true
@@ -78,6 +88,44 @@ export default function FunctionalityPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
+      <header className="h-14 bg-[#5b5bd6] text-white flex items-center px-10 shadow-md z-20">
+        <div className={`flex items-center gap-2 font-bold text-lg`}>
+          <div className="bg-white/20 p-1 rounded"><LayoutDashboard className="h-5 w-5" /></div>
+          <span>{settings.siteName}</span>
+        </div>
+        <nav className="ml-auto mr-6 flex items-center gap-6">
+          <div className="relative group">
+            <button className="text-sm text-white/90 hover:text-white flex items-center gap-1">
+              功能分类
+              <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
+            </button>
+            <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+              <div className="p-2 space-y-1">
+                {modules.map((m: any) => (
+                  <button 
+                    key={m.key}
+                    onClick={() => handleNavigate(m.key)}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
+                  >
+                    {m.title}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          {navItems.map((item:any) => (
+            item.isExternal ? (
+              <a key={item.id} href={item.href || '#'} target="_blank" rel="noopener noreferrer" className="text-sm text-white/90 hover:text-white">
+                {item.label}
+              </a>
+            ) : (
+              <a key={item.id} href={item.href || '/'} className="text-sm text-white/90 hover:text-white">
+                {item.label}
+              </a>
+            )
+          ))}
+        </nav>
+      </header>
       <div className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center mb-12">
@@ -139,13 +187,44 @@ export default function FunctionalityPage() {
       </div>
       
       {/* Footer */}
-      <div className="mt-12 text-center">
+      <div className="mt-auto text-center py-6">
         <footer className="text-xs text-gray-400">
           {settings.copyrightText || '© 2025 运营魔方 ToolBox. All rights reserved.'}
           <span className="mx-2">|</span>
           <a href="/privacy" className="hover:text-blue-600">隐私说明</a>
         </footer>
+        {(() => {
+          try {
+            const arr = JSON.parse(String(settings.friendLinks || '[]'))
+            const list = Array.isArray(arr) ? arr : []
+            if (list.length === 0) return null
+            return (
+              <div className="mt-2 text-xs text-gray-500">
+                {String(settings.showFriendLinksLabel || 'false') === 'true' && <span>友情链接： </span>}
+                {list
+                  .slice()
+                  .sort((a: any, b: any) => (Number(a.order || 0) - Number(b.order || 0)))
+                  .map((l: any, i: number) => (
+                    <span key={i}>
+                      <a href={l.href || '#'} target={l.isExternal ? '_blank' : '_self'} rel={l.isExternal ? 'noopener noreferrer' : undefined} className="hover:text-blue-600">
+                        {l.label || '友链'}
+                      </a>
+                      {i < list.length - 1 ? ', ' : ''}
+                    </span>
+                  ))}
+              </div>
+            )
+          } catch { return null }
+        })()}
       </div>
     </div>
   );
+}
+
+export default function FunctionalityPage() {
+  return (
+    <SettingsProvider>
+      <FunctionalityClient />
+    </SettingsProvider>
+  )
 }

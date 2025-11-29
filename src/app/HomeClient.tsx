@@ -802,7 +802,16 @@ const PlaceholderPage = ({ title, icon: Icon }: { title: string; icon: any }) =>
 )
 
 export default function HomeLayoutClient({ initialModules, initialNavItems }: { initialModules: any[]; initialNavItems: any[] }) {
-  const [activeTab, setActiveTab] = useState('home')
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const qs = new URLSearchParams(window.location.search)
+        const tab = qs.get('tab') || (window.location.hash ? window.location.hash.replace('#','') : '')
+        return tab || 'home'
+      } catch {}
+    }
+    return 'home'
+  })
   const [modules, setModules] = useState<Array<any>>(initialModules || [])
   const [navItems, setNavItems] = useState<Array<any>>(initialNavItems || [])
   const mainRef = useRef<HTMLDivElement>(null)
@@ -899,6 +908,25 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
           <span>{settings.siteName}</span>
         </div>
         <nav className="ml-auto mr-6 flex items-center gap-6">
+          <div className="relative group">
+            <button className="text-sm text-white/90 hover:text-white flex items-center gap-1">
+              功能分类
+              <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
+            </button>
+            <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+              <div className="p-2 space-y-1">
+                {modules.filter((m: any) => m.status !== '下架').map((m: any) => (
+                  <button 
+                    key={m.key}
+                    onClick={() => setActiveTab(m.key)}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
+                  >
+                    {m.title}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
           {navItems
             .slice()
             .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
