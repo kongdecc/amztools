@@ -900,6 +900,28 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
           <span>{settings.siteName}</span>
         </div>
         <nav className="ml-auto mr-6 flex items-center gap-6">
+          {/* 功能分类下拉菜单 */}
+          <div className="relative group">
+            <button className="text-sm text-white/90 hover:text-white flex items-center gap-1">
+              功能分类
+              <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
+            </button>
+            <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+              <div className="p-2 space-y-1">
+                {modules.filter((m: any) => m.status !== '下架').map((m: any) => (
+                  <button 
+                    key={m.key}
+                    onClick={() => setActiveTab(m.key)}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
+                  >
+                    {m.title}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          {/* 其他导航项 */}
           {navItems
             .slice()
             .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
@@ -919,41 +941,17 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
       <div className="flex flex-1">
         <aside className="w-64 bg-white border-r border-gray-200 flex-shrink-0 hidden md:flex flex-col">
           <div className="p-4 space-y-1 flex-1 overflow-y-auto">
-            {menuItems.map(item => {
-              // 只处理功能中心的子菜单
-              if (item.id === 'functionality') {
-                // 直接渲染功能中心菜单项，不显示子菜单
-                return (
-                  <button 
-                    key={item.id} 
-                    onClick={() => setActiveTab(item.id)} 
-                    className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === item.id ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
-                  >
-                    <item.icon className={`h-5 w-5 ${activeTab === item.id ? 'text-blue-600' : 'text-gray-400'}`} />
-                    {item.label}
-                    {activeTab === item.id && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-600" />}
-                  </button>
-                )
-              }
-              
-              // 跳过重复的功能菜单项（已经在功能中心中显示）
-              if (modules.some((m: any) => m.key === item.id)) {
-                return null
-              }
-              
-              // 其他菜单项正常渲染
-              return (
-                <button 
-                  key={item.id} 
-                  onClick={() => setActiveTab(item.id)} 
-                  className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === item.id ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
-                >
-                  <item.icon className={`h-5 w-5 ${activeTab === item.id ? 'text-blue-600' : 'text-gray-400'}`} />
-                  {item.label}
-                  {activeTab === item.id && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-600" />}
-                </button>
-              )
-            }).filter(Boolean)}
+            {menuItems.filter(item => item.id !== 'functionality').map(item => (
+              <button 
+                key={item.id} 
+                onClick={() => setActiveTab(item.id)} 
+                className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === item.id ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
+              >
+                <item.icon className={`h-5 w-5 ${activeTab === item.id ? 'text-blue-600' : 'text-gray-400'}`} />
+                {item.label}
+                {activeTab === item.id && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-600" />}
+              </button>
+            ))}
           </div>
           {process.env.NODE_ENV !== 'production' && (
             <div className="p-4 border-t border-gray-100">
