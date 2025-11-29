@@ -39,15 +39,40 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  console.log('POST /api/reward-qr started')
   try {
     const cookie = request.headers.get('cookie') || ''
+    // console.log('Cookie:', cookie) 
     const token = cookie.match(new RegExp(`${SESSION_COOKIE}=([^;]+)`))?.[1]
-    if (!token || !(await getSessionByToken(token))) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+    if (!token) {
+      console.log('No token found')
+      return NextResponse.json({ error: 'unauthorized', reason: 'no_token' }, { status: 401 })
+    }
     
-    const fd = await request.formData()
+    const session = await getSessionByToken(token)
+    if (!session) {
+      console.log('Invalid token')
+      return NextResponse.json({ error: 'unauthorized', reason: 'invalid_token' }, { status: 401 })
+    }
+    
+    console.log('Auth success, parsing form data...')
+    
+    let fd: FormData
+    try {
+      fd = await request.formData()
+    } catch (err) {
+      console.error('Failed to parse form data:', err)
+      return NextResponse.json({ error: 'bad_request', message: 'Failed to parse form data: ' + String(err) }, { status: 400 })
+    }
+
     const file = fd.get('file') as File | null
     
-    if (!file) return NextResponse.json({ error: 'bad_request' }, { status: 400 })
+    if (!file) {
+      console.log('No file in form data')
+      return NextResponse.json({ error: 'bad_request', message: 'No file provided' }, { status: 400 })
+    }
+    
+    console.log('File received:', file.name, file.type, file.size)
     
     const type = String(file.type || '')
     let ext = ''
@@ -61,8 +86,13 @@ export async function POST(request: Request) {
     }
     
     if (!ext || !exts.includes(ext)) ext = 'png'
+    console.log('Determined extension:', ext)
     
-    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true })
+    console.log('Data dir:', dataDir)
+    if (!fs.existsSync(dataDir)) {
+      console.log('Creating data dir...')
+      fs.mkdirSync(dataDir, { recursive: true })
+    }
     
     // Remove old files
     for (const e of exts) {
@@ -70,19 +100,25 @@ export async function POST(request: Request) {
       try { if (fs.existsSync(p)) fs.unlinkSync(p) } catch {}
     }
     
-    const buf = Buffer.from(await file.arrayBuffer())
+    console.log('Reading file buffer...')
+    const arrayBuffer = await file.arrayBuffer()
+    const buf = Buffer.from(arrayBuffer)
+    
     const dest = path.join(dataDir, `reward-qr.${ext}`)
+    console.log('Writing to:', dest)
     fs.writeFileSync(dest, buf)
     
     // Double check file exists and size
     if (!fs.existsSync(dest) || fs.statSync(dest).size === 0) {
+      console.error('File write verification failed')
       return NextResponse.json({ error: 'write_failed' }, { status: 500 })
     }
     
     const url = `/api/reward-qr?ts=${Date.now()}`
+    console.log('Upload success, url:', url)
     return NextResponse.json({ ok: true, url })
-  } catch (e) {
-    console.error('Upload error:', e)
-    return NextResponse.json({ error: 'failed', message: String(e) }, { status: 500 })
+  } catch (e: any) {
+    console.error('Upload error full stack:', e)
+    return NextResponse.json({ error: 'failed', message: e.message, stack: e.stack }, { status: 500 })
   }
 }

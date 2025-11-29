@@ -89,7 +89,7 @@ export default function AdminReward() {
                               setMsg('二维码上传成功')
                             } else {
                               console.error('Upload failed:', d)
-                              setMsg('上传失败: ' + (d?.error || r.statusText || '未知错误'))
+                              setMsg('上传失败: ' + (d?.message || d?.error || r.statusText || '未知错误'))
                             }
                           } catch (e) {
                             console.error('Upload exception:', e)
