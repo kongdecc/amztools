@@ -8,6 +8,7 @@ import Link from 'next/link'
 import EditorPage from '../components/EditorPage'
 import FBACalculatorPage from '../components/FBACalculator'
 import ForbiddenWordsChecker from '../components/ForbiddenWordsChecker'
+import TextComparator from '../components/TextComparator'
 import { useRef } from 'react'
 
 const Card = ({ children, className = "", onClick, ...props }: any) => (
@@ -32,6 +33,7 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
     'returns-v2': Trash2,
     'listing-check': LayoutDashboard,
     'forbidden-words': AlertCircle,
+    'text-compare': Search,
   }
   const colorSolidMap: Record<string, string> = {
     blue: 'bg-blue-600',
@@ -908,6 +910,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
                 if (activeTab === 'returns-v2') return <ReturnsV2Page />
                 if (activeTab === 'listing-check') return <ListingCheckerPage />
                 if (activeTab === 'forbidden-words') return <ForbiddenWordsChecker />
+                if (activeTab === 'text-compare') return <TextComparator />
                 return <PlaceholderPage title="功能开发中" icon={Hammer} />
               })()
             )}
