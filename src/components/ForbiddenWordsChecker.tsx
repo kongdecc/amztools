@@ -685,7 +685,7 @@ const ForbiddenWordsChecker = () => {
   const renderPresetWordList = () => {
     return (
       <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="space-y-3">
           <div className="flex-1">
             <input
               type="text"
@@ -695,8 +695,8 @@ const ForbiddenWordsChecker = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:justify-between">
+            <span className="text-sm font-medium text-gray-700">
               当前预设词库：{presetForbiddenWords.length}个词（已选择：{selectedPresetWords.length}个）
             </span>
             <Button variant="secondary" size="sm" onClick={toggleAllPresetWords}>
@@ -732,7 +732,7 @@ const ForbiddenWordsChecker = () => {
   const renderCustomWordList = () => {
     return (
       <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="space-y-3">
           <div className="flex-1">
             <input
               type="text"
@@ -742,8 +742,8 @@ const ForbiddenWordsChecker = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:justify-between">
+            <span className="text-sm font-medium text-gray-700">
               当前自定义词库：{customForbiddenWords.length}个词
             </span>
             {customForbiddenWords.length > 0 && (

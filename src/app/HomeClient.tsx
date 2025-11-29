@@ -800,6 +800,9 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
     'delivery': Truck,
     'returns-v2': Trash2,
     'forbidden-words': AlertCircle,
+    'text-compare': Search,
+    'duplicate-remover': CheckCircle,
+    'content-filter': Filter,
   }
   const menuItems = [
     { id: 'home', label: '首页', icon: LayoutDashboard },
