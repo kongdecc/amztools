@@ -27,6 +27,7 @@ type SiteSettings = {
   robotsDisallowUtmParams?: string
   functionalityTitle?: string
   functionalitySubtitle?: string
+  homeCardLimit?: string
 }
 
 type Ctx = {
@@ -59,7 +60,8 @@ const defaults: SiteSettings = {
   robotsDisallowPageParam: 'true',
   robotsDisallowUtmParams: 'true',
   functionalityTitle: '功能中心',
-  functionalitySubtitle: '探索我们提供的所有工具和功能，帮助您更高效地管理亚马逊业务'
+  functionalitySubtitle: '探索我们提供的所有工具和功能，帮助您更高效地管理亚马逊业务',
+  homeCardLimit: '6'
 }
 
 const SettingsContext = createContext<Ctx | undefined>(undefined)
