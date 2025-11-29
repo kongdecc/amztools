@@ -83,6 +83,42 @@ export default function AdminNavigation() {
     return list.filter(x => [x.label, x.href, x.id].some(t => String(t || '').toLowerCase().includes(k)))
   }, [list, keyword])
 
+  // 自动保存逻辑
+  useEffect(() => {
+    if (JSON.stringify(list) === JSON.stringify(serverSnap)) return
+    
+    const saveTimeout = setTimeout(async () => {
+      setSaving(true)
+      setSavedHint('')
+      try {
+        // 确保order值唯一且连续
+        const sorted = list.slice().sort((a, b) => a.order - b.order)
+        const payload = sorted.map((x, index) => ({
+          id: x.id, 
+          label: x.label, 
+          href: x.href, 
+          order: index + 1, 
+          isExternal: Boolean(x.isExternal), 
+          active: x.active === false ? false : true 
+        }))
+        const r = await fetch('/api/navigation', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), credentials: 'include' })
+        if (!r.ok) throw new Error('保存失败')
+        const rr = await fetch('/api/navigation?includeInactive=true', { cache: 'no-store' })
+        const d = await rr.json()
+        const mapped = (Array.isArray(d) ? d : []).map((x: any, i: number) => ({ ...x, order: typeof x.order === 'number' && x.order > 0 ? x.order : i + 1, active: x.active === false ? false : true, isExternal: x.isExternal === true }))
+        setServerSnap(mapped.map((x: any) => ({ ...x })))
+        setSavedHint('已自动保存')
+      } catch {
+        setSavedHint('保存失败')
+      } finally {
+        setSaving(false)
+        setTimeout(() => setSavedHint(''), 2000)
+      }
+    }, 500) // 500ms防抖
+
+    return () => clearTimeout(saveTimeout)
+  }, [list, serverSnap])
+
   const isDirty = useMemo(() => {
     const norm = (arr: NavItem[]) => arr.map(x => ({ id: x.id, label: x.label, href: x.href, order: Number(x.order || 0), isExternal: Boolean(x.isExternal), active: x.active === false ? false : true })).sort((a, b) => a.id.localeCompare(b.id))
     const a = JSON.stringify(norm(serverSnap))

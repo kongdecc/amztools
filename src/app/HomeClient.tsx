@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download, AlertCircle, CheckCircle, Filter } from 'lucide-react'
+import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download, AlertCircle, CheckCircle, Filter, LayoutGrid } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 import Head from 'next/head'
 import Link from 'next/link'
@@ -72,6 +72,11 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
     fuchsia: 'text-fuchsia-600',
   }
   const visible = modules.filter((m: any) => m.status !== '下架')
+  // 首页显示的卡片数量，默认6个
+  const homeCardLimit = 6
+  const showMore = visible.length > homeCardLimit
+  const displayedTools = showMore ? visible.slice(0, homeCardLimit) : visible
+
   return (
     <div className="space-y-6">
       <Card className="py-12 px-8 text-center space-y-6 relative overflow-hidden bg-gradient-to-br from-white to-slate-50">
@@ -95,7 +100,7 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
         </div>
       </Card>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {visible.map((tool: any) => {
+        {displayedTools.map((tool: any) => {
           const colorOverride: Record<string, string> = {
             'ad-calc': 'blue',
             'editor': 'fuchsia',
@@ -129,6 +134,17 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
           )
         })}
       </div>
+      {showMore && (
+        <div className="text-center mt-8">
+          <button 
+            onClick={() => window.location.href = '/functionality'}
+            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-lg font-medium hover:shadow-lg transform hover:-translate-y-1 transition-all flex items-center gap-2 mx-auto"
+          >
+            查看更多工具
+            <ArrowLeftRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
     </div>
   )
 }
@@ -807,6 +823,16 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
   }
   const menuItems = [
     { id: 'home', label: '首页', icon: LayoutDashboard },
+    { 
+      id: 'functionality', 
+      label: '功能中心', 
+      icon: LayoutGrid, 
+      children: modules.filter((m: any) => m.status !== '下架').map((m: any) => ({ 
+        id: m.key, 
+        label: m.status === '维护' ? `${m.title}（维护）` : m.title, 
+        icon: iconMap[m.key] || Hammer 
+      }))
+    },
     ...modules.filter((m: any) => m.status !== '下架').map((m: any) => ({ id: m.key, label: m.status === '维护' ? `${m.title}（维护）` : m.title, icon: iconMap[m.key] || Hammer }))
   ]
   useEffect(() => {
@@ -893,13 +919,41 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
       <div className="flex flex-1">
         <aside className="w-64 bg-white border-r border-gray-200 flex-shrink-0 hidden md:flex flex-col">
           <div className="p-4 space-y-1 flex-1 overflow-y-auto">
-            {menuItems.map(item => (
-              <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === item.id ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}>
-                <item.icon className={`h-5 w-5 ${activeTab === item.id ? 'text-blue-600' : 'text-gray-400'}`} />
-                {item.label}
-                {activeTab === item.id && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-600" />}
-              </button>
-            ))}
+            {menuItems.map(item => {
+              // 只处理功能中心的子菜单
+              if (item.id === 'functionality') {
+                // 直接渲染功能中心菜单项，不显示子菜单
+                return (
+                  <button 
+                    key={item.id} 
+                    onClick={() => setActiveTab(item.id)} 
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === item.id ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
+                  >
+                    <item.icon className={`h-5 w-5 ${activeTab === item.id ? 'text-blue-600' : 'text-gray-400'}`} />
+                    {item.label}
+                    {activeTab === item.id && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-600" />}
+                  </button>
+                )
+              }
+              
+              // 跳过重复的功能菜单项（已经在功能中心中显示）
+              if (modules.some((m: any) => m.key === item.id)) {
+                return null
+              }
+              
+              // 其他菜单项正常渲染
+              return (
+                <button 
+                  key={item.id} 
+                  onClick={() => setActiveTab(item.id)} 
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === item.id ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
+                >
+                  <item.icon className={`h-5 w-5 ${activeTab === item.id ? 'text-blue-600' : 'text-gray-400'}`} />
+                  {item.label}
+                  {activeTab === item.id && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-600" />}
+                </button>
+              )
+            }).filter(Boolean)}
           </div>
           {process.env.NODE_ENV !== 'production' && (
             <div className="p-4 border-t border-gray-100">
@@ -914,6 +968,80 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
           <div className="max-w-7xl mx-auto">
             {activeTab === 'home' ? (
               <HomePage onNavigate={setActiveTab} modules={modules} />
+            ) : activeTab === 'functionality' ? (
+              <div className="space-y-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <LayoutGrid className="h-6 w-6 text-blue-600" />
+                  <h2 className="text-xl font-bold text-gray-800">功能中心</h2>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {modules.filter((m: any) => m.status !== '下架').map((m: any) => {
+                    const colorOverride: Record<string, string> = {
+                      'ad-calc': 'blue',
+                      'editor': 'fuchsia',
+                      'unit': 'emerald',
+                      'case': 'violet',
+                      'word-count': 'sky',
+                      'char-count': 'rose',
+                      'delivery': 'orange',
+                      'returns-v2': 'red',
+                      'listing-check': 'teal',
+                    }
+                    const colorKey = colorOverride[m.key] || m.color
+                    const colorSolidMap: Record<string, string> = {
+                      blue: 'bg-blue-600',
+                      indigo: 'bg-indigo-600',
+                      cyan: 'bg-cyan-600',
+                      violet: 'bg-violet-600',
+                      sky: 'bg-sky-500',
+                      purple: 'bg-indigo-500',
+                      orange: 'bg-orange-500',
+                      emerald: 'bg-emerald-600',
+                      teal: 'bg-teal-600',
+                      rose: 'bg-rose-600',
+                      red: 'bg-red-600',
+                      amber: 'bg-amber-500',
+                      lime: 'bg-lime-600',
+                      fuchsia: 'bg-fuchsia-600',
+                    }
+                    const colorTextMap: Record<string, string> = {
+                      blue: 'text-blue-600',
+                      indigo: 'text-indigo-600',
+                      cyan: 'text-cyan-600',
+                      violet: 'text-violet-600',
+                      sky: 'text-sky-500',
+                      purple: 'text-indigo-500',
+                      orange: 'text-orange-500',
+                      emerald: 'text-emerald-600',
+                      teal: 'text-teal-600',
+                      rose: 'text-rose-600',
+                      red: 'text-red-600',
+                      amber: 'text-amber-500',
+                      lime: 'text-lime-600',
+                      fuchsia: 'text-fuchsia-600',
+                    }
+                    return (
+                      <Card key={m.key} className="group relative p-6 hover:shadow-xl transition-all duration-300 cursor-pointer border-transparent hover:border-gray-100 bg-white overflow-hidden" onClick={() => setActiveTab(m.key)}>
+                        <div className="flex items-start gap-4 mb-4">
+                          <div className={`w-12 h-12 rounded-xl ${colorSolidMap[colorKey] || 'bg-blue-600'} flex items-center justify-center shadow-md shrink-0 group-hover:scale-105 transition-transform duration-300`}>
+                            {(() => {
+                              const I = iconMap[m.key] || Hammer
+                              return <I className="h-6 w-6 text-white" />
+                            })()}
+                          </div>
+                          <h3 className="text-lg font-bold text-gray-800 pt-1 group-hover:text-gray-900">{m.title}</h3>
+                          {m.status === '维护' && <span className="ml-auto px-2 py-0.5 text-xs rounded border bg-yellow-50 text-yellow-600 border-yellow-200">维护中</span>}
+                        </div>
+                        <p className="text-sm text-gray-500 leading-relaxed mb-8 line-clamp-2">{m.desc}</p>
+                        <div className={`absolute bottom-6 left-6 flex items-center gap-2 text-sm font-bold ${colorTextMap[colorKey] || 'text-blue-600'} opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300`}>
+                          <span>立即使用</span>
+                          <ArrowLeftRight className="h-4 w-4" />
+                        </div>
+                      </Card>
+                    )
+                  })}
+                </div>
+              </div>
             ) : (
               (() => {
                 if (activeTab === 'ad-calc') return <AdCalculatorPage />
