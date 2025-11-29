@@ -22,7 +22,19 @@ function FunctionalityClient() {
   const [modules, setModules] = useState<Module[]>([])
   const [keyword, setKeyword] = useState('')
   const { settings } = useSettings()
-  const [navItems, setNavItems] = useState<Array<any>>([])
+  const [navItems, setNavItems] = useState<Array<any>>(() => {
+    try {
+      const raw = localStorage.getItem('settings_cache')
+      if (raw) {
+        const obj = JSON.parse(raw)
+        if (obj && obj.navigation) {
+          const arr = JSON.parse(String(obj.navigation))
+          if (Array.isArray(arr)) return arr.filter((i:any)=>i.active !== false)
+        }
+      }
+    } catch {}
+    return []
+  })
 
   useEffect(() => {
     (async () => {

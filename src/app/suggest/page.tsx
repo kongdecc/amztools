@@ -110,7 +110,6 @@ function SuggestContent() {
               </Link>
             )
           })}
-          <Link href="/suggest" className="text-sm text-white">提需求</Link>
         </nav>
       </header>
       <div className="flex-1">
