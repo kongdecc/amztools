@@ -828,7 +828,32 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
     return false
   })
   const [modules, setModules] = useState<Array<any>>(initialModules || [])
-  const [navItems, setNavItems] = useState<Array<any>>(initialNavItems || [])
+  const [navItems, setNavItems] = useState<Array<any>>([])
+  
+  // 合并 initialNavItems 和 modules 来构造最终的导航菜单
+  useEffect(() => {
+    let items = initialNavItems || []
+    // 如果 initialNavItems 为空或者没有功能分类，尝试构造默认导航
+    if (items.length === 0) {
+       items = [
+        { id: 'about', label: '关于', href: '/about', order: 1, isExternal: false, active: true },
+        { id: 'blog', label: '博客', href: '/blog', order: 2, isExternal: false, active: true },
+        { id: 'suggest', label: '提需求', href: '/suggest', order: 3, isExternal: false, active: true }
+      ]
+    }
+    
+    // 检查是否已存在功能分类菜单，如果不存在则添加
+    const hasFuncMenu = items.some((item: any) => String(item.label || '').includes('功能分类') || String(item.id || '') === 'functionality')
+    if (!hasFuncMenu) {
+        // 在适当位置插入功能分类，例如放在"关于"之前
+        const newItems = [...items]
+        newItems.splice(0, 0, { id: 'functionality', label: '功能分类', order: 0, children: [] })
+        items = newItems
+    }
+    
+    setNavItems(items)
+  }, [initialNavItems])
+
   const mainRef = useRef<HTMLDivElement>(null)
   
   const iconMap: Record<string, any> = {
@@ -938,7 +963,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                       <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
                     </button>
                     <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                      <div className="p-2 space-y-1">
+                      <div className="p-2 space-y-1 max-h-[400px] overflow-y-auto">
                         {modules.filter((m: any) => m.status !== '下架').map((m: any) => (
                           <button 
                             key={m.key}
@@ -1045,10 +1070,8 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
             </div>
           )}
           {activeTab !== 'home' && (
-            <div className="hidden md:flex absolute top-4 right-8 z-10 items-center gap-2">
-               <div className="bg-black/75 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                 点击切换全屏模式
-               </div>
+            <div className="hidden md:flex items-center justify-end mb-4 gap-2">
+               <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">点击切换全屏模式</span>
                <button
                 onClick={() => setIsFull(!isFull)}
                 className="group p-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 text-gray-600 transition-all hover:text-blue-600"
