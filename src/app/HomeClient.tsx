@@ -832,6 +832,18 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
   const [modules, setModules] = useState<Array<any>>(initialModules || [])
   const [navItems, setNavItems] = useState<Array<any>>(initialNavItems || [])
   
+  useEffect(() => {
+    if (initialActiveTab && String(initialActiveTab).trim()) {
+      setActiveTab(String(initialActiveTab))
+    }
+  }, [initialActiveTab])
+
+  useEffect(() => {
+    if (typeof initialFull === 'boolean') {
+      setIsFull(initialFull)
+    }
+  }, [initialFull])
+
   const mainRef = useRef<HTMLDivElement>(null)
   
   const iconMap: Record<string, any> = {
