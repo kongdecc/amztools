@@ -28,6 +28,8 @@ type SiteSettings = {
   functionalityTitle?: string
   functionalitySubtitle?: string
   homeCardLimit?: string
+  googleVerification?: string
+  baiduVerification?: string
 }
 
 type Ctx = {
@@ -61,7 +63,9 @@ const defaults: SiteSettings = {
   robotsDisallowUtmParams: 'true',
   functionalityTitle: '功能中心',
   functionalitySubtitle: '探索我们提供的所有工具和功能，帮助您更高效地管理亚马逊业务',
-  homeCardLimit: '6'
+  homeCardLimit: '6',
+  googleVerification: '',
+  baiduVerification: ''
 }
 
 const SettingsContext = createContext<Ctx | undefined>(undefined)

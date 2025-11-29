@@ -4,7 +4,20 @@ import React, { useEffect, useState } from 'react'
 import { Save, Globe } from 'lucide-react'
 
 export default function AdminSeo() {
-  const [form, setForm] = useState({ title: '', siteKeywords: '', siteDescription: '', seoDescription: '', sitemapEnabled: false, robotsContent: '', robotsDisallowQuery: true, robotsDisallowAdmin: true, robotsDisallowPageParam: true, robotsDisallowUtmParams: true })
+  const [form, setForm] = useState({
+    title: '',
+    siteKeywords: '',
+    siteDescription: '',
+    seoDescription: '',
+    sitemapEnabled: false,
+    robotsContent: '',
+    robotsDisallowQuery: true,
+    robotsDisallowAdmin: true,
+    robotsDisallowPageParam: true,
+    robotsDisallowUtmParams: true,
+    googleVerification: '',
+    baiduVerification: ''
+  })
   const [msg, setMsg] = useState('')
 
   useEffect(() => {
@@ -21,7 +34,9 @@ export default function AdminSeo() {
         robotsDisallowQuery: String(d.robotsDisallowQuery || 'true') === 'true',
         robotsDisallowAdmin: String(d.robotsDisallowAdmin || 'true') === 'true',
         robotsDisallowPageParam: String(d.robotsDisallowPageParam || 'true') === 'true',
-        robotsDisallowUtmParams: String(d.robotsDisallowUtmParams || 'true') === 'true'
+        robotsDisallowUtmParams: String(d.robotsDisallowUtmParams || 'true') === 'true',
+        googleVerification: d.googleVerification || '',
+        baiduVerification: d.baiduVerification || ''
       })
     }
     load()
@@ -39,7 +54,9 @@ export default function AdminSeo() {
       robotsDisallowQuery: form.robotsDisallowQuery ? 'true' : 'false',
       robotsDisallowAdmin: form.robotsDisallowAdmin ? 'true' : 'false',
       robotsDisallowPageParam: form.robotsDisallowPageParam ? 'true' : 'false',
-      robotsDisallowUtmParams: form.robotsDisallowUtmParams ? 'true' : 'false'
+      robotsDisallowUtmParams: form.robotsDisallowUtmParams ? 'true' : 'false',
+      googleVerification: form.googleVerification,
+      baiduVerification: form.baiduVerification
     }
     const r = await fetch('/api/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), credentials: 'include' })
     setMsg(r.ok ? '保存成功' : '保存失败或未登录')
@@ -83,6 +100,14 @@ export default function AdminSeo() {
               <div className="flex items-center gap-3"><input type="checkbox" checked={form.robotsDisallowAdmin} onChange={e => set('robotsDisallowAdmin', e.target.checked)} /><span className="text-sm text-gray-700">屏蔽后台页面（Disallow /admin/）</span></div>
               <div className="flex items-center gap-3"><input type="checkbox" checked={form.robotsDisallowPageParam} onChange={e => set('robotsDisallowPageParam', e.target.checked)} /><span className="text-sm text-gray-700">屏蔽分页参数（Disallow /*?page=*）</span></div>
               <div className="flex items-center gap-3"><input type="checkbox" checked={form.robotsDisallowUtmParams} onChange={e => set('robotsDisallowUtmParams', e.target.checked)} /><span className="text-sm text-gray-700">屏蔽营销参数（Disallow /*?utm_*）</span></div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="md:col-span-1"><h3 className="text-sm font-bold text-gray-800 mb-1">站点验证</h3><p className="text-xs text-gray-500">配置搜索引擎所有权验证</p></div>
+            <div className="md:col-span-2 space-y-5">
+              <div><label className="block text-sm font-medium text-gray-700 mb-1">Google 站点验证 (google-site-verification)</label><input type="text" className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500" placeholder="输入 meta content 的值" value={form.googleVerification} onChange={e => set('googleVerification', e.target.value)} /></div>
+              <div><label className="block text-sm font-medium text-gray-700 mb-1">百度 站点验证 (baidu-site-verification)</label><input type="text" className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500" placeholder="输入 meta content 的值" value={form.baiduVerification} onChange={e => set('baiduVerification', e.target.value)} /></div>
             </div>
           </div>
           
