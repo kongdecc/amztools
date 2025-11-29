@@ -947,7 +947,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
           <div className="bg-white/20 p-1 rounded"><LayoutDashboard className="h-5 w-5" /></div>
           <span>{settings.siteName}</span>
         </div>
-        <nav className="ml-auto mr-6 flex items-center gap-6 overflow-x-auto md:overflow-visible whitespace-nowrap scrollbar-hide max-w-[60vw] md:max-w-none">
+        <nav className="ml-auto mr-6 flex items-center gap-6">
           <button onClick={() => { setActiveTab('home'); setIsFull(false) }} className="text-sm text-white/90 hover:text-white cursor-pointer">首页</button>
           {navItems
             .slice()
@@ -963,7 +963,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                       <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
                     </button>
                     <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                      <div className="p-2 space-y-1 max-h-[400px] overflow-y-auto">
+                      <div className="p-2 space-y-1">
                         {modules.filter((m: any) => m.status !== '下架').map((m: any) => (
                           <button 
                             key={m.key}
