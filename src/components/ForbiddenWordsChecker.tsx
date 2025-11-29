@@ -753,12 +753,53 @@ const ForbiddenWordsChecker = () => {
     );
   };
 
+  // 折叠式使用说明状态
+  const [instructionsOpen, setInstructionsOpen] = useState(false);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 mb-2">
-        <Search className="h-6 w-6 text-blue-600" />
+        <AlertCircle className="h-6 w-6 text-blue-600" />
         <h2 className="text-xl font-bold text-gray-800">亚马逊文案违禁词检测工具</h2>
       </div>
+      
+      {/* 折叠式使用说明 */}
+      <Card className="p-5">
+        <div className="flex items-center justify-between cursor-pointer" onClick={() => setInstructionsOpen(!instructionsOpen)}>
+          <h3 className="text-lg font-semibold text-gray-800">使用说明</h3>
+          <button className="text-gray-500 hover:text-blue-600 transition-colors">
+            {instructionsOpen ? '收起' : '展开'}
+          </button>
+        </div>
+        {instructionsOpen && (
+          <div className="mt-4 text-sm text-gray-600 space-y-3">
+            <p><strong>使用说明：</strong></p>
+            <ul className="list-disc list-inside space-y-2 ml-2">
+              <li>本工具用于检测亚马逊文案中可能存在的违禁词</li>
+              <li>您可以使用预设的违禁词库，也可以添加自定义违禁词（支持多行批量添加；自定义词会保存在浏览器本地；单个添加时可选择加入预设库）</li>
+              <li>支持直接输入文本或上传TXT文件进行检测</li>
+              <li>检测结果会高亮显示发现的违禁词，并统计每个词的命中次数</li>
+              <li>
+                替换与导出：
+                <ul className="list-circle list-inside ml-4 mt-1 space-y-1">
+                  <li>在检测结果下方，可为每个命中词填写替换内容，支持“仅替换此词”和“应用勾选替换”（批量）</li>
+                  <li>替换顺序按词长降序，避免短词影响长词；替换后文本实时展示</li>
+                  <li>一键“复制替换结果”“导出TXT”“回填到文本输入”，并可“重置为原文”</li>
+                </ul>
+              </li>
+              <li>
+                匹配与替换规则：
+                <ul className="list-circle list-inside ml-4 mt-1 space-y-1">
+                  <li>匹配大小写不敏感</li>
+                  <li>采用“非字母数字”为边界进行整词匹配</li>
+                </ul>
+              </li>
+              <li>预设词管理：支持选择/全选/删除预设词</li>
+              <li>本工具完全在本地运行，无需联网，可直接分享HTML文件给他人使用</li>
+            </ul>
+          </div>
+        )}
+      </Card>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 左侧：违禁词管理 */}

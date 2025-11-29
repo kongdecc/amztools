@@ -793,6 +793,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
     'char-count': BarChart3,
     'delivery': Truck,
     'returns-v2': Trash2,
+    'forbidden-words': AlertCircle,
   }
   const menuItems = [
     { id: 'home', label: '首页', icon: LayoutDashboard },
