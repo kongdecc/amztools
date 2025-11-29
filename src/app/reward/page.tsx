@@ -1,7 +1,5 @@
 import { db } from '@/lib/db'
 import { Metadata } from 'next'
-import fs from 'fs'
-import path from 'path'
 import { LayoutDashboard, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 
@@ -65,14 +63,7 @@ async function getSettings() {
 }
 
 function hasRewardQr() {
-  try {
-    const dataDir = path.join(process.cwd(), '.data')
-    const exts = ['png','jpg','jpeg','webp','svg']
-    for (const ext of exts) {
-      if (fs.existsSync(path.join(dataDir, `reward-qr.${ext}`))) return true
-    }
-  } catch {}
-  return false
+  return true // We check dynamically via API now since data is in DB
 }
 
 export default async function RewardPage() {
@@ -169,17 +160,22 @@ export default async function RewardPage() {
             </p>
 
             <div className="flex justify-center items-center bg-gray-100 p-6 rounded-lg border-2 border-dashed border-gray-300 min-h-[200px]">
-              {hasQr ? (
-                <img 
+               <img 
                   src="/api/reward-qr" 
                   alt="打赏二维码" 
                   className="max-w-full h-auto max-h-[400px] rounded shadow-sm"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const parent = target.parentElement;
+                    if (parent) {
+                       const div = document.createElement('div');
+                       div.className = "text-gray-400 text-sm";
+                       div.innerText = "暂未配置打赏二维码";
+                       parent.appendChild(div);
+                    }
+                  }}
                 />
-              ) : (
-                <div className="text-gray-400 text-sm">
-                  暂未配置打赏二维码
-                </div>
-              )}
             </div>
             
             <div className="mt-8">
