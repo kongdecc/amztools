@@ -818,6 +818,8 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
         }) 
       } catch {}
     }
+    // 页面切换时滚动到顶部
+    window.scrollTo(0, 0);
   }, [activeTab])
   const { settings } = useSettings()
   const safeOrigin = (typeof window !== 'undefined' && (window as any).location) ? (window as any).location.origin : ''
