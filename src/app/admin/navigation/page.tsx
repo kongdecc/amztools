@@ -251,7 +251,14 @@ export default function AdminNavigation() {
                   </td>
                   <td className="p-4">
                     {editingId === row.id ? (
-                      <input type="text" value={row.label} onChange={e => setList(prev => prev.map(x => x.id === row.id ? { ...x, label: e.target.value } : x))} className="w-48 border rounded px-2 py-1 text-sm" />
+                      <div className="flex flex-col gap-1">
+                        <input type="text" value={row.label} onChange={e => setList(prev => prev.map(x => x.id === row.id ? { ...x, label: e.target.value } : x))} className="w-48 border rounded px-2 py-1 text-sm" />
+                        <div className="flex gap-1">
+                          {['❤️', '☕', '👍', '⭐', '🎉', '🎁', '🔥'].map(emoji => (
+                            <button key={emoji} onClick={() => setList(prev => prev.map(x => x.id === row.id ? { ...x, label: x.label + emoji } : x))} className="text-xs hover:bg-gray-100 p-0.5 rounded border border-transparent hover:border-gray-200" title="插入表情">{emoji}</button>
+                          ))}
+                        </div>
+                      </div>
                     ) : (
                       <div className="flex items-center gap-2"><span className="font-medium text-gray-800">{row.label}</span></div>
                     )}
