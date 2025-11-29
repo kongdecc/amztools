@@ -83,7 +83,7 @@ function FunctionalityClient() {
   }
 
   const handleNavigate = (key: string) => {
-    window.location.href = `/?tab=${key}`
+    window.location.href = `/functionality/${key}`
   }
 
   return (
@@ -94,27 +94,32 @@ function FunctionalityClient() {
           <span>{settings.siteName}</span>
         </div>
         <nav className="ml-auto mr-6 flex items-center gap-6">
-          <div className="relative group">
-            <button className="text-sm text-white/90 hover:text-white flex items-center gap-1">
-              功能分类
-              <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
-            </button>
-            <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-              <div className="p-2 space-y-1">
-                {modules.map((m: any) => (
-                  <button 
-                    key={m.key}
-                    onClick={() => handleNavigate(m.key)}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
-                  >
-                    {m.title}
+          {navItems.map((item:any) => {
+            const isFuncMenu = String(item.label || '').includes('功能分类') || String(item.id || '') === 'functionality'
+            if (isFuncMenu) {
+              return (
+                <div key={item.id || 'function-menu'} className="relative group">
+                  <button className="text-sm text-white/90 hover:text-white flex items-center gap-1">
+                    {item.label || '功能分类'}
+                    <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
                   </button>
-                ))}
-              </div>
-            </div>
-          </div>
-          {navItems.map((item:any) => (
-            item.isExternal ? (
+                  <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                    <div className="p-2 space-y-1">
+                      {modules.map((m: any) => (
+                        <button 
+                          key={m.key}
+                          onClick={() => handleNavigate(m.key)}
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
+                        >
+                          {m.title}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )
+            }
+            return item.isExternal ? (
               <a key={item.id} href={item.href || '#'} target="_blank" rel="noopener noreferrer" className="text-sm text-white/90 hover:text-white">
                 {item.label}
               </a>
@@ -123,7 +128,7 @@ function FunctionalityClient() {
                 {item.label}
               </a>
             )
-          ))}
+          })}
         </nav>
       </header>
       <div className="flex-1">

@@ -908,30 +908,35 @@ export default function HomeLayoutClient({ initialModules, initialNavItems }: { 
           <span>{settings.siteName}</span>
         </div>
         <nav className="ml-auto mr-6 flex items-center gap-6">
-          <div className="relative group">
-            <button className="text-sm text-white/90 hover:text-white flex items-center gap-1">
-              功能分类
-              <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
-            </button>
-            <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-              <div className="p-2 space-y-1">
-                {modules.filter((m: any) => m.status !== '下架').map((m: any) => (
-                  <button 
-                    key={m.key}
-                    onClick={() => setActiveTab(m.key)}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
-                  >
-                    {m.title}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
           {navItems
             .slice()
             .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
             .map((item: any) => {
+              const isFuncMenu = String(item.label || '').includes('功能分类') || String(item.id || '') === 'functionality'
               const hasChildren = Array.isArray(item.children) && item.children.length > 0
+              if (isFuncMenu) {
+                return (
+                  <div key={item.id || 'function-menu'} className="relative group">
+                    <button className="text-sm text-white/90 hover:text-white flex items-center gap-1">
+                      {item.label || '功能分类'}
+                      <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
+                    </button>
+                    <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                      <div className="p-2 space-y-1">
+                        {modules.filter((m: any) => m.status !== '下架').map((m: any) => (
+                          <button 
+                            key={m.key}
+                            onClick={() => setActiveTab(m.key)}
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
+                          >
+                            {m.title}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )
+              }
               if (hasChildren) {
                 return (
                   <div key={item.id} className="relative group">
