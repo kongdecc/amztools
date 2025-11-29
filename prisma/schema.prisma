@@ -92,3 +92,14 @@ model DailyVisit {
 
   @@unique([date, module])
 }
+
+model IpVisit {
+  id        String   @id @default(cuid())
+  ip        String
+  date      String
+  module    String
+  createdAt DateTime @default(now())
+
+  @@unique([ip, date, module])
+  @@index([date, module])
+}

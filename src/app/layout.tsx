@@ -2,6 +2,8 @@ import type { ReactNode } from 'react'
 import './globals.css'
 import { db } from '@/lib/db'
 import { Metadata } from 'next'
+import fs from 'fs'
+import path from 'path'
 
 export async function generateMetadata(): Promise<Metadata> {
   let logoUrl = ''
@@ -17,6 +19,20 @@ export async function generateMetadata(): Promise<Metadata> {
     siteName = settings.siteName || siteName
     googleVerification = settings.googleVerification || ''
     baiduVerification = settings.baiduVerification || ''
+
+    // If no logoUrl in settings, check if local file exists
+    if (!logoUrl) {
+      try {
+        const dataDir = path.join(process.cwd(), '.data')
+        const exts = ['png','jpg','jpeg','webp','svg']
+        for (const ext of exts) {
+          if (fs.existsSync(path.join(dataDir, `logo.${ext}`))) {
+            logoUrl = '/api/logo'
+            break
+          }
+        }
+      } catch {}
+    }
   } catch {}
 
   return {

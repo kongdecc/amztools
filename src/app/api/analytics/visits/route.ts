@@ -10,11 +10,40 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Module key is required' }, { status: 400 })
     }
 
+    // Get IP address
+    const forwarded = request.headers.get('x-forwarded-for')
+    const realIp = request.headers.get('x-real-ip')
+    const ip = forwarded ? forwarded.split(',')[0].trim() : (realIp ? realIp.trim() : '127.0.0.1')
+
     const today = new Date()
     const y = today.getFullYear()
     const m = String(today.getMonth() + 1).padStart(2, '0')
     const d = String(today.getDate()).padStart(2, '0')
     const dateStr = `${y}-${m}-${d}`
+
+    // Check if this IP has already visited this module today
+    const existingVisit = await (db as any).ipVisit.findUnique({
+      where: {
+        ip_date_module: {
+          ip,
+          date: dateStr,
+          module
+        }
+      }
+    })
+
+    if (existingVisit) {
+      return NextResponse.json({ success: true, skipped: true })
+    }
+
+    // Record the visit for this IP
+    await (db as any).ipVisit.create({
+      data: {
+        ip,
+        date: dateStr,
+        module
+      }
+    })
 
     // Update DB daily visits
     await (db as any).dailyVisit.upsert({
@@ -25,11 +54,33 @@ export async function POST(request: Request) {
 
     // Also track total 'all' visits for the day if it's a specific module
     if (module !== 'all') {
-       await (db as any).dailyVisit.upsert({
-        where: { date_module: { date: dateStr, module: 'total' } },
-        update: { count: { increment: 1 } },
-        create: { date: dateStr, module: 'total', count: 1 }
+      // Check if this IP has visited ANY module today (for total count)
+      // We use a special module name 'total' for IP tracking as well to avoid double counting total
+      const existingTotalVisit = await (db as any).ipVisit.findUnique({
+        where: {
+          ip_date_module: {
+            ip,
+            date: dateStr,
+            module: 'total'
+          }
+        }
       })
+
+      if (!existingTotalVisit) {
+         await (db as any).ipVisit.create({
+          data: {
+            ip,
+            date: dateStr,
+            module: 'total'
+          }
+        })
+        
+        await (db as any).dailyVisit.upsert({
+          where: { date_module: { date: dateStr, module: 'total' } },
+          update: { count: { increment: 1 } },
+          create: { date: dateStr, module: 'total', count: 1 }
+        })
+      }
     }
     
     // Update module total views
