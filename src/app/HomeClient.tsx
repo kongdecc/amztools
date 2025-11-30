@@ -892,11 +892,13 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
 
   const handleNavigate = (tab: string) => {
     if (tab === 'home') {
-      router.push('/')
+      // 使用 replace 而不是 push，避免历史记录堆积导致后退困难
+      router.replace('/')
     } else {
       const params = new URLSearchParams(searchParams.toString())
       params.set('tab', tab)
-      router.push(`/?${params.toString()}`)
+      // 使用 replace 切换 tab，提高响应速度并避免页面重新加载
+      router.replace(`/?${params.toString()}`, { scroll: false })
     }
   }
   
