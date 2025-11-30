@@ -11,7 +11,7 @@ export default function AdminModules() {
   const [selected, setSelected] = useState<Record<string, boolean>>({})
   const [originals, setOriginals] = useState<Record<string, any>>({})
   const [serverSnap, setServerSnap] = useState<Array<any>>([])
-  useEffect(() => { (async () => { const r = await fetch('/api/modules', { cache: 'no-store' }); const d = await r.json(); const mapped = (d || []).map((x: any, i: number) => ({ ...x, order: typeof x.order === 'number' && x.order > 0 ? x.order : i + 1 })); setList(mapped); setServerSnap(mapped.map((x: any) => ({ key: x.key, title: x.title, desc: x.desc, status: x.status, views: Number(x.views || 0), color: x.color || 'blue', order: Number(x.order || 0) }))) })() }, [])
+  useEffect(() => { (async () => { const r = await fetch('/api/modules', { cache: 'no-store' }); const d = await r.json(); const mapped = (d || []).map((x: any, i: number) => ({ ...x, order: typeof x.order === 'number' && x.order > 0 ? x.order : i + 1 })); setList(mapped); setServerSnap(mapped.map((x: any) => ({ key: x.key, title: x.title, desc: x.desc, status: x.status, views: Number(x.views || 0), color: x.color || 'blue', order: Number(x.order || 0), category: x.category || 'other' }))) })() }, [])
   const filtered = useMemo(() => {
     if (!keyword.trim()) return list
     const k = keyword.trim().toLowerCase()
@@ -19,7 +19,7 @@ export default function AdminModules() {
   }, [list, keyword])
   const uidOf = (x: any) => x?.id ?? x?.key
   const isDirty = useMemo(() => {
-    const norm = (arr: Array<any>) => arr.map((x: any) => ({ key: x.key, title: x.title, desc: x.desc, status: x.status, views: Number(x.views || 0), color: x.color || 'blue', order: Number(x.order || 0) })).sort((a: any, b: any) => a.key.localeCompare(b.key))
+    const norm = (arr: Array<any>) => arr.map((x: any) => ({ key: x.key, title: x.title, desc: x.desc, status: x.status, views: Number(x.views || 0), color: x.color || 'blue', order: Number(x.order || 0), category: x.category || 'other' })).sort((a: any, b: any) => a.key.localeCompare(b.key))
     try { return JSON.stringify(norm(list)) !== JSON.stringify(norm(serverSnap)) } catch { return false }
   }, [list, serverSnap])
 
@@ -56,13 +56,14 @@ function StatusBadge({ status }: any) {
         status: x.status,
         views: Number(x.views || 0),
         color: x.color || 'blue',
-        order: Number(x.order || 0)
+        order: Number(x.order || 0),
+        category: x.category || 'other'
       }))
       const r = await fetch('/api/modules', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), credentials: 'include' })
       if (!r.ok) throw new Error('保存失败')
       setSavedHint('已保存更改')
       // Update snapshots
-      setServerSnap(newList.map((x: any) => ({ key: x.key, title: x.title, desc: x.desc, status: x.status, views: Number(x.views || 0), color: x.color || 'blue', order: Number(x.order || 0) })))
+      setServerSnap(newList.map((x: any) => ({ key: x.key, title: x.title, desc: x.desc, status: x.status, views: Number(x.views || 0), color: x.color || 'blue', order: Number(x.order || 0), category: x.category || 'other' })))
       setSelected({})
       setOriginals({})
     } catch {
@@ -89,7 +90,7 @@ function StatusBadge({ status }: any) {
             <button onClick={() => {
               const ts = Date.now()
               const key = `tool-${ts}`
-              const item = { id: `mem-${ts}`, key, title: '新功能', desc: '', status: '启用', views: 0, color: 'blue', order: (list[list.length-1]?.order || list.length) + 1, isNew: true }
+              const item = { id: `mem-${ts}`, key, title: '新功能', desc: '', status: '启用', views: 0, color: 'blue', order: (list[list.length-1]?.order || list.length) + 1, isNew: true, category: 'other' }
               setList((prev) => [...prev, item])
               setEditingId(item.id)
             }} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm flex items-center gap-1 transition-colors shadow-sm font-medium"><Plus size={16} /> 新建功能</button>
@@ -104,7 +105,7 @@ function StatusBadge({ status }: any) {
                 const keys = Object.keys(selected).filter(k => selected[k])
                 const rows = list.filter((x) => keys.includes(uidOf(x)))
                 for (const row of rows) {
-                  const payload = { key: row.key, title: row.title, desc: row.desc, status: row.status, views: Number(row.views || 0), color: row.color || 'blue', order: Number(row.order || 0) }
+                  const payload = { key: row.key, title: row.title, desc: row.desc, status: row.status, views: Number(row.views || 0), color: row.color || 'blue', order: Number(row.order || 0), category: row.category || 'other' }
                   const r = await fetch('/api/modules', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), credentials: 'include' })
                   if (!r.ok) throw new Error('保存失败')
                 }
@@ -114,7 +115,7 @@ function StatusBadge({ status }: any) {
                 const d = await rr.json()
                 const mapped = (d || []).map((x: any, i: number) => ({ ...x, order: typeof x.order === 'number' && x.order > 0 ? x.order : i + 1 }))
                 setList(mapped)
-                setServerSnap(mapped.map((x: any) => ({ key: x.key, title: x.title, desc: x.desc, status: x.status, views: Number(x.views || 0), color: x.color || 'blue', order: Number(x.order || 0) })))
+                setServerSnap(mapped.map((x: any) => ({ key: x.key, title: x.title, desc: x.desc, status: x.status, views: Number(x.views || 0), color: x.color || 'blue', order: Number(x.order || 0), category: x.category || 'other' })))
                 setSelected({})
                 setOriginals({})
               } catch {
@@ -133,7 +134,7 @@ function StatusBadge({ status }: any) {
               const d = await rr.json()
               const mapped = (d || []).map((x: any, i: number) => ({ ...x, order: typeof x.order === 'number' && x.order > 0 ? x.order : i + 1 }))
               setList(mapped)
-              setServerSnap(mapped.map((x: any) => ({ key: x.key, title: x.title, desc: x.desc, status: x.status, views: Number(x.views || 0), color: x.color || 'blue', order: Number(x.order || 0) })))
+              setServerSnap(mapped.map((x: any) => ({ key: x.key, title: x.title, desc: x.desc, status: x.status, views: Number(x.views || 0), color: x.color || 'blue', order: Number(x.order || 0), category: x.category || 'other' })))
               setEditingId('')
               setSelected({})
               setOriginals({})
@@ -174,6 +175,7 @@ function StatusBadge({ status }: any) {
                 <th className="p-4 w-16">排序</th>
                 <th className="p-4 w-40">工具名称</th>
                 <th className="p-4 w-32">唯一标识 (Key)</th>
+                <th className="p-4 w-32">分类</th>
                 <th className="p-4">功能描述</th>
                 <th className="p-4 w-24">访问热度</th>
                 <th className="p-4 w-24">状态</th>
@@ -201,6 +203,20 @@ function StatusBadge({ status }: any) {
                     {editingId === uidOf(row) ? (
                       <input value={row.key} onChange={(e) => setList((prev) => prev.map((x) => (x.id ?? x.key) === (row.id ?? row.key) ? { ...x, key: e.target.value } : x))} className="w-32 border rounded px-2 py-1 text-xs font-mono" />
                     ) : row.key}
+                  </td>
+                  <td className="p-4 text-sm">
+                    {editingId === uidOf(row) ? (
+                      <select value={row.category || 'other'} onChange={(e) => setList((prev) => prev.map((x) => (x.id ?? x.key) === (row.id ?? row.key) ? { ...x, category: e.target.value } : x))} className="border rounded px-2 py-1 text-sm w-28">
+                        <option value="operation">运营工具</option>
+                        <option value="advertising">广告工具</option>
+                        <option value="image-text">图片文本</option>
+                        <option value="other">其他</option>
+                      </select>
+                    ) : (
+                      <span className="px-2 py-1 rounded text-xs bg-gray-100 text-gray-600">
+                        {row.category === 'operation' ? '运营工具' : row.category === 'advertising' ? '广告工具' : row.category === 'image-text' ? '图片文本' : '其他'}
+                      </span>
+                    )}
                   </td>
                   <td className="p-4 text-gray-500 max-w-xs" title={row.desc}>
                     {editingId === uidOf(row) ? (
@@ -254,7 +270,7 @@ function StatusBadge({ status }: any) {
                       {editingId === uidOf(row) ? (
                         <>
                           <button onClick={async () => {
-                            const payload = { key: row.key, title: row.title, desc: row.desc, status: row.status, views: Number(row.views || 0), color: row.color || 'blue', order: Number(row.order || 0) }
+                            const payload = { key: row.key, title: row.title, desc: row.desc, status: row.status, views: Number(row.views || 0), color: row.color || 'blue', order: Number(row.order || 0), category: row.category || 'other' }
                             try {
                               const r = await fetch('/api/modules', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), credentials: 'include' })
                               if (r.ok) {
@@ -262,7 +278,7 @@ function StatusBadge({ status }: any) {
                                 const d = await rr.json()
                                 const mapped = (d || []).map((x: any, i: number) => ({ ...x, order: typeof x.order === 'number' && x.order > 0 ? x.order : i + 1 }))
                                 setList(mapped)
-                                setServerSnap(mapped.map((x: any) => ({ key: x.key, title: x.title, desc: x.desc, status: x.status, views: Number(x.views || 0), color: x.color || 'blue', order: Number(x.order || 0) })))
+                                setServerSnap(mapped.map((x: any) => ({ key: x.key, title: x.title, desc: x.desc, status: x.status, views: Number(x.views || 0), color: x.color || 'blue', order: Number(x.order || 0), category: x.category || 'other' })))
                                 setEditingId('')
                                 setOriginals((prev) => { const n: any = { ...prev }; delete n[uidOf(row)]; return n })
                               } else {
