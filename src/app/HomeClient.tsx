@@ -13,7 +13,7 @@ import DuplicateRemover from '../components/DuplicateRemover'
 import ContentFilter from '../components/ContentFilter'
 import ImageResizer from '@/components/ImageResizer'
 import { useRef } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 
 const Card = ({ children, className = "", onClick, ...props }: any) => (
   <div onClick={onClick} className={`bg-white rounded-xl border border-gray-100 shadow-sm ${className}`} {...props}>{children}</div>
@@ -140,7 +140,7 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
       {showMore && (
         <div className="text-center mt-8">
           <button 
-            onClick={() => { try { (window as any).location.href = '/functionality' } catch {} }}
+            onClick={() => { try { handleNavigate('functionality') } catch {} }}
             className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-lg font-medium hover:shadow-lg transform hover:-translate-y-1 transition-all flex items-center gap-2 mx-auto"
           >
             查看更多工具
@@ -806,6 +806,8 @@ const PlaceholderPage = ({ title, icon: Icon }: { title: string; icon: any }) =>
 
 export default function HomeLayoutClient({ initialModules, initialNavItems, initialActiveTab, initialFull }: { initialModules: any[]; initialNavItems: any[]; initialActiveTab?: string; initialFull?: boolean }) {
   const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
   const [activeTab, setActiveTab] = useState<string>(() => {
     if (initialActiveTab && String(initialActiveTab).trim()) return String(initialActiveTab)
     if (typeof window !== 'undefined') {
@@ -851,6 +853,16 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
   }, [searchParams])
 
   const mainRef = useRef<HTMLDivElement>(null)
+
+  const handleNavigate = (tab: string) => {
+    if (tab === 'home') {
+      router.push('/')
+    } else {
+      const params = new URLSearchParams(searchParams.toString())
+      params.set('tab', tab)
+      router.push(`/?${params.toString()}`)
+    }
+  }
   
   const iconMap: Record<string, any> = {
     'ad-calc': Calculator,
@@ -874,33 +886,33 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
       label: '功能中心', 
       icon: LayoutGrid, 
       children: modules.filter((m: any) => m.status !== '下架').map((m: any) => ({ 
-        id: m.key, 
-        label: m.status === '维护' ? `${m.title}（维护）` : m.title, 
-        icon: iconMap[m.key] || Hammer 
-      }))
-    },
-    ...modules.filter((m: any) => m.status !== '下架').map((m: any) => ({ id: m.key, label: m.status === '维护' ? `${m.title}（维护）` : m.title, icon: iconMap[m.key] || Hammer }))
-  ]
-  useEffect(() => {
-    if (activeTab) {
-      try { 
-        fetch('/api/analytics/visits', { 
-          method: 'POST', 
-          headers: { 'Content-Type': 'application/json' }, 
-          body: JSON.stringify({ module: activeTab }) 
-        }) 
-      } catch {}
-    }
-    // 页面切换时滚动到顶部
-    setTimeout(() => {
-      try { window.scrollTo({ top: 0, behavior: 'auto' }) } catch {}
-      if (mainRef.current) {
-        try { (mainRef.current as any).scrollTo({ top: 0, behavior: 'auto' }) } catch { mainRef.current.scrollTop = 0 }
-      }
-    }, 0);
-  }, [activeTab])
-  const { settings } = useSettings()
-  const safeOrigin = (typeof window !== 'undefined' && (window as any).location) ? (window as any).location.origin : ''
+                id: m.key, 
+                label: m.status === '维护' ? `${m.title}（维护）` : m.title, 
+                icon: iconMap[m.key] || Hammer 
+              }))
+            },
+            ...modules.filter((m: any) => m.status !== '下架').map((m: any) => ({ id: m.key, label: m.status === '维护' ? `${m.title}（维护）` : m.title, icon: iconMap[m.key] || Hammer }))
+          ]
+          useEffect(() => {
+            if (activeTab) {
+              try { 
+                fetch('/api/analytics/visits', { 
+                  method: 'POST', 
+                  headers: { 'Content-Type': 'application/json' }, 
+                  body: JSON.stringify({ module: activeTab }) 
+                }) 
+              } catch {}
+            }
+            // 页面切换时滚动到顶部
+            setTimeout(() => {
+              try { window.scrollTo({ top: 0, behavior: 'auto' }) } catch {}
+              if (mainRef.current) {
+                try { (mainRef.current as any).scrollTo({ top: 0, behavior: 'auto' }) } catch { mainRef.current.scrollTop = 0 }
+              }
+            }, 0);
+          }, [activeTab])
+          const { settings } = useSettings()
+          const safeOrigin = (typeof window !== 'undefined' && (window as any).location) ? (window as any).location.origin : ''
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Head>
@@ -998,7 +1010,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                                 {c.label}
                               </Link>
                             ) : (
-                              <button key={c.id} onClick={() => setActiveTab(c.id)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg cursor-pointer">
+                              <button key={c.id} onClick={() => handleNavigate(c.id)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg cursor-pointer">
                                 {c.label}
                               </button>
                             )
@@ -1019,7 +1031,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                     {item.label}
                   </Link>
                 ) : (
-                  <button key={item.id} onClick={() => setActiveTab(item.id)} className="text-sm text-white/90 hover:text-white cursor-pointer">
+                  <button key={item.id} onClick={() => handleNavigate(item.id)} className="text-sm text-white/90 hover:text-white cursor-pointer">
                     {item.label}
                   </button>
                 )
@@ -1034,7 +1046,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
             {menuItems.filter(item => item.id !== 'functionality').map(item => (
               <button 
                 key={item.id} 
-                onClick={() => setActiveTab(item.id)} 
+                onClick={() => handleNavigate(item.id)} 
                 className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === item.id ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
               >
                 <item.icon className={`h-5 w-5 ${activeTab === item.id ? 'text-blue-600' : 'text-gray-400'}`} />
@@ -1080,7 +1092,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
           )}
           <div className="max-w-7xl mx-auto">
             {activeTab === 'home' ? (
-              <HomePage onNavigate={setActiveTab} modules={modules} />
+              <HomePage onNavigate={handleNavigate} modules={modules} />
             ) : activeTab === 'functionality' ? (
               <div className="space-y-6">
                 <div className="flex items-center gap-2 mb-2">
@@ -1137,7 +1149,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                       fuchsia: 'text-fuchsia-600',
                     }
                     return (
-                      <Card key={m.key} className="group relative p-6 hover:shadow-xl transition-all duration-300 cursor-pointer border-transparent hover:border-gray-100 bg-white overflow-hidden" onClick={() => setActiveTab(m.key)}>
+                      <Card key={m.key} className="group relative p-6 hover:shadow-xl transition-all duration-300 cursor-pointer border-transparent hover:border-gray-100 bg-white overflow-hidden" onClick={() => handleNavigate(m.key)}>
                         <div className="flex items-start gap-4 mb-4">
                           <div className={`w-12 h-12 rounded-xl ${colorSolidMap[colorKey] || 'bg-blue-600'} flex items-center justify-center shadow-md shrink-0 group-hover:scale-105 transition-transform duration-300`}>
                             {(() => {
