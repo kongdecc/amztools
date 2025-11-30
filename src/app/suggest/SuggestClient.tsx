@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSettings } from '@/components/SettingsProvider'
-import { LayoutDashboard, Send, ChevronDown } from 'lucide-react'
+import { LayoutDashboard, Send, ChevronDown, MoreHorizontal } from 'lucide-react'
 
 interface SuggestClientProps {
   initialNavItems: any[]
@@ -14,6 +14,7 @@ export default function SuggestClient({ initialNavItems, modules }: SuggestClien
   const { settings } = useSettings()
   const [navItems, setNavItems] = useState<any[]>(initialNavItems)
   const [categories, setCategories] = useState<any[]>([])
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     (async () => {
@@ -62,16 +63,16 @@ export default function SuggestClient({ initialNavItems, modules }: SuggestClien
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      <header className="h-14 bg-[#5b5bd6] text-white flex items-center px-10 shadow-md z-20">
-        <div className={`flex items-center gap-2 font-bold text-lg`}>
+      <header className="h-14 bg-[#5b5bd6] text-white flex items-center px-4 md:px-10 shadow-md z-20 justify-between md:justify-start">
+        <div className={`flex items-center gap-2 font-bold text-lg min-w-0 flex-1`}>
           {String(settings.logoUrl || '').trim() ? (
-            <img src={settings.logoUrl} alt={settings.siteName} className="h-6 w-6 rounded object-contain" />
+            <img src={settings.logoUrl} alt={settings.siteName} className="h-6 w-6 rounded object-contain shrink-0" />
           ) : (
-            <div className="bg-white/20 p-1 rounded"><LayoutDashboard className="h-5 w-5" /></div>
+            <div className="bg-white/20 p-1 rounded shrink-0"><LayoutDashboard className="h-5 w-5" /></div>
           )}
-          <span>{settings.siteName}</span>
+          <span className="truncate md:text-lg text-base">{settings.siteName}</span>
         </div>
-        <nav className="ml-auto mr-6 flex items-center gap-6">
+        <nav className="hidden md:flex ml-auto mr-6 items-center gap-6 shrink-0">
           <Link href="/" className="text-sm text-white/90 hover:text-white">首页</Link>
           {navItems
             .slice()
@@ -121,6 +122,34 @@ export default function SuggestClient({ initialNavItems, modules }: SuggestClien
             )
           })}
         </nav>
+        <div className="md:hidden flex items-center gap-3 shrink-0 ml-2">
+          <div className="relative">
+            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 hover:bg-white/10 rounded transition-colors">
+              <MoreHorizontal className="h-6 w-6 text-white" />
+            </button>
+            {mobileMenuOpen && (
+              <>
+                <div className="fixed inset-0 z-40 bg-black/20" onClick={() => setMobileMenuOpen(false)}></div>
+                <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 z-50 text-gray-800 animate-in fade-in zoom-in-95 duration-200 max-h-[80vh] overflow-y-auto">
+                  <Link href="/" className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 font-medium text-blue-600">首页</Link>
+                  {navItems
+                    .slice()
+                    .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
+                    .map((item: any) => {
+                      const isFuncMenu = String(item.label || '').includes('功能分类') || String(item.id || '') === 'functionality'
+                      if (isFuncMenu) {
+                        return <Link key={item.id} href="/functionality" className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50">{item.label || '功能分类'}</Link>
+                      }
+                      if (item.isExternal) {
+                        return <a key={item.id} href={item.href || '#'} target="_blank" rel="noopener noreferrer" className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50">{item.label}</a>
+                      }
+                      return <Link key={item.id} href={item.href || '/'} className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50">{item.label}</Link>
+                    })}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </header>
 
       <div className="flex-1">
