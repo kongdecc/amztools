@@ -13,6 +13,11 @@ interface SuggestClientProps {
 export default function SuggestClient({ initialNavItems, modules }: SuggestClientProps) {
   const { settings } = useSettings()
   const [navItems, setNavItems] = useState<any[]>(initialNavItems)
+  const categories = [
+    { key: 'operation', label: '运营工具' },
+    { key: 'advertising', label: '广告工具' },
+    { key: 'image-text', label: '图片文本' }
+  ]
   
   // 监听 settings 变化更新 navItems (虽然 SSR 已经传了初值，但 settings 更新可能带来新导航)
   useEffect(() => {
@@ -71,17 +76,26 @@ export default function SuggestClient({ initialNavItems, modules }: SuggestClien
                     {item.label || '功能分类'}
                     <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
                   </button>
-                  <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                    <div className="p-2 space-y-1">
-                      {modules.map((m: any) => (
-                        <Link 
-                          key={m.key}
-                          href={`/?tab=${m.key}`}
-                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer"
-                        >
-                          {m.title}
-                        </Link>
-                      ))}
+                  <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 max-h-[80vh] overflow-y-auto">
+                    <div className="p-2 space-y-2">
+                      {categories.map(cat => {
+                        const catModules = modules.filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'image-text')))
+                        if (catModules.length === 0) return null
+                        return (
+                          <div key={cat.key}>
+                            <div className="px-3 py-1 text-xs font-semibold text-gray-400 uppercase">{cat.label}</div>
+                            {catModules.map((m: any) => (
+                              <Link 
+                                key={m.key}
+                                href={`/?tab=${m.key}`}
+                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer"
+                              >
+                                {m.title}
+                              </Link>
+                            ))}
+                          </div>
+                        )
+                      })}
                     </div>
                   </div>
                 </div>

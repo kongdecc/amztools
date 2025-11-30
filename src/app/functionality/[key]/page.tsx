@@ -19,6 +19,11 @@ const DetailClient = () => {
   const { settings } = useSettings()
   const [modules, setModules] = React.useState<any[]>([])
   const [navItems, setNavItems] = React.useState<any[]>([])
+  const categories = [
+    { key: 'operation', label: '运营工具' },
+    { key: 'advertising', label: '广告工具' },
+    { key: 'image-text', label: '图片文本' }
+  ]
   React.useEffect(() => { (async () => { try { const r = await fetch('/api/modules', { cache: 'no-store' }); const d = await r.json(); const arr = Array.isArray(d) ? d : []; setModules(arr.filter((m:any)=>m.status !== '下架')) } catch {} })() }, [])
   React.useEffect(() => { try { const raw = (settings as any).navigation; const arr = raw ? JSON.parse(String(raw)) : []; setNavItems(Array.isArray(arr) ? arr : []) } catch {} }, [settings])
 
@@ -68,11 +73,20 @@ const DetailClient = () => {
                     {item.label || '功能分类'}
                     <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
                   </Link>
-                  <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                    <div className="p-2 space-y-1">
-                      {modules.map((m:any)=> (
-                        <Link key={m.key} href={`/?tab=${m.key}`} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer">{m.title}</Link>
-                      ))}
+                  <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 max-h-[80vh] overflow-y-auto">
+                    <div className="p-2 space-y-2">
+                      {categories.map(cat => {
+                        const catModules = modules.filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'image-text')))
+                        if (catModules.length === 0) return null
+                        return (
+                          <div key={cat.key}>
+                            <div className="px-3 py-1 text-xs font-semibold text-gray-400 uppercase">{cat.label}</div>
+                            {catModules.map((m: any) => (
+                              <Link key={m.key} href={`/?tab=${m.key}`} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer">{m.title}</Link>
+                            ))}
+                          </div>
+                        )
+                      })}
                     </div>
                   </div>
                 </div>

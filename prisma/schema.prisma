@@ -59,6 +59,7 @@ model ToolModule {
   views     Int      @default(0)
   color     String   @default("blue")
   order     Int      @default(0)
+  category  String   @default("other")
   updatedAt DateTime @updatedAt
 }
 

@@ -26,6 +26,12 @@ const Input = ({ className = "", ...props }: any) => (
 const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; modules: Array<any> }) => {
   const { settings } = useSettings()
   const safeOrigin = (typeof window !== 'undefined' && (window as any).location) ? (window as any).location.origin : ''
+  const categories = [
+    { key: 'operation', label: '运营工具' },
+    { key: 'advertising', label: '广告工具' },
+    { key: 'image-text', label: '图片文本' }
+  ]
+
   const iconMap: Record<string, any> = {
     'ad-calc': Calculator,
     'editor': Type,
@@ -881,18 +887,17 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
   }
   const menuItems = [
     { id: 'home', label: '首页', icon: LayoutDashboard },
-    { 
-      id: 'functionality', 
-      label: '功能中心', 
-      icon: LayoutGrid, 
-      children: modules.filter((m: any) => m.status !== '下架').map((m: any) => ({ 
-                id: m.key, 
-                label: m.status === '维护' ? `${m.title}（维护）` : m.title, 
-                icon: iconMap[m.key] || Hammer 
-              }))
-            },
-            ...modules.filter((m: any) => m.status !== '下架').map((m: any) => ({ id: m.key, label: m.status === '维护' ? `${m.title}（维护）` : m.title, icon: iconMap[m.key] || Hammer }))
-          ]
+    ...categories.map(cat => ({
+      id: cat.key,
+      label: cat.label,
+      icon: LayoutGrid,
+      children: modules.filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'image-text'))).map((m: any) => ({
+        id: m.key,
+        label: m.status === '维护' ? `${m.title}（维护）` : m.title,
+        icon: iconMap[m.key] || Hammer
+      }))
+    }))
+  ]
           useEffect(() => {
             if (activeTab) {
               try { 
@@ -971,17 +976,26 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                       {item.label || '功能分类'}
                       <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
                     </button>
-                    <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                      <div className="p-2 space-y-1">
-                        {modules.filter((m: any) => m.status !== '下架').map((m: any) => (
-                          <button 
-                            key={m.key}
-                            onClick={() => handleNavigate(m.key)}
-                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer"
-                          >
-                            {m.title}
-                          </button>
-                        ))}
+                    <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 max-h-[80vh] overflow-y-auto">
+                      <div className="p-2 space-y-2">
+                        {categories.map(cat => {
+                          const catModules = modules.filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'image-text')))
+                          if (catModules.length === 0) return null
+                          return (
+                            <div key={cat.key}>
+                              <div className="px-3 py-1 text-xs font-semibold text-gray-400 uppercase">{cat.label}</div>
+                              {catModules.map((m: any) => (
+                                <button 
+                                  key={m.key}
+                                  onClick={() => handleNavigate(m.key)}
+                                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer"
+                                >
+                                  {m.title}
+                                </button>
+                              ))}
+                            </div>
+                          )
+                        })}
                       </div>
                     </div>
                   </div>
@@ -1040,17 +1054,41 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
         {!isFull && (
         <aside className="w-64 bg-white border-r border-gray-200 flex-shrink-0 hidden md:flex flex-col">
           <div className="p-4 space-y-1 flex-1 overflow-y-auto">
-            {menuItems.filter(item => item.id !== 'functionality').map(item => (
-              <button 
-                key={item.id} 
-                onClick={() => handleNavigate(item.id)} 
-                className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === item.id ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
-              >
-                <item.icon className={`h-5 w-5 ${activeTab === item.id ? 'text-blue-600' : 'text-gray-400'}`} />
-                {item.label}
-                {activeTab === item.id && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-600" />}
-              </button>
-            ))}
+            {menuItems.map(item => {
+              if (item.children && item.children.length > 0) {
+                return (
+                  <div key={item.id} className="mb-2">
+                    <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      {item.label}
+                    </div>
+                    <div className="space-y-1">
+                      {item.children.map((child: any) => (
+                        <button 
+                          key={child.id} 
+                          onClick={() => handleNavigate(child.id)} 
+                          className={`w-full flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === child.id ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
+                        >
+                          <child.icon className={`h-4 w-4 ${activeTab === child.id ? 'text-blue-600' : 'text-gray-400'}`} />
+                          {child.label}
+                          {activeTab === child.id && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-600" />}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )
+              }
+              return (
+                <button 
+                  key={item.id} 
+                  onClick={() => handleNavigate(item.id)} 
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === item.id ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
+                >
+                  <item.icon className={`h-5 w-5 ${activeTab === item.id ? 'text-blue-600' : 'text-gray-400'}`} />
+                  {item.label}
+                  {activeTab === item.id && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-600" />}
+                </button>
+              )
+            })}
           </div>
           {process.env.NODE_ENV !== 'production' && (
             <div className="p-4 border-t border-gray-100">
