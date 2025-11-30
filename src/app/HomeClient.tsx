@@ -932,7 +932,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
 
   useEffect(() => {
     // Auto-expand category if active tab is inside it
-    const activeCat = menuItems.find(item => item.children?.some((child: any) => child.id === activeTab))
+    const activeCat = menuItems.find((item: any) => item.children?.some((child: any) => child.id === activeTab))
     if (activeCat) {
       setExpandedCategories(prev => ({ ...prev, [activeCat.id]: true }))
     }
