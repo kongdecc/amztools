@@ -1060,7 +1060,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
         {!isFull && (
         <aside className="w-64 bg-white border-r border-gray-200 flex-shrink-0 hidden md:flex flex-col">
           <div className="p-4 space-y-1 flex-1 overflow-y-auto">
-            {menuItems.map(item => {
+            {menuItems.map((item: any) => {
               if (item.children && item.children.length > 0) {
                 return (
                   <div key={item.id} className="mb-2">
