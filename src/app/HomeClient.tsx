@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download, AlertCircle, CheckCircle, Filter, LayoutGrid, Maximize2, Minimize2, Image as ImageIcon } from 'lucide-react'
+import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download, AlertCircle, CheckCircle, Filter, LayoutGrid, Maximize2, Minimize2, Image as ImageIcon, MoreHorizontal } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 import Head from 'next/head'
 import Link from 'next/link'
@@ -916,6 +916,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
     'image-resizer': ImageIcon,
   }
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({})
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const toggleCategory = (catKey: string) => {
     setExpandedCategories(prev => ({ ...prev, [catKey]: !prev[catKey] }))
@@ -999,12 +1000,12 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
           }))
         }) }} />
       </Head>
-      <header className="h-14 bg-[#5b5bd6] text-white flex items-center px-10 shadow-md z-20">
-        <div className={`flex items-center gap-2 font-bold text-lg`}>
+      <header className="h-14 bg-[#5b5bd6] text-white flex items-center px-4 md:px-10 shadow-md z-20 justify-between md:justify-start">
+        <div className={`flex items-center gap-2 font-bold text-lg shrink-0`}>
           <div className="bg-white/20 p-1 rounded"><LayoutDashboard className="h-5 w-5" /></div>
-          <span>{settings.siteName}</span>
+          <span className="truncate max-w-[150px] md:max-w-none">{settings.siteName}</span>
         </div>
-        <nav className="ml-auto mr-6 flex items-center gap-6">
+        <nav className="hidden md:flex ml-auto mr-6 items-center gap-6">
           <button onClick={() => handleNavigate('home')} className="text-sm text-white/90 hover:text-white cursor-pointer">首页</button>
           {navItems
             .slice()
@@ -1092,6 +1093,58 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
               )
             })}
         </nav>
+        <div className="md:hidden flex items-center gap-3">
+          <button onClick={() => handleNavigate('home')} className="text-sm text-white/90 hover:text-white cursor-pointer font-medium whitespace-nowrap">首页</button>
+          {navItems
+            .slice()
+            .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
+            .slice(0, 2)
+            .map((item: any) => {
+              const isFuncMenu = String(item.label || '').includes('功能分类') || String(item.id || '') === 'functionality'
+              if (isFuncMenu) {
+                return <button key={item.id} onClick={()=>{ try { (window as any).location.href = '/functionality' } catch {} }} className="text-sm text-white/90 hover:text-white cursor-pointer whitespace-nowrap">{item.label || '功能分类'}</button>
+              }
+              if (item.isExternal) {
+                return <a key={item.id} href={item.href || '#'} target="_blank" rel="noopener noreferrer" className="text-sm text-white/90 hover:text-white whitespace-nowrap">{item.label}</a>
+              }
+              if (item.href) {
+                return <Link key={item.id} href={item.href} className="text-sm text-white/90 hover:text-white whitespace-nowrap">{item.label}</Link>
+              }
+              return <button key={item.id} onClick={() => handleNavigate(item.id)} className="text-sm text-white/90 hover:text-white cursor-pointer whitespace-nowrap">{item.label}</button>
+            })}
+          
+          {navItems.length > 2 && (
+            <div className="relative">
+              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-1 hover:bg-white/10 rounded transition-colors">
+                <MoreHorizontal className="h-6 w-6 text-white" />
+              </button>
+              {mobileMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-40 bg-black/20" onClick={() => setMobileMenuOpen(false)}></div>
+                  <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 z-50 text-gray-800 animate-in fade-in zoom-in-95 duration-200">
+                    {navItems
+                      .slice()
+                      .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
+                      .slice(2)
+                      .map((item: any) => {
+                        const isFuncMenu = String(item.label || '').includes('功能分类') || String(item.id || '') === 'functionality'
+                        if (isFuncMenu) {
+                          return <button key={item.id} onClick={()=>{ setMobileMenuOpen(false); try { (window as any).location.href = '/functionality' } catch {} }} className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50">{item.label || '功能分类'}</button>
+                        }
+                        if (item.isExternal) {
+                          return <a key={item.id} href={item.href || '#'} target="_blank" rel="noopener noreferrer" className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50">{item.label}</a>
+                        }
+                        if (item.href) {
+                          return <Link key={item.id} href={item.href} onClick={() => setMobileMenuOpen(false)} className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50">{item.label}</Link>
+                        }
+                        return <button key={item.id} onClick={() => { handleNavigate(item.id); setMobileMenuOpen(false); }} className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50">{item.label}</button>
+                      })}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </header>
       <div className="flex flex-1">
         {!isFull && (
