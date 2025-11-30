@@ -16,10 +16,12 @@ interface Module {
   views: number
   color: string
   order: number
+  category?: string
 }
 
-export default function FunctionalityClient({ initialNavItems, initialModules }: { initialNavItems: any[]; initialModules?: Module[] }) {
+export default function FunctionalityClient({ initialNavItems, initialModules, initialCategories }: { initialNavItems: any[]; initialModules?: Module[]; initialCategories?: any[] }) {
   const [modules, setModules] = useState<Module[]>(initialModules || [])
+  const [categories, setCategories] = useState<any[]>(initialCategories || [])
   const [keyword, setKeyword] = useState('')
   const { settings } = useSettings()
   const [navItems, setNavItems] = useState<Array<any>>(initialNavItems || [])
@@ -33,6 +35,28 @@ export default function FunctionalityClient({ initialNavItems, initialModules }:
         const next = arr.filter(m => m.status !== '下架').sort((a, b) => a.order - b.order)
         setModules(next.length ? next : (initialModules || []))
       } catch { setModules([]) }
+
+      if (!initialCategories || initialCategories.length === 0) {
+        try {
+          const r = await fetch('/api/categories', { cache: 'no-store' })
+          const d = await r.json()
+          if (Array.isArray(d) && d.length > 0) {
+            setCategories(d.filter((c: any) => c.enabled !== false))
+          } else {
+            setCategories([
+              { key: 'operation', label: '运营工具' },
+              { key: 'advertising', label: '广告工具' },
+              { key: 'image-text', label: '图片文本' }
+            ])
+          }
+        } catch {
+          setCategories([
+            { key: 'operation', label: '运营工具' },
+            { key: 'advertising', label: '广告工具' },
+            { key: 'image-text', label: '图片文本' }
+          ])
+        }
+      }
     })()
   }, [])
 
@@ -69,11 +93,26 @@ export default function FunctionalityClient({ initialNavItems, initialModules }:
                     {item.label || '功能分类'}
                     <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
                   </button>
-                  <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                    <div className="p-2 space-y-1">
-                      {modules.map((m: any) => (
-                        <button key={m.key} onClick={() => handleNavigate(m.key)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer">{m.title}</button>
-                      ))}
+                  <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 max-h-[80vh] overflow-y-auto">
+                    <div className="p-2 space-y-2">
+                      {categories.map(cat => {
+                        const catModules = modules.filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'image-text')))
+                        if (catModules.length === 0) return null
+                        return (
+                          <div key={cat.key}>
+                            <div className="px-3 py-1 text-xs font-semibold text-gray-400 uppercase">{cat.label}</div>
+                            {catModules.map((m: any) => (
+                              <button 
+                                key={m.key}
+                                onClick={() => handleNavigate(m.key)}
+                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer"
+                              >
+                                {m.title}
+                              </button>
+                            ))}
+                          </div>
+                        )
+                      })}
                     </div>
                   </div>
                 </div>
