@@ -25,6 +25,7 @@ const Input = ({ className = "", ...props }: any) => (
 
 const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; modules: Array<any> }) => {
   const { settings } = useSettings()
+  const router = useRouter()
   const safeOrigin = (typeof window !== 'undefined' && (window as any).location) ? (window as any).location.origin : ''
   const categories = [
     { key: 'operation', label: '运营工具' },
