@@ -117,8 +117,8 @@ export async function PUT(request: Request) {
     if (toDelete.length) ops.push((db as any).toolModule.deleteMany({ where: { key: { in: toDelete } } }))
     ops.push(...list.map(item => (db as any).toolModule.upsert({
       where: { key: item.key },
-      update: { title: item.title, desc: item.desc, status: item.status, views: item.views ?? 0, color: item.color ?? 'blue', order: item.order ?? 0 },
-      create: { key: item.key, title: item.title, desc: item.desc, status: item.status ?? '启用', views: item.views ?? 0, color: item.color ?? 'blue', order: item.order ?? 0 }
+      update: { title: item.title, desc: item.desc, status: item.status, views: item.views ?? 0, color: item.color ?? 'blue', order: item.order ?? 0, category: item.category || 'other' },
+      create: { key: item.key, title: item.title, desc: item.desc, status: item.status ?? '启用', views: item.views ?? 0, color: item.color ?? 'blue', order: item.order ?? 0, category: item.category || 'other' }
     })))
     await db.$transaction(ops)
     return NextResponse.json({ ok: true })
@@ -161,8 +161,8 @@ export async function PATCH(request: Request) {
   try {
     await (db as any).toolModule.upsert({
       where: { key },
-      update: { title: item.title, desc: item.desc, status: item.status, views: item.views ?? 0, color: item.color ?? 'blue', order: item.order ?? 0 },
-      create: { key, title: item.title, desc: item.desc, status: item.status ?? '启用', views: item.views ?? 0, color: item.color ?? 'blue', order: item.order ?? 0 }
+      update: { title: item.title, desc: item.desc, status: item.status, views: item.views ?? 0, color: item.color ?? 'blue', order: item.order ?? 0, category: item.category || 'other' },
+      create: { key, title: item.title, desc: item.desc, status: item.status ?? '启用', views: item.views ?? 0, color: item.color ?? 'blue', order: item.order ?? 0, category: item.category || 'other' }
     })
     return NextResponse.json({ ok: true, key })
   } catch {
