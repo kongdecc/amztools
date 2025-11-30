@@ -45,51 +45,53 @@ export async function POST(request: Request) {
       }
     })
 
-    // Update DB daily visits
-    await (db as any).dailyVisit.upsert({
-      where: { date_module: { date: dateStr, module } },
-      update: { count: { increment: 1 } },
-      create: { date: dateStr, module, count: 1 }
+    // Update DB daily visits (independent of module specific logic)
+    if (module !== 'total') {
+      await (db as any).dailyVisit.upsert({
+        where: { date_module: { date: dateStr, module } },
+        update: { count: { increment: 1 } },
+        create: { date: dateStr, module, count: 1 }
+      })
+    }
+
+    // Track TOTAL site UV (Unique Visitor) for the day
+    // This logic ensures that regardless of how many modules a user visits,
+    // they are only counted ONCE per day as a site visitor.
+    const existingTotalVisit = await (db as any).ipVisit.findUnique({
+      where: {
+        ip_date_module: {
+          ip,
+          date: dateStr,
+          module: 'total'
+        }
+      }
     })
 
-    // Also track total 'all' visits for the day if it's a specific module
-    if (module !== 'all') {
-      // Check if this IP has visited ANY module today (for total count)
-      // We use a special module name 'total' for IP tracking as well to avoid double counting total
-      const existingTotalVisit = await (db as any).ipVisit.findUnique({
-        where: {
-          ip_date_module: {
-            ip,
-            date: dateStr,
-            module: 'total'
-          }
+    if (!existingTotalVisit) {
+        await (db as any).ipVisit.create({
+        data: {
+          ip,
+          date: dateStr,
+          module: 'total'
         }
       })
-
-      if (!existingTotalVisit) {
-         await (db as any).ipVisit.create({
-          data: {
-            ip,
-            date: dateStr,
-            module: 'total'
-          }
-        })
-        
-        await (db as any).dailyVisit.upsert({
-          where: { date_module: { date: dateStr, module: 'total' } },
-          update: { count: { increment: 1 } },
-          create: { date: dateStr, module: 'total', count: 1 }
-        })
-      }
+      
+      await (db as any).dailyVisit.upsert({
+        where: { date_module: { date: dateStr, module: 'total' } },
+        update: { count: { increment: 1 } },
+        create: { date: dateStr, module: 'total', count: 1 }
+      })
     }
     
-    // Update module total views
-    try {
-      await (db as any).toolModule.update({
-        where: { key: module },
-        data: { views: { increment: 1 } }
-      })
-    } catch {}
+    // Update module total views (All time views)
+    if (module !== 'total') {
+      try {
+        await (db as any).toolModule.update({
+          where: { key: module },
+          data: { views: { increment: 1 } }
+        })
+      } catch {}
+    }
     
     return NextResponse.json({ success: true })
   } catch (e) {

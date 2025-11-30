@@ -8,6 +8,7 @@ export default function AdminCategories() {
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState('')
   const [savedHint, setSavedHint] = useState('')
+  const [draggedItem, setDraggedItem] = useState<any>(null)
 
   useEffect(() => {
     loadData()
@@ -91,6 +92,33 @@ export default function AdminCategories() {
     }
   }
 
+  const onDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedItem(list[index])
+    e.dataTransfer.effectAllowed = 'move'
+    // Firefox requires data to be set
+    e.dataTransfer.setData('text/plain', index.toString())
+  }
+
+  const onDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+  }
+
+  const onDrop = (e: React.DragEvent, index: number) => {
+    e.preventDefault()
+    const draggedIdx = list.findIndex(i => i === draggedItem)
+    if (draggedIdx === -1 || draggedIdx === index) return
+
+    const newList = [...list]
+    const [removed] = newList.splice(draggedIdx, 1)
+    newList.splice(index, 0, removed)
+    
+    // Update order based on new index
+    const orderedList = newList.map((item, i) => ({ ...item, order: i + 1 }))
+    setList(orderedList)
+    setDraggedItem(null)
+  }
+
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
       <div className="p-6 border-b border-gray-100 flex justify-between items-center">
@@ -117,7 +145,14 @@ export default function AdminCategories() {
         ) : (
           <div className="space-y-2">
             {list.map((item, index) => (
-              <div key={item.id || item.key} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-100 group hover:border-blue-200 hover:bg-blue-50/30 transition-all">
+              <div 
+                key={item.id || item.key} 
+                draggable={true}
+                onDragStart={(e) => onDragStart(e, index)}
+                onDragOver={(e) => onDragOver(e, index)}
+                onDrop={(e) => onDrop(e, index)}
+                className={`flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-100 group hover:border-blue-200 hover:bg-blue-50/30 transition-all ${draggedItem === item ? 'opacity-50 border-dashed border-blue-300' : ''}`}
+              >
                 <div className="cursor-move text-gray-400 hover:text-gray-600">
                   <GripVertical size={20} />
                 </div>
