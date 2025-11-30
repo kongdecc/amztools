@@ -57,6 +57,26 @@ export default function AdminCategories() {
     }
   }
 
+  const handleSaveItem = async (item: any) => {
+    try {
+      const r = await fetch('/api/categories', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify([item])
+      })
+      if (r.ok) {
+        setSavedHint('保存成功')
+        setEditingId('')
+        loadData()
+        setTimeout(() => setSavedHint(''), 2000)
+      } else {
+        alert('保存失败')
+      }
+    } catch (e) {
+      alert('保存出错')
+    }
+  }
+
   const handleDelete = async (key: string) => {
     if (!confirm('确定要删除此分类吗？')) return
     try {
@@ -147,9 +167,28 @@ export default function AdminCategories() {
                       placeholder="e.g. 运营工具"
                     />
                   </div>
+
+                  <div className="col-span-2">
+                    <label className="text-xs text-gray-500 block mb-1">是否启用</label>
+                    <div className="flex items-center h-[30px]">
+                      <input
+                        type="checkbox"
+                        checked={item.enabled !== false}
+                        onChange={(e) => {
+                          const newList = [...list]
+                          newList[index].enabled = e.target.checked
+                          setList(newList)
+                        }}
+                        className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-2">
+                  <button onClick={() => handleSaveItem(item)} className="p-2 text-blue-600 hover:bg-blue-50 rounded" title="保存此项">
+                    <Save size={18} />
+                  </button>
                   {item.isNew ? (
                     <button onClick={() => setList(list.filter(i => i !== item))} className="p-2 text-red-500 hover:bg-red-50 rounded">
                       <X size={18} />

@@ -80,7 +80,11 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
     lime: 'text-lime-600',
     fuchsia: 'text-fuchsia-600',
   }
-  const visible = modules.filter((m: any) => m.status !== '下架')
+  const visible = modules.filter((m: any) => {
+    if (m.status === '下架') return false
+    if (m.category && categories.length > 0 && !categories.some(c => c.key === m.category)) return false
+    return true
+  })
   // 首页显示的卡片数量，默认6个
   const homeCardLimit = Number(settings.homeCardLimit || 6)
   const showMore = visible.length > homeCardLimit
@@ -810,7 +814,7 @@ const PlaceholderPage = ({ title, icon: Icon }: { title: string; icon: any }) =>
   </div>
 )
 
-export default function HomeLayoutClient({ initialModules, initialNavItems, initialActiveTab, initialFull }: { initialModules: any[]; initialNavItems: any[]; initialActiveTab?: string; initialFull?: boolean }) {
+export default function HomeLayoutClient({ initialModules, initialNavItems, initialActiveTab, initialFull, initialCategories }: { initialModules: any[]; initialNavItems: any[]; initialActiveTab?: string; initialFull?: boolean; initialCategories?: any[] }) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
@@ -841,7 +845,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
   })
   const [modules, setModules] = useState<Array<any>>(initialModules || [])
   const [navItems, setNavItems] = useState<Array<any>>(initialNavItems || [])
-  const [categories, setCategories] = useState<Array<any>>([])
+  const [categories, setCategories] = useState<Array<any>>(initialCategories || [])
   
   useEffect(() => {
     (async () => {
@@ -849,7 +853,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
         const r = await fetch('/api/categories', { cache: 'no-store' })
         const d = await r.json()
         if (Array.isArray(d) && d.length > 0) {
-          setCategories(d)
+          setCategories(d.filter((c: any) => c.enabled !== false))
         } else {
           setCategories([
             { key: 'operation', label: '运营工具' },
@@ -921,7 +925,6 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
     ...categories.map(cat => ({
       id: cat.key,
       label: cat.label,
-      icon: LayoutGrid,
       children: modules.filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'image-text'))).map((m: any) => ({
         id: m.key,
         label: m.status === '维护' ? `${m.title}（维护）` : m.title,
@@ -1095,7 +1098,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
           <div className="p-4 space-y-1 flex-1 overflow-y-auto">
             {menuItems.map((item: any) => {
               if (item.children && item.children.length > 0) {
-                const isExpanded = expandedCategories[item.id] !== false // Default expanded
+                const isExpanded = !!expandedCategories[item.id] // Default collapsed
                 return (
                   <div key={item.id} className="mb-2">
                     <button 
@@ -1129,7 +1132,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                   onClick={() => handleNavigate(item.id)} 
                   className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === item.id ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
                 >
-                  <item.icon className={`h-5 w-5 ${activeTab === item.id ? 'text-blue-600' : 'text-gray-400'}`} />
+                  {item.icon && <item.icon className={`h-5 w-5 ${activeTab === item.id ? 'text-blue-600' : 'text-gray-400'}`} />}
                   {item.label}
                   {activeTab === item.id && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-600" />}
                 </button>

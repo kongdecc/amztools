@@ -23,7 +23,7 @@ export default function BlogListClient({ initialList, initialTotal, initialNavIt
       try {
         const r = await fetch('/api/categories', { cache: 'no-store' })
         const d = await r.json()
-        if (Array.isArray(d) && d.length > 0) setCategories(d)
+        if (Array.isArray(d) && d.length > 0) setCategories(d.filter((c: any) => c.enabled !== false))
         else setCategories([{ key: 'operation', label: '运营工具' }, { key: 'advertising', label: '广告工具' }, { key: 'image-text', label: '图片文本' }])
       } catch {
         setCategories([{ key: 'operation', label: '运营工具' }, { key: 'advertising', label: '广告工具' }, { key: 'image-text', label: '图片文本' }])

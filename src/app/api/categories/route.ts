@@ -63,8 +63,8 @@ export async function PUT(request: Request) {
 
     const ops = list.map((item: any) => (db as any).toolCategory.upsert({
       where: { key: item.key },
-      update: { label: item.label, order: item.order },
-      create: { key: item.key, label: item.label, order: item.order }
+      update: { label: item.label, order: item.order, enabled: item.enabled !== false },
+      create: { key: item.key, label: item.label, order: item.order, enabled: item.enabled !== false }
     }))
     
     await db.$transaction(ops)

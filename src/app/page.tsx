@@ -71,6 +71,21 @@ export default async function Page({ searchParams }: { searchParams?: Record<str
     ]
   }
 
+  let categories: any[] = []
+  try {
+    categories = await (db as any).toolCategory.findMany({
+      where: { enabled: true },
+      orderBy: { order: 'asc' }
+    })
+  } catch {
+    // Fallback defaults if DB fails
+    categories = [
+      { key: 'operation', label: '运营工具', enabled: true },
+      { key: 'advertising', label: '广告工具', enabled: true },
+      { key: 'image-text', label: '图片文本', enabled: true }
+    ]
+  }
+
   // Ensure "Functionality" menu item exists
   const hasFuncMenu = navItems.some((item: any) => String(item.label || '').includes('功能分类') || String(item.id || '') === 'functionality')
   if (!hasFuncMenu) {
@@ -81,7 +96,7 @@ export default async function Page({ searchParams }: { searchParams?: Record<str
   const initialFull = String(searchParams?.full || '') === '1'
   return (
     <SettingsProvider initial={initialSettings}>
-      <HomeLayoutClient initialModules={modules} initialNavItems={navItems} initialActiveTab={initialActiveTab} initialFull={initialFull} />
+      <HomeLayoutClient initialModules={modules} initialNavItems={navItems} initialActiveTab={initialActiveTab} initialFull={initialFull} initialCategories={categories} />
     </SettingsProvider>
   )
 }
