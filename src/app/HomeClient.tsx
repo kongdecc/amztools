@@ -1001,11 +1001,11 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
         }) }} />
       </Head>
       <header className="h-14 bg-[#5b5bd6] text-white flex items-center px-4 md:px-10 shadow-md z-20 justify-between md:justify-start">
-        <div className={`flex items-center gap-2 font-bold text-lg shrink-0`}>
-          <div className="bg-white/20 p-1 rounded"><LayoutDashboard className="h-5 w-5" /></div>
-          <span className="truncate max-w-[150px] md:max-w-none">{settings.siteName}</span>
+        <div className={`flex items-center gap-2 font-bold text-lg min-w-0 flex-1`}>
+          <div className="bg-white/20 p-1 rounded shrink-0"><LayoutDashboard className="h-5 w-5" /></div>
+          <span className="truncate md:text-lg text-base">{settings.siteName}</span>
         </div>
-        <nav className="hidden md:flex ml-auto mr-6 items-center gap-6">
+        <nav className="hidden md:flex ml-auto mr-6 items-center gap-6 shrink-0">
           <button onClick={() => handleNavigate('home')} className="text-sm text-white/90 hover:text-white cursor-pointer">首页</button>
           {navItems
             .slice()
@@ -1093,57 +1093,36 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
               )
             })}
         </nav>
-        <div className="md:hidden flex items-center gap-3">
-          <button onClick={() => handleNavigate('home')} className="text-sm text-white/90 hover:text-white cursor-pointer font-medium whitespace-nowrap">首页</button>
-          {navItems
-            .slice()
-            .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
-            .slice(0, 2)
-            .map((item: any) => {
-              const isFuncMenu = String(item.label || '').includes('功能分类') || String(item.id || '') === 'functionality'
-              if (isFuncMenu) {
-                return <button key={item.id} onClick={()=>{ try { (window as any).location.href = '/functionality' } catch {} }} className="text-sm text-white/90 hover:text-white cursor-pointer whitespace-nowrap">{item.label || '功能分类'}</button>
-              }
-              if (item.isExternal) {
-                return <a key={item.id} href={item.href || '#'} target="_blank" rel="noopener noreferrer" className="text-sm text-white/90 hover:text-white whitespace-nowrap">{item.label}</a>
-              }
-              if (item.href) {
-                return <Link key={item.id} href={item.href} className="text-sm text-white/90 hover:text-white whitespace-nowrap">{item.label}</Link>
-              }
-              return <button key={item.id} onClick={() => handleNavigate(item.id)} className="text-sm text-white/90 hover:text-white cursor-pointer whitespace-nowrap">{item.label}</button>
-            })}
-          
-          {navItems.length > 2 && (
-            <div className="relative">
-              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-1 hover:bg-white/10 rounded transition-colors">
-                <MoreHorizontal className="h-6 w-6 text-white" />
-              </button>
-              {mobileMenuOpen && (
-                <>
-                  <div className="fixed inset-0 z-40 bg-black/20" onClick={() => setMobileMenuOpen(false)}></div>
-                  <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 z-50 text-gray-800 animate-in fade-in zoom-in-95 duration-200">
-                    {navItems
-                      .slice()
-                      .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
-                      .slice(2)
-                      .map((item: any) => {
-                        const isFuncMenu = String(item.label || '').includes('功能分类') || String(item.id || '') === 'functionality'
-                        if (isFuncMenu) {
-                          return <button key={item.id} onClick={()=>{ setMobileMenuOpen(false); try { (window as any).location.href = '/functionality' } catch {} }} className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50">{item.label || '功能分类'}</button>
-                        }
-                        if (item.isExternal) {
-                          return <a key={item.id} href={item.href || '#'} target="_blank" rel="noopener noreferrer" className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50">{item.label}</a>
-                        }
-                        if (item.href) {
-                          return <Link key={item.id} href={item.href} onClick={() => setMobileMenuOpen(false)} className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50">{item.label}</Link>
-                        }
-                        return <button key={item.id} onClick={() => { handleNavigate(item.id); setMobileMenuOpen(false); }} className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50">{item.label}</button>
-                      })}
-                  </div>
-                </>
-              )}
-            </div>
-          )}
+        <div className="md:hidden flex items-center gap-3 shrink-0 ml-2">
+          <div className="relative">
+            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 hover:bg-white/10 rounded transition-colors">
+              <MoreHorizontal className="h-6 w-6 text-white" />
+            </button>
+            {mobileMenuOpen && (
+              <>
+                <div className="fixed inset-0 z-40 bg-black/20" onClick={() => setMobileMenuOpen(false)}></div>
+                <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 z-50 text-gray-800 animate-in fade-in zoom-in-95 duration-200 max-h-[80vh] overflow-y-auto">
+                  <button onClick={() => { handleNavigate('home'); setMobileMenuOpen(false); }} className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 font-medium text-blue-600">首页</button>
+                  {navItems
+                    .slice()
+                    .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
+                    .map((item: any) => {
+                      const isFuncMenu = String(item.label || '').includes('功能分类') || String(item.id || '') === 'functionality'
+                      if (isFuncMenu) {
+                        return <button key={item.id} onClick={()=>{ setMobileMenuOpen(false); try { (window as any).location.href = '/functionality' } catch {} }} className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50">{item.label || '功能分类'}</button>
+                      }
+                      if (item.isExternal) {
+                        return <a key={item.id} href={item.href || '#'} target="_blank" rel="noopener noreferrer" className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50">{item.label}</a>
+                      }
+                      if (item.href) {
+                        return <Link key={item.id} href={item.href} onClick={() => setMobileMenuOpen(false)} className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50">{item.label}</Link>
+                      }
+                      return <button key={item.id} onClick={() => { handleNavigate(item.id); setMobileMenuOpen(false); }} className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50">{item.label}</button>
+                    })}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </header>
       <div className="flex flex-1">
