@@ -841,12 +841,31 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
   })
   const [modules, setModules] = useState<Array<any>>(initialModules || [])
   const [navItems, setNavItems] = useState<Array<any>>(initialNavItems || [])
+  const [categories, setCategories] = useState<Array<any>>([])
   
-  const categories = [
-    { key: 'operation', label: '运营工具' },
-    { key: 'advertising', label: '广告工具' },
-    { key: 'image-text', label: '图片文本' }
-  ]
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch('/api/categories', { cache: 'no-store' })
+        const d = await r.json()
+        if (Array.isArray(d) && d.length > 0) {
+          setCategories(d)
+        } else {
+          setCategories([
+            { key: 'operation', label: '运营工具' },
+            { key: 'advertising', label: '广告工具' },
+            { key: 'image-text', label: '图片文本' }
+          ])
+        }
+      } catch {
+        setCategories([
+          { key: 'operation', label: '运营工具' },
+          { key: 'advertising', label: '广告工具' },
+          { key: 'image-text', label: '图片文本' }
+        ])
+      }
+    })()
+  }, [])
 
   useEffect(() => {
     const tab = searchParams.get('tab')
@@ -891,6 +910,12 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
     'content-filter': Filter,
     'image-resizer': ImageIcon,
   }
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({})
+
+  const toggleCategory = (catKey: string) => {
+    setExpandedCategories(prev => ({ ...prev, [catKey]: !prev[catKey] }))
+  }
+
   const menuItems = [
     { id: 'home', label: '首页', icon: LayoutDashboard },
     ...categories.map(cat => ({
@@ -904,6 +929,14 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
       }))
     }))
   ]
+
+  useEffect(() => {
+    // Auto-expand category if active tab is inside it
+    const activeCat = menuItems.find(item => item.children?.some((child: any) => child.id === activeTab))
+    if (activeCat) {
+      setExpandedCategories(prev => ({ ...prev, [activeCat.id]: true }))
+    }
+  }, [activeTab])
           useEffect(() => {
             if (activeTab) {
               try { 
@@ -1062,24 +1095,31 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
           <div className="p-4 space-y-1 flex-1 overflow-y-auto">
             {menuItems.map((item: any) => {
               if (item.children && item.children.length > 0) {
+                const isExpanded = expandedCategories[item.id] !== false // Default expanded
                 return (
                   <div key={item.id} className="mb-2">
-                    <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    <button 
+                      onClick={() => toggleCategory(item.id)}
+                      className="w-full flex items-center justify-between px-4 py-2 text-sm font-bold text-gray-500 uppercase tracking-wider hover:text-gray-800 transition-colors"
+                    >
                       {item.label}
-                    </div>
-                    <div className="space-y-1">
-                      {item.children.map((child: any) => (
-                        <button 
-                          key={child.id} 
-                          onClick={() => handleNavigate(child.id)} 
-                          className={`w-full flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === child.id ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
-                        >
-                          <child.icon className={`h-4 w-4 ${activeTab === child.id ? 'text-blue-600' : 'text-gray-400'}`} />
-                          {child.label}
-                          {activeTab === child.id && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-600" />}
-                        </button>
-                      ))}
-                    </div>
+                      <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                    </button>
+                    {isExpanded && (
+                      <div className="space-y-1 mt-1">
+                        {item.children.map((child: any) => (
+                          <button 
+                            key={child.id} 
+                            onClick={() => handleNavigate(child.id)} 
+                            className={`w-full flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === child.id ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
+                          >
+                            <child.icon className={`h-4 w-4 ${activeTab === child.id ? 'text-blue-600' : 'text-gray-400'}`} />
+                            {child.label}
+                            {activeTab === child.id && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-600" />}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )
               }

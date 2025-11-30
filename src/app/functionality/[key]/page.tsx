@@ -19,11 +19,21 @@ const DetailClient = () => {
   const { settings } = useSettings()
   const [modules, setModules] = React.useState<any[]>([])
   const [navItems, setNavItems] = React.useState<any[]>([])
-  const categories = [
-    { key: 'operation', label: '运营工具' },
-    { key: 'advertising', label: '广告工具' },
-    { key: 'image-text', label: '图片文本' }
-  ]
+  const [origin, setOrigin] = React.useState('')
+  const [categories, setCategories] = React.useState<any[]>([])
+
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch('/api/categories', { cache: 'no-store' })
+        const d = await r.json()
+        if (Array.isArray(d) && d.length > 0) setCategories(d)
+        else setCategories([{ key: 'operation', label: '运营工具' }, { key: 'advertising', label: '广告工具' }, { key: 'image-text', label: '图片文本' }])
+      } catch {
+        setCategories([{ key: 'operation', label: '运营工具' }, { key: 'advertising', label: '广告工具' }, { key: 'image-text', label: '图片文本' }])
+      }
+    })()
+  }, [])
   React.useEffect(() => { (async () => { try { const r = await fetch('/api/modules', { cache: 'no-store' }); const d = await r.json(); const arr = Array.isArray(d) ? d : []; setModules(arr.filter((m:any)=>m.status !== '下架')) } catch {} })() }, [])
   React.useEffect(() => { try { const raw = (settings as any).navigation; const arr = raw ? JSON.parse(String(raw)) : []; setNavItems(Array.isArray(arr) ? arr : []) } catch {} }, [settings])
 

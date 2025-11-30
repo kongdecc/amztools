@@ -16,11 +16,21 @@ export default function BlogListClient({ initialList, initialTotal, initialNavIt
   const [navItems, setNavItems] = useState<Array<any>>(initialNavItems || [])
   const [origin, setOrigin] = useState('')
   const [modules, setModules] = useState<any[]>([])
-  const categories = [
-    { key: 'operation', label: '运营工具' },
-    { key: 'advertising', label: '广告工具' },
-    { key: 'image-text', label: '图片文本' }
-  ]
+  const [categories, setCategories] = useState<any[]>([])
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch('/api/categories', { cache: 'no-store' })
+        const d = await r.json()
+        if (Array.isArray(d) && d.length > 0) setCategories(d)
+        else setCategories([{ key: 'operation', label: '运营工具' }, { key: 'advertising', label: '广告工具' }, { key: 'image-text', label: '图片文本' }])
+      } catch {
+        setCategories([{ key: 'operation', label: '运营工具' }, { key: 'advertising', label: '广告工具' }, { key: 'image-text', label: '图片文本' }])
+      }
+    })()
+  }, [])
+
   useEffect(() => {
     (async () => {
       try {

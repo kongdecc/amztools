@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { LayoutDashboard, Box, BarChart2, Search, Bell, Eye, Activity, Settings, Globe, User, Menu, Info, FileText, Send, Calendar as CalendarIcon, Heart } from 'lucide-react'
 import AdminModules from '@/app/admin/modules/page'
+import AdminCategories from '@/app/admin/categories/page'
 import AdminSettings from '@/app/admin/settings/page'
 import AdminSeo from '@/app/admin/seo/page'
 import AdminAccount from '@/app/admin/account/page'
@@ -14,7 +15,7 @@ import AdminReward from '@/app/admin/reward/page'
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line } from 'recharts'
 
 export default function AdminPage() {
-  const [active, setActive] = useState<'dashboard'|'modules'|'navigation'|'about'|'settings'|'seo'|'account'|'blog'|'suggest'|'reward'>('dashboard')
+  const [active, setActive] = useState<'dashboard'|'modules'|'categories'|'navigation'|'about'|'settings'|'seo'|'account'|'blog'|'suggest'|'reward'>('dashboard')
   const [modules, setModules] = useState<Array<any>>([])
   const [showAnalytics, setShowAnalytics] = useState(true)
   const [copyrightText, setCopyrightText] = useState('')
@@ -150,6 +151,7 @@ export default function AdminPage() {
         <div className="flex-1 overflow-y-auto py-6 space-y-1">
           <button onClick={() => setActive('dashboard')} className={`flex items-center gap-3 px-5 py-3.5 text-sm font-medium ${active==='dashboard'?'bg-blue-50 text-blue-600':'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}><LayoutDashboard size={18} className={active==='dashboard'?'text-blue-600':'text-gray-400'} /> 仪表盘</button>
           <button onClick={() => setActive('modules')} className={`flex items-center gap-3 px-5 py-3.5 text-sm font-medium ${active==='modules'?'bg-blue-50 text-blue-600':'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}><Box size={18} className={active==='modules'?'text-blue-600':'text-gray-400'} /> 功能板块管理</button>
+          <button onClick={() => setActive('categories')} className={`flex items-center gap-3 px-5 py-3.5 text-sm font-medium ${active==='categories'?'bg-blue-50 text-blue-600':'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}><Menu size={18} className={active==='categories'?'text-blue-600':'text-gray-400'} /> 工具分类管理</button>
           <button onClick={() => setActive('navigation')} className={`flex items-center gap-3 px-5 py-3.5 text-sm font-medium ${active==='navigation'?'bg-blue-50 text-blue-600':'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}><Menu size={18} className={active==='navigation'?'text-blue-600':'text-gray-400'} /> 导航菜单管理</button>
           <button onClick={() => setActive('blog')} className={`flex items-center gap-3 px-5 py-3.5 text-sm font-medium ${active==='blog'?'bg-blue-50 text-blue-600':'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}><FileText size={18} className={active==='blog'?'text-blue-600':'text-gray-400'} /> 博客管理</button>
           <button onClick={() => setActive('suggest')} className={`flex items-center gap-3 px-5 py-3.5 text-sm font-medium ${active==='suggest'?'bg-blue-50 text-blue-600':'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}><Send size={18} className={active==='suggest'?'text-blue-600':'text-gray-400'} /> 提需求留言</button>
@@ -163,7 +165,7 @@ export default function AdminPage() {
       </aside>
       <main className="flex-1 ml-64 flex flex-col min-h-screen">
         <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 sticky top-0 z-10 shadow-sm">
-          <h2 className="font-bold text-gray-800 text-lg">{active==='dashboard'?'仪表盘':active==='modules'?'功能板块管理':active==='navigation'?'导航菜单管理':active==='blog'?'博客管理':active==='suggest'?'提需求留言':active==='reward'?'打赏设置':active==='about'?'关于页面':active==='settings'?'站点设置':active==='seo'?'SEO 设置':'账号管理'}</h2>
+          <h2 className="font-bold text-gray-800 text-lg">{active==='dashboard'?'仪表盘':active==='modules'?'功能板块管理':active==='categories'?'工具分类管理':active==='navigation'?'导航菜单管理':active==='blog'?'博客管理':active==='suggest'?'提需求留言':active==='reward'?'打赏设置':active==='about'?'关于页面':active==='settings'?'站点设置':active==='seo'?'SEO 设置':'账号管理'}</h2>
           <div className="flex items-center gap-5">
             <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} /><input type="text" placeholder="搜索..." className="pl-9 pr-4 py-1.5 rounded-full bg-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 w-64 transition-all" /></div>
             <button className="relative text-gray-500 hover:text-blue-600 transition-colors"><Bell size={20} /><span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span></button>
@@ -171,6 +173,7 @@ export default function AdminPage() {
         </header>
         <div className="p-8 space-y-6">
           {active==='modules' && (<AdminModules />)}
+          {active==='categories' && (<AdminCategories />)}
           {active==='navigation' && (<AdminNavigation />)}
           {active==='about' && (<AdminAbout />)}
           {active==='blog' && (<AdminBlog />)}

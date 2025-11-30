@@ -13,11 +13,20 @@ interface SuggestClientProps {
 export default function SuggestClient({ initialNavItems, modules }: SuggestClientProps) {
   const { settings } = useSettings()
   const [navItems, setNavItems] = useState<any[]>(initialNavItems)
-  const categories = [
-    { key: 'operation', label: '运营工具' },
-    { key: 'advertising', label: '广告工具' },
-    { key: 'image-text', label: '图片文本' }
-  ]
+  const [categories, setCategories] = useState<any[]>([])
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch('/api/categories', { cache: 'no-store' })
+        const d = await r.json()
+        if (Array.isArray(d) && d.length > 0) setCategories(d)
+        else setCategories([{ key: 'operation', label: '运营工具' }, { key: 'advertising', label: '广告工具' }, { key: 'image-text', label: '图片文本' }])
+      } catch {
+        setCategories([{ key: 'operation', label: '运营工具' }, { key: 'advertising', label: '广告工具' }, { key: 'image-text', label: '图片文本' }])
+      }
+    })()
+  }, [])
   
   // 监听 settings 变化更新 navItems (虽然 SSR 已经传了初值，但 settings 更新可能带来新导航)
   useEffect(() => {

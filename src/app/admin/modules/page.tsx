@@ -4,6 +4,7 @@ import { Box, Search, Plus, ChevronLeft, ChevronRight, ArrowUp, ArrowDown, Edit3
 
 export default function AdminModules() {
   const [list, setList] = useState<Array<any>>([])
+  const [categories, setCategories] = useState<Array<any>>([])
   const [editingId, setEditingId] = useState<string>('')
   const [keyword, setKeyword] = useState('')
   const [saving, setSaving] = useState(false)
@@ -11,7 +12,19 @@ export default function AdminModules() {
   const [selected, setSelected] = useState<Record<string, boolean>>({})
   const [originals, setOriginals] = useState<Record<string, any>>({})
   const [serverSnap, setServerSnap] = useState<Array<any>>([])
-  useEffect(() => { (async () => { const r = await fetch('/api/modules', { cache: 'no-store' }); const d = await r.json(); const mapped = (d || []).map((x: any, i: number) => ({ ...x, order: typeof x.order === 'number' && x.order > 0 ? x.order : i + 1 })); setList(mapped); setServerSnap(mapped.map((x: any) => ({ key: x.key, title: x.title, desc: x.desc, status: x.status, views: Number(x.views || 0), color: x.color || 'blue', order: Number(x.order || 0), category: x.category || 'other' }))) })() }, [])
+  useEffect(() => { (async () => { 
+    const r = await fetch('/api/modules', { cache: 'no-store' }); 
+    const d = await r.json(); 
+    const mapped = (d || []).map((x: any, i: number) => ({ ...x, order: typeof x.order === 'number' && x.order > 0 ? x.order : i + 1 })); 
+    setList(mapped); 
+    setServerSnap(mapped.map((x: any) => ({ key: x.key, title: x.title, desc: x.desc, status: x.status, views: Number(x.views || 0), color: x.color || 'blue', order: Number(x.order || 0), category: x.category || 'other' }))) 
+  
+    try {
+      const cr = await fetch('/api/categories', { cache: 'no-store' })
+      const cd = await cr.json()
+      setCategories(Array.isArray(cd) ? cd : [])
+    } catch {}
+  })() }, [])
   const filtered = useMemo(() => {
     if (!keyword.trim()) return list
     const k = keyword.trim().toLowerCase()
@@ -207,14 +220,11 @@ function StatusBadge({ status }: any) {
                   <td className="p-4 text-sm">
                     {editingId === uidOf(row) ? (
                       <select value={row.category || 'other'} onChange={(e) => setList((prev) => prev.map((x) => (x.id ?? x.key) === (row.id ?? row.key) ? { ...x, category: e.target.value } : x))} className="border rounded px-2 py-1 text-sm w-28">
-                        <option value="operation">运营工具</option>
-                        <option value="advertising">广告工具</option>
-                        <option value="image-text">图片文本</option>
-                        <option value="other">其他</option>
+                        {categories.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
                       </select>
                     ) : (
                       <span className="px-2 py-1 rounded text-xs bg-gray-100 text-gray-600">
-                        {row.category === 'operation' ? '运营工具' : row.category === 'advertising' ? '广告工具' : row.category === 'image-text' ? '图片文本' : '其他'}
+                        {categories.find(c => c.key === row.category)?.label || row.category || '其他'}
                       </span>
                     )}
                   </td>
