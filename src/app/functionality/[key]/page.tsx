@@ -64,14 +64,14 @@ const DetailClient = () => {
             if (isFuncMenu) {
               return (
                 <div key={item.id || 'function-menu'} className="relative group">
-                  <button onClick={()=>{ try { (window as any).location.href = '/functionality' } catch {} }} className="text-sm text白/90 hover:text-white flex items-center gap-1 cursor-pointer">
+                  <Link href="/functionality" className="text-sm text-white/90 hover:text-white flex items-center gap-1 cursor-pointer">
                     {item.label || '功能分类'}
                     <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
-                  </button>
+                  </Link>
                   <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                     <div className="p-2 space-y-1">
                       {modules.map((m:any)=> (
-                        <button key={m.key} onClick={() => { try { (window as any).location.href = `/?tab=${m.key}&full=1` } catch {} }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer">{m.title}</button>
+                        <Link key={m.key} href={`/?tab=${m.key}&full=1`} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer">{m.title}</Link>
                       ))}
                     </div>
                   </div>

@@ -13,6 +13,7 @@ import DuplicateRemover from '../components/DuplicateRemover'
 import ContentFilter from '../components/ContentFilter'
 import ImageResizer from '@/components/ImageResizer'
 import { useRef } from 'react'
+import { useSearchParams } from 'next/navigation'
 
 const Card = ({ children, className = "", onClick, ...props }: any) => (
   <div onClick={onClick} className={`bg-white rounded-xl border border-gray-100 shadow-sm ${className}`} {...props}>{children}</div>
@@ -804,6 +805,7 @@ const PlaceholderPage = ({ title, icon: Icon }: { title: string; icon: any }) =>
 )
 
 export default function HomeLayoutClient({ initialModules, initialNavItems, initialActiveTab, initialFull }: { initialModules: any[]; initialNavItems: any[]; initialActiveTab?: string; initialFull?: boolean }) {
+  const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState<string>(() => {
     if (initialActiveTab && String(initialActiveTab).trim()) return String(initialActiveTab)
     if (typeof window !== 'undefined') {
@@ -833,16 +835,20 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
   const [navItems, setNavItems] = useState<Array<any>>(initialNavItems || [])
   
   useEffect(() => {
-    if (initialActiveTab && String(initialActiveTab).trim()) {
-      setActiveTab(String(initialActiveTab))
+    const tab = searchParams.get('tab')
+    if (tab) {
+      setActiveTab(tab)
+    } else {
+      // Only reset to home if we are on the home path and no tab is specified. 
+      // But here we are always on home page component.
+      // If user navigates to '/' without params, we should probably show home.
+      if (!window.location.hash) setActiveTab('home')
     }
-  }, [initialActiveTab])
-
-  useEffect(() => {
-    if (typeof initialFull === 'boolean') {
-      setIsFull(initialFull)
-    }
-  }, [initialFull])
+    
+    const full = searchParams.get('full')
+    if (full === '1') setIsFull(true)
+    else if (full === '0') setIsFull(false)
+  }, [searchParams])
 
   const mainRef = useRef<HTMLDivElement>(null)
   
