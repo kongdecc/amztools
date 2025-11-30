@@ -842,6 +842,12 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
   const [modules, setModules] = useState<Array<any>>(initialModules || [])
   const [navItems, setNavItems] = useState<Array<any>>(initialNavItems || [])
   
+  const categories = [
+    { key: 'operation', label: '运营工具' },
+    { key: 'advertising', label: '广告工具' },
+    { key: 'image-text', label: '图片文本' }
+  ]
+
   useEffect(() => {
     const tab = searchParams.get('tab')
     if (tab) {
