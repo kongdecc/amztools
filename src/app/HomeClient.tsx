@@ -140,7 +140,7 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
       {showMore && (
         <div className="text-center mt-8">
           <button 
-            onClick={() => { try { handleNavigate('functionality') } catch {} }}
+            onClick={() => { try { onNavigate('functionality') } catch {} }}
             className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-lg font-medium hover:shadow-lg transform hover:-translate-y-1 transition-all flex items-center gap-2 mx-auto"
           >
             查看更多工具
