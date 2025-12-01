@@ -57,17 +57,36 @@ export async function POST(request: Request) {
       ext = m ? m[1].toLowerCase() : ''
     }
     if (!ext || !exts.includes(ext)) ext = 'png'
-    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true })
+    
+    // Try to create directory
+    try {
+        if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true })
+    } catch (e) {
+        console.error('Failed to create data directory:', e)
+        return NextResponse.json({ error: 'fs_error', message: 'Failed to create storage directory' }, { status: 500 })
+    }
+
+    // Clean old files
     for (const e of exts) {
       const p = path.join(dataDir, `logo.${e}`)
       try { if (fs.existsSync(p)) fs.unlinkSync(p) } catch {}
     }
+
     const buf = Buffer.from(await file.arrayBuffer())
     const dest = path.join(dataDir, `logo.${ext}`)
-    fs.writeFileSync(dest, buf)
+    
+    // Write new file
+    try {
+        fs.writeFileSync(dest, buf)
+    } catch (e) {
+        console.error('Failed to write logo file:', e)
+        return NextResponse.json({ error: 'fs_error', message: 'Failed to write file' }, { status: 500 })
+    }
+
     const url = `/api/logo?ts=${Date.now()}`
     return NextResponse.json({ ok: true, url })
-  } catch {
-    return NextResponse.json({ error: 'failed' }, { status: 500 })
+  } catch (e: any) {
+    console.error('Logo upload unexpected error:', e)
+    return NextResponse.json({ error: 'failed', message: e.message }, { status: 500 })
   }
 }
