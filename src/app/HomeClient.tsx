@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download, AlertCircle, CheckCircle, Filter, LayoutGrid, Maximize2, Minimize2, Image as ImageIcon, MoreHorizontal, Receipt } from 'lucide-react'
+import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download, AlertCircle, CheckCircle, Filter, LayoutGrid, Maximize2, Minimize2, Image as ImageIcon, MoreHorizontal, Receipt, Crosshair } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 import Head from 'next/head'
 import Link from 'next/link'
@@ -37,7 +37,7 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
 
   const iconMap: Record<string, any> = {
     'ad-calc': Calculator,
-    'cpc-compass': Calculator,
+    'cpc-compass': Crosshair,
     'editor': Type,
     'unit': Scale,
     'case': CaseSensitive,
@@ -909,7 +909,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
   
   const iconMap: Record<string, any> = {
     'ad-calc': Calculator,
-    'cpc-compass': Calculator,
+    'cpc-compass': Crosshair,
     'editor': Type,
     'unit': Scale,
     'case': CaseSensitive,

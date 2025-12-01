@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Calculator, Save, Trash2, RotateCcw, HelpCircle, ChevronDown, Info } from 'lucide-react'
+import { Calculator, Save, Trash2, RotateCcw, HelpCircle, ChevronDown, Info, Settings, TrendingUp, Target, Crosshair } from 'lucide-react'
 
 // --- Constants & Data ---
 
@@ -85,7 +85,7 @@ const FEE_DATA: any = {
 // --- Helper Components ---
 
 const Card = ({ children, className = "" }: any) => (
-  <div className={`bg-white rounded-xl border border-gray-200 shadow-sm p-6 ${className}`}>{children}</div>
+  <div className={`bg-white rounded-xl border border-gray-200 shadow-sm p-5 ${className}`}>{children}</div>
 )
 
 const Label = ({ children, tooltip }: any) => (
@@ -94,7 +94,7 @@ const Label = ({ children, tooltip }: any) => (
     {tooltip && (
       <div className="group relative ml-1 cursor-pointer">
         <HelpCircle className="h-3 w-3 text-gray-400 hover:text-blue-500" />
-        <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-gray-800 text-white text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 whitespace-pre-wrap">
+        <div className="absolute bottom-full right-0 mb-2 w-56 p-2 bg-gray-800 text-white text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 whitespace-pre-wrap font-normal leading-relaxed">
           {tooltip}
           <div className="absolute top-full right-1 -mt-1 border-4 border-transparent border-t-gray-800"></div>
         </div>
@@ -104,12 +104,12 @@ const Label = ({ children, tooltip }: any) => (
 )
 
 const InputGroup = ({ children }: any) => (
-  <div className="flex gap-2">{children}</div>
+  <div className="flex gap-2 w-full">{children}</div>
 )
 
 const Input = (props: any) => (
   <input
-    className={`w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${props.className || ''}`}
+    className={`w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-gray-300 ${props.className || ''}`}
     {...props}
   />
 )
@@ -117,7 +117,7 @@ const Input = (props: any) => (
 const Select = (props: any) => (
   <div className="relative w-full">
     <select
-      className={`w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all ${props.className || ''}`}
+      className={`w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all ${props.className || ''}`}
       {...props}
     >
       {props.children}
@@ -127,9 +127,9 @@ const Select = (props: any) => (
 )
 
 const ResultRow = ({ label, value, sub, highlight, danger, tooltip }: any) => (
-  <div className={`flex justify-between items-center text-sm ${highlight ? 'pt-2 mt-2 border-t border-gray-100 font-bold text-blue-600' : 'mb-2'}`}>
+  <div className={`flex justify-between items-center text-sm ${highlight ? 'pt-2 mt-2 border-t border-gray-200 font-bold' : 'mb-2'}`}>
     <div className="flex items-center gap-1">
-      <span className={highlight ? 'text-blue-600' : 'text-gray-600'}>{label}</span>
+      <span className={highlight ? 'text-gray-800' : 'text-gray-500'}>{label}</span>
       {tooltip && (
         <div className="group relative cursor-pointer">
           <HelpCircle className="h-3 w-3 text-gray-400 hover:text-blue-500" />
@@ -141,7 +141,7 @@ const ResultRow = ({ label, value, sub, highlight, danger, tooltip }: any) => (
       )}
     </div>
     <div className="text-right">
-      <div className={`font-mono ${highlight ? 'text-base' : ''} ${danger ? 'text-red-500' : ''}`}>{value}</div>
+      <div className={`font-mono ${highlight ? 'text-base text-blue-600' : 'text-gray-800'} ${danger ? '!text-red-500' : ''}`}>{value}</div>
       {sub && <div className="text-xs text-gray-400 font-normal">{sub}</div>}
     </div>
   </div>
@@ -467,27 +467,27 @@ export default function CpcCalculator() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 mb-2">
-        <Calculator className="h-6 w-6 text-blue-600" />
+        <Crosshair className="h-6 w-6 text-blue-600" />
         <h2 className="text-xl font-bold text-gray-800">CPC&ACOS&利润测算</h2>
       </div>
 
       {/* Master Config */}
-      <div className="relative rounded-xl overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 text-white shadow-lg p-6 border border-slate-700">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-blue-400 to-transparent opacity-50"></div>
-        <div className="flex items-center gap-2 text-blue-300 font-bold mb-6">
-           <Info size={20} />
-           产品基础档案 (Master Config)
+      <Card className="!p-0 overflow-hidden border-blue-100">
+        <div className="bg-blue-50/50 px-6 py-4 border-b border-blue-100 flex items-center gap-2">
+           <Settings size={18} className="text-blue-600" />
+           <h3 className="font-bold text-gray-800">产品基础档案 (Master Config)</h3>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="space-y-4">
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {/* Column 1 */}
+          <div className="space-y-5">
              <div>
                <Label>尺寸 (L x W x H)</Label>
                <InputGroup>
-                 <Input className="bg-slate-800 border-slate-600 text-white" placeholder="L" value={m.l} onChange={(e:any)=>setM({...m, l:e.target.value})} />
-                 <Input className="bg-slate-800 border-slate-600 text-white" placeholder="W" value={m.w} onChange={(e:any)=>setM({...m, w:e.target.value})} />
-                 <Input className="bg-slate-800 border-slate-600 text-white" placeholder="H" value={m.h} onChange={(e:any)=>setM({...m, h:e.target.value})} />
-                 <Select className="w-20 bg-slate-800 border-slate-600 text-white" value={m.dim_unit} onChange={(e:any)=>setM({...m, dim_unit:e.target.value})}>
+                 <Input placeholder="L" value={m.l} onChange={(e:any)=>setM({...m, l:e.target.value})} />
+                 <Input placeholder="W" value={m.w} onChange={(e:any)=>setM({...m, w:e.target.value})} />
+                 <Input placeholder="H" value={m.h} onChange={(e:any)=>setM({...m, h:e.target.value})} />
+                 <Select className="w-24 bg-gray-50" value={m.dim_unit} onChange={(e:any)=>setM({...m, dim_unit:e.target.value})}>
                    <option value="in">in</option>
                    <option value="cm">cm</option>
                  </Select>
@@ -496,8 +496,8 @@ export default function CpcCalculator() {
              <div>
                <Label>重量</Label>
                <InputGroup>
-                 <Input className="bg-slate-800 border-slate-600 text-white" placeholder="Weight" value={m.weight} onChange={(e:any)=>setM({...m, weight:e.target.value})} />
-                 <Select className="w-20 bg-slate-800 border-slate-600 text-white" value={m.weight_unit} onChange={(e:any)=>setM({...m, weight_unit:e.target.value})}>
+                 <Input placeholder="Weight" value={m.weight} onChange={(e:any)=>setM({...m, weight:e.target.value})} />
+                 <Select className="w-24 bg-gray-50" value={m.weight_unit} onChange={(e:any)=>setM({...m, weight_unit:e.target.value})}>
                    <option value="oz">oz</option>
                    <option value="lb">lb</option>
                    <option value="g">g</option>
@@ -506,7 +506,7 @@ export default function CpcCalculator() {
              </div>
              <div>
                <Label>计费年份 & 季节</Label>
-               <Select className="bg-slate-800 border-slate-600 text-white" value={m.season} onChange={(e:any)=>setM({...m, season:e.target.value})}>
+               <Select className="bg-gray-50" value={m.season} onChange={(e:any)=>setM({...m, season:e.target.value})}>
                   <option value="auto">自动 (根据当前日期)</option>
                   <option value="non_peak_2025">2025 非旺季</option>
                   <option value="peak_2025">2025 旺季 (Oct-Jan)</option>
@@ -515,88 +515,103 @@ export default function CpcCalculator() {
              </div>
           </div>
 
-          <div className="space-y-4">
+          {/* Column 2 */}
+          <div className="space-y-5">
             <div>
               <Label>产品类目 (决定佣金)</Label>
-              <Select className="bg-slate-800 border-slate-600 text-white" value={m.category} onChange={(e:any)=>setM({...m, category:e.target.value})}>
+              <Select className="bg-gray-50" value={m.category} onChange={(e:any)=>setM({...m, category:e.target.value})}>
                 <option value="">-- 请选择类目 --</option>
                 {Object.keys(COMM_RULES).sort().map(k => <option key={k} value={k}>{k}</option>)}
               </Select>
             </div>
             <div>
               <Label>商品类型 (决定 FBA)</Label>
-              <Select className="bg-slate-800 border-slate-600 text-white" value={m.type} onChange={(e:any)=>setM({...m, type:e.target.value})}>
+              <Select className="bg-gray-50" value={m.type} onChange={(e:any)=>setM({...m, type:e.target.value})}>
                 <option value="normal">普通商品 (非服装/危险品)</option>
                 <option value="apparel">服装 (Apparel)</option>
                 <option value="danger">危险品 (Dangerous Goods)</option>
               </Select>
-              <label className="flex items-center gap-2 mt-2 text-xs text-gray-400 cursor-pointer">
-                <input type="checkbox" checked={m.has_lithium} onChange={(e:any)=>setM({...m, has_lithium:e.target.checked})} className="rounded bg-slate-800 border-slate-600 text-blue-500 focus:ring-0" />
+              <label className="flex items-center gap-2 mt-2 text-xs text-gray-500 cursor-pointer hover:text-blue-600 transition-colors">
+                <input type="checkbox" checked={m.has_lithium} onChange={(e:any)=>setM({...m, has_lithium:e.target.checked})} className="rounded text-blue-600 focus:ring-blue-500 border-gray-300" />
                 含锂电池 (+$0.11)
               </label>
             </div>
             <div className="flex gap-4">
               <div className="flex-1">
                 <Label>基准售价 (USD)</Label>
-                <Input className="bg-slate-800 border-slate-600 text-white" placeholder="49.99" value={m.price} onChange={(e:any)=>setM({...m, price:e.target.value})} />
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+                  <Input className="pl-7" placeholder="49.99" value={m.price} onChange={(e:any)=>setM({...m, price:e.target.value})} />
+                </div>
               </div>
               <div className="flex-1">
                 <Label>汇率 (USD/RMB)</Label>
-                <Input className="bg-slate-800 border-slate-600 text-white" placeholder="7.2" value={m.exchange_rate} onChange={(e:any)=>setM({...m, exchange_rate:e.target.value})} />
+                <Input placeholder="7.2" value={m.exchange_rate} onChange={(e:any)=>setM({...m, exchange_rate:e.target.value})} />
               </div>
             </div>
           </div>
 
-          <div className="flex flex-col justify-between">
-            <div className="bg-black/20 rounded-lg p-4 border border-slate-700 space-y-2">
-               <div className="flex justify-between text-sm">
-                 <span className="text-gray-400">尺寸分段:</span>
-                 <span className="text-blue-300 font-mono font-bold">{results.m.tier}</span>
+          {/* Column 3 - Results */}
+          <div className="flex flex-col h-full">
+            <div className="bg-slate-50 rounded-xl p-5 border border-slate-100 space-y-3 flex-1">
+               <h4 className="font-bold text-gray-700 mb-2 text-sm">预估费用概览</h4>
+               <div className="flex justify-between text-sm items-center">
+                 <span className="text-gray-500">尺寸分段:</span>
+                 <span className="bg-white px-2 py-0.5 rounded border border-gray-200 text-xs font-mono font-bold text-gray-700">{results.m.tier}</span>
                </div>
-               <div className="flex justify-between text-sm">
-                 <span className="text-gray-400">计费重量:</span>
-                 <span className="text-blue-300 font-mono font-bold">{results.m.weight.toFixed(2)} lb</span>
+               <div className="flex justify-between text-sm items-center">
+                 <span className="text-gray-500">计费重量:</span>
+                 <span className="font-mono font-bold text-gray-800">{results.m.weight.toFixed(2)} lb</span>
                </div>
-               <div className="flex justify-between text-sm">
-                 <span className="text-gray-400">FBA 配送费:</span>
-                 <span className="text-blue-300 font-mono font-bold">${results.m.fba.toFixed(2)}</span>
+               <div className="h-px bg-gray-200 my-2"></div>
+               <div className="flex justify-between text-sm items-center">
+                 <span className="text-gray-500">FBA 配送费:</span>
+                 <span className="text-blue-600 font-mono font-bold text-base">${results.m.fba.toFixed(2)}</span>
                </div>
-               <div className="flex justify-between text-sm">
-                 <span className="text-gray-400">预估佣金:</span>
-                 <span className="text-blue-300 font-mono font-bold">${results.m.comm.toFixed(2)}</span>
+               <div className="flex justify-between text-sm items-center">
+                 <span className="text-gray-500">预估佣金:</span>
+                 <div className="text-right">
+                   <span className="text-orange-600 font-mono font-bold text-base block">${results.m.comm.toFixed(2)}</span>
+                   <span className="text-xs text-gray-400 block">{results.m.commRate}</span>
+                 </div>
                </div>
-               <div className="text-right text-xs text-gray-500">佣金比例: {results.m.commRate}</div>
             </div>
             <button 
               onClick={syncData}
-              className="mt-4 w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg shadow transition-all flex items-center justify-center gap-2"
+              className="mt-4 w-full py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-semibold rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 text-sm"
             >
               <RotateCcw size={16} />
               一键同步到下方测算器
             </button>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Calculators Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Card 1 */}
-        <Card>
+        <Card className="flex flex-col h-full border-t-4 border-t-blue-500">
           <div className="flex items-center justify-between mb-6 pb-3 border-b border-gray-100">
-            <h3 className="font-bold text-gray-800">不亏本点击 & ACOS 测算</h3>
-            <span className="text-xs px-2 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-100">正向推导</span>
+            <div className="flex items-center gap-2">
+              <div className="bg-blue-100 p-1.5 rounded-lg text-blue-600"><Target size={20}/></div>
+              <h3 className="font-bold text-gray-800">不亏本点击 & ACOS 测算</h3>
+            </div>
+            <span className="text-xs px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100 font-medium">正向推导</span>
           </div>
-          <div className="space-y-4">
+          <div className="space-y-5 flex-1">
             <div>
               <Label>售价 (Price)</Label>
-              <Input value={c1.price} onChange={(e:any)=>setC1({...c1, price:e.target.value})} />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+                <Input className="pl-7" value={c1.price} onChange={(e:any)=>setC1({...c1, price:e.target.value})} />
+              </div>
             </div>
             <InputGroup>
                <div className="flex-1">
                  <Label>采购成本</Label>
                  <div className="flex gap-1">
                    <Input value={c1.cost} onChange={(e:any)=>setC1({...c1, cost:e.target.value})} />
-                   <Select className="w-20" value={c1.cost_unit} onChange={(e:any)=>setC1({...c1, cost_unit:e.target.value})}>
+                   <Select className="w-20 bg-gray-50" value={c1.cost_unit} onChange={(e:any)=>setC1({...c1, cost_unit:e.target.value})}>
                      <option value="USD">$</option>
                      <option value="RMB">¥</option>
                    </Select>
@@ -606,7 +621,7 @@ export default function CpcCalculator() {
                  <Label>头程运费</Label>
                  <div className="flex gap-1">
                    <Input value={c1.ship} onChange={(e:any)=>setC1({...c1, ship:e.target.value})} />
-                   <Select className="w-20" value={c1.ship_unit} onChange={(e:any)=>setC1({...c1, ship_unit:e.target.value})}>
+                   <Select className="w-20 bg-gray-50" value={c1.ship_unit} onChange={(e:any)=>setC1({...c1, ship_unit:e.target.value})}>
                      <option value="USD">$</option>
                      <option value="RMB">¥</option>
                    </Select>
@@ -642,34 +657,43 @@ export default function CpcCalculator() {
               <Input value={c1.cpc} onChange={(e:any)=>setC1({...c1, cpc:e.target.value})} />
             </div>
             
-            <div className="bg-slate-50 rounded-lg p-4 border border-slate-200 mt-4">
+            <div className="bg-gray-50 rounded-xl p-5 border border-gray-100 mt-6 space-y-1">
               <ResultRow label="有效毛利 (每单)" value={fmtMoney(results.c1.profit)} danger={results.c1.profit<0} tooltip="售价*(1-退货率) - 采购 - 头程 - FBA - 佣金 - (退货率*退货杂费)" />
               <ResultRow label="毛利率" value={fmtPct(results.c1.margin)} />
               <ResultRow label="盈亏平衡点击数" value={results.c1.maxClicks.toFixed(1)} highlight />
               <ResultRow label="最低保本转化率" value={fmtPct(results.c1.minCVR)} />
               <ResultRow label="盈亏平衡 ACOS" value={fmtPct(results.c1.beAcos)} />
             </div>
-            {results.c1.warn && <div className="p-3 rounded bg-amber-50 text-amber-600 text-xs border border-amber-200">{results.c1.warn}</div>}
+            {results.c1.warn && <div className="p-3 rounded-lg bg-amber-50 text-amber-700 text-xs border border-amber-100 flex items-start gap-2">
+              <Info size={14} className="mt-0.5 shrink-0" />
+              {results.c1.warn}
+            </div>}
           </div>
         </Card>
 
         {/* Card 2 */}
-        <Card>
+        <Card className="flex flex-col h-full border-t-4 border-t-purple-500">
           <div className="flex items-center justify-between mb-6 pb-3 border-b border-gray-100">
-            <h3 className="font-bold text-gray-800">反推 CPC & 综合利润</h3>
-            <span className="text-xs px-2 py-1 rounded-full bg-purple-50 text-purple-600 border border-purple-100">反向推导</span>
+            <div className="flex items-center gap-2">
+              <div className="bg-purple-100 p-1.5 rounded-lg text-purple-600"><TrendingUp size={20}/></div>
+              <h3 className="font-bold text-gray-800">反推 CPC & 综合利润</h3>
+            </div>
+            <span className="text-xs px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-100 font-medium">反向推导</span>
           </div>
-          <div className="space-y-4">
+          <div className="space-y-5 flex-1">
              <div>
               <Label>售价 (Price)</Label>
-              <Input value={c2.price} onChange={(e:any)=>setC2({...c2, price:e.target.value})} />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+                <Input className="pl-7" value={c2.price} onChange={(e:any)=>setC2({...c2, price:e.target.value})} />
+              </div>
             </div>
             <InputGroup>
                <div className="flex-1">
                  <Label>采购 + 头程 (Sum)</Label>
                  <div className="flex gap-1">
                    <Input value={c2.cost_total} onChange={(e:any)=>setC2({...c2, cost_total:e.target.value})} />
-                   <Select className="w-20" value={c2.cost_unit} onChange={(e:any)=>setC2({...c2, cost_unit:e.target.value})}>
+                   <Select className="w-20 bg-gray-50" value={c2.cost_unit} onChange={(e:any)=>setC2({...c2, cost_unit:e.target.value})}>
                      <option value="USD">$</option>
                      <option value="RMB">¥</option>
                    </Select>
@@ -696,7 +720,7 @@ export default function CpcCalculator() {
             </div>
             <div>
               <Label tooltip="选择后系统会自动计算推荐的 Target ACOS">推广阶段/策略</Label>
-              <Select value={c2.strategy} onChange={(e:any)=>applyStrategy(e.target.value)}>
+              <Select className="bg-gray-50" value={c2.strategy} onChange={(e:any)=>applyStrategy(e.target.value)}>
                 <option value="custom">-- 自定义 (Custom) --</option>
                 <option value="launch">🚀 新品冲榜 (Target ACOS = 毛利 100%)</option>
                 <option value="growth">📈 稳健增长 (Target ACOS = 毛利 70%)</option>
@@ -715,7 +739,7 @@ export default function CpcCalculator() {
                </div>
             </InputGroup>
 
-            <div className="bg-slate-50 rounded-lg p-4 border border-slate-200 mt-4">
+            <div className="bg-gray-50 rounded-xl p-5 border border-gray-100 mt-6 space-y-1">
               <ResultRow label="建议最高 CPC" value={fmtMoney(results.c2.recCPC)} sub="Price * CVR * TargetACOS" />
               <ResultRow label="安全出价 (80%)" value={fmtMoney(results.c2.safeCPC)} />
               <ResultRow label="盈亏平衡 CPC" value={fmtMoney(results.c2.beCPC)} />
@@ -724,8 +748,13 @@ export default function CpcCalculator() {
               <ResultRow label="综合 ACOS (TACOS)" value={fmtPct(results.c2.tacos)} />
             </div>
              {results.c2.warn.length > 0 && (
-               <div className="p-3 rounded bg-amber-50 text-amber-600 text-xs border border-amber-200 space-y-1">
-                 {results.c2.warn.map((w:string, i:number) => <div key={i}>{w}</div>)}
+               <div className="p-3 rounded-lg bg-amber-50 text-amber-700 text-xs border border-amber-100 space-y-1">
+                 {results.c2.warn.map((w:string, i:number) => (
+                   <div key={i} className="flex items-start gap-2">
+                     <Info size={14} className="mt-0.5 shrink-0" />
+                     {w}
+                   </div>
+                 ))}
                </div>
              )}
           </div>
@@ -733,30 +762,30 @@ export default function CpcCalculator() {
       </div>
 
       {/* Save Controls */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">
-          <Save size={16} />
+      <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+        <div className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+          <Save size={18} className="text-blue-600" />
           测算记录管理
         </div>
         <div className="flex gap-2 mb-6">
-          <Input placeholder="记录名称 (例如: SKU-001-新品期)" value={saveName} onChange={(e:any)=>setSaveName(e.target.value)} className="max-w-xs" />
-          <button onClick={saveRecord} className="px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700">保存当前</button>
-          <button onClick={clearAll} className="px-4 py-2 bg-red-50 text-red-600 text-sm font-medium rounded-lg hover:bg-red-100 border border-red-200">一键清空</button>
+          <Input placeholder="记录名称 (例如: SKU-001-新品期)" value={saveName} onChange={(e:any)=>setSaveName(e.target.value)} className="max-w-md" />
+          <button onClick={saveRecord} className="px-5 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 shadow-sm transition-colors">保存当前</button>
+          <button onClick={clearAll} className="px-5 py-2 bg-white text-red-600 text-sm font-medium rounded-lg hover:bg-red-50 border border-gray-200 hover:border-red-200 transition-colors">一键清空</button>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 max-h-60 overflow-y-auto">
           {Object.keys(records).length === 0 ? (
-             <div className="text-center text-sm text-gray-400 py-4">暂无保存记录</div>
+             <div className="text-center text-sm text-gray-400 py-8 bg-gray-50 rounded-lg border border-dashed border-gray-200">暂无保存记录</div>
           ) : (
              Object.keys(records).sort((a,b)=>records[b].timestamp-records[a].timestamp).map(name => (
-               <div key={name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100 hover:border-blue-200 transition-colors">
+               <div key={name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50/30 transition-colors group">
                  <div>
-                   <div className="text-sm font-medium text-gray-800">{name}</div>
-                   <div className="text-xs text-gray-400">{new Date(records[name].timestamp).toLocaleString()}</div>
+                   <div className="text-sm font-bold text-gray-700 group-hover:text-blue-700">{name}</div>
+                   <div className="text-xs text-gray-400 mt-0.5">{new Date(records[name].timestamp).toLocaleString()}</div>
                  </div>
                  <div className="flex gap-2">
-                   <button onClick={()=>loadRecord(name)} className="px-3 py-1.5 bg-blue-50 text-blue-600 text-xs font-medium rounded hover:bg-blue-100">加载</button>
-                   <button onClick={()=>deleteRecord(name)} className="px-3 py-1.5 bg-white text-gray-400 hover:text-red-500 text-xs font-medium rounded border border-gray-200 hover:border-red-200"><Trash2 size={14}/></button>
+                   <button onClick={()=>loadRecord(name)} className="px-3 py-1.5 bg-white text-blue-600 text-xs font-medium rounded border border-gray-200 hover:border-blue-300 hover:text-blue-700 transition-colors">加载</button>
+                   <button onClick={()=>deleteRecord(name)} className="px-3 py-1.5 bg-white text-gray-400 hover:text-red-600 text-xs font-medium rounded border border-gray-200 hover:border-red-200 transition-colors"><Trash2 size={14}/></button>
                  </div>
                </div>
              ))
