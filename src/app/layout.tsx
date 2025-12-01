@@ -45,10 +45,25 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  let analyticsHeadHtml = ''
+  let analyticsBodyHtml = ''
+
+  try {
+    const rows = await (db as any).siteSettings.findMany()
+    const settings: any = {}
+    for (const r of rows as any) settings[String((r as any).key)] = String((r as any).value ?? '')
+    analyticsHeadHtml = settings.analyticsHeadHtml || ''
+    analyticsBodyHtml = settings.analyticsBodyHtml || ''
+  } catch {}
+
   return (
     <html lang="zh-CN">
-      <body suppressHydrationWarning={true}>{children}</body>
+      <body suppressHydrationWarning={true}>
+        {analyticsHeadHtml && <div dangerouslySetInnerHTML={{ __html: analyticsHeadHtml }} style={{ display: 'none' }} />}
+        {children}
+        {analyticsBodyHtml && <div dangerouslySetInnerHTML={{ __html: analyticsBodyHtml }} />}
+      </body>
     </html>
   )
 }

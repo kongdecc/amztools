@@ -575,13 +575,13 @@ export default function FBACalculatorPage() {
 
   // Load history on mount
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
         setHistory(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to load history", e);
       }
+    } catch (e) {
+      console.error("Failed to load history", e);
     }
   }, []);
 

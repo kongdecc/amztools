@@ -377,13 +377,13 @@ const ForbiddenWordsChecker = () => {
   // 初始化
   useEffect(() => {
     // 加载本地存储的自定义违禁词
-    const savedCustomWords = localStorage.getItem('forbiddenWordsCustom');
-    if (savedCustomWords) {
-      try {
+    try {
+      const savedCustomWords = localStorage.getItem('forbiddenWordsCustom');
+      if (savedCustomWords) {
         setCustomForbiddenWords(JSON.parse(savedCustomWords));
-      } catch (error) {
-        console.error('Failed to load custom forbidden words:', error);
       }
+    } catch (error) {
+      console.error('Failed to load custom forbidden words:', error);
     }
     
     // 默认选中所有预设词
@@ -404,7 +404,9 @@ const ForbiddenWordsChecker = () => {
   
   // 保存自定义违禁词到本地存储
   useEffect(() => {
-    localStorage.setItem('forbiddenWordsCustom', JSON.stringify(customForbiddenWords));
+    try {
+      localStorage.setItem('forbiddenWordsCustom', JSON.stringify(customForbiddenWords));
+    } catch {}
   }, [customForbiddenWords]);
 
   // 工具函数：转义正则特殊字符

@@ -384,10 +384,12 @@ const EditorPage = () => {
   
   useEffect(() => {
     loadFromLocal(false)
-    const tipsExpanded = localStorage.getItem('tipsExpanded')
-    if (tipsExpanded !== 'false') {
-      setIsTipsExpanded(true)
-    }
+    try {
+      const tipsExpanded = localStorage.getItem('tipsExpanded')
+      if (tipsExpanded !== 'false') {
+        setIsTipsExpanded(true)
+      }
+    } catch {}
   }, [])
 
   useEffect(() => {
@@ -413,9 +415,15 @@ const EditorPage = () => {
 
   const loadFromLocal = (arg?: unknown) => {
     const showToast = typeof arg === 'boolean' ? arg : true
-    const savedContent = localStorage.getItem('editorContent')
-    const savedHistory = localStorage.getItem('editorHistory')
-    const savedStep = localStorage.getItem('historyStep')
+    let savedContent: string | null = null
+    let savedHistory: string | null = null
+    let savedStep: string | null = null
+
+    try {
+      savedContent = localStorage.getItem('editorContent')
+      savedHistory = localStorage.getItem('editorHistory')
+      savedStep = localStorage.getItem('historyStep')
+    } catch {}
     
     if (savedContent) {
       if (isCodeView) {
