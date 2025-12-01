@@ -376,7 +376,7 @@ const InvoiceGenerator = () => {
                 <button onClick={deleteCompany} className={styles.btnSmall}>删除</button>
               </div>
             </div>
-            <div className={`${styles.companyLogo} ${!logo ? styles.noLogo : ''}`}>
+            <div className={styles.companyLogo}>
               <div className={styles.logoPlaceholder} style={{ border: logo ? 'none' : '' }}>
                 {!logo && <span>Company Logo</span>}
                 <input 
