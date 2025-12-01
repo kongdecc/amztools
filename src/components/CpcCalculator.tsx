@@ -88,18 +88,20 @@ const Card = ({ children, className = "" }: any) => (
   <div className={`bg-white rounded-xl border border-gray-200 shadow-sm p-5 ${className}`}>{children}</div>
 )
 
+const TooltipIcon = ({ text }: { text: string }) => (
+  <div className="group relative ml-1 cursor-pointer inline-block align-middle">
+    <HelpCircle className="h-3 w-3 text-gray-400 hover:text-blue-500" />
+    <div className="absolute bottom-full right-0 mb-2 w-56 p-2 bg-gray-800 text-white text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 whitespace-pre-wrap font-normal leading-relaxed">
+      {text}
+      <div className="absolute top-full right-1 -mt-1 border-4 border-transparent border-t-gray-800"></div>
+    </div>
+  </div>
+)
+
 const Label = ({ children, tooltip }: any) => (
   <label className="flex items-center justify-between text-xs font-semibold text-gray-500 mb-1.5">
     <span>{children}</span>
-    {tooltip && (
-      <div className="group relative ml-1 cursor-pointer">
-        <HelpCircle className="h-3 w-3 text-gray-400 hover:text-blue-500" />
-        <div className="absolute bottom-full right-0 mb-2 w-56 p-2 bg-gray-800 text-white text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 whitespace-pre-wrap font-normal leading-relaxed">
-          {tooltip}
-          <div className="absolute top-full right-1 -mt-1 border-4 border-transparent border-t-gray-800"></div>
-        </div>
-      </div>
-    )}
+    {tooltip && <TooltipIcon text={tooltip} />}
   </label>
 )
 
@@ -582,20 +584,20 @@ export default function CpcCalculator() {
             <div className="bg-slate-50 rounded-xl p-5 border border-slate-100 space-y-3 flex-1">
                <h4 className="font-bold text-gray-700 mb-2 text-sm">预估费用概览</h4>
                <div className="flex justify-between text-sm items-center">
-                 <span className="text-gray-500">尺寸分段:</span>
+                 <span className="text-gray-500 flex items-center">尺寸分段:<TooltipIcon text="基于长宽高的最大边、次大边、围长及重量判断" /></span>
                  <span className="bg-white px-2 py-0.5 rounded border border-gray-200 text-xs font-mono font-bold text-gray-700">{results.m.tier}</span>
                </div>
                <div className="flex justify-between text-sm items-center">
-                 <span className="text-gray-500">计费重量:</span>
+                 <span className="text-gray-500 flex items-center">计费重量:<TooltipIcon text="取 实际重量 与 体积重量(L*W*H/139) 中的较大值" /></span>
                  <span className="font-mono font-bold text-gray-800">{results.m.weight.toFixed(2)} lb</span>
                </div>
                <div className="h-px bg-gray-200 my-2"></div>
                <div className="flex justify-between text-sm items-center">
-                 <span className="text-gray-500">FBA 配送费:</span>
+                 <span className="text-gray-500 flex items-center">FBA 配送费:<TooltipIcon text="基于尺寸分段、重量及当年费率表 (含锂电池等附加费)" /></span>
                  <span className="text-blue-600 font-mono font-bold text-base">${results.m.fba.toFixed(2)}</span>
                </div>
                <div className="flex justify-between text-sm items-center">
-                 <span className="text-gray-500">预估佣金:</span>
+                 <span className="text-gray-500 flex items-center">预估佣金:<TooltipIcon text="基于类目规则 (固定比例 或 阶梯费率) * 售价" /></span>
                  <div className="text-right">
                    <span className="text-orange-600 font-mono font-bold text-base block">${results.m.comm.toFixed(2)}</span>
                    <span className="text-xs text-gray-400 block">{results.m.commRate}</span>
@@ -685,10 +687,10 @@ export default function CpcCalculator() {
             
             <div className="bg-gray-50 rounded-xl p-5 border border-gray-100 mt-6 space-y-1">
               <ResultRow label="有效毛利 (每单)" value={fmtMoney(results.c1.profit)} danger={results.c1.profit<0} tooltip="售价*(1-退货率) - 采购 - 头程 - FBA - 佣金 - (退货率*退货杂费)" />
-              <ResultRow label="毛利率" value={fmtPct(results.c1.margin)} />
-              <ResultRow label="盈亏平衡点击数" value={results.c1.maxClicks.toFixed(1)} highlight />
-              <ResultRow label="最低保本转化率" value={fmtPct(results.c1.minCVR)} />
-              <ResultRow label="盈亏平衡 ACOS" value={fmtPct(results.c1.beAcos)} />
+              <ResultRow label="毛利率" value={fmtPct(results.c1.margin)} tooltip="有效毛利 / 售价" />
+              <ResultRow label="盈亏平衡点击数" value={results.c1.maxClicks.toFixed(1)} highlight tooltip="有效毛利 / CPC" />
+              <ResultRow label="最低保本转化率" value={fmtPct(results.c1.minCVR)} tooltip="1 / 盈亏平衡点击数" />
+              <ResultRow label="盈亏平衡 ACOS" value={fmtPct(results.c1.beAcos)} tooltip="有效毛利 / 售价 (即毛利率)" />
             </div>
             {results.c1.warn && <div className="p-3 rounded-lg bg-amber-50 text-amber-700 text-xs border border-amber-100 flex items-start gap-2">
               <Info size={14} className="mt-0.5 shrink-0" />
@@ -745,7 +747,11 @@ export default function CpcCalculator() {
               <Input value={c2.other_cost} onChange={(e:any)=>setC2({...c2, other_cost:e.target.value})} />
             </div>
             <div>
-              <Label tooltip="选择后系统会自动计算推荐的 Target ACOS">推广阶段/策略</Label>
+              <Label tooltip={`不同阶段对利润要求不同：
+• 新品冲榜：允许亏损 (ACOS > 毛利)，换取排名。
+• 稳健增长：微利 (ACOS ≈ 毛利*70%)，平衡量与利。
+• 利润收割：保利润 (ACOS ≈ 毛利*40%)。
+选择后系统会自动计算推荐的 Target ACOS，你也可以手动修改。`}>推广阶段/策略</Label>
               <Select className="bg-gray-50" value={c2.strategy} onChange={(e:any)=>applyStrategy(e.target.value)}>
                 <option value="custom">-- 自定义 (Custom) --</option>
                 <option value="launch">🚀 新品冲榜 (Target ACOS = 毛利 100%)</option>
@@ -766,12 +772,12 @@ export default function CpcCalculator() {
             </InputGroup>
 
             <div className="bg-gray-50 rounded-xl p-5 border border-gray-100 mt-6 space-y-1">
-              <ResultRow label="建议最高 CPC" value={fmtMoney(results.c2.recCPC)} sub="Price * CVR * TargetACOS" />
-              <ResultRow label="安全出价 (80%)" value={fmtMoney(results.c2.safeCPC)} />
-              <ResultRow label="盈亏平衡 CPC" value={fmtMoney(results.c2.beCPC)} />
-              <ResultRow label="综合利润 (每单)" value={fmtMoney(results.c2.netProfit)} danger={results.c2.netProfit<0} highlight />
-              <ResultRow label="综合利润率" value={fmtPct(results.c2.netMargin)} />
-              <ResultRow label="综合 ACOS (TACOS)" value={fmtPct(results.c2.tacos)} />
+              <ResultRow label="建议最高 CPC" value={fmtMoney(results.c2.recCPC)} sub="Price * CVR * TargetACOS" tooltip="售价 * 转化率 * 目标ACOS" />
+              <ResultRow label="安全出价 (80%)" value={fmtMoney(results.c2.safeCPC)} tooltip="建议CPC * 0.8 (留安全边际)" />
+              <ResultRow label="盈亏平衡 CPC" value={fmtMoney(results.c2.beCPC)} tooltip="售价 * 转化率 * 毛利率" />
+              <ResultRow label="综合利润 (每单)" value={fmtMoney(results.c2.netProfit)} danger={results.c2.netProfit<0} highlight tooltip="毛利 - (售价 * 广告占比 * 目标ACOS)" />
+              <ResultRow label="综合利润率" value={fmtPct(results.c2.netMargin)} tooltip="综合利润 / 售价" />
+              <ResultRow label="综合 ACOS (TACOS)" value={fmtPct(results.c2.tacos)} tooltip="广告占比 * 目标ACOS" />
             </div>
              {results.c2.warn.length > 0 && (
                <div className="p-3 rounded-lg bg-amber-50 text-amber-700 text-xs border border-amber-100 space-y-1">
