@@ -506,7 +506,7 @@ export default function CpcCalculator() {
            <h3 className="font-bold text-gray-800">产品基础档案 (Master Config)</h3>
         </div>
         
-        <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_1.2fr_0.8fr] gap-8">
           {/* Column 1 */}
           <div className="space-y-5 min-w-0">
              <div>
@@ -581,34 +581,34 @@ export default function CpcCalculator() {
 
           {/* Column 3 - Results */}
           <div className="flex flex-col h-full min-w-0">
-            <div className="bg-slate-50 rounded-xl p-5 border border-slate-100 space-y-3 flex-1">
+            <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 space-y-2 flex-1">
                <h4 className="font-bold text-gray-700 mb-2 text-sm">预估费用概览</h4>
-               <div className="flex justify-between text-sm items-center">
+               <div className="flex justify-between text-xs items-center">
                  <span className="text-gray-500 flex items-center">尺寸分段:<TooltipIcon text="基于长宽高的最大边、次大边、围长及重量判断" /></span>
-                 <span className="bg-white px-2 py-0.5 rounded border border-gray-200 text-xs font-mono font-bold text-gray-700">{results.m.tier}</span>
+                 <span className="bg-white px-1.5 py-0.5 rounded border border-gray-200 font-mono font-bold text-gray-700 truncate max-w-[100px]">{results.m.tier}</span>
                </div>
-               <div className="flex justify-between text-sm items-center">
+               <div className="flex justify-between text-xs items-center">
                  <span className="text-gray-500 flex items-center">计费重量:<TooltipIcon text="取 实际重量 与 体积重量(L*W*H/139) 中的较大值" /></span>
                  <span className="font-mono font-bold text-gray-800">{results.m.weight.toFixed(2)} lb</span>
                </div>
-               <div className="h-px bg-gray-200 my-2"></div>
-               <div className="flex justify-between text-sm items-center">
+               <div className="h-px bg-gray-200 my-1.5"></div>
+               <div className="flex justify-between text-xs items-center">
                  <span className="text-gray-500 flex items-center">FBA 配送费:<TooltipIcon text="基于尺寸分段、重量及当年费率表 (含锂电池等附加费)" /></span>
-                 <span className="text-blue-600 font-mono font-bold text-base">${results.m.fba.toFixed(2)}</span>
+                 <span className="text-blue-600 font-mono font-bold text-sm">${results.m.fba.toFixed(2)}</span>
                </div>
-               <div className="flex justify-between text-sm items-center">
+               <div className="flex justify-between text-xs items-center">
                  <span className="text-gray-500 flex items-center">预估佣金:<TooltipIcon text="基于类目规则 (固定比例 或 阶梯费率) * 售价" /></span>
                  <div className="text-right">
-                   <span className="text-orange-600 font-mono font-bold text-base block">${results.m.comm.toFixed(2)}</span>
-                   <span className="text-xs text-gray-400 block">{results.m.commRate}</span>
+                   <span className="text-orange-600 font-mono font-bold text-sm block">${results.m.comm.toFixed(2)}</span>
+                   <span className="text-[10px] text-gray-400 block">{results.m.commRate}</span>
                  </div>
                </div>
             </div>
             <button 
               onClick={syncData}
-              className="mt-4 w-full py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-semibold rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 text-sm"
+              className="mt-3 w-full py-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-semibold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1.5 text-xs"
             >
-              <RotateCcw size={16} />
+              <RotateCcw size={14} />
               一键同步到下方测算器
             </button>
           </div>
