@@ -12,6 +12,7 @@ import TextComparator from '../components/TextComparator'
 import DuplicateRemover from '../components/DuplicateRemover'
 import ContentFilter from '../components/ContentFilter'
 import ImageResizer from '@/components/ImageResizer'
+import InvoiceGenerator from '@/components/InvoiceGenerator'
 import { useRef } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 
@@ -48,6 +49,7 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
     'duplicate-remover': CheckCircle,
     'content-filter': Filter,
     'image-resizer': ImageIcon,
+    'invoice-generator': LayoutDashboard,
   }
   const colorSolidMap: Record<string, string> = {
     blue: 'bg-blue-600',
@@ -916,6 +918,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
     'duplicate-remover': CheckCircle,
     'content-filter': Filter,
     'image-resizer': ImageIcon,
+    'invoice-generator': LayoutDashboard,
   }
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({})
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -1233,6 +1236,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                       'delivery': 'orange',
                       'returns-v2': 'red',
                       'listing-check': 'teal',
+                      'invoice-generator': 'cyan',
                     }
                     const colorKey = colorOverride[m.key] || m.color
                     const colorSolidMap: Record<string, string> = {
@@ -1305,6 +1309,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                 if (activeTab === 'duplicate-remover') return <DuplicateRemover />
                 if (activeTab === 'content-filter') return <ContentFilter />
                 if (activeTab === 'image-resizer') return <ImageResizer />
+                if (activeTab === 'invoice-generator') return <InvoiceGenerator />
                 return <PlaceholderPage title="功能开发中" icon={Hammer} />
               })()
             )}
