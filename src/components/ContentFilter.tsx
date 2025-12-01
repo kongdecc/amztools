@@ -528,7 +528,7 @@ const ContentFilter: React.FC = () => {
         <div className="p-4">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
             {/* 输入区域 */}
-            <div className="lg:col-span-6 bg-gray-50 p-5 rounded-lg border border-gray-200">
+            <div className="lg:col-span-5 bg-gray-50 p-5 rounded-lg border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b-2 border-blue-500">📝 文本输入</h3>
               <textarea
                 value={inputText}
@@ -538,7 +538,7 @@ const ContentFilter: React.FC = () => {
               />
               
               <div className="mt-5 bg-gray-100 p-4 rounded-lg">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="grid grid-cols-1 gap-4 mb-4">
                   <div className="bg-white p-3 rounded-lg border border-gray-200">
                     <h4 className="flex justify-between items-center text-gray-800 font-medium mb-3">
                       📚 预设词类
@@ -642,7 +642,7 @@ const ContentFilter: React.FC = () => {
             </div>
             
             {/* 中间控制按钮 */}
-            <div className="lg:col-span-1 flex flex-col gap-3 items-center justify-center min-w-[100px]">
+            <div className="lg:col-span-2 flex flex-col gap-3 items-center justify-center min-w-[100px]">
               <button 
                 onClick={processText} 
                 className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-3 rounded-lg font-medium hover:shadow-lg transform hover:-translate-y-1 transition-all flex items-center gap-2 w-full justify-center"
@@ -729,7 +729,7 @@ const ContentFilter: React.FC = () => {
       
       {/* 通知 */}
       {notification && (
-        <div className={`fixed top-4 right-4 px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 transition-all duration-300 transform translate-x-0 opacity-100 ${notification.type === 'success' ? 'bg-green-500 text-white' : notification.type === 'warning' ? 'bg-yellow-500 text-white' : 'bg-red-500 text-white'}`}>
+        <div className={`fixed top-4 right-4 px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 transition-all duration-300 transform translate-x-0 opacity-100 z-[9999] ${notification.type === 'success' ? 'bg-green-500 text-white' : notification.type === 'warning' ? 'bg-yellow-500 text-white' : 'bg-red-500 text-white'}`}>
           {notification.type === 'success' ? <CheckCircle size={20} /> : notification.type === 'warning' ? <AlertCircle size={20} /> : <X size={20} />}
           <span>{notification.message}</span>
           <button 
