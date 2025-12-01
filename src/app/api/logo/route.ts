@@ -1,39 +1,27 @@
 import { NextResponse } from 'next/server'
 import { SESSION_COOKIE, getSessionByToken } from '@/lib/auth'
-import fs from 'fs'
-import path from 'path'
+import { db } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
-const dataDir = path.join(process.cwd(), '.data')
-const exts = ['png','jpg','jpeg','webp','svg']
-
-function getLogoPath(): { filePath: string | null, ext: string | null } {
-  for (const ext of exts) {
-    const p = path.join(dataDir, `logo.${ext}`)
-    if (fs.existsSync(p)) return { filePath: p, ext }
-  }
-  return { filePath: null, ext: null }
-}
-
-function contentTypeForExt(ext: string | null): string {
-  switch (ext) {
-    case 'png': return 'image/png'
-    case 'jpg':
-    case 'jpeg': return 'image/jpeg'
-    case 'webp': return 'image/webp'
-    case 'svg': return 'image/svg+xml'
-    default: return 'application/octet-stream'
-  }
-}
-
 export async function GET() {
   try {
-    const { filePath, ext } = getLogoPath()
-    if (!filePath) return NextResponse.json({ error: 'not_found' }, { status: 404 })
-    const buf = fs.readFileSync(filePath)
-    return new NextResponse(buf, { headers: { 'Content-Type': contentTypeForExt(ext), 'Cache-Control': 'no-store' } })
-  } catch {
+    // Try to get from DB first
+    const row = await (db as any).siteSettings.findUnique({ where: { key: 'site_logo_data' } })
+    if (row && row.value) {
+      const parts = row.value.split(',')
+      if (parts.length === 2) {
+        const header = parts[0]
+        const base64Data = parts[1]
+        const match = header.match(/:(.*?);/)
+        const contentType = match ? match[1] : 'image/png'
+        const buf = Buffer.from(base64Data, 'base64')
+        return new NextResponse(buf, { headers: { 'Content-Type': contentType, 'Cache-Control': 'public, max-age=3600' } })
+      }
+    }
+    return NextResponse.json({ error: 'not_found' }, { status: 404 })
+  } catch (e) {
+    console.error('GET logo error:', e)
     return NextResponse.json({ error: 'failed' }, { status: 500 })
   }
 }
@@ -43,50 +31,32 @@ export async function POST(request: Request) {
     const cookie = request.headers.get('cookie') || ''
     const token = cookie.match(new RegExp(`${SESSION_COOKIE}=([^;]+)`))?.[1]
     if (!token || !(await getSessionByToken(token))) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+    
     const fd = await request.formData()
     const file = fd.get('file') as File | null
     if (!file) return NextResponse.json({ error: 'bad_request' }, { status: 400 })
-    const type = String(file.type || '')
-    let ext = ''
-    if (type.startsWith('image/')) {
-      ext = type.split('/')[1]
-    }
-    if (!ext) {
-      const name = String((file as any).name || '')
-      const m = name.match(/\.([a-zA-Z0-9]+)$/)
-      ext = m ? m[1].toLowerCase() : ''
-    }
-    if (!ext || !exts.includes(ext)) ext = 'png'
     
-    // Try to create directory
-    try {
-        if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true })
-    } catch (e) {
-        console.error('Failed to create data directory:', e)
-        return NextResponse.json({ error: 'fs_error', message: 'Failed to create storage directory' }, { status: 500 })
+    // Limit size to 4MB
+    if (file.size > 4 * 1024 * 1024) {
+      return NextResponse.json({ error: 'too_large', message: 'File size exceeds 4MB limit' }, { status: 400 })
     }
 
-    // Clean old files
-    for (const e of exts) {
-      const p = path.join(dataDir, `logo.${e}`)
-      try { if (fs.existsSync(p)) fs.unlinkSync(p) } catch {}
-    }
-
-    const buf = Buffer.from(await file.arrayBuffer())
-    const dest = path.join(dataDir, `logo.${ext}`)
+    const arrayBuffer = await file.arrayBuffer()
+    const buf = Buffer.from(arrayBuffer)
+    const base64 = buf.toString('base64')
+    const mimeType = file.type || 'image/png'
+    const dataUrl = `data:${mimeType};base64,${base64}`
     
-    // Write new file
-    try {
-        fs.writeFileSync(dest, buf)
-    } catch (e) {
-        console.error('Failed to write logo file:', e)
-        return NextResponse.json({ error: 'fs_error', message: 'Failed to write file' }, { status: 500 })
-    }
+    await (db as any).siteSettings.upsert({
+      where: { key: 'site_logo_data' },
+      update: { value: dataUrl },
+      create: { key: 'site_logo_data', value: dataUrl }
+    })
 
     const url = `/api/logo?ts=${Date.now()}`
     return NextResponse.json({ ok: true, url })
   } catch (e: any) {
-    console.error('Logo upload unexpected error:', e)
+    console.error('Logo upload error:', e)
     return NextResponse.json({ error: 'failed', message: e.message }, { status: 500 })
   }
 }
