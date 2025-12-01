@@ -115,9 +115,10 @@ const Input = (props: any) => (
 )
 
 const Select = (props: any) => (
-  <div className="relative w-full">
+  <div className="relative w-full max-w-full">
     <select
-      className={`w-full px-3 py-2 pr-8 bg-white border border-gray-300 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all truncate ${props.className || ''}`}
+      className={`block w-full px-3 py-2 pr-8 bg-white border border-gray-300 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all truncate ${props.className || ''}`}
+      style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
       {...props}
     >
       {props.children}
@@ -505,7 +506,7 @@ export default function CpcCalculator() {
         
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Column 1 */}
-          <div className="space-y-5">
+          <div className="space-y-5 min-w-0">
              <div>
                <Label>尺寸 (L x W x H)</Label>
                <InputGroup>
@@ -541,7 +542,7 @@ export default function CpcCalculator() {
           </div>
 
           {/* Column 2 */}
-          <div className="space-y-5">
+          <div className="space-y-5 min-w-0">
             <div>
               <Label>产品类目 (决定佣金)</Label>
               <Select className="bg-gray-50" value={m.category} onChange={(e:any)=>setM({...m, category:e.target.value})}>
@@ -577,7 +578,7 @@ export default function CpcCalculator() {
           </div>
 
           {/* Column 3 - Results */}
-          <div className="flex flex-col h-full">
+          <div className="flex flex-col h-full min-w-0">
             <div className="bg-slate-50 rounded-xl p-5 border border-slate-100 space-y-3 flex-1">
                <h4 className="font-bold text-gray-700 mb-2 text-sm">预估费用概览</h4>
                <div className="flex justify-between text-sm items-center">
