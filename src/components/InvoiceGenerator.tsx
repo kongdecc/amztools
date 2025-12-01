@@ -126,6 +126,10 @@ const InvoiceGenerator = () => {
     }
   }
 
+  const handleLogoClick = () => {
+    document.getElementById('logoUploadInput')?.click()
+  }
+
   const saveCompany = () => {
     const name = prompt('Enter a name for this company info:')
     if (name) {
@@ -375,14 +379,24 @@ const InvoiceGenerator = () => {
             <div className={`${styles.companyLogo} ${!logo ? styles.noLogo : ''}`}>
               <div className={styles.logoPlaceholder} style={{ border: logo ? 'none' : '' }}>
                 {!logo && <span>Company Logo</span>}
-                <input type="file" accept="image/*" onChange={handleLogoUpload} />
+                <input 
+                  type="file" 
+                  id="logoUploadInput"
+                  accept="image/*" 
+                  onChange={handleLogoUpload} 
+                />
                 {logo && <img src={logo} alt="Company Logo" />}
-                {logo && <button className={styles.btnChangeLogo} onClick={(e) => {
-                    e.stopPropagation();
-                    // Trigger file input
-                    const input = e.currentTarget.parentElement?.querySelector('input[type="file"]') as HTMLInputElement;
-                    input?.click();
-                }}>上传公司Logo（可重新选择）</button>}
+                {logo && (
+                  <button 
+                    className={styles.btnChangeLogo} 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleLogoClick();
+                    }}
+                  >
+                    上传公司Logo（可重新选择）
+                  </button>
+                )}
               </div>
             </div>
           </div>
