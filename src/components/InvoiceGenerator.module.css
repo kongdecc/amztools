@@ -669,7 +669,8 @@
   .btnSmall,
   .btnChangeLogo,
   .helpSection,
-  .authorInfo {
+  .authorInfo,
+  .pageHeader {
       display: none !important;
   }
   

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import styles from './InvoiceGenerator.module.css'
 import html2canvas from 'html2canvas'
 import { jsPDF } from 'jspdf'
+import { Receipt } from 'lucide-react'
 
 const CURRENCY_SYMBOLS: { [key: string]: string } = {
   'USD': '$',
@@ -295,6 +296,11 @@ const InvoiceGenerator = () => {
 
   return (
     <div className={styles.container}>
+      <div className={`flex items-center gap-2 mb-6 ${styles.pageHeader}`}>
+        <Receipt className="h-6 w-6 text-cyan-600" />
+        <h2 className="text-xl font-bold text-gray-800">发票生成工具</h2>
+      </div>
+
       {/* Help Section */}
       <div className={styles.helpSection}>
         <div className={styles.helpHeader} onClick={() => setHelpVisible(!helpVisible)}>
