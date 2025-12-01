@@ -102,7 +102,7 @@ export default async function Page({ searchParams }: { searchParams?: Record<str
   const initialFull = String(searchParams?.full || '') === '1'
   return (
     <SettingsProvider initial={initialSettings}>
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={null}>
         <HomeLayoutClient initialModules={modules} initialNavItems={navItems} initialActiveTab={initialActiveTab} initialFull={initialFull} initialCategories={categories} />
       </Suspense>
     </SettingsProvider>
