@@ -561,7 +561,7 @@
 }
 
 @media print {
-  body {
+  :global(body) {
       background: white;
       font-size: 10px;
       line-height: 1.2;
@@ -617,7 +617,7 @@
       line-height: 1.1;
   }
   
-  input, textarea, select {
+  .container input, .container textarea, .container select {
       border: none !important;
       background: transparent !important;
       padding: 0 !important;
