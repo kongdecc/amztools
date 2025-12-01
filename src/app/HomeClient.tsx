@@ -13,6 +13,7 @@ import DuplicateRemover from '../components/DuplicateRemover'
 import ContentFilter from '../components/ContentFilter'
 import ImageResizer from '@/components/ImageResizer'
 import InvoiceGenerator from '@/components/InvoiceGenerator'
+import CpcCalculator from '@/components/CpcCalculator'
 import { useRef } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 
@@ -36,6 +37,7 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
 
   const iconMap: Record<string, any> = {
     'ad-calc': Calculator,
+    'cpc-compass': Calculator,
     'editor': Type,
     'unit': Scale,
     'case': CaseSensitive,
@@ -119,6 +121,7 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
         {displayedTools.map((tool: any) => {
           const colorOverride: Record<string, string> = {
             'ad-calc': 'blue',
+            'cpc-compass': 'blue',
             'editor': 'fuchsia',
             'unit': 'emerald',
             'case': 'violet',
@@ -906,6 +909,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
   
   const iconMap: Record<string, any> = {
     'ad-calc': Calculator,
+    'cpc-compass': Calculator,
     'editor': Type,
     'unit': Scale,
     'case': CaseSensitive,
@@ -1228,6 +1232,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                   {modules.filter((m: any) => m.status !== '下架').map((m: any) => {
                     const colorOverride: Record<string, string> = {
                       'ad-calc': 'blue',
+                      'cpc-compass': 'blue',
                       'editor': 'fuchsia',
                       'unit': 'emerald',
                       'case': 'violet',
@@ -1296,6 +1301,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
             ) : (
               (() => {
                 if (activeTab === 'ad-calc') return <AdCalculatorPage />
+                if (activeTab === 'cpc-compass') return <CpcCalculator />
                 if (activeTab === 'unit') return <UnitConverterPage />
                 if (activeTab === 'editor') return <EditorPage />
                 if (activeTab === 'case') return <CaseConverterPage />

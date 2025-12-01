@@ -14,6 +14,7 @@ import DuplicateRemover from '@/components/DuplicateRemover'
 import ContentFilter from '@/components/ContentFilter'
 import ImageResizer from '@/components/ImageResizer'
 import InvoiceGenerator from '@/components/InvoiceGenerator'
+import CpcCalculator from '@/components/CpcCalculator'
 
 const DetailClient = () => {
   const { key } = useParams<{ key: string }>()
@@ -56,6 +57,8 @@ const DetailClient = () => {
         return <ImageResizer />
       case 'invoice-generator':
         return <InvoiceGenerator />
+      case 'cpc-compass':
+        return <CpcCalculator />
       default:
         return (
           <div className="bg-white p-6 rounded-xl border">
