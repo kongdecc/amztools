@@ -13,6 +13,7 @@ import TextComparator from '@/components/TextComparator'
 import DuplicateRemover from '@/components/DuplicateRemover'
 import ContentFilter from '@/components/ContentFilter'
 import ImageResizer from '@/components/ImageResizer'
+import InvoiceGenerator from '@/components/InvoiceGenerator'
 
 const DetailClient = () => {
   const { key } = useParams<{ key: string }>()
@@ -53,6 +54,8 @@ const DetailClient = () => {
         return <ContentFilter />
       case 'image-resizer':
         return <ImageResizer />
+      case 'invoice-generator':
+        return <InvoiceGenerator />
       default:
         return (
           <div className="bg-white p-6 rounded-xl border">
