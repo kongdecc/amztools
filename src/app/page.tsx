@@ -1,6 +1,7 @@
 import { SettingsProvider } from '@/components/SettingsProvider'
 import HomeLayoutClient from './HomeClient'
 import { db } from '@/lib/db'
+import { Suspense } from 'react'
 export const revalidate = 60
 
 export default async function Page({ searchParams }: { searchParams?: Record<string, string> }) {
@@ -96,7 +97,9 @@ export default async function Page({ searchParams }: { searchParams?: Record<str
   const initialFull = String(searchParams?.full || '') === '1'
   return (
     <SettingsProvider initial={initialSettings}>
-      <HomeLayoutClient initialModules={modules} initialNavItems={navItems} initialActiveTab={initialActiveTab} initialFull={initialFull} initialCategories={categories} />
+      <Suspense fallback={<div>Loading...</div>}>
+        <HomeLayoutClient initialModules={modules} initialNavItems={navItems} initialActiveTab={initialActiveTab} initialFull={initialFull} initialCategories={categories} />
+      </Suspense>
     </SettingsProvider>
   )
 }
