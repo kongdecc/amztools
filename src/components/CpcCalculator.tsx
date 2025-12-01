@@ -117,12 +117,12 @@ const Input = (props: any) => (
 const Select = (props: any) => (
   <div className="relative w-full">
     <select
-      className={`w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all ${props.className || ''}`}
+      className={`w-full px-3 py-2 pr-8 bg-white border border-gray-300 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all truncate ${props.className || ''}`}
       {...props}
     >
       {props.children}
     </select>
-    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
   </div>
 )
 
@@ -164,8 +164,8 @@ export default function CpcCalculator() {
 
   const [c1, setC1] = useState({
     price: '',
-    cost: '', cost_unit: 'USD',
-    ship: '', ship_unit: 'USD',
+    cost: '', cost_unit: 'RMB',
+    ship: '', ship_unit: 'RMB',
     fba: '',
     comm: '',
     ret_rate: '5',
@@ -176,7 +176,7 @@ export default function CpcCalculator() {
 
   const [c2, setC2] = useState({
     price: '',
-    cost_total: '', cost_unit: 'USD',
+    cost_total: '', cost_unit: 'RMB',
     fee_total: '',
     other_cost: '',
     cvr: '10',
@@ -271,22 +271,47 @@ export default function CpcCalculator() {
     // FBA
     let fbaFee = 0, tierName = '--', shipWeight = 0
     if (l && w && h && weight) {
-      const dims = [l, w, h].sort((a,b) => b-a)
-      const girth = dims[0] + 2*(dims[1] + dims[2])
+      // Sort dims: L is max, H is min
+      const sorted = [l, w, h].sort((a,b) => b-a)
+      const L = sorted[0], W = sorted[1], H = sorted[2]
+      const girth = L + 2*W + 2*H
       const volWeight = (l * w * h) / 139 * 16
       
-      let tier = 'spl'
-      if (weight <= 16 && dims[0]<=15 && dims[1]<=12 && dims[2]<=0.75) {
-        tier = 'ss'; shipWeight = weight
-      } else if (weight <= 320 && dims[0]<=18 && dims[1]<=14 && dims[2]<=8) {
-        tier = 'ls'; shipWeight = Math.max(weight, volWeight)
-      } else if (weight <= 1120 && dims[0]<=60 && dims[1]<=30 && girth<=130) {
-        tier = 'so'; shipWeight = Math.max(weight, volWeight)
-      } else {
-        tier = 'lo'; shipWeight = Math.max(weight, volWeight)
+      // Helper to determine tier key
+      const getTierKey = (wOz: number) => {
+         const wLb = wOz / 16
+         if (wOz <= 16 && L <= 15 && W <= 12 && H <= 0.75) return 'ss'
+         if (wOz <= 320 && L <= 18 && W <= 14 && H <= 8) return 'ls'
+         
+         if (wLb > 150 || L > 108 || girth > 165) return 'spl'
+         if (wLb <= 70 && L <= 60 && W <= 30 && girth <= 130) return 'so'
+         if (wLb <= 50 && L <= 108 && girth <= 165) return 'lo'
+         
+         return 'spl'
       }
+
+      // 1. Initial tier check with actual weight
+      const initialTier = getTierKey(weight)
       
-      tierName = tier.toUpperCase()
+      // 2. Determine shipping weight
+      // Rule: Use larger of actual or vol, EXCEPT for Small Standard (ss) and Special Oversize > 150lb (spl with weight > 2400oz)
+      let finalWeight = weight
+      if (!(initialTier === 'ss' || (initialTier === 'spl' && weight >= 2400))) {
+         finalWeight = Math.max(weight, volWeight)
+      }
+      shipWeight = finalWeight
+
+      // 3. Final tier
+      const tier = getTierKey(shipWeight)
+      
+      const tierMap: any = { 
+        ss: '小号标准尺寸', 
+        ls: '大号标准尺寸', 
+        so: '小号大件', 
+        lo: '大号大件', 
+        spl: '超大件' 
+      }
+      tierName = tierMap[tier] || tier.toUpperCase()
       
       let dataSet = FEE_DATA[m.type] || FEE_DATA['normal']
       let seasonData = dataSet[season] || FEE_DATA['normal']['non_peak_2025']
