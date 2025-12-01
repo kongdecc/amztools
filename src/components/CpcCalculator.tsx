@@ -410,7 +410,7 @@ export default function CpcCalculator() {
     const netMargin = price > 0 ? (netProfit / price) * 100 : 0
     const tacos = price > 0 ? (adSpendPerUnit / price) * 100 : 0
     
-    const warns = []
+    const warns: string[] = []
     if (profit <= 0) warns.push("基础毛利已为负，请检查成本或定价！")
     if (marketCPC > 0 && beCPC < marketCPC) warns.push(`⚠️ 盈亏平衡 CPC ($${beCPC.toFixed(2)}) 低于市场参考价 ($${marketCPC.toFixed(2)})`)
     if (netProfit <= 0 && profit > 0) warns.push("综合利润为负，广告花费过高")
