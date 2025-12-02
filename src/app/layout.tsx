@@ -52,6 +52,10 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({ children }: { children: ReactNode }) {
   let analyticsHeadHtml = ''
   let analyticsBodyHtml = ''
+  let enableStructuredData = false
+  let siteName = ''
+  let siteDescription = ''
+  let logoUrl = ''
 
   try {
     const rows = await (db as any).siteSettings.findMany()
@@ -59,11 +63,29 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     for (const r of rows as any) settings[String((r as any).key)] = String((r as any).value ?? '')
     analyticsHeadHtml = settings.analyticsHeadHtml || ''
     analyticsBodyHtml = settings.analyticsBodyHtml || ''
+    enableStructuredData = String(settings.enableStructuredData || 'true') === 'true'
+    siteName = settings.siteName || '运营魔方 ToolBox'
+    siteDescription = settings.siteDescription || ''
+    logoUrl = settings.logoUrl || ''
   } catch {}
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": siteName,
+    "description": siteDescription,
+    "logo": logoUrl
+  }
 
   return (
     <html lang="zh-CN">
       <body suppressHydrationWarning={true}>
+        {enableStructuredData && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          />
+        )}
         {analyticsHeadHtml && <div dangerouslySetInnerHTML={{ __html: analyticsHeadHtml }} style={{ display: 'none' }} />}
         {children}
         {analyticsBodyHtml && <div dangerouslySetInnerHTML={{ __html: analyticsBodyHtml }} />}
