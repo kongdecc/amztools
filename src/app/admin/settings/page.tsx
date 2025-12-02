@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react'
 
 export default function AdminSettings() {
-  const [form, setForm] = useState({ siteName: '', logoUrl: '', analyticsHeadHtml: '', analyticsBodyHtml: '', showAnalytics: false, copyrightText: '', homeHeroTitle: '', homeHeroSubtitle: '', hideHomeHeroIfEmpty: false, homeCardLimit: 6, friendLinks: '[]', privacyPolicy: '', showFriendLinksLabel: false, functionalityTitle: '', functionalitySubtitle: '' })
+  const [form, setForm] = useState({ siteName: '', logoUrl: '', faviconUrl: '', analyticsHeadHtml: '', analyticsBodyHtml: '', showAnalytics: false, copyrightText: '', homeHeroTitle: '', homeHeroSubtitle: '', hideHomeHeroIfEmpty: false, homeCardLimit: 6, friendLinks: '[]', privacyPolicy: '', showFriendLinksLabel: false, functionalityTitle: '', functionalitySubtitle: '' })
   const [loading, setLoading] = useState(true)
   const [msg, setMsg] = useState('')
 
@@ -15,6 +15,7 @@ export default function AdminSettings() {
       setForm({
         siteName: data.siteName || '',
         logoUrl: data.logoUrl || '',
+        faviconUrl: data.faviconUrl || '',
         analyticsHeadHtml: data.analyticsHeadHtml || '',
         analyticsBodyHtml: data.analyticsBodyHtml || '',
         showAnalytics: String(data.showAnalytics || 'false') === 'true',
@@ -67,6 +68,15 @@ export default function AdminSettings() {
             <div className="mt-2 flex items-center gap-3">
               <input type="file" accept="image/*" onChange={async e => { const f = e.target.files?.[0]; if (f) { try { const fd = new FormData(); fd.append('file', f); const r = await fetch('/api/logo', { method: 'POST', body: fd, credentials: 'include' }); const d = await r.json().catch(()=>({})); if (r.ok && d?.url) { set('logoUrl', d.url); try { await fetch('/api/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ logoUrl: d.url }), credentials: 'include' }) } catch {} } } catch {} } }} />
               {String(form.logoUrl || '').trim() && (<img src={form.logoUrl} alt="LOGO" className="h-10 w-auto rounded border" />)}
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">浏览器图标（Favicon）</label>
+            <input className="w-full border rounded px-3 py-2 text-sm" placeholder="https://example.com/favicon.ico 或 /api/favicon" value={form.faviconUrl} onChange={e => set('faviconUrl', e.target.value)} />
+            <div className="mt-2 flex items-center gap-3">
+              <input type="file" accept="image/*" onChange={async e => { const f = e.target.files?.[0]; if (f) { try { const fd = new FormData(); fd.append('file', f); const r = await fetch('/api/favicon', { method: 'POST', body: fd, credentials: 'include' }); const d = await r.json().catch(()=>({})); if (r.ok && d?.url) { set('faviconUrl', d.url); try { await fetch('/api/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ faviconUrl: d.url }), credentials: 'include' }) } catch {} } } catch {} } }} />
+              {String(form.faviconUrl || '').trim() && (<img src={form.faviconUrl} alt="Favicon" className="h-10 w-10 rounded border object-contain" />)}
             </div>
           </div>
           

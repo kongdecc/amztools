@@ -5,6 +5,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 type SiteSettings = {
   siteName: string
   logoUrl: string
+  faviconUrl?: string
   siteDescription: string
   siteKeywords: string
   analyticsHeadHtml?: string
@@ -41,6 +42,7 @@ type Ctx = {
 const defaults: SiteSettings = {
   siteName: '运营魔方 ToolBox',
   logoUrl: '',
+  faviconUrl: '',
   siteDescription: '为跨境运营人员打造的免费在线工具箱',
   siteKeywords: '工具箱, 广告计算, 文本处理',
   analyticsHeadHtml: '',

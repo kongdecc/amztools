@@ -8,6 +8,7 @@ export const dynamic = 'force-dynamic'
 const defaults = {
   siteName: '运营魔方 ToolBox',
   logoUrl: '',
+  faviconUrl: '',
   siteDescription: '为跨境运营人员打造的免费在线工具箱',
   siteKeywords: '工具箱, 广告计算, 文本处理',
   analyticsHeadHtml: '',

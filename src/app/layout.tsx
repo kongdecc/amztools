@@ -7,6 +7,7 @@ import path from 'path'
 
 export async function generateMetadata(): Promise<Metadata> {
   let logoUrl = ''
+  let faviconUrl = ''
   let siteName = '运营魔方 ToolBox'
   let googleVerification = ''
   let baiduVerification = ''
@@ -16,6 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
     const settings: any = {}
     for (const r of rows as any) settings[String((r as any).key)] = String((r as any).value ?? '')
     logoUrl = settings.logoUrl || ''
+    faviconUrl = settings.faviconUrl || ''
     siteName = settings.siteName || siteName
     googleVerification = settings.googleVerification || ''
     baiduVerification = settings.baiduVerification || ''
@@ -33,11 +35,13 @@ export async function generateMetadata(): Promise<Metadata> {
         }
       } catch {}
     }
+    
+    if (!faviconUrl) faviconUrl = logoUrl
   } catch {}
 
   return {
     title: siteName,
-    icons: logoUrl ? { icon: logoUrl } : undefined,
+    icons: faviconUrl ? { icon: faviconUrl } : undefined,
     verification: {
       google: googleVerification || undefined,
       other: baiduVerification ? { 'baidu-site-verification': baiduVerification } : undefined
