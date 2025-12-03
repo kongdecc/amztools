@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download, AlertCircle, CheckCircle, Filter, LayoutGrid, Maximize2, Minimize2, Image as ImageIcon, MoreHorizontal, Receipt, Crosshair } from 'lucide-react'
+import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download, AlertCircle, CheckCircle, Filter, LayoutGrid, Maximize2, Minimize2, Image as ImageIcon, MoreHorizontal, Receipt, Crosshair, Globe } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 import Head from 'next/head'
 import Link from 'next/link'
@@ -14,6 +14,7 @@ import ContentFilter from '../components/ContentFilter'
 import ImageResizer from '@/components/ImageResizer'
 import InvoiceGenerator from '@/components/InvoiceGenerator'
 import CpcCalculator from '@/components/CpcCalculator'
+import AmazonGlobalTool from '@/components/AmazonGlobalTool'
 import { useRef } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 
@@ -52,6 +53,7 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
     'content-filter': Filter,
     'image-resizer': ImageIcon,
     'invoice-generator': Receipt,
+    'amazon-global': Globe,
   }
   const colorSolidMap: Record<string, string> = {
     blue: 'bg-blue-600',
@@ -923,6 +925,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
     'content-filter': Filter,
     'image-resizer': ImageIcon,
     'invoice-generator': Receipt,
+    'amazon-global': Globe,
   }
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({})
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -1242,6 +1245,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                       'returns-v2': 'red',
                       'listing-check': 'teal',
                       'invoice-generator': 'cyan',
+                      'amazon-global': 'orange',
                     }
                     const colorKey = colorOverride[m.key] || m.color
                     const colorSolidMap: Record<string, string> = {
@@ -1316,6 +1320,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                 if (activeTab === 'content-filter') return <ContentFilter />
                 if (activeTab === 'image-resizer') return <ImageResizer />
                 if (activeTab === 'invoice-generator') return <InvoiceGenerator />
+                if (activeTab === 'amazon-global') return <AmazonGlobalTool />
                 return <PlaceholderPage title="功能开发中" icon={Hammer} />
               })()
             )}
