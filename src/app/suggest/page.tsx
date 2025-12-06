@@ -2,7 +2,7 @@ import { SettingsProvider } from '@/components/SettingsProvider'
 import SuggestClient from './SuggestClient'
 import { db } from '@/lib/db'
 import { Metadata } from 'next'
-export const revalidate = 60
+export const revalidate = 0
 
 export async function generateMetadata(): Promise<Metadata> {
   let siteName = '运营魔方 ToolBox'

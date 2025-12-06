@@ -3,7 +3,7 @@ import { Metadata } from 'next'
 import { LayoutDashboard, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import RewardImage from '@/components/RewardImage'
-export const revalidate = 60
+export const revalidate = 0
 
 export const metadata: Metadata = {
   title: '打赏支持',

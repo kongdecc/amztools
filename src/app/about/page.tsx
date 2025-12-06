@@ -2,7 +2,7 @@ import { SettingsProvider } from '@/components/SettingsProvider'
 import { db } from '@/lib/db'
 import { marked } from 'marked'
 import AboutClient from '@/app/about/AboutClient'
-export const revalidate = 60
+export const revalidate = 0
 
 export default async function Page() {
   let initialSettings: Record<string, any> = {}

@@ -2,6 +2,7 @@ import { SettingsProvider } from '@/components/SettingsProvider'
 import FunctionalityClient from './FunctionalityClient'
 import { db } from '@/lib/db'
 import { Metadata } from 'next'
+export const revalidate = 0
 
 export async function generateMetadata(): Promise<Metadata> {
   let siteName = '运营魔方 ToolBox'

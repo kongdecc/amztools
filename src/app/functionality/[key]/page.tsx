@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { LayoutDashboard } from 'lucide-react'
+import { LayoutDashboard, Calculator, Crosshair, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Trash2, AlertCircle, CheckCircle, Filter, Image as ImageIcon, Receipt, Globe, Star, Hammer, Search } from 'lucide-react'
 import { SettingsProvider, useSettings } from '@/components/SettingsProvider'
 import { ChevronDown } from 'lucide-react'
 import EditorPage from '@/components/EditorPage'
@@ -26,6 +26,31 @@ const DetailClient = () => {
   const [origin, setOrigin] = React.useState('')
   const [categories, setCategories] = React.useState<any[]>([])
 
+  const iconMap: Record<string, any> = {
+    'ad-calc': Calculator,
+    'cpc-compass': Crosshair,
+    'editor': Type,
+    'unit': Scale,
+    'case': CaseSensitive,
+    'word-count': ListOrdered,
+    'char-count': BarChart3,
+    'delivery': Truck,
+    'returns-v2': Trash2,
+    'listing-check': LayoutDashboard,
+    'forbidden-words': AlertCircle,
+    'text-compare': Search,
+    'duplicate-remover': CheckCircle,
+    'content-filter': Filter,
+    'image-resizer': ImageIcon,
+    'invoice-generator': Receipt,
+    'amazon-global': Globe,
+    'rating-sales-reverse': Star,
+  }
+
+  const titleOverride: Record<string, string> = {
+    'rating-sales-reverse': '好评及销量反推计算器'
+  }
+
   React.useEffect(() => {
     (async () => {
       try {
@@ -41,7 +66,7 @@ const DetailClient = () => {
   React.useEffect(() => { (async () => { try { const r = await fetch('/api/modules', { cache: 'no-store' }); const d = await r.json(); const arr = Array.isArray(d) ? d : []; setModules(arr.filter((m:any)=>m.status !== '下架')) } catch {} })() }, [])
   React.useEffect(() => { try { const raw = (settings as any).navigation; const arr = raw ? JSON.parse(String(raw)) : []; setNavItems(Array.isArray(arr) ? arr : []) } catch {} }, [settings])
 
-  const titleOverride: Record<string, string> = { 'rating-sales-reverse': '好评及销量反推计算器' }
+  
 
   const renderTool = () => {
     switch (key) {
@@ -105,9 +130,16 @@ const DetailClient = () => {
                         return (
                           <div key={cat.key}>
                             <div className="px-3 py-1 text-xs font-semibold text-gray-400 uppercase">{cat.label}</div>
-                            {catModules.map((m: any) => (
-                              <Link key={m.key} href={`/?tab=${m.key}`} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer">{titleOverride[m.key] || m.title}</Link>
-                            ))}
+                            {catModules.map((m: any) => {
+                              const I = iconMap[m.key] || Hammer
+                              const label = titleOverride[m.key] || m.title
+                              return (
+                                <Link key={m.key} href={`/?tab=${m.key}`} className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer">
+                                  <I className="h-4 w-4" />
+                                  <span>{label}</span>
+                                </Link>
+                              )
+                            })}
                           </div>
                         )
                       })}

@@ -2,7 +2,7 @@ import { SettingsProvider } from '@/components/SettingsProvider'
 import HomeLayoutClient from './HomeClient'
 import { db } from '@/lib/db'
 import { Suspense } from 'react'
-export const revalidate = 60
+export const revalidate = 0
 
 export default async function Page({ searchParams }: { searchParams?: Record<string, string> }) {
   let initialSettings: Record<string, any> = {}
