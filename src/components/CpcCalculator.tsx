@@ -111,7 +111,7 @@ const InputGroup = ({ children }: any) => (
 
 const Input = (props: any) => (
   <input
-    className={`w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-gray-300 ${props.className || ''}`}
+    className={`w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-400 shadow-sm transition-all ${props.className || ''}`}
     {...props}
   />
 )
