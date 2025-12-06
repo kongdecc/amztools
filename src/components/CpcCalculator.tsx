@@ -117,9 +117,9 @@ const Input = (props: any) => (
 )
 
 const Select = (props: any) => (
-  <div className="relative w-full max-w-full">
+  <div className="relative inline-block">
     <select
-      className={`block w-full px-3 py-2 pr-8 bg-white border border-gray-300 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all truncate ${props.className || ''}`}
+      className={`block w-full px-3 py-2 pr-8 bg-white border border-gray-300 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none transition-all truncate ${props.className || ''}`}
       style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
       {...props}
     >
@@ -800,7 +800,7 @@ export default function CpcCalculator() {
           测算记录管理
         </div>
         <div className="flex gap-2 mb-6">
-          <Input placeholder="记录名称 (例如: SKU-001-新品期)" value={saveName} onChange={(e:any)=>setSaveName(e.target.value)} className="max-w-md bg-gray-50 border-gray-400" />
+          <Input placeholder="记录名称 (例如: SKU-001-新品期)" value={saveName} onChange={(e:any)=>setSaveName(e.target.value)} className="max-w-md" />
           <button onClick={saveRecord} className="px-5 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 shadow-sm transition-colors">保存当前</button>
           <button onClick={clearAll} className="px-5 py-2 bg-white text-red-600 text-sm font-medium rounded-lg hover:bg-red-50 border border-gray-200 hover:border-red-200 transition-colors">一键清空</button>
         </div>
