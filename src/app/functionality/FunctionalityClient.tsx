@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { LayoutDashboard, ChevronDown, Search, MoreHorizontal } from 'lucide-react'
+import { LayoutDashboard, ChevronDown, Search, MoreHorizontal, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Trash2, AlertCircle, CheckCircle, Filter, Image as ImageIcon, Receipt, Crosshair, Globe, Star, Hammer, ArrowLeftRight } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 
 const Card = ({ children, className = '', onClick, ...props }: any) => (
@@ -72,6 +72,41 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
   }
   const colorTextMap: Record<string, string> = {
     blue: 'text-blue-600', indigo: 'text-indigo-600', cyan: 'text-cyan-600', violet: 'text-violet-600', sky: 'text-sky-500', purple: 'text-indigo-500', orange: 'text-orange-500', emerald: 'text-emerald-600', teal: 'text-teal-600', rose: 'text-rose-600', red: 'text-red-600', amber: 'text-amber-500', lime: 'text-lime-600', fuchsia: 'text-fuchsia-600'
+  }
+
+  const iconMap: Record<string, any> = {
+    'ad-calc': Calculator,
+    'cpc-compass': Crosshair,
+    'editor': Type,
+    'unit': Scale,
+    'case': CaseSensitive,
+    'word-count': ListOrdered,
+    'char-count': BarChart3,
+    'delivery': Truck,
+    'returns-v2': Trash2,
+    'listing-check': LayoutDashboard,
+    'forbidden-words': AlertCircle,
+    'text-compare': Search,
+    'duplicate-remover': CheckCircle,
+    'content-filter': Filter,
+    'image-resizer': ImageIcon,
+    'invoice-generator': Receipt,
+    'amazon-global': Globe,
+    'rating-sales-reverse': Star,
+  }
+
+  const colorOverride: Record<string, string> = {
+    'ad-calc': 'blue',
+    'cpc-compass': 'blue',
+    'editor': 'fuchsia',
+    'unit': 'emerald',
+    'case': 'violet',
+    'word-count': 'sky',
+    'char-count': 'rose',
+    'delivery': 'orange',
+    'returns-v2': 'red',
+    'listing-check': 'teal',
+    'rating-sales-reverse': 'indigo',
   }
 
   const handleNavigate = (key: string) => { window.location.href = `/?tab=${key}&full=1` }
@@ -166,8 +201,11 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
             {filtered.map((module) => (
               <Card key={module.key} className="group relative p-6 hover:shadow-xl transition-all duration-300 cursor-pointer border-transparent hover:border-gray-100 bg-white overflow-hidden" onClick={() => handleNavigate(module.key)}>
                 <div className="flex items-start gap-4 mb-4">
-                  <div className={`w-12 h-12 rounded-xl ${colorSolidMap[module.color] || 'bg-blue-600'} flex items-center justify-center shadow-md shrink-0 group-hover:scale-105 transition-transform duration-300`}>
-                    <LayoutDashboard className="h-6 w-6 text-white" />
+                  <div className={`w-12 h-12 rounded-xl ${colorSolidMap[colorOverride[module.key] || module.color] || 'bg-blue-600'} flex items-center justify-center shadow-md shrink-0 group-hover:scale-105 transition-transform duration-300`}>
+                    {(() => {
+                      const I = iconMap[module.key] || Hammer
+                      return <I className="h-6 w-6 text-white" />
+                    })()}
                   </div>
                   <div>
                     <h3 className="text-lg font-bold text-gray-800 pt-1 group-hover:text-gray-900">{module.status === '维护' ? `${module.title}（维护）` : module.title}</h3>
@@ -177,8 +215,9 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
                   </div>
                 </div>
                 <p className="text-sm text-gray-500 leading-relaxed mb-8 line-clamp-2">{module.desc}</p>
-                <div className={`absolute bottom-6 left-6 flex items-center gap-2 text-sm font-bold ${colorTextMap[module.color] || 'text-blue-600'} opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300`}>
+                <div className={`absolute bottom-6 left-6 flex items-center gap-2 text-sm font-bold ${colorTextMap[colorOverride[module.key] || module.color] || 'text-blue-600'} opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300`}>
                   <span>立即使用</span>
+                  <ArrowLeftRight className="h-4 w-4" />
                 </div>
               </Card>
             ))}
