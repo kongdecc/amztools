@@ -569,7 +569,7 @@ export default function CpcCalculator() {
                 <Label>基准售价 (USD)</Label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">$</span>
-                  <Input className="pl-7" placeholder="49.99" value={m.price} onChange={(e:any)=>setM({...m, price:e.target.value})} />
+                  <Input className="pl-7 border border-gray-300 ring-1 ring-gray-200" placeholder="49.99" value={m.price} onChange={(e:any)=>setM({...m, price:e.target.value})} />
                 </div>
               </div>
               <div className="flex-1">
@@ -631,7 +631,7 @@ export default function CpcCalculator() {
               <Label>售价 (Price)</Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">$</span>
-                <Input className="pl-7" value={c1.price} onChange={(e:any)=>setC1({...c1, price:e.target.value})} />
+                <Input className="pl-7 border border-gray-300 ring-1 ring-gray-200" value={c1.price} onChange={(e:any)=>setC1({...c1, price:e.target.value})} />
               </div>
             </div>
             <InputGroup>
@@ -713,7 +713,7 @@ export default function CpcCalculator() {
               <Label>售价 (Price)</Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">$</span>
-                <Input className="pl-7" value={c2.price} onChange={(e:any)=>setC2({...c2, price:e.target.value})} />
+                <Input className="pl-7 border border-gray-300 ring-1 ring-gray-200" value={c2.price} onChange={(e:any)=>setC2({...c2, price:e.target.value})} />
               </div>
             </div>
             <InputGroup>
