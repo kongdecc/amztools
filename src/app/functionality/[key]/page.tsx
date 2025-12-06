@@ -41,6 +41,8 @@ const DetailClient = () => {
   React.useEffect(() => { (async () => { try { const r = await fetch('/api/modules', { cache: 'no-store' }); const d = await r.json(); const arr = Array.isArray(d) ? d : []; setModules(arr.filter((m:any)=>m.status !== '下架')) } catch {} })() }, [])
   React.useEffect(() => { try { const raw = (settings as any).navigation; const arr = raw ? JSON.parse(String(raw)) : []; setNavItems(Array.isArray(arr) ? arr : []) } catch {} }, [settings])
 
+  const titleOverride: Record<string, string> = { 'rating-sales-reverse': '好评及销量反推计算器' }
+
   const renderTool = () => {
     switch (key) {
       case 'delivery':
@@ -104,7 +106,7 @@ const DetailClient = () => {
                           <div key={cat.key}>
                             <div className="px-3 py-1 text-xs font-semibold text-gray-400 uppercase">{cat.label}</div>
                             {catModules.map((m: any) => (
-                              <Link key={m.key} href={`/?tab=${m.key}`} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer">{m.title}</Link>
+                              <Link key={m.key} href={`/?tab=${m.key}`} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer">{titleOverride[m.key] || m.title}</Link>
                             ))}
                           </div>
                         )

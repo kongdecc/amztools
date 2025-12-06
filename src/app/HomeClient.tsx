@@ -146,7 +146,7 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
                     return <I className="h-6 w-6 text-white" />
                   })()}
                 </div>
-                <h3 className="text-lg font-bold text-gray-800 pt-1 group-hover:text-gray-900">{tool.title}</h3>
+                <h3 className="text-lg font-bold text-gray-800 pt-1 group-hover:text-gray-900">{titleOverride[tool.key] || tool.title}</h3>
                 {tool.status === '维护' && <span className="ml-auto px-2 py-0.5 text-xs rounded border bg-yellow-50 text-yellow-600 border-yellow-200">维护中</span>}
               </div>
               <p className="text-sm text-gray-500 leading-relaxed mb-8 line-clamp-2">{tool.desc}</p>
@@ -2354,3 +2354,6 @@ const ListingCheckerPage = () => {
     </div>
   )
 }
+  const titleOverride: Record<string, string> = {
+    'rating-sales-reverse': '好评及销量反推计算器'
+  }

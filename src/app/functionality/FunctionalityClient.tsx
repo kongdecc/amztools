@@ -109,6 +109,10 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
     'rating-sales-reverse': 'indigo',
   }
 
+  const titleOverride: Record<string, string> = {
+    'rating-sales-reverse': '好评及销量反推计算器'
+  }
+
   const handleNavigate = (key: string) => { window.location.href = `/?tab=${key}&full=1` }
 
   return (
@@ -143,7 +147,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
                                 onClick={() => handleNavigate(m.key)}
                                 className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer"
                               >
-                                {m.title}
+                                {titleOverride[m.key] || m.title}
                               </button>
                             ))}
                           </div>
@@ -208,7 +212,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
                     })()}
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-gray-800 pt-1 group-hover:text-gray-900">{module.status === '维护' ? `${module.title}（维护）` : module.title}</h3>
+                    <h3 className="text-lg font-bold text-gray-800 pt-1 group-hover:text-gray-900">{module.status === '维护' ? `${titleOverride[module.key] || module.title}（维护）` : (titleOverride[module.key] || module.title)}</h3>
                     {module.status === '维护' && (
                       <span className="ml-auto px-2 py-0.5 text-xs rounded border bg-yellow-50 text-yellow-600 border-yellow-200">维护中</span>
                     )}
