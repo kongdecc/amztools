@@ -75,7 +75,7 @@ const AmazonRatingSalesReverse = () => {
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-indigo-900 flex items-center gap-2">
-            <Calculator className="w-8 h-8 text-indigo-600" />
+            <Star className="w-8 h-8 text-indigo-600" />
             好评及销量反推计算器
           </h1>
           <p className="text-gray-500 mt-1 text-sm">Listing 补单计算 + 销量反推 (支持自定义留评率)</p>
