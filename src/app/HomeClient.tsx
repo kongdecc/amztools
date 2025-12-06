@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download, AlertCircle, CheckCircle, Filter, LayoutGrid, Maximize2, Minimize2, Image as ImageIcon, MoreHorizontal, Receipt, Crosshair, Globe } from 'lucide-react'
+import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download, AlertCircle, CheckCircle, Filter, LayoutGrid, Maximize2, Minimize2, Image as ImageIcon, MoreHorizontal, Receipt, Crosshair, Globe, Star } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 import Head from 'next/head'
 import Link from 'next/link'
@@ -15,6 +15,7 @@ import ImageResizer from '@/components/ImageResizer'
 import InvoiceGenerator from '@/components/InvoiceGenerator'
 import CpcCalculator from '@/components/CpcCalculator'
 import AmazonGlobalTool from '@/components/AmazonGlobalTool'
+import AmazonRatingSalesReverse from '@/components/AmazonRatingSalesReverse'
 import { useRef } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 
@@ -54,6 +55,7 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
     'image-resizer': ImageIcon,
     'invoice-generator': Receipt,
     'amazon-global': Globe,
+    'rating-sales-reverse': Star,
   }
   const colorSolidMap: Record<string, string> = {
     blue: 'bg-blue-600',
@@ -121,18 +123,19 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
       </Card>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {displayedTools.map((tool: any) => {
-          const colorOverride: Record<string, string> = {
-            'ad-calc': 'blue',
-            'cpc-compass': 'blue',
-            'editor': 'fuchsia',
-            'unit': 'emerald',
-            'case': 'violet',
-            'word-count': 'sky',
-            'char-count': 'rose',
-            'delivery': 'orange',
-            'returns-v2': 'red',
-            'listing-check': 'teal',
-          }
+                    const colorOverride: Record<string, string> = {
+                      'ad-calc': 'blue',
+                      'cpc-compass': 'blue',
+                      'editor': 'fuchsia',
+                      'unit': 'emerald',
+                      'case': 'violet',
+                      'word-count': 'sky',
+                      'char-count': 'rose',
+                      'delivery': 'orange',
+                      'returns-v2': 'red',
+                      'listing-check': 'teal',
+                      'rating-sales-reverse': 'indigo',
+                    }
           const colorKey = colorOverride[tool.key] || tool.color
           return (
             <Card key={tool.key} className="group relative p-6 hover:shadow-xl transition-all duration-300 cursor-pointer border-transparent hover:border-gray-100 bg-white overflow-hidden" onClick={() => onNavigate(tool.key)}>
@@ -1321,6 +1324,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                 if (activeTab === 'image-resizer') return <ImageResizer />
                 if (activeTab === 'invoice-generator') return <InvoiceGenerator />
                 if (activeTab === 'amazon-global') return <AmazonGlobalTool />
+                if (activeTab === 'rating-sales-reverse') return <AmazonRatingSalesReverse />
                 return <PlaceholderPage title="功能开发中" icon={Hammer} />
               })()
             )}

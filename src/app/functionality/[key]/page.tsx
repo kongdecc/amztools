@@ -16,6 +16,7 @@ import ImageResizer from '@/components/ImageResizer'
 import InvoiceGenerator from '@/components/InvoiceGenerator'
 import CpcCalculator from '@/components/CpcCalculator'
 import AmazonGlobalTool from '@/components/AmazonGlobalTool'
+import AmazonRatingSalesReverse from '@/components/AmazonRatingSalesReverse'
 
 const DetailClient = () => {
   const { key } = useParams<{ key: string }>()
@@ -62,6 +63,8 @@ const DetailClient = () => {
         return <CpcCalculator />
       case 'amazon-global':
         return <AmazonGlobalTool />
+      case 'rating-sales-reverse':
+        return <AmazonRatingSalesReverse />
       default:
         return (
           <div className="bg-white p-6 rounded-xl border">
