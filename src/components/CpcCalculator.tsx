@@ -800,7 +800,7 @@ export default function CpcCalculator() {
           测算记录管理
         </div>
         <div className="flex gap-2 mb-6">
-          <Input placeholder="记录名称 (例如: SKU-001-新品期)" value={saveName} onChange={(e:any)=>setSaveName(e.target.value)} className="max-w-md" />
+          <Input placeholder="记录名称 (例如: SKU-001-新品期)" value={saveName} onChange={(e:any)=>setSaveName(e.target.value)} className="max-w-md ring-1 ring-gray-200" />
           <button onClick={saveRecord} className="px-5 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 shadow-sm transition-colors">保存当前</button>
           <button onClick={clearAll} className="px-5 py-2 bg-white text-red-600 text-sm font-medium rounded-lg hover:bg-red-50 border border-gray-200 hover:border-red-200 transition-colors">一键清空</button>
         </div>
