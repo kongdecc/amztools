@@ -29,6 +29,42 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
   const [navItems, setNavItems] = useState<Array<any>>(initialNavItems || [])
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
+  useEffect(() => {
+    (async () => {
+      if (!initialModules || initialModules.length === 0) {
+        try {
+          const r = await fetch('/api/modules', { cache: 'no-store' })
+          const d = await r.json()
+          const arr: Module[] = Array.isArray(d) ? d : []
+          const next = arr.filter(m => m.status !== '下架').sort((a, b) => a.order - b.order)
+          setModules(next.length ? next : [])
+        } catch { setModules([]) }
+      }
+
+      if (!initialCategories || initialCategories.length === 0) {
+        try {
+          const r = await fetch('/api/categories', { cache: 'no-store' })
+          const d = await r.json()
+          if (Array.isArray(d) && d.length > 0) {
+            setCategories(d.filter((c: any) => c.enabled !== false))
+          } else {
+            setCategories([
+              { key: 'operation', label: '运营工具' },
+              { key: 'advertising', label: '广告工具' },
+              { key: 'image-text', label: '图片文本' }
+            ])
+          }
+        } catch {
+          setCategories([
+            { key: 'operation', label: '运营工具' },
+            { key: 'advertising', label: '广告工具' },
+            { key: 'image-text', label: '图片文本' }
+          ])
+        }
+      }
+    })()
+  }, [])
+
   const filtered = modules.filter(module => {
     if (!keyword.trim()) return true
     const k = keyword.trim().toLowerCase()

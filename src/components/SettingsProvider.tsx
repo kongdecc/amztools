@@ -74,7 +74,7 @@ const SettingsContext = createContext<Ctx | undefined>(undefined)
 
 export function SettingsProvider({ children, initial }: { children: ReactNode; initial?: Partial<SiteSettings> }) {
   const [settings, setSettings] = useState<SiteSettings>(initial ? { ...defaults, ...initial } as SiteSettings : defaults)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(!initial)
 
   const fetchSettings = async () => {
     try {
@@ -98,7 +98,7 @@ export function SettingsProvider({ children, initial }: { children: ReactNode; i
         }
       }
     } catch {}
-    fetchSettings()
+    if (!initial) fetchSettings()
   }, [])
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {
