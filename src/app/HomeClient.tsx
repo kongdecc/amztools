@@ -1,21 +1,23 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download, AlertCircle, CheckCircle, Filter, LayoutGrid, Maximize2, Minimize2, Image as ImageIcon, MoreHorizontal, Receipt, Crosshair, Globe, Star } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 import Head from 'next/head'
 import Link from 'next/link'
-import EditorPage from '../components/EditorPage'
-import FBACalculatorPage from '../components/FBACalculator'
-import ForbiddenWordsChecker from '@/components/ForbiddenWordsChecker'
-import TextComparator from '../components/TextComparator'
-import DuplicateRemover from '../components/DuplicateRemover'
-import ContentFilter from '../components/ContentFilter'
-import ImageResizer from '@/components/ImageResizer'
-import InvoiceGenerator from '@/components/InvoiceGenerator'
-import CpcCalculator from '@/components/CpcCalculator'
-import AmazonGlobalTool from '@/components/AmazonGlobalTool'
-import AmazonRatingSalesReverse from '@/components/AmazonRatingSalesReverse'
+
+const EditorPage = dynamic(() => import('../components/EditorPage'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
+const FBACalculatorPage = dynamic(() => import('../components/FBACalculator'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
+const ForbiddenWordsChecker = dynamic(() => import('@/components/ForbiddenWordsChecker'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
+const TextComparator = dynamic(() => import('../components/TextComparator'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
+const DuplicateRemover = dynamic(() => import('../components/DuplicateRemover'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
+const ContentFilter = dynamic(() => import('../components/ContentFilter'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
+const ImageResizer = dynamic(() => import('@/components/ImageResizer'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
+const InvoiceGenerator = dynamic(() => import('@/components/InvoiceGenerator'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
+const CpcCalculator = dynamic(() => import('@/components/CpcCalculator'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
+const AmazonGlobalTool = dynamic(() => import('@/components/AmazonGlobalTool'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
+const AmazonRatingSalesReverse = dynamic(() => import('@/components/AmazonRatingSalesReverse'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
 import { useRef } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 
@@ -858,30 +860,6 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
   const [navItems, setNavItems] = useState<Array<any>>(initialNavItems || [])
   const [categories, setCategories] = useState<Array<any>>(initialCategories || [])
   
-  useEffect(() => {
-    (async () => {
-      try {
-        const r = await fetch('/api/categories', { cache: 'no-store' })
-        const d = await r.json()
-        if (Array.isArray(d) && d.length > 0) {
-          setCategories(d.filter((c: any) => c.enabled !== false))
-        } else {
-          setCategories([
-            { key: 'operation', label: '运营工具' },
-            { key: 'advertising', label: '广告工具' },
-            { key: 'image-text', label: '图片文本' }
-          ])
-        }
-      } catch {
-        setCategories([
-          { key: 'operation', label: '运营工具' },
-          { key: 'advertising', label: '广告工具' },
-          { key: 'image-text', label: '图片文本' }
-        ])
-      }
-    })()
-  }, [])
-
   useEffect(() => {
     const tab = searchParams.get('tab')
     if (tab) {

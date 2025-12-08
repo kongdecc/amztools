@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { LayoutDashboard, ChevronDown, Search, MoreHorizontal, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Trash2, AlertCircle, CheckCircle, Filter, Image as ImageIcon, Receipt, Crosshair, Globe, Star, Hammer, ArrowLeftRight } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 
@@ -20,46 +21,13 @@ interface Module {
 }
 
 export default function FunctionalityClient({ initialNavItems, initialModules, initialCategories }: { initialNavItems: any[]; initialModules?: Module[]; initialCategories?: any[] }) {
+  const router = useRouter()
   const [modules, setModules] = useState<Module[]>(initialModules || [])
   const [categories, setCategories] = useState<any[]>(initialCategories || [])
   const [keyword, setKeyword] = useState('')
   const { settings } = useSettings()
   const [navItems, setNavItems] = useState<Array<any>>(initialNavItems || [])
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const r = await fetch('/api/modules', { cache: 'no-store' })
-        const d = await r.json()
-        const arr: Module[] = Array.isArray(d) ? d : []
-        const next = arr.filter(m => m.status !== '下架').sort((a, b) => a.order - b.order)
-        setModules(next.length ? next : (initialModules || []))
-      } catch { setModules([]) }
-
-      if (!initialCategories || initialCategories.length === 0) {
-        try {
-          const r = await fetch('/api/categories', { cache: 'no-store' })
-          const d = await r.json()
-          if (Array.isArray(d) && d.length > 0) {
-            setCategories(d.filter((c: any) => c.enabled !== false))
-          } else {
-            setCategories([
-              { key: 'operation', label: '运营工具' },
-              { key: 'advertising', label: '广告工具' },
-              { key: 'image-text', label: '图片文本' }
-            ])
-          }
-        } catch {
-          setCategories([
-            { key: 'operation', label: '运营工具' },
-            { key: 'advertising', label: '广告工具' },
-            { key: 'image-text', label: '图片文本' }
-          ])
-        }
-      }
-    })()
-  }, [])
 
   const filtered = modules.filter(module => {
     if (!keyword.trim()) return true
@@ -113,7 +81,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
     'rating-sales-reverse': '好评及销量反推计算器'
   }
 
-  const handleNavigate = (key: string) => { window.location.href = `/?tab=${key}&full=1` }
+  const handleNavigate = (key: string) => { router.push(`/?tab=${key}&full=1`) }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -129,7 +97,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
             if (isFuncMenu) {
               return (
                 <div key={item.id || 'function-menu'} className="relative group">
-                  <button onClick={()=>{ try { (window as any).location.href = '/functionality' } catch {} }} className="text-sm text-white/90 hover:text-white flex items-center gap-1 cursor-pointer">
+                  <button onClick={() => router.push('/functionality')} className="text-sm text-white/90 hover:text-white flex items-center gap-1 cursor-pointer">
                     {item.label || '功能分类'}
                     <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
                   </button>
@@ -178,7 +146,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
                   {navItems.map((item:any) => {
                     const isFuncMenu = String(item.label || '').includes('功能分类') || String(item.id || '') === 'functionality'
                     if (isFuncMenu) {
-                      return <button key={item.id} onClick={()=>{ setMobileMenuOpen(false); try { (window as any).location.href = '/functionality' } catch {} }} className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50">{item.label || '功能分类'}</button>
+                      return <button key={item.id} onClick={()=>{ setMobileMenuOpen(false); router.push('/functionality') }} className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50">{item.label || '功能分类'}</button>
                     }
                     if (item.isExternal) {
                       return <a key={item.id} href={item.href || '#'} target="_blank" rel="noopener noreferrer" className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50">{item.label}</a>
