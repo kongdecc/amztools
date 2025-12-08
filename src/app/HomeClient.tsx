@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download, AlertCircle, CheckCircle, Filter, LayoutGrid, Maximize2, Minimize2, Image as ImageIcon, MoreHorizontal, Receipt, Crosshair, Globe, Star } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
@@ -271,7 +271,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
     }
   }
   
-  const iconMap: Record<string, any> = {
+  const iconMap: Record<string, any> = useMemo(() => ({
     'ad-calc': Calculator,
     'cpc-compass': Crosshair,
     'editor': Type,
@@ -281,6 +281,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
     'char-count': BarChart3,
     'delivery': Truck,
     'returns-v2': Trash2,
+    'listing-check': LayoutDashboard,
     'forbidden-words': AlertCircle,
     'text-compare': Search,
     'duplicate-remover': CheckCircle,
@@ -288,15 +289,16 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
     'image-resizer': ImageIcon,
     'invoice-generator': Receipt,
     'amazon-global': Globe,
-  }
+    'rating-sales-reverse': Star,
+  }), [])
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({})
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  const toggleCategory = (catKey: string) => {
+  const toggleCategory = useCallback((catKey: string) => {
     setExpandedCategories(prev => ({ ...prev, [catKey]: !prev[catKey] }))
-  }
+  }, [])
 
-  const menuItems = [
+  const menuItems = useMemo(() => [
     { id: 'home', label: '首页', icon: LayoutDashboard },
     ...categories.map(cat => ({
       id: cat.key,
@@ -307,7 +309,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
         icon: iconMap[m.key] || Hammer
       }))
     }))
-  ]
+  ], [categories, modules, iconMap])
 
   useEffect(() => {
     // Auto-expand category if active tab is inside it
