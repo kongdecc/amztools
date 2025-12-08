@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download, AlertCircle, CheckCircle, Filter, LayoutGrid, Maximize2, Minimize2, Image as ImageIcon, MoreHorizontal, Receipt, Crosshair, Globe, Star } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
@@ -336,6 +336,29 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
           }, [activeTab])
           const { settings } = useSettings()
           const safeOrigin = (typeof window !== 'undefined' && (window as any).location) ? (window as any).location.origin : ''
+
+          const activeToolContent = useMemo(() => {
+            if (activeTab === 'ad-calc') return <AdCalculatorPage />
+            if (activeTab === 'cpc-compass') return <CpcCalculator />
+            if (activeTab === 'unit') return <UnitConverterPage />
+            if (activeTab === 'editor') return <EditorPage />
+            if (activeTab === 'case') return <CaseConverterPage />
+            if (activeTab === 'word-count') return <WordCountPage />
+            if (activeTab === 'char-count') return <CharCountPage />
+            if (activeTab === 'delivery') return <FBACalculatorPage />
+            if (activeTab === 'returns-v2') return <ReturnsV2Page />
+            if (activeTab === 'listing-check') return <ListingCheckerPage />
+            if (activeTab === 'forbidden-words') return <ForbiddenWordsChecker />
+            if (activeTab === 'text-compare') return <TextComparator />
+            if (activeTab === 'duplicate-remover') return <DuplicateRemover />
+            if (activeTab === 'content-filter') return <ContentFilter />
+            if (activeTab === 'image-resizer') return <ImageResizer />
+            if (activeTab === 'invoice-generator') return <InvoiceGenerator />
+            if (activeTab === 'amazon-global') return <AmazonGlobalTool />
+            if (activeTab === 'rating-sales-reverse') return <AmazonRatingSalesReverse />
+            return <PlaceholderPage title="功能开发中" icon={Hammer} />
+          }, [activeTab])
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Head>
@@ -665,27 +688,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                 </div>
               </div>
             ) : (
-              (() => {
-                if (activeTab === 'ad-calc') return <AdCalculatorPage />
-                if (activeTab === 'cpc-compass') return <CpcCalculator />
-                if (activeTab === 'unit') return <UnitConverterPage />
-                if (activeTab === 'editor') return <EditorPage />
-                if (activeTab === 'case') return <CaseConverterPage />
-                if (activeTab === 'word-count') return <WordCountPage />
-                if (activeTab === 'char-count') return <CharCountPage />
-                if (activeTab === 'delivery') return <FBACalculatorPage />
-                if (activeTab === 'returns-v2') return <ReturnsV2Page />
-                if (activeTab === 'listing-check') return <ListingCheckerPage />
-                if (activeTab === 'forbidden-words') return <ForbiddenWordsChecker />
-                if (activeTab === 'text-compare') return <TextComparator />
-                if (activeTab === 'duplicate-remover') return <DuplicateRemover />
-                if (activeTab === 'content-filter') return <ContentFilter />
-                if (activeTab === 'image-resizer') return <ImageResizer />
-                if (activeTab === 'invoice-generator') return <InvoiceGenerator />
-                if (activeTab === 'amazon-global') return <AmazonGlobalTool />
-                if (activeTab === 'rating-sales-reverse') return <AmazonRatingSalesReverse />
-                return <PlaceholderPage title="功能开发中" icon={Hammer} />
-              })()
+              activeToolContent
             )}
           </div>
           
