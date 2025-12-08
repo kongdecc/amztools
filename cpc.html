@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>CPC&ACOS&利润测算</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #020617;
+      --card-border: #1e293b;
+      --accent: #38bdf8;
+      --accent-hover: #0ea5e9;
+      --accent-soft: rgba(56,189,248,0.15);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      background: radial-gradient(circle at top, #1e293b 0%, #020617 100%);
+      color: var(--text-main);
+      font-family: var(--font);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin: 0 0 8px;
+      background: linear-gradient(90deg, #fff, #94a3b8);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 30px;
+      line-height: 1.5;
+      max-width: 800px;
+    }
+
+    /* Master Config Section */
+    .master-config {
+      background: rgba(30, 41, 59, 0.4);
+      border: 1px solid var(--accent);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 30px;
+      box-shadow: 0 0 20px rgba(56,189,248,0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .master-config::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    }
+
+    .master-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .config-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .config-col {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Form Elements */
+    .form-group { position: relative; }
+    
+    label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      background: rgba(15, 23, 42, 0.8);
+      color: var(--text-main);
+      font-size: 13px;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(56,189,248,0.2);
+      background: #1e293b;
+    }
+
+    select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 16px;
+      padding-right: 32px;
+    }
+
+    .unit-select {
+      width: 80px;
+      flex-shrink: 0;
+    }
+
+    /* Buttons */
+    .btn {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #0f172a;
+      box-shadow: 0 4px 12px rgba(56,189,248,0.3);
+    }
+    .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-sync {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      width: 100%;
+      margin-top: 8px;
+      box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+    }
+    .btn-sync:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+    /* Result Display in Config */
+    .config-results {
+      background: rgba(0,0,0,0.3);
+      border-radius: 12px;
+      padding: 12px;
+      border: 1px solid var(--card-border);
+    }
+    
+    .cr-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-bottom: 8px;
+      align-items: center;
+    }
+    .cr-row:last-child { margin-bottom: 0; }
+    .cr-label { color: var(--text-muted); }
+    .cr-value { font-weight: 700; color: var(--accent); font-family: monospace; font-size: 14px; }
+
+    /* Main Grid for Calculators */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px;
+      position: relative;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .card-title { font-size: 16px; font-weight: 700; color: var(--text-main); }
+    .card-tag {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid rgba(56,189,248,0.3);
+    }
+
+    .card-body {
+      display: grid;
+      gap: 16px;
+    }
+
+    .results-panel {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(56,189,248,0.2);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 10px;
+    }
+
+    .res-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    .res-row.highlight {
+      color: var(--accent);
+      font-weight: 600;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 8px;
+      margin-top: 8px;
+    }
+    .res-val { font-family: monospace; }
+    .res-val.danger { color: var(--danger); }
+
+    .msg-box {
+      font-size: 12px;
+      margin-top: 10px;
+      line-height: 1.4;
+      padding: 8px;
+      border-radius: 6px;
+    }
+    .msg-info { color: var(--text-muted); background: rgba(255,255,255,0.05); }
+    .msg-warn { color: var(--warning); background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); }
+
+    /* Help Icon & Tooltip */
+    .help-icon {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      line-height: 14px;
+      text-align: center;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      color: var(--text-muted);
+      font-size: 10px;
+      cursor: pointer;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    .help-icon:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+    
+    [data-tooltip] { position: relative; }
+    [data-tooltip]::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.95);
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      width: max-content;
+      max-width: 280px;
+      visibility: hidden;
+      opacity: 0;
+      transition: all 0.2s;
+      z-index: 100;
+      pointer-events: none;
+      border: 1px solid var(--accent);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      margin-bottom: 8px;
+    }
+    [data-tooltip].active::after {
+      visibility: visible;
+      opacity: 1;
+      bottom: 130%;
+    }
+    /* Triangle for tooltip */
+    [data-tooltip]::before {
+      content: "";
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 6px;
+      border-style: solid;
+      border-color: var(--accent) transparent transparent transparent;
+      visibility: hidden;
+      opacity: 0;
+      transition: all 0.2s;
+      z-index: 100;
+      margin-bottom: -4px; /* Overlap border */
+    }
+    [data-tooltip].active::before {
+      visibility: visible;
+      opacity: 1;
+      bottom: 130%;
+    }
+
+    /* Record List */
+    .record-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .record-item {
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s;
+    }
+    .record-item:hover {
+      background: rgba(30, 41, 59, 0.9);
+      border-color: var(--accent);
+    }
+    .ri-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .ri-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+    .ri-date {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .ri-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-sm {
+      padding: 4px 10px;
+      font-size: 11px;
+      border-radius: 6px;
+      height: 26px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .grid { grid-template-columns: 1fr; }
+      .master-config { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>CPC&ACOS&利润测算</h1>
+  <div class="subtitle" style="display:flex;justify-content:space-between;align-items:start;">
+    <div>集成 2025/2026 FBA 费率计算器 & 智能类目佣金表。输入产品基础参数，自动计算各项成本，精准推导盈亏平衡点。</div>
+  </div>
+
+  <!-- Master Configuration Section -->
+  <div class="master-config">
+    <div class="master-title">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      产品基础档案 (Master Config)
+    </div>
+    
+    <div class="config-grid">
+      <!-- Column 1: Physical Specs -->
+      <div class="config-col">
+        <div class="form-group">
+          <label>尺寸 (长 x 宽 x 高)</label>
+          <div class="input-group">
+            <input type="number" id="m_l" placeholder="L" step="0.1">
+            <input type="number" id="m_w" placeholder="W" step="0.1">
+            <input type="number" id="m_h" placeholder="H" step="0.1">
+            <select id="m_dim_unit" class="unit-select">
+              <option value="in">in</option>
+              <option value="cm">cm</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>重量</label>
+          <div class="input-group">
+            <input type="number" id="m_weight" placeholder="Weight" step="0.01">
+            <select id="m_weight_unit" class="unit-select">
+              <option value="oz">oz</option>
+              <option value="lb">lb</option>
+              <option value="g">g</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>计费年份 & 季节</label>
+          <select id="m_season_version">
+            <option value="auto">自动 (根据当前日期)</option>
+            <option value="non_peak_2025">2025 非旺季</option>
+            <option value="peak_2025">2025 旺季 (Oct-Jan)</option>
+            <option value="non_peak_2026">2026 非旺季</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Column 2: Category & Price -->
+      <div class="config-col">
+        <div class="form-group">
+          <label>产品类目 (决定佣金)</label>
+          <select id="m_category">
+            <option value="">-- 请选择类目 --</option>
+            <!-- Options populated by JS -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label>商品类型 (决定 FBA)</label>
+          <select id="m_product_type">
+            <option value="normal">普通商品 (非服装/危险品)</option>
+            <option value="apparel">服装 (Apparel)</option>
+            <option value="danger">危险品 (Dangerous Goods)</option>
+          </select>
+          <div style="margin-top:6px;font-size:12px;display:flex;align-items:center;gap:6px;">
+            <input type="checkbox" id="m_has_lithium" style="width:auto;">
+            <label for="m_has_lithium" style="margin:0;color:var(--text-muted);font-weight:normal;">含锂电池 (+$0.11)</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>基准售价 (USD)</label>
+          <div class="input-group">
+            <span style="padding:8px;background:#1e293b;border:1px solid var(--card-border);border-radius:8px;color:#94a3b8">$</span>
+            <input type="number" id="m_price" placeholder="49.99" step="0.01">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>汇率 (USD/RMB)</label>
+          <input type="number" id="m_exchange_rate" placeholder="7.2" value="7.2" step="0.01">
+        </div>
+      </div>
+
+      <!-- Column 3: Results & Sync -->
+      <div class="config-col">
+        <div class="config-results">
+          <div class="cr-row">
+            <span class="cr-label">尺寸分段 <span class="help-icon" data-tooltip="基于长宽高的最大边、次大边、围长及重量判断">?</span>:</span>
+            <span class="cr-value" id="res_tier">--</span>
+          </div>
+          <div class="cr-row">
+            <span class="cr-label">计费重量 <span class="help-icon" data-tooltip="取 实际重量 与 体积重量(L*W*H/139) 中的较大值">?</span>:</span>
+            <span class="cr-value" id="res_weight">0.00 lb</span>
+          </div>
+          <div class="cr-row">
+            <span class="cr-label">FBA 配送费 <span class="help-icon" data-tooltip="基于尺寸分段、重量及当年费率表 (含锂电池等附加费)">?</span>:</span>
+            <span class="cr-value" id="res_fba">$0.00</span>
+          </div>
+          <div class="cr-row">
+            <span class="cr-label">预估佣金 <span class="help-icon" data-tooltip="基于类目规则 (固定比例 或 阶梯费率) * 售价">?</span>:</span>
+            <span class="cr-value" id="res_commission">$0.00</span>
+          </div>
+          <div class="cr-row" style="font-size:11px;color:#64748b;margin-top:4px;">
+             佣金比例: <span id="res_comm_rate">0%</span>
+          </div>
+        </div>
+        <button class="btn btn-sync" onclick="syncData()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/><path d="M9 11l3 3L22 4"/></svg>
+          一键同步到下方测算器
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- Card 1: Profit & Max Clicks -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">不亏本点击 & ACOS 测算</div>
+        <div class="card-tag">正向推导</div>
+      </div>
+      <div class="card-body">
+        <div class="form-group">
+          <label>售价 (Price)</label>
+          <input type="number" id="c1_price" oninput="calcC1()" step="0.01">
+        </div>
+        <div class="input-group">
+          <div class="form-group" style="flex:1">
+            <label>采购成本</label>
+            <div class="input-group">
+              <input type="number" id="c1_cost" oninput="calcC1()" step="0.01">
+              <select id="c1_cost_unit" class="unit-select" style="width:60px" onchange="calcC1()">
+                <option value="USD">$</option>
+                <option value="RMB">¥</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group" style="flex:1">
+            <label>头程运费</label>
+            <div class="input-group">
+              <input type="number" id="c1_ship" oninput="calcC1()" step="0.01">
+              <select id="c1_ship_unit" class="unit-select" style="width:60px" onchange="calcC1()">
+                <option value="USD">$</option>
+                <option value="RMB">¥</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="form-group" style="flex:1">
+            <label>FBA 费用</label>
+            <input type="number" id="c1_fba" oninput="calcC1()" step="0.01">
+          </div>
+          <div class="form-group" style="flex:1">
+            <label>佣金 ($)</label>
+            <input type="number" id="c1_comm" oninput="calcC1()" step="0.01">
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="form-group" style="flex:1">
+            <label>退货率 %</label>
+            <input type="number" id="c1_ret_rate" value="5" oninput="calcC1()" step="0.1">
+          </div>
+          <div class="form-group" style="flex:1">
+            <label>
+              <span>退货杂费 <span class="help-icon" data-tooltip="每单退货额外损失（运费、处理、报废等）">?</span></span>
+            </label>
+            <input type="number" id="c1_ret_cost" value="3" oninput="calcC1()" step="0.01">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>其他杂费 (仓储/标贴等)</label>
+          <input type="number" id="c1_other_cost" placeholder="0.00" oninput="calcC1()" step="0.01">
+        </div>
+        <div class="form-group">
+          <label>计划 CPC 出价</label>
+          <input type="number" id="c1_cpc" placeholder="0.50" oninput="calcC1()" step="0.01">
+        </div>
+
+        <div class="results-panel">
+          <div class="res-row">
+            <span>有效毛利 (每单) <span class="help-icon" data-tooltip="售价*(1-退货率) - 采购 - 头程 - FBA - 佣金 - (退货率*退货杂费)">?</span>:</span>
+            <span class="res-val" id="c1_profit">$0.00</span>
+          </div>
+          <div class="res-row">
+            <span>毛利率 <span class="help-icon" data-tooltip="有效毛利 / 售价">?</span>:</span>
+            <span class="res-val" id="c1_margin">0.00%</span>
+          </div>
+          <div class="res-row highlight">
+            <span>盈亏平衡点击数 <span class="help-icon" data-tooltip="有效毛利 / CPC">?</span>:</span>
+            <span class="res-val" id="c1_max_clicks">0</span>
+          </div>
+          <div class="res-row">
+            <span>最低保本转化率 <span class="help-icon" data-tooltip="1 / 盈亏平衡点击数">?</span>:</span>
+            <span class="res-val" id="c1_min_cvr">0.00%</span>
+          </div>
+          <div class="res-row">
+            <span>盈亏平衡 ACOS <span class="help-icon" data-tooltip="有效毛利 / 售价 (即毛利率)">?</span>:</span>
+            <span class="res-val" id="c1_be_acos">0.00%</span>
+          </div>
+        </div>
+        <div class="msg-box msg-warn" id="c1_warn" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- Card 2: Target ACOS -> CPC -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">反推 CPC & 综合利润</div>
+        <div class="card-tag">反向推导</div>
+      </div>
+      <div class="card-body">
+        <div class="form-group">
+          <label>售价 (Price)</label>
+          <input type="number" id="c2_price" oninput="calcC2()" step="0.01">
+        </div>
+        <!-- Cost inputs mirrored for calculation but hidden/compact could be better. For now, explicit. -->
+        <div class="input-group">
+          <div class="form-group" style="flex:1">
+            <label>采购 + 头程</label>
+            <div class="input-group">
+              <input type="number" id="c2_cost_total" oninput="calcC2()" step="0.01" placeholder="Sum">
+              <select id="c2_cost_unit" class="unit-select" style="width:60px" onchange="calcC2()">
+                <option value="USD">$</option>
+                <option value="RMB">¥</option>
+              </select>
+            </div>
+          </div>
+           <div class="form-group" style="flex:1">
+            <label>FBA + 佣金</label>
+            <input type="number" id="c2_fee_total" oninput="calcC2()" step="0.01" placeholder="Sum of FBA+Comm">
+          </div>
+        </div>
+        
+        <div class="input-group">
+          <div class="form-group" style="flex:1">
+            <label>预估转化率 (CVR %)</label>
+            <input type="number" id="c2_cvr" placeholder="10" oninput="calcC2()" step="0.1">
+          </div>
+          <div class="form-group" style="flex:1">
+            <label>
+              <span>市场参考 CPC <span class="help-icon" data-tooltip="第三方工具（如卖家精灵/Sif）查询到的类目平均或Top竞品出价，用于评估竞争难度。">?</span></span>
+            </label>
+            <input type="number" id="c2_market_cpc" placeholder="1.20" oninput="calcC2()" step="0.01">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>其他杂费 (仓储/标贴等)</label>
+          <input type="number" id="c2_other_cost" placeholder="0.00" oninput="calcC2()" step="0.01">
+        </div>
+
+        <div class="form-group">
+          <label>
+            <span>推广阶段/策略 (自动设 ACOS) <span class="help-icon" data-tooltip="不同阶段对利润要求不同：
+• 新品冲榜：允许亏损 (ACOS > 毛利)，换取排名。
+• 稳健增长：微利 (ACOS ≈ 毛利*70%)，平衡量与利。
+• 利润收割：保利润 (ACOS ≈ 毛利*40%)。
+选择后系统会自动计算推荐的 Target ACOS，你也可以手动修改。">?</span></span>
+          </label>
+          <select id="c2_strategy" onchange="applyStrategy()">
+            <option value="custom">-- 自定义 (Custom) --</option>
+            <option value="launch">🚀 新品冲榜 (Target ACOS = 毛利 100%)</option>
+            <option value="growth">📈 稳健增长 (Target ACOS = 毛利 70%)</option>
+            <option value="profit">💰 利润收割 (Target ACOS = 毛利 40%)</option>
+            <option value="liquid">💸 清仓回款 (Target ACOS = 毛利 120%)</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <div class="form-group" style="flex:1">
+            <label>目标 ACOS %</label>
+            <input type="number" id="c2_acos" placeholder="25" oninput="calcC2()" step="0.1">
+          </div>
+          <div class="form-group" style="flex:1">
+             <label>广告单占比 % (TACOS)</label>
+             <input type="number" id="c2_ad_share" placeholder="30" oninput="calcC2()" step="1">
+          </div>
+        </div>
+
+        <div class="results-panel">
+           <div class="res-row">
+            <span>建议最高 CPC <span class="help-icon" data-tooltip="售价 * 转化率 * 目标ACOS">?</span>:</span>
+            <span class="res-val" id="c2_rec_cpc" style="color:var(--success);font-size:1.2em">$0.00</span>
+          </div>
+          <div class="res-row" id="c2_safe_row">
+             <span>安全出价 (80%) <span class="help-icon" data-tooltip="建议CPC * 0.8 (留安全边际)">?</span>:</span>
+             <span class="res-val" id="c2_safe_cpc">$0.00</span>
+          </div>
+          <div class="res-row">
+            <span>盈亏平衡 CPC <span class="help-icon" data-tooltip="售价 * 转化率 * 毛利率">?</span>:</span>
+            <span class="res-val" id="c2_be_cpc">$0.00</span>
+          </div>
+          <div class="res-row highlight">
+            <span>综合利润 (每单) <span class="help-icon" data-tooltip="毛利 - (售价 * 广告占比 * 目标ACOS)">?</span>:</span>
+            <span class="res-val" id="c2_net_profit">$0.00</span>
+          </div>
+           <div class="res-row">
+            <span>综合利润率 <span class="help-icon" data-tooltip="综合利润 / 售价">?</span>:</span>
+            <span class="res-val" id="c2_net_margin">0.00%</span>
+          </div>
+           <div class="res-row">
+            <span>综合 ACOS (TACOS) <span class="help-icon" data-tooltip="广告占比 * 目标ACOS">?</span>:</span>
+            <span class="res-val" id="c2_tacos">0.00%</span>
+          </div>
+        </div>
+        <div class="msg-box msg-warn" id="c2_warn" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+  <!-- Save/Load Controls (Bottom) -->
+  <div style="margin-top:40px;padding-top:20px;border-top:1px solid var(--card-border);">
+    <div style="margin-bottom:10px;font-size:14px;color:var(--text-muted);font-weight:600;">💾 测算记录管理（数据保存在本地）</div>
+    
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;">
+      <input type="text" id="save_name" placeholder="记录名称 (例如: SKU-001-新品期)" style="width:200px;">
+      <button class="btn" onclick="saveRecord()" style="width:auto;background:#10b981;">保存当前</button>
+      <button class="btn" onclick="clearAll()" style="width:auto;background:var(--card-bg);border:1px solid var(--danger);color:var(--danger);">⚠️ 一键清空</button>
+    </div>
+
+    <div id="record_list" class="record-list">
+      <!-- Records will be injected here -->
+    </div>
+  </div>
+
+</div>
+
+<script>
+/**
+ * PART 1: DATA DEFINITIONS
+ */
+
+// Commission Rules (Full List from Markdown)
+// 0 = Flat Rate
+// 1 = Tiered Total (Based on total price range, apply one rate to whole price)
+// 2 = Tiered Portion (Marginal - apply rate to portion of price)
+const COMM_RULES = {
+  "亚马逊设备配件 (Amazon Device Accessories)": { type: 0, rate: 0.45, min: 0.30 },
+  "汽车和户外动力设备 (Automotive & Powersports)": { type: 0, rate: 0.12, min: 0.30 },
+  "母婴 (Baby Products)": { type: 1, tiers: [[10, 0.08], [Infinity, 0.15]], min: 0.30 },
+  "背包、手提包和箱包 (Backpacks, Handbags & Luggage)": { type: 0, rate: 0.15, min: 0.30 },
+  "基础设备电动工具 (Base Equipment Power Tools)": { type: 0, rate: 0.12, min: 0.30 },
+  "美妆和个护健康 (Beauty, Health & Personal Care)": { type: 1, tiers: [[10, 0.08], [Infinity, 0.15]], min: 0.30 },
+  "商业、工业与科学用品 (Business, Industrial & Scientific Supplies)": { type: 0, rate: 0.12, min: 0.30 },
+  "服装和配饰 (Clothing & Accessories)": { type: 1, tiers: [[15, 0.05], [20, 0.10], [Infinity, 0.17]], min: 0.30 },
+  "小型电器 (Compact Appliances)": { type: 2, tiers: [[300, 0.15], [Infinity, 0.08]], min: 0.30 },
+  "电脑 (Computers)": { type: 0, rate: 0.08, min: 0.30 },
+  "消费类电子产品 (Consumer Electronics)": { type: 0, rate: 0.08, min: 0.30 },
+  "电子产品配件 (Electronics Accessories)": { type: 2, tiers: [[100, 0.15], [Infinity, 0.08]], min: 0.30 },
+  "眼镜 (Eyewear)": { type: 0, rate: 0.15, min: 0.30 },
+  "艺术品 (Fine Art)": { type: 2, tiers: [[100, 0.20], [1000, 0.15], [5000, 0.10], [Infinity, 0.05]], min: 0 }, // No min stated
+  "鞋靴 (Footwear)": { type: 0, rate: 0.15, min: 0.30 },
+  "全尺寸电器 (Full-Size Appliances)": { type: 0, rate: 0.08, min: 0.30 },
+  "家具 (Furniture)": { type: 2, tiers: [[200, 0.15], [Infinity, 0.10]], min: 0.30 },
+  "礼品卡 (Gift Cards)": { type: 0, rate: 0.20, min: 0 },
+  "食品 (Grocery & Gourmet Food)": { type: 1, tiers: [[15, 0.08], [Infinity, 0.15]], min: 0 },
+  "家居及厨房用品 (Home & Kitchen)": { type: 0, rate: 0.15, min: 0.30 },
+  "珠宝首饰 (Jewelry)": { type: 2, tiers: [[250, 0.20], [Infinity, 0.05]], min: 0.30 },
+  "草坪和园艺 (Lawn & Garden)": { type: 0, rate: 0.15, min: 0.30 },
+  "割草机和除雪机 (Lawn Mowers & Snow Throwers)": { type: 1, tiers: [[500, 0.15], [Infinity, 0.08]], min: 0.30 },
+  "床垫 (Mattresses)": { type: 0, rate: 0.15, min: 0.30 },
+  "媒介类商品 (Media)": { type: 0, rate: 0.15, min: 0 },
+  "乐器和影音制作 (Musical Instruments & AV Production)": { type: 0, rate: 0.15, min: 0.30 },
+  "办公用品 (Office Products)": { type: 0, rate: 0.15, min: 0.30 },
+  "宠物用品 (Pet Supplies)": { type: 0, rate: 0.15, min: 0.30 }, // Note: Vet diets 22% not handled
+  "运动户外 (Sports & Outdoors)": { type: 0, rate: 0.15, min: 0.30 },
+  "轮胎 (Tires)": { type: 0, rate: 0.10, min: 0.30 },
+  "工具和家居装修 (Tools & Home Improvement)": { type: 0, rate: 0.15, min: 0.30 },
+  "玩具和游戏 (Toys & Games)": { type: 0, rate: 0.15, min: 0.30 },
+  "视频游戏机 (Video Game Consoles)": { type: 0, rate: 0.08, min: 0 },
+  "视频游戏和游戏配件 (Video Games & Accessories)": { type: 0, rate: 0.15, min: 0 },
+  "钟表 (Watches)": { type: 2, tiers: [[1500, 0.16], [Infinity, 0.03]], min: 0.30 },
+  "其他 (Everything Else)": { type: 0, rate: 0.15, min: 0.30 }
+};
+
+// FBA Fee Data (Compressed)
+const FEE_DATA = {
+  normal: {
+    non_peak_2025: {
+      ss: { steps:[2,4,6,8,10,12,14,16], lt10:[2.29,2.38,2.47,2.56,2.66,2.76,2.83,2.88], mid:[3.06,3.15,3.24,3.33,3.43,3.53,3.60,3.65] },
+      ls: { steps:[4,8,12,16,20,24,28,32,36,40,44,48], lt10:[2.91,3.13,3.38,3.78,4.22,4.60,4.75,5.00,5.10,5.28,5.44,5.85], mid:[3.68,3.90,4.15,4.55,4.99,5.37,5.52,5.77,5.87,6.05,6.21,6.62], post:{lt10:6.15, mid:6.92}, inc:0.08 },
+      so: { base:{lt10:8.84, mid:9.61}, per:0.38 },
+      lo: { base:{lt10:8.84, mid:9.61}, per:0.38 },
+      spl: { base:{lt10:25.56, mid:26.33}, per:0.38 } // super oversize small
+    },
+    non_peak_2026: {
+      ss: { steps:[2,4,6,8,10,12,14,16], lt10:[2.43,2.49,2.56,2.66,2.77,2.82,2.92,2.95], mid:[3.32,3.42,3.45,3.54,3.68,3.78,3.91,3.96] },
+      ls: { steps:[4,8,12,16,20,24,28,32,36,40,44,48], lt10:[2.91,3.13,3.38,3.78,4.22,4.60,4.75,5.00,5.10,5.28,5.44,5.85], mid:[3.73,3.95,4.20,4.60,5.04,5.42,5.57,5.82,5.92,6.10,6.26,6.67], post:{lt10:6.15, mid:6.97}, inc:0.08 },
+      so: { base:{lt10:6.78, mid:7.55}, per:0.38 },
+      lo: { base:{lt10:8.58, mid:9.35}, per:0.38 },
+      spl: { base:{lt10:25.56, mid:26.33}, per:0.38 }
+    },
+    peak_2025: {
+      ss: { steps:[2,4,6,8,10,12,14,16], lt10:[2.48,2.57,2.67,2.76,2.87,2.97,3.05,3.10], mid:[3.25,3.34,3.44,3.53,3.64,3.74,3.82,3.87] },
+      ls: { steps:[4,8,12,16,20,24,28,32,36,40,44,48], lt10:[3.15,3.39,3.66,4.07,4.52,4.91,5.07,5.33,5.47,5.67,5.84,6.26], mid:[3.92,4.16,4.43,4.84,5.29,5.68,5.84,6.10,6.24,6.44,6.61,7.03], post:{lt10:6.69, mid:7.46}, inc:0.08 },
+      so: { base:{lt10:9.88, mid:10.65}, per:0.38 },
+      lo: { base:{lt10:9.88, mid:10.65}, per:0.38 },
+      spl: { base:{lt10:28.29, mid:29.06}, per:0.38 }
+    }
+  },
+  apparel: {
+    non_peak_2025: {
+       ss: { steps:[2,4,6,8,10,12,14,16], lt10:[2.50,2.50,2.65,2.65,2.95,2.95,3.21,3.21], mid:[3.27,3.27,3.42,3.42,3.72,3.72,3.98,3.98] },
+       ls: { steps:[4,8,12,16,24,32,40,48], lt10:[3.48,3.68,3.90,4.35,5.13,5.13,5.37,5.37], mid:[4.25,4.45,4.67,5.12,5.90,5.90,6.14,6.14], post:{lt10:6.82, mid:6.97}, inc:0.16 } // inc per half lb
+    },
+    non_peak_2026: {
+       ss: { steps:[2,4,6,8,10,12,14,16], lt10:[2.62,2.64,2.68,2.81,3.00,3.10,3.20,3.30], mid:[3.51,3.54,3.59,3.69,3.91,4.09,4.20,4.25] },
+       ls: { steps:[4,8,12,16,24,32,40,48], lt10:[3.48,3.68,3.90,4.35,5.05,5.22,5.32,5.43], mid:[4.30,4.50,4.72,5.17,5.87,6.04,6.14,6.25], post:{lt10:6.78, mid:6.97}, inc:0.16 }
+    }
+  }
+};
+// Danger & more oversize tiers omitted for brevity, can be added if needed. Mapping to closest available.
+
+/**
+ * PART 2: LOGIC FUNCTIONS
+ */
+
+// Init Categories
+const catSelect = document.getElementById('m_category');
+Object.keys(COMM_RULES).sort().forEach(cat => {
+  const opt = document.createElement('option');
+  opt.value = cat;
+  opt.textContent = cat;
+  catSelect.appendChild(opt);
+});
+
+function getCommission(cat, price) {
+  if (!cat || !COMM_RULES[cat]) return { fee: 0, rateStr: '0%' };
+  const rule = COMM_RULES[cat];
+  let fee = 0;
+  let rateStr = '';
+
+  if (rule.type === 0) { // Flat
+    fee = price * rule.rate;
+    rateStr = (rule.rate * 100).toFixed(2) + '%';
+  } else if (rule.type === 1) { // Tiered Total
+    const tier = rule.tiers.find(t => price <= t[0]);
+    const rate = tier ? tier[1] : rule.tiers[rule.tiers.length-1][1];
+    fee = price * rate;
+    rateStr = (rate * 100).toFixed(2) + '%';
+  } else if (rule.type === 2) { // Tiered Portion
+    let remaining = price;
+    let prevLimit = 0;
+    let totalFee = 0;
+    rule.tiers.forEach(t => {
+      if (remaining <= 0) return;
+      const limit = t[0];
+      const rate = t[1];
+      const chunk = Math.min(remaining, limit - prevLimit);
+      totalFee += chunk * rate;
+      remaining -= chunk;
+      prevLimit = limit;
+    });
+    fee = totalFee;
+    rateStr = 'Mixed';
+  }
+
+  if (fee < rule.min && price > 0) fee = rule.min;
+  return { fee, rateStr };
+}
+
+function getFBAFee(l, w, h, weightOz, type, price, seasonKey, hasLithium) {
+  // 1. Determine Tier
+  const dims = [l, w, h].sort((a,b) => b-a); // L, W, H
+  const girth = dims[0] + 2*(dims[1] + dims[2]);
+  const volWeight = (l * w * h) / 139 * 16; // in oz
+  
+  let tier = 'Spl';
+  let shipWeight = weightOz;
+
+  // Simplified Tier Logic
+  if (weightOz <= 16 && dims[0]<=15 && dims[1]<=12 && dims[2]<=0.75) {
+    tier = 'ss';
+    shipWeight = weightOz; // Small std uses actual weight
+  } else if (weightOz <= 320 && dims[0]<=18 && dims[1]<=14 && dims[2]<=8) {
+    tier = 'ls';
+    shipWeight = Math.max(weightOz, volWeight); // Large std uses larger of actual/vol
+  } else if (weightOz <= 1120 && dims[0]<=60 && dims[1]<=30 && girth<=130) {
+    tier = 'so';
+    shipWeight = Math.max(weightOz, volWeight);
+  } else {
+    tier = 'lo'; // Simplified overflow
+    shipWeight = Math.max(weightOz, volWeight);
+  }
+
+  // 2. Lookup Fee
+  // Fallback to normal/non_peak_2025 if key missing
+  let dataSet = FEE_DATA[type] || FEE_DATA['normal'];
+  let seasonData = dataSet[seasonKey];
+  if (!seasonData) {
+      // Try fallback to normal non-peak if specific apparel/danger year missing
+      seasonData = FEE_DATA['normal']['non_peak_2025'];
+  }
+  
+  const table = seasonData[tier];
+  if (!table) return 0;
+
+  const band = price < 10 ? 'lt10' : 'mid'; // Simplified price bands
+  let fee = 0;
+
+  if (tier === 'ss' || (tier === 'ls' && table.steps)) {
+    // Step based
+    const steps = table.steps;
+    const fees = table[band] || table['mid']; // Fallback
+    let found = false;
+    for(let i=0; i<steps.length; i++) {
+      if (shipWeight <= steps[i]) {
+        fee = fees[i];
+        found = true;
+        break;
+      }
+    }
+    if (!found && tier === 'ls') {
+       // Post 3lb logic
+       const base = table.post[band] || table.post.mid;
+       const excess = shipWeight - 48; // > 3lb (48oz)
+       const unit = (type === 'apparel') ? 8 : 4; // 0.5lb or 0.25lb
+       const increments = Math.ceil(excess / unit);
+       fee = base + increments * table.inc;
+    }
+  } else {
+    // Oversize base + per lb
+    const base = table.base[band] || table.base.mid;
+    const weightLb = shipWeight / 16;
+    const excessLb = Math.max(0, weightLb - (tier==='so'?0:0)); // Simplified start
+    // Oversize logic is complex, using simplified base + per lb for >0
+    fee = base + Math.ceil(Math.max(0, weightLb-1)) * table.per;
+  }
+  
+  // Lithium Battery Fee: Add $0.11 if checked and NOT Dangerous Goods
+  if (hasLithium && type !== 'danger') {
+    fee += 0.11;
+  }
+
+  return { fee, tierName: tier.toUpperCase(), shipWeight };
+}
+
+function getSeasonKey() {
+  const val = document.getElementById('m_season_version').value;
+  if (val !== 'auto') return val;
+  const now = new Date();
+  const mon = now.getMonth() + 1; // 1-12
+  const year = now.getFullYear();
+  const isPeak = (mon >= 10 || mon === 1); // Oct, Nov, Dec, Jan
+  if (year >= 2026) return 'non_peak_2026'; // Simple logic for 2026
+  return isPeak ? 'peak_2025' : 'non_peak_2025';
+}
+
+// Master Calc
+function calcMaster() {
+  let l = parseFloat(document.getElementById('m_l').value) || 0;
+  let w = parseFloat(document.getElementById('m_w').value) || 0;
+  let h = parseFloat(document.getElementById('m_h').value) || 0;
+  const dimUnit = document.getElementById('m_dim_unit').value;
+  if (dimUnit === 'cm') { l/=2.54; w/=2.54; h/=2.54; }
+
+  let weight = parseFloat(document.getElementById('m_weight').value) || 0;
+  const wUnit = document.getElementById('m_weight_unit').value;
+  if (wUnit === 'lb') weight *= 16;
+  if (wUnit === 'g') weight /= 28.35;
+  // Now weight is oz
+
+  const price = parseFloat(document.getElementById('m_price').value) || 0;
+  const cat = document.getElementById('m_category').value;
+  const type = document.getElementById('m_product_type').value;
+  const season = getSeasonKey();
+  const hasLithium = document.getElementById('m_has_lithium').checked;
+
+  // Calc FBA
+  const fbaRes = getFBAFee(l, w, h, weight, type, price, season, hasLithium);
+  
+  // Calc Comm
+  const commRes = getCommission(cat, price);
+
+  // Display
+  document.getElementById('res_tier').textContent = fbaRes ? fbaRes.tierName : '--';
+  document.getElementById('res_weight').textContent = fbaRes ? (fbaRes.shipWeight/16).toFixed(2) + ' lb' : '0.00 lb';
+  document.getElementById('res_fba').textContent = fbaRes ? '$' + fbaRes.fee.toFixed(2) : '$0.00';
+  document.getElementById('res_commission').textContent = '$' + commRes.fee.toFixed(2);
+  document.getElementById('res_comm_rate').textContent = commRes.rateStr;
+
+  return { fba: fbaRes ? fbaRes.fee : 0, comm: commRes.fee, price };
+}
+
+// Event Listeners for Master
+const mIds = ['m_l','m_w','m_h','m_dim_unit','m_weight','m_weight_unit','m_category','m_product_type','m_price','m_season_version','m_has_lithium','m_exchange_rate'];
+mIds.forEach(id => document.getElementById(id).addEventListener('input', calcMaster));
+
+// Sync
+function syncData() {
+  const data = calcMaster();
+  if (data.price > 0) {
+    document.getElementById('c1_price').value = data.price;
+    document.getElementById('c2_price').value = data.price;
+  }
+  if (data.fba > 0) {
+    document.getElementById('c1_fba').value = data.fba.toFixed(2);
+    // For card 2, we have a combined field for FBA+Comm, or we can split.
+    // Let's update the total cost field
+    updateC2Costs(data.fba, data.comm);
+  }
+  if (data.comm > 0) {
+    document.getElementById('c1_comm').value = data.comm.toFixed(2);
+    updateC2Costs(data.fba, data.comm);
+  }
+  calcC1();
+  calcC2();
+}
+
+function updateC2Costs(fba, comm) {
+  const currentTotal = parseFloat(document.getElementById('c2_fee_total').value) || 0;
+  // If the field is empty or seems to be just fba+comm, update it.
+  // To avoid overwriting user manual edits, we'll just set it to FBA + Comm
+  document.getElementById('c2_fee_total').value = (fba + comm).toFixed(2);
+}
+
+/**
+ * PART 3: CALCULATOR LOGIC
+ */
+
+function safeFloat(id) { return parseFloat(document.getElementById(id).value) || 0; }
+function fmtMoney(n) { return '$' + n.toFixed(2); }
+function fmtPct(n) { return (n).toFixed(2) + '%'; }
+
+function calcC1() {
+  const price = safeFloat('c1_price');
+  
+  let cost = safeFloat('c1_cost');
+  const costUnit = document.getElementById('c1_cost_unit').value;
+  let ship = safeFloat('c1_ship');
+  const shipUnit = document.getElementById('c1_ship_unit').value;
+  const exRate = safeFloat('m_exchange_rate') || 7.2;
+
+  if (costUnit === 'RMB') cost = cost / exRate;
+  if (shipUnit === 'RMB') ship = ship / exRate;
+
+  const fba = safeFloat('c1_fba');
+  const comm = safeFloat('c1_comm');
+  const retRate = safeFloat('c1_ret_rate') / 100;
+  const retCost = safeFloat('c1_ret_cost');
+  const otherCost = safeFloat('c1_other_cost');
+  const cpc = safeFloat('c1_cpc');
+
+  // Profit per unit = Price*(1-retRate) - Cost - Ship - FBA - Comm - (retRate*retCost) - Other
+  const revenue = price * (1 - retRate);
+  const expenses = cost + ship + fba + comm + (retRate * retCost) + otherCost;
+  const profit = revenue - expenses;
+  
+  const margin = price > 0 ? (profit / price) * 100 : 0;
+
+  // Max Clicks = Profit / CPC
+  let maxClicks = 0;
+  if (cpc > 0 && profit > 0) maxClicks = profit / cpc;
+
+  // Min CVR = 1 / Max Clicks
+  let minCVR = 0;
+  if (maxClicks > 0) minCVR = (1 / maxClicks) * 100;
+
+  // BE ACOS = Margin
+  // Technically: ACOS = AdSpend / AdSales.
+  // Breakeven when Profit = AdSpend.
+  // Profit margin % is the max ACOS.
+  
+  document.getElementById('c1_profit').textContent = fmtMoney(profit);
+  document.getElementById('c1_profit').className = 'res-val ' + (profit<0?'danger':'');
+  
+  document.getElementById('c1_margin').textContent = fmtPct(margin);
+  document.getElementById('c1_max_clicks').textContent = maxClicks.toFixed(1);
+  document.getElementById('c1_min_cvr').textContent = fmtPct(minCVR);
+  document.getElementById('c1_be_acos').textContent = fmtPct(margin);
+
+  const warn = document.getElementById('c1_warn');
+  if (profit <= 0) {
+    warn.style.display = 'block';
+    warn.textContent = '⚠️ 警告：当前定价在扣除各项成本后为负毛利，无法投放广告。请优化成本或提高售价。';
+  } else {
+    warn.style.display = 'none';
+  }
+}
+
+function calcC2() {
+  const price = safeFloat('c2_price');
+  
+  let costTotal = safeFloat('c2_cost_total'); // Prod + Ship
+  const costUnit = document.getElementById('c2_cost_unit').value;
+  const exRate = safeFloat('m_exchange_rate') || 7.2;
+  
+  if (costUnit === 'RMB') costTotal = costTotal / exRate;
+
+  const feeTotal = safeFloat('c2_fee_total');   // FBA + Comm
+  const otherCost = safeFloat('c2_other_cost'); // New Other Cost
+  const cvr = safeFloat('c2_cvr') / 100;
+  const targetAcos = safeFloat('c2_acos') / 100;
+  const adShare = safeFloat('c2_ad_share') / 100;
+  const marketCPC = safeFloat('c2_market_cpc');
+
+  // Gross Profit (Revised to include Other Cost)
+  // Profit = Price - Cost - Fee - Other
+  const profit = price - costTotal - feeTotal - otherCost; 
+  
+  // CPC = Price * CVR * ACOS
+  const recCPC = price * cvr * targetAcos;
+  const safeCPC = recCPC * 0.8; // 80% Safe Margin
+  
+  // BE CPC = Price * CVR * Margin
+  const margin = price > 0 ? profit / price : 0;
+  const beCPC = price * cvr * margin;
+
+  // Net Profit (Blended)
+  // Natural Sales = Total * (1 - AdShare)
+  // Ad Sales = Total * AdShare
+  // Ad Spend per Unit = Price * AdShare * TargetACOS
+  // Net Profit per Unit = Gross Profit - Ad Spend per Unit
+  
+  const adSpendPerUnit = price * adShare * targetAcos;
+  const netProfit = profit - adSpendPerUnit;
+  const netMargin = price > 0 ? (netProfit / price) * 100 : 0;
+  
+  const tacos = price > 0 ? (adSpendPerUnit / price) * 100 : 0;
+
+  document.getElementById('c2_rec_cpc').textContent = fmtMoney(recCPC);
+  document.getElementById('c2_safe_cpc').textContent = fmtMoney(safeCPC);
+  document.getElementById('c2_be_cpc').textContent = fmtMoney(beCPC);
+  document.getElementById('c2_net_profit').textContent = fmtMoney(netProfit);
+  document.getElementById('c2_net_profit').className = 'res-val ' + (netProfit<0?'danger':'');
+  document.getElementById('c2_net_margin').textContent = fmtPct(netMargin);
+  document.getElementById('c2_tacos').textContent = fmtPct(tacos);
+
+  // Warnings
+  const warn = document.getElementById('c2_warn');
+  let warns = [];
+  if (profit <= 0) warns.push("基础毛利已为负，请检查成本或定价！");
+  if (marketCPC > 0 && beCPC < marketCPC) warns.push(`⚠️ 盈亏平衡 CPC ($${beCPC.toFixed(2)}) 低于市场参考价 ($${marketCPC.toFixed(2)})，可能无法获得足够曝光，建议提高转化率或售价。`);
+  if (netProfit <= 0 && profit > 0) warns.push("综合利润为负，广告花费过高，建议降低 ACOS 或广告占比。");
+  
+  if (warns.length > 0) {
+    warn.style.display = 'block';
+    warn.innerHTML = warns.join('<br>');
+  } else {
+    warn.style.display = 'none';
+  }
+}
+
+function applyStrategy() {
+  const s = document.getElementById('c2_strategy').value;
+  if (s === 'custom') return;
+
+  // We need Margin first. Run a temp calc to get margin.
+  // Duplicate logic briefly or just use the DOM values if already calc'd?
+  // Better to re-calc profit ratio.
+  const price = safeFloat('c2_price');
+  let costTotal = safeFloat('c2_cost_total');
+  const costUnit = document.getElementById('c2_cost_unit').value;
+  const exRate = safeFloat('m_exchange_rate') || 7.2;
+  if (costUnit === 'RMB') costTotal /= exRate;
+  const feeTotal = safeFloat('c2_fee_total');
+  const otherCost = safeFloat('c2_other_cost');
+
+  const profit = price - costTotal - feeTotal - otherCost;
+  const margin = price > 0 ? profit / price : 0;
+
+  if (margin <= 0) {
+    alert("当前毛利 <= 0，无法应用基于毛利的策略！");
+    document.getElementById('c2_strategy').value = 'custom';
+    return;
+  }
+
+  let factor = 0;
+  if (s === 'launch') factor = 1.0; // Breakeven
+  if (s === 'growth') factor = 0.7;
+  if (s === 'profit') factor = 0.4;
+  if (s === 'liquid') factor = 1.2;
+
+  const targetAcos = margin * factor * 100; // %
+  document.getElementById('c2_acos').value = targetAcos.toFixed(2);
+  calcC2(); // Re-calc
+}
+
+// Tooltip Click Handler
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('help-icon')) {
+    e.target.classList.toggle('active');
+    // Close others
+    document.querySelectorAll('.help-icon').forEach(el => {
+      if (el !== e.target) el.classList.remove('active');
+    });
+  } else {
+    // Close all when clicking outside
+    document.querySelectorAll('.help-icon.active').forEach(el => el.classList.remove('active'));
+  }
+});
+
+// --- Local Storage Logic ---
+const STORAGE_KEY = 'cpc_compass_records';
+
+function getRecords() {
+  const s = localStorage.getItem(STORAGE_KEY);
+  return s ? JSON.parse(s) : {};
+}
+
+function saveRecords(records) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+}
+
+function renderRecordList() {
+  const records = getRecords();
+  const list = document.getElementById('record_list');
+  list.innerHTML = '';
+  
+  // Sort by timestamp desc (newest first)
+  const sortedKeys = Object.keys(records).sort((a, b) => (records[b].timestamp || 0) - (records[a].timestamp || 0));
+
+  if (sortedKeys.length === 0) {
+    list.innerHTML = '<div style="color:var(--text-muted);font-size:12px;text-align:center;padding:10px;">暂无保存记录</div>';
+    return;
+  }
+
+  sortedKeys.forEach(name => {
+    const rec = records[name];
+    const dateStr = rec.timestamp ? new Date(rec.timestamp).toLocaleString() : '未知时间';
+    
+    const item = document.createElement('div');
+    item.className = 'record-item';
+    item.innerHTML = `
+      <div class="ri-info">
+        <div class="ri-name">${name}</div>
+        <div class="ri-date">${dateStr}</div>
+      </div>
+      <div class="ri-actions">
+        <button class="btn btn-primary btn-sm" onclick="loadRecord('${name}')">📂 加载</button>
+        <button class="btn btn-sm" style="background:var(--danger);color:#fff;" onclick="deleteRecord('${name}')">🗑️ 删除</button>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+}
+
+function getAllInputIds() {
+  // Master
+  let ids = ['m_l','m_w','m_h','m_dim_unit','m_weight','m_weight_unit','m_category','m_product_type','m_price','m_season_version','m_exchange_rate'];
+  // C1
+  ids = ids.concat(['c1_price','c1_cost','c1_cost_unit','c1_ship','c1_ship_unit','c1_fba','c1_comm','c1_ret_rate','c1_ret_cost','c1_other_cost','c1_cpc']);
+  // C2
+  ids = ids.concat(['c2_price','c2_cost_total','c2_cost_unit','c2_fee_total','c2_other_cost','c2_cvr','c2_market_cpc','c2_strategy','c2_acos','c2_ad_share']);
+  return ids;
+}
+
+function saveRecord() {
+  const name = document.getElementById('save_name').value.trim();
+  if (!name) { alert('请输入记录名称'); return; }
+  
+  const data = {};
+  const ids = getAllInputIds();
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) data[id] = el.value;
+  });
+  // Checkboxes
+  data['m_has_lithium'] = document.getElementById('m_has_lithium').checked;
+  data['timestamp'] = Date.now(); // Add timestamp
+
+  const records = getRecords();
+  records[name] = data;
+  saveRecords(records);
+  renderRecordList();
+  alert(`记录 "${name}" 已保存！`);
+}
+
+function loadRecord(name) {
+  if (!name) return;
+  const records = getRecords();
+  const data = records[name];
+  if (!data) return;
+
+  const ids = getAllInputIds();
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && data[id] !== undefined) el.value = data[id];
+  });
+  // Checkboxes
+  if (data['m_has_lithium'] !== undefined) document.getElementById('m_has_lithium').checked = data['m_has_lithium'];
+
+  // Trigger Recalc
+  calcMaster();
+  calcC1();
+  calcC2();
+  document.getElementById('save_name').value = name;
+  
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function deleteRecord(name) {
+  if (!confirm(`确定要删除记录 "${name}" 吗？`)) return;
+  const records = getRecords();
+  delete records[name];
+  saveRecords(records);
+  renderRecordList();
+}
+
+function clearAll() {
+  if(!confirm('确定要清空所有输入吗？未保存的数据将丢失。')) return;
+  const ids = getAllInputIds();
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      if (el.tagName === 'SELECT') el.selectedIndex = 0;
+      else el.value = '';
+    }
+  });
+  document.getElementById('m_has_lithium').checked = false;
+  // Reset defaults
+  document.getElementById('m_dim_unit').value = 'in';
+  document.getElementById('m_weight_unit').value = 'oz';
+  document.getElementById('m_exchange_rate').value = '7.2';
+  document.getElementById('c1_cost_unit').value = 'USD';
+  document.getElementById('c1_ship_unit').value = 'USD';
+  document.getElementById('c2_cost_unit').value = 'USD';
+  document.getElementById('c1_ret_rate').value = '5';
+  document.getElementById('c1_ret_cost').value = '3';
+  
+  calcMaster();
+  calcC1();
+  calcC2();
+}
+
+// Init
+renderRecordList();
+
+</script>
+
+</body>
+</html>

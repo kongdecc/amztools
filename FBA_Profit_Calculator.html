@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>亚马逊FBA配送费与利润计算一体机 (2026版)</title>
+  <style>
+    :root {
+      --primary-color: #2a5d9f;
+      --bg-color: #f6f7f9;
+      --card-bg: #fff;
+      --border-color: #ddd;
+      --text-color: #333;
+      --success-color: #28a745;
+      --warning-color: #ffc107;
+      --danger-color: #dc3545;
+    }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background: var(--bg-color); color: var(--text-color); margin: 0; }
+    h2, h3 { color: var(--primary-color); margin-top: 0; }
+    .container { display: flex; flex-wrap: wrap; gap: 20px; max-width: 1400px; margin: 0 auto; }
+    .card { flex: 1; min-width: 350px; background: var(--card-bg); border: 1px solid var(--border-color); padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .full-width { width: 100%; flex: 100%; }
+    
+    label { display: block; margin-top: 10px; font-weight: 500; font-size: 14px; }
+    .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 10px; }
+    .row label { margin-top: 0; margin-right: 5px; }
+    input[type="number"], select, input[type="text"] { padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
+    input[type="number"] { width: 80px; }
+    
+    .input-group { background: #f9f9f9; padding: 10px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #eee; }
+    .input-group-title { font-size: 13px; font-weight: bold; color: #666; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; }
+
+    .result-box { background: #eef5ff; border: 1px solid #b8daff; padding: 15px; border-radius: 6px; margin-top: 15px; }
+    .result-item { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px; }
+    .result-item.total { font-weight: bold; border-top: 1px solid #b8daff; padding-top: 5px; margin-top: 5px; font-size: 16px; }
+    .profit-positive { color: var(--success-color); }
+    .profit-negative { color: var(--danger-color); }
+    
+    button { cursor: pointer; padding: 8px 16px; background: var(--primary-color); color: #fff; border: none; border-radius: 4px; font-size: 14px; transition: background 0.2s; }
+    button:hover { background: #1e4b87; }
+    button.secondary { background: #6c757d; }
+    button.secondary:hover { background: #5a6268; }
+    
+    .toggle-btn { background: transparent; color: var(--primary-color); border: 1px solid var(--primary-color); width: 100%; margin-top: 20px; }
+    .toggle-btn:hover { background: #e6ecfa; }
+    
+    .hidden { display: none; }
+    
+    /* Rules Table Styles */
+    table { border-collapse: collapse; width: 100%; background: #fff; margin: 10px 0 15px 0; font-size: 13px; }
+    th, td { border: 1px solid #ddd; padding: 6px; text-align: left; }
+    th { background: #e6ecfa; }
+    .tab-btns { margin-bottom: 10px; }
+    .tab-btns button { margin-right: 6px; padding: 4px 12px; background: #f6f7f9; border: 1px solid var(--primary-color); color: var(--primary-color); }
+    .tab-btns button.active { background: var(--primary-color); color: #fff; }
+    .fee-table { display: none; }
+    .fee-table.active { display: block; }
+
+    /* Slider Styles */
+    .slider-container { margin-top: 10px; }
+    .slider-row { display: flex; align-items: center; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
+    input[type="range"] { width: 100%; cursor: pointer; }
+
+    .emoji { font-size: 1.2em; margin-left: 5px; }
+    
+    .desc-text { font-size: 12px; color: #666; margin-top: 2px; }
+    .highlight-input { background-color: #fffde7; border-color: #f0ad4e; }
+
+    /* History & Chart Styles */
+    .btn-sm { padding: 4px 8px; font-size: 12px; margin-right: 4px; }
+    .btn-danger { background: var(--danger-color); }
+    .btn-load { background: var(--success-color); }
+    .chart-container { display: flex; height: 24px; border-radius: 4px; overflow: hidden; margin-bottom: 15px; background: #e0e0e0; cursor: help; }
+    .chart-segment { height: 100%; transition: width 0.3s; position: relative; display: flex; align-items: center; justify-content: center; font-size: 10px; color: rgba(255,255,255,0.9); overflow: hidden; }
+    .bg-cost { background: #6c757d; }
+    .bg-fba { background: #17a2b8; }
+    .bg-ref { background: #ffc107; color: #333; }
+    .bg-ads { background: #fd7e14; }
+    .bg-profit { background: #28a745; }
+    .bg-loss { background: #dc3545; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Left Card: Shipping Calculator -->
+    <div class="card">
+      <h3>📦 配送费计算 (Shipping)</h3>
+      
+      <div class="input-group">
+        <div class="input-group-title">商品信息 (Product Info)</div>
+        <div class="row">
+          <label style="flex:2;">名称 (Name) <input id="productName" type="text" placeholder="例如: iPhone 15 Case" style="width: 100%; box-sizing: border-box;"></label>
+          <label style="flex:1;">发货数量 <input id="shipmentQty" type="number" min="1" step="1" value="1" oninput="calculateAll()" style="width: 100%; box-sizing: border-box;"></label>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <div class="input-group-title">商品尺寸 (Dimensions)</div>
+        <div class="row">
+          <label>长 <input id="length" type="number" min="0" step="0.01" value="0"></label>
+          <select id="lengthUnit"><option value="in">in</option><option value="cm">cm</option></select>
+        </div>
+        <div class="row">
+          <label>宽 <input id="width" type="number" min="0" step="0.01" value="0"></label>
+          <select id="widthUnit"><option value="in">in</option><option value="cm">cm</option></select>
+        </div>
+        <div class="row">
+          <label>高 <input id="height" type="number" min="0" step="0.01" value="0"></label>
+          <select id="heightUnit"><option value="in">in</option><option value="cm">cm</option></select>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <div class="input-group-title">重量 (Weight)</div>
+        <div class="row">
+          <label>实重 <input id="actualWeight" type="number" min="0" step="0.01" value="0"></label>
+          <select id="weightUnit"><option value="oz">oz</option><option value="g">g</option><option value="lb">lb</option></select>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <div class="input-group-title">商品属性 (Attributes)</div>
+        <div class="row">
+          <label>类型
+            <select id="productType" onchange="showFeeTab(); calculateAll();">
+              <option value="normal">普通 (Normal)</option>
+              <option value="apparel">服装 (Apparel)</option>
+              <option value="danger">危险品 (Dangerous)</option>
+            </select>
+          </label>
+        </div>
+        <div class="row">
+          <label><input id="hasLithium" type="checkbox" onchange="calculateAll()"> 含锂电池 (Lithium)</label>
+        </div>
+      </div>
+      
+      <div class="input-group">
+        <div class="input-group-title">计费设置 (Settings)</div>
+        <div class="row">
+           <label>售价($) <input id="priceUSD" class="highlight-input" type="number" min="0" step="0.01" value="0" oninput="syncPrice()"></label>
+        </div>
+        <div class="row">
+          <label>季节
+            <select id="season" onchange="showFeeTab(); calculateAll();">
+              <option value="non_peak">非旺季</option>
+              <option value="peak">旺季</option>
+            </select>
+          </label>
+           <label>版本
+            <select id="version" onchange="showFeeTab(); calculateAll();">
+              <option value="2025">2025</option>
+              <option value="2026">2026</option>
+            </select>
+          </label>
+        </div>
+        <div class="row">
+           <label><input id="autoSeason" type="checkbox" checked onchange="onAutoSeasonToggle(); calculateAll();"> 自动按日期</label>
+        </div>
+        <div class="row">
+          <label>附加费($) <input id="surchargeUSD" type="number" min="0" step="0.01" value="0" oninput="calculateAll()"></label>
+        </div>
+      </div>
+
+      <button onclick="calculateAll()">计算配送费 (Calculate Fee)</button>
+      <button class="secondary" onclick="resetInputs()">重置 (Reset)</button>
+
+      <div id="shippingResult" class="result-box" style="display:none;">
+        <!-- Shipping Result Content -->
+      </div>
+    </div>
+
+    <!-- Right Card: Profit Calculator -->
+    <div class="card">
+      <h3>💰 利润计算 (Profit)</h3>
+      
+      <div class="input-group">
+        <div class="input-group-title">核心数据 (Core Data)</div>
+        <div class="row">
+          <label>售价($) <input id="profitPrice" class="highlight-input" type="number" step="0.01" value="0" oninput="syncPriceFromProfit()"></label>
+          <label>汇率(￥/$) <input id="exchangeRate" type="number" step="0.01" value="7.2" oninput="calculateAll()"></label>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <div class="input-group-title">成本 (Cost in CNY)</div>
+        <div class="row">
+          <label>采购成本(￥) <input id="productCostCNY" class="highlight-input" type="number" step="0.01" value="0" oninput="calculateAll()"></label>
+          <label>头程运费(￥) <input id="shippingCostCNY" class="highlight-input" type="number" step="0.01" value="0" oninput="calculateAll()"></label>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <div class="input-group-title">亚马逊费用 (Amazon Fees in USD)</div>
+        <div class="row">
+          <label>商品类目 (Category)
+            <select id="categorySelect" onchange="calculateAll()" style="max-width:200px;">
+              <option value="custom">-- 自定义 (Custom) --</option>
+              <!-- Populated by JS -->
+            </select>
+          </label>
+        </div>
+        <div class="row">
+          <label>佣金费($) <input id="referralFeeDisplay" type="number" step="0.01" value="0" readonly style="background:#eee; color:#555;"></label>
+          <label style="margin-left:10px;">自定义比例 <input id="referralRateCustom" type="number" step="0.01" value="0.15" placeholder="0.15" oninput="calculateAll()"></label>
+        </div>
+        <div class="row">
+          <label>FBA配送费($) <input id="fbaFeeInput" type="number" step="0.01" value="0" oninput="calculateAll()"></label>
+          <span class="desc-text">(自动获取/手动修改)</span>
+        </div>
+        <div class="row">
+          <label>月仓储费($) <input id="storageFee" type="number" step="0.01" value="0" oninput="calculateAll()"></label>
+          <label>其他杂费($) <input id="otherFee" type="number" step="0.01" value="0" oninput="calculateAll()"></label>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <div class="input-group-title">运营指标 (Operations)</div>
+        <div class="row">
+           <label>退货率(%) <input id="returnRate" type="number" step="0.1" value="5" oninput="syncSlider('returnRate', 'returnRateSlider'); calculateAll();"></label>
+           <label>不可售(%) <input id="unsellableRate" type="number" step="0.1" value="0" oninput="calculateAll()"></label>
+        </div>
+        <div class="row">
+           <label>广告ACoS(%) <input id="acos" type="number" step="0.1" value="10" oninput="syncSlider('acos', 'acosSlider'); calculateAll();"></label>
+        </div>
+      </div>
+
+      <!-- Sensitivity Analysis -->
+      <div class="input-group" style="background:#fffbe6; border-color:#ffe58f;">
+        <div class="input-group-title" style="color:#d48806; border-color:#ffe58f;">敏感性分析 (Sensitivity)</div>
+        <div class="slider-container">
+          <div class="slider-row">
+            <span>退货率: <span id="returnRateDisplay">5</span>%</span>
+          </div>
+          <input type="range" id="returnRateSlider" min="0" max="30" step="0.5" value="5" oninput="syncInput('returnRate', 'returnRateSlider'); calculateAll();">
+        </div>
+        <div class="slider-container">
+          <div class="slider-row">
+            <span>广告ACoS: <span id="acosDisplay">10</span>%</span>
+          </div>
+          <input type="range" id="acosSlider" min="0" max="100" step="1" value="10" oninput="syncInput('acos', 'acosSlider'); calculateAll();">
+        </div>
+      </div>
+
+      <div id="profitResult" class="result-box">
+        <div id="costChart" class="chart-container" title="成本构成分析 (Cost Structure)"></div>
+        <div class="result-item"><span>亚马逊回款 (Payout):</span> <span id="resPayout">$0.00</span></div>
+        <div class="result-item"><span>总成本 (Total Cost):</span> <span id="resTotalCost">$0.00</span></div>
+        <div class="result-item"><span>毛利润 (Gross Profit):</span> <span id="resGrossProfit">$0.00</span></div>
+        <div class="result-item"><span>广告费 (Ads):</span> <span id="resAds">$0.00</span></div>
+        <div class="result-item"><span>退货损失 (Return Loss):</span> <span id="resReturnLoss">$0.00</span></div>
+        <div class="result-item total">
+          <span>净利润 (Net Profit):</span> 
+          <span><span id="resNetProfit">$0.00</span> <span id="profitEmoji" class="emoji"></span></span>
+        </div>
+        <div class="result-item"><span>净利率 (Margin):</span> <span id="resMargin">0.00%</span></div>
+        <div class="result-item"><span>盈亏平衡ACoS:</span> <span id="resBreakEven">0.00%</span></div>
+        <div style="margin-top:10px; border-top:1px dashed #ccc; padding-top:5px; font-size:13px; color:#666;">
+           <div>人民币净利润: <span id="resNetProfitCNY">¥0.00</span></div>
+        </div>
+
+        <div style="margin-top:10px; background:#f0f8ff; padding:8px; border-radius:4px; border:1px solid #cce5ff;">
+            <div style="font-weight:bold; color:#004085; font-size:13px; margin-bottom:5px;">📋 整批利润分析 (Batch Analysis)</div>
+            <div class="result-item"><span>总资金投入 (Investment):</span> <span id="batchInvestment">¥0.00</span></div>
+            <div class="result-item"><span>预计总净利 (Total Profit):</span> <span id="batchNetProfit">¥0.00</span></div>
+            <div class="result-item"><span>最后回款 (Total Payout):</span> <span id="batchPayout">$0.00</span></div>
+            <div class="result-item"><span>投资回报率 (ROI):</span> <span id="batchROI">0.00%</span></div>
+        </div>
+
+        <div style="margin-top:15px; display:flex; gap:10px; justify-content: flex-end;">
+           <button class="secondary" onclick="copyResults()" style="flex:1;">📋 复制结果</button>
+           <button onclick="saveHistory()" style="flex:1;">💾 保存记录</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- History Section -->
+  <div class="card full-width" style="max-width: 1400px; margin: 20px auto;">
+    <h3>📜 历史记录 (History) 注：历史记录保存在本地浏览器，不会上传服务器</h3>
+    <div style="max-height: 300px; overflow-y: auto;">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>时间 (Time)</th>
+            <th>名称 (Name)</th>
+            <th>售价 (Price)</th>
+            <th>净利 (Profit)</th>
+            <th>利润率 (Margin)</th>
+            <th style="width:120px;">操作 (Action)</th>
+          </tr>
+        </thead>
+        <tbody id="historyList">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:10px;">
+        <button class="secondary btn-sm" onclick="clearHistory()">🗑️ 清空所有记录 (Clear All)</button>
+    </div>
+  </div>
+
+  <button class="toggle-btn" onclick="toggleRules()">📜 显示/隐藏 详细规则与费率表</button>
+
+  <div id="rulesSection" class="hidden">
+    <h2>亚马逊美国站配送费用与尺寸分段规则</h2>
+     <!-- 规则与说明区块开始 -->
+    <div class="desc">
+      <b>1. 商品尺寸分段定义</b>
+      <table>
+        <tr>
+          <th>商品尺寸分段</th>
+          <th>发货重量</th>
+          <th>最长边</th>
+          <th>次长边</th>
+          <th>最短边</th>
+          <th>长度+围长</th>
+        </tr>
+        <tr>
+          <td>小号标准尺寸</td>
+          <td>≤16盎司</td>
+          <td>≤15英寸</td>
+          <td>≤12英寸</td>
+          <td>≤0.75英寸</td>
+          <td>不适用</td>
+        </tr>
+        <tr>
+          <td>大号标准尺寸</td>
+          <td>≤20磅</td>
+          <td>≤18英寸</td>
+          <td>≤14英寸</td>
+          <td>≤8英寸</td>
+          <td>不适用</td>
+        </tr>
+        <tr>
+          <td>小号大件</td>
+          <td>≤70磅</td>
+          <td>≤60英寸</td>
+          <td>≤30英寸</td>
+          <td>不适用</td>
+          <td>≤130英寸</td>
+        </tr>
+        <tr>
+          <td>中号大件</td>
+          <td>≤150磅</td>
+          <td>≤108英寸</td>
+          <td>不适用</td>
+          <td>不适用</td>
+          <td>≤130英寸</td>
+        </tr>
+        <tr>
+          <td>大号大件</td>
+          <td>≤150磅</td>
+          <td>≤108英寸</td>
+          <td>不适用</td>
+          <td>不适用</td>
+          <td>≤165英寸</td>
+        </tr>
+        <tr>
+          <td>特殊大件</td>
+          <td>超过150磅</td>
+          <td>超过108英寸</td>
+          <td>不适用</td>
+          <td>不适用</td>
+          <td>超过165英寸</td>
+        </tr>
+      </table>
+      <ul style="margin-left:18px;">
+        <li>发货重量为商品重量或体积重量中的较大值，用于确定尺寸分段。</li>
+        <li>对于大号标准尺寸、大号大件和超大件（150磅以下），亚马逊使用体积重量计费（如果体积重量&gt;商品重量）。</li>
+        <li>对于小号标准尺寸、超大件（150磅及以上），仅使用商品重量计费。</li>
+        <li>体积重量计算公式：<b>体积重量(磅) = (长x宽x高，单位英寸) ÷ 139</b>，宽和高最小取2英寸。</li>
+      </ul>
+  
+      <b>2. 配送费用分段</b>
+      <div class="tab-btns">
+        <button type="button" class="active" onclick="switchTab('normal')">普通商品</button>
+        <button type="button" onclick="switchTab('apparel')">服装</button>
+        <button type="button" onclick="switchTab('danger')">危险品</button>
+        <button type="button" onclick="downloadCurrentTable()" style="background:#28a745;color:#fff;border-color:#28a745;margin-left:10px;">📥 下载当前表格</button>
+      </div>
+      <div class="row" style="margin:6px 0 8px 0;">
+        <label style="display:inline-block;margin-right:12px;">季节:
+          <select id="tableSeason" onchange="onTableSeasonChange(this)">
+            <option value="non_peak">非旺季</option>
+            <option value="peak">旺季</option>
+          </select>
+        </label>
+        <label class="unit" style="display:inline-block;margin-right:12px;">计费版本:
+          <select id="tableVersion" onchange="onTableVersionChange(this)">
+            <option value="2025">2025</option>
+            <option value="2026">2026</option>
+          </select>
+        </label>
+        <label class="unit" style="display:inline-block;">自动按日期:
+          <input id="tableAutoSeason" type="checkbox" checked onchange="onTableAutoSeasonToggle()">
+        </label>
+      </div>
+      <div id="fee-normal" class="fee-table active"></div>
+      <div id="fee-apparel" class="fee-table"></div>
+      <div id="fee-danger" class="fee-table"></div>
+      <ul style="margin-left:18px;">
+        <li>服装类商品、危险品商品配送费用与普通商品有所不同，具体见上表。</li>
+        <li>所有费用按发货重量计费，发货重量为实际重量和体积重量中的较大值。</li>
+      </ul>
+
+      <div style="margin-top: 15px;"></div>
+      <b>3. 常见问题：</b> 
+      <ul style="margin-left:18px;"> 
+        <li><b>商品重量</b> ：指商品完全包装后的实际称重重量。</li> 
+        <li><b>体积重量</b> ：根据商品尺寸估算的重量，适用大号标准尺寸、大号大件、超大件（150磅以下）。</li> 
+        <li>发货重量取商品重量与体积重量中的较大值，确定最终费用分段。</li> 
+      </ul>
+
+      <b>4. 示例：</b> 
+      <ul style="margin-left:18px;"> 
+        <li><b>移动设备壳</b>：13.8×9×0.7英寸，2.88盎司 → 分段：小号标准尺寸</li> 
+        <li><b>T恤</b>：8.5×4.8×1英寸，6.08盎司 → 分段：大号标准尺寸（服装）</li> 
+        <li><b>婴儿床</b>：24×7.5×6英寸，7.9磅 → 分段：大号大件</li> 
+        <li><b>显示器</b>：54×35×3.5英寸，体积重量47.59磅 → 分段：超大件</li> 
+        <li><b>消毒液</b>：12×6×3英寸，2磅 → 分段：大号标准尺寸（危险品）</li>
+      </ul>
+
+      <b>5. 利润计算逻辑说明</b>
+      <ul style="margin-left:18px;">
+        <li><b>亚马逊回款 (Payout)</b> = 售价 - 佣金 - FBA配送费</li>
+        <li><b>总成本</b> = (采购成本 + 头程运费) ÷ 汇率</li>
+        <li><b>退货损失</b> = (售价 + FBA配送费) × 退货率 × 不可售比例 + 退款管理费 × 退货率</li>
+        <li><b>广告费</b> = 售价 × ACoS</li>
+        <li><b>净利润</b> = 亚马逊回款 - 总成本 - 广告费 - 退货损失 - 月仓储费 - 其他杂费</li>
+        <li><b>盈亏平衡ACoS</b> = (净利润 + 广告费) ÷ 售价</li>
+      </ul>
+
+      <div style="margin-top: 15px;"></div>
+      <b>6. 销售佣金费率表</b>
+      <table>
+        <tr>
+          <th>佣金分类</th>
+          <th>销售佣金百分比</th>
+          <th>最低销售佣金</th>
+        </tr>
+        <tr><td>亚马逊设备配件</td><td>45%</td><td>$0.30</td></tr>
+        <tr><td>汽车和户外动力设备</td><td>12%</td><td>$0.30</td></tr>
+        <tr><td>母婴</td><td>总售价≤$10: 8%<br>总售价>$10: 15%</td><td>$0.30</td></tr>
+        <tr><td>背包、手提包和箱包</td><td>15%</td><td>$0.30</td></tr>
+        <tr><td>基础设备电动工具</td><td>12%</td><td>$0.30</td></tr>
+        <tr><td>美妆和个护健康</td><td>总售价≤$10: 8%<br>总售价>$10: 15%</td><td>$0.30</td></tr>
+        <tr><td>商业、工业与科学用品</td><td>12%</td><td>$0.30</td></tr>
+        <tr><td>服装和配饰</td><td>总售价≤$15: 5%<br>$15&lt;总售价≤$20: 10%<br>总售价>$20: 17%</td><td>$0.30</td></tr>
+        <tr><td>小型电器</td><td>总售价≤$300部分: 15%<br>总售价>$300部分: 8%</td><td>$0.30</td></tr>
+        <tr><td>电脑</td><td>8%</td><td>$0.30</td></tr>
+        <tr><td>消费类电子产品</td><td>8%</td><td>$0.30</td></tr>
+        <tr><td>电子产品配件</td><td>总售价≤$100部分: 15%<br>总售价>$100部分: 8%</td><td>$0.30</td></tr>
+        <tr><td>其他</td><td>15%</td><td>$0.30</td></tr>
+        <tr><td>眼镜</td><td>15%</td><td>$0.30</td></tr>
+        <tr><td>艺术品</td><td>总售价≤$100部分: 20%<br>$100&lt;总售价≤$1000部分: 15%<br>$1000&lt;总售价≤$5000部分: 10%<br>总售价>$5000部分: 5%</td><td>--</td></tr>
+        <tr><td>鞋靴</td><td>15%</td><td>$0.30</td></tr>
+        <tr><td>全尺寸电器</td><td>8%</td><td>$0.30</td></tr>
+        <tr><td>家具</td><td>总售价≤$200部分: 15%<br>总售价>$200部分: 10%</td><td>$0.30</td></tr>
+        <tr><td>礼品卡</td><td>20%</td><td>--</td></tr>
+        <tr><td>食品</td><td>总售价≤$15: 8%<br>总售价>$15: 15%</td><td>--</td></tr>
+        <tr><td>家居及厨房用品</td><td>15%</td><td>$0.30</td></tr>
+        <tr><td>珠宝首饰</td><td>总售价≤$250部分: 20%<br>总售价>$250部分: 5%</td><td>$0.30</td></tr>
+        <tr><td>草坪和园艺</td><td>15%</td><td>$0.30</td></tr>
+        <tr><td>割草机和除雪机</td><td>总售价≤$500: 15%<br>总售价>$500: 8%</td><td>$0.30</td></tr>
+        <tr><td>床垫</td><td>15%</td><td>$0.30</td></tr>
+        <tr><td>媒介类商品</td><td>15%</td><td>--</td></tr>
+        <tr><td>乐器和影音制作</td><td>15%</td><td>$0.30</td></tr>
+        <tr><td>办公用品</td><td>15%</td><td>$0.30</td></tr>
+        <tr><td>宠物用品</td><td>15% (处方饲粮 22%)</td><td>$0.30</td></tr>
+        <tr><td>运动户外</td><td>15%</td><td>$0.30</td></tr>
+        <tr><td>轮胎</td><td>10%</td><td>$0.30</td></tr>
+        <tr><td>工具和家居装修</td><td>15%</td><td>$0.30</td></tr>
+        <tr><td>玩具和游戏</td><td>15%</td><td>$0.30</td></tr>
+        <tr><td>视频游戏机</td><td>8%</td><td>--</td></tr>
+        <tr><td>视频游戏和游戏配件</td><td>15%</td><td>--</td></tr>
+        <tr><td>钟表</td><td>总售价≤$1500部分: 16%<br>总售价>$1500部分: 3%</td><td>$0.30</td></tr>
+      </table>
+      <div class="desc-text" style="margin-top:5px;">
+        <b>备注:</b>
+        <ul style="margin-left:18px;">
+          <li>包含相机设备和配件商品的捆绑商品被归类为“电子产品配件”分类。</li>
+          <li>某些手机设备可能需要获得批准。</li>
+          <li>如果商品无法明确归入任何现有的分类，可使用“其他”分类。</li>
+          <li>适用于通过亚马逊本地销售提供的服务。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Shipping Calculation Logic (Ported) ---
+    function cmToInch(cm) { return cm / 2.54; }
+    function gToOz(g) { return g / 28.3495; }
+    function ozToLb(oz) { return oz / 16; }
+    function lbToOz(lb) { return lb * 16; }
+    function round2(x) { return Math.round(x * 100) / 100; }
+
+    const feeData = {
+      normal: {
+        non_peak_2025: {
+          small_standard: { steps: [2,4,6,8,10,12,14,16], lt10: [2.29,2.38,2.47,2.56,2.66,2.76,2.83,2.88], mid: [3.06,3.15,3.24,3.33,3.43,3.53,3.60,3.65], high: [3.06,3.15,3.24,3.33,3.43,3.53,3.60,3.65] },
+          large_standard: { pre3_steps_oz: [4,8,12,16,20,24,28,32,36,40,44,48], lt10_pre3: [2.91,3.13,3.38,3.78,4.22,4.60,4.75,5.00,5.10,5.28,5.44,5.85], mid_pre3: [3.68,3.90,4.15,4.55,4.99,5.37,5.52,5.77,5.87,6.05,6.21,6.62], high_pre3: [3.68,3.90,4.15,4.55,4.99,5.37,5.52,5.77,5.87,6.05,6.21,6.62], post3_base: { lt10: 6.15, mid: 6.92, high: 6.92 }, post3_increment_per_4oz: 0.08 },
+          small_oversize_0_50: { base: { lt10: 8.84, mid: 9.61, high: 9.61 }, per_lb: 0.38 },
+          large_oversize_0_50: { base: { lt10: 8.84, mid: 9.61, high: 9.61 }, per_lb: 0.38 },
+          super_oversize_0_50: { base: { lt10: 25.56, mid: 26.33, high: 26.33 }, per_lb: 0.38 },
+          super_oversize_50_70: { base: { lt10: 39.35, mid: 40.12, high: 40.12 }, start_lb: 50, per_lb: 0.75 },
+          super_oversize_70_150: { base: { lt10: 54.04, mid: 54.81, high: 54.81 }, start_lb: 71, per_lb: 0.75 },
+          super_oversize_gt_150: { base: { lt10: 194.18, mid: 194.95, high: 194.95 }, start_lb: 151, per_lb: 0.19 }
+        },
+        non_peak_2026: {
+          small_standard: { steps: [2,4,6,8,10,12,14,16], lt10: [2.43,2.49,2.56,2.66,2.77,2.82,2.92,2.95], mid: [3.32,3.42,3.45,3.54,3.68,3.78,3.91,3.96], high: [3.58,3.68,3.71,3.80,3.94,4.04,4.17,4.22] },
+          large_standard: { pre3_steps_oz: [4,8,12,16,20,24,28,32,36,40,44,48], lt10_pre3: [2.91,3.13,3.38,3.78,4.22,4.60,4.75,5.00,5.10,5.28,5.44,5.85], mid_pre3: [3.73,3.95,4.20,4.60,5.04,5.42,5.57,5.82,5.92,6.10,6.26,6.67], high_pre3: [3.99,4.21,4.46,4.86,5.30,5.68,5.83,6.08,6.18,6.36,6.52,6.93], post3_base: { lt10: 6.15, mid: 6.97, high: 7.23 }, post3_increment_per_4oz: 0.08 },
+          small_oversize_0_50: { base: { lt10: 6.78, mid: 7.55, high: 7.55 }, per_lb: 0.38 },
+          large_oversize_0_50: { base: { lt10: 8.58, mid: 9.35, high: 9.35 }, per_lb: 0.38 },
+          super_oversize_0_50: { base: { lt10: 25.56, mid: 26.33, high: 26.33 }, per_lb: 0.38 },
+          super_oversize_50_70: { base: { lt10: 36.55, mid: 37.32, high: 37.32 }, start_lb: 50, per_lb: 0.75 },
+          super_oversize_70_150: { base: { lt10: 50.55, mid: 51.32, high: 51.32 }, start_lb: 71, per_lb: 0.75 },
+          super_oversize_gt_150: { base: { lt10: 194.18, mid: 194.95, high: 194.95 }, start_lb: 151, per_lb: 0.19 }
+        },
+        peak_2025: {
+          small_standard: { steps: [2,4,6,8,10,12,14,16], lt10: [2.48,2.57,2.67,2.76,2.87,2.97,3.05,3.10], mid: [3.25,3.34,3.44,3.53,3.64,3.74,3.82,3.87], high: [3.25,3.34,3.44,3.53,3.64,3.74,3.82,3.87] },
+          large_standard: { pre3_steps_oz: [4,8,12,16,20,24,28,32,36,40,44,48], lt10_pre3: [3.15,3.39,3.66,4.07,4.52,4.91,5.07,5.33,5.47,5.67,5.84,6.26], mid_pre3: [3.92,4.16,4.43,4.84,5.29,5.68,5.84,6.10,6.24,6.44,6.61,7.03], high_pre3: [3.92,4.16,4.43,4.84,5.29,5.68,5.84,6.10,6.24,6.44,6.61,7.03], post3_base: { lt10: 6.69, mid: 7.46, high: 7.46 }, post3_increment_per_4oz: 0.08 },
+          small_oversize_0_50: { base: { lt10: 9.88, mid: 10.65, high: 10.65 }, per_lb: 0.38 },
+          large_oversize_0_50: { base: { lt10: 9.88, mid: 10.65, high: 10.65 }, per_lb: 0.38 },
+          super_oversize_0_50: { base: { lt10: 28.29, mid: 29.06, high: 29.06 }, per_lb: 0.38 },
+          super_oversize_50_70: { base: { lt10: 42.16, mid: 42.93, high: 42.93 }, start_lb: 50, per_lb: 0.75 },
+          super_oversize_70_150: { base: { lt10: 58.46, mid: 59.23, high: 59.23 }, start_lb: 71, per_lb: 0.75 },
+          super_oversize_gt_150: { base: { lt10: 202.69, mid: 203.46, high: 203.46 }, start_lb: 151, per_lb: 0.19 }
+        }
+      },
+      apparel: {
+        non_peak_2025: {
+          small_standard: { steps: [2,4,6,8,10,12,14,16], lt10: [2.50,2.50,2.65,2.65,2.95,2.95,3.21,3.21], mid: [3.27,3.27,3.42,3.42,3.72,3.72,3.98,3.98], high: [3.27,3.27,3.42,3.42,3.72,3.72,3.98,3.98] },
+          large_standard: { pre3_steps_oz: [4,8,12,16,24,32,40,48], lt10_pre3: [3.48,3.68,3.90,4.35,5.13,5.13,5.37,5.37], mid_pre3: [4.25,4.45,4.67,5.12,5.90,5.90,6.14,6.14], high_pre3: [4.25,4.45,4.67,5.12,5.90,5.90,6.14,6.14], post3_base: { lt10: 6.82, mid: 6.97, high: 7.63 }, post3_increment_per_half_lb: 0.16 },
+          small_oversize_0_50: { base: { lt10: 8.84, mid: 9.61, high: 9.61 }, per_lb: 0.38 },
+          large_oversize_0_50: { base: { lt10: 8.84, mid: 9.61, high: 9.61 }, per_lb: 0.38 },
+          super_oversize_0_50: { base: { lt10: 25.56, mid: 26.33, high: 26.33 }, per_lb: 0.38 },
+          super_oversize_50_70: { base: { lt10: 39.35, mid: 40.12, high: 40.12 }, start_lb: 51, per_lb: 0.75 },
+          super_oversize_70_150: { base: { lt10: 54.04, mid: 54.81, high: 54.81 }, start_lb: 71, per_lb: 0.75 },
+          super_oversize_gt_150: { base: { lt10: 194.18, mid: 194.95, high: 194.95 }, start_lb: 151, per_lb: 0.19 }
+        },
+        non_peak_2026: {
+          small_standard: { steps: [2,4,6,8,10,12,14,16], lt10: [2.62,2.64,2.68,2.81,3.00,3.10,3.20,3.30], mid: [3.51,3.54,3.59,3.69,3.91,4.09,4.20,4.25], high: [3.77,3.80,3.85,3.95,4.17,4.35,4.46,4.51] },
+          large_standard: { pre3_steps_oz: [4,8,12,16,24,32,40,48], lt10_pre3: [3.48,3.68,3.90,4.35,5.05,5.22,5.32,5.43], mid_pre3: [4.30,4.50,4.72,5.17,5.87,6.04,6.14,6.25], high_pre3: [4.56,4.76,4.98,5.43,6.13,6.30,6.40,6.51], post3_base: { lt10: 6.78, mid: 6.97, high: 7.55 }, post3_increment_per_half_lb: 0.16 },
+          small_oversize_0_50: { base: { lt10: 8.84, mid: 9.61, high: 9.61 }, per_lb: 0.38 },
+          large_oversize_0_50: { base: { lt10: 8.58, mid: 9.35, high: 9.35 }, per_lb: 0.38 },
+          super_oversize_0_50: { base: { lt10: 25.56, mid: 26.33, high: 26.33 }, per_lb: 0.38 },
+          super_oversize_50_70: { base: { lt10: 36.55, mid: 37.32, high: 37.32 }, start_lb: 51, per_lb: 0.75 },
+          super_oversize_70_150: { base: { lt10: 50.55, mid: 51.32, high: 51.32 }, start_lb: 71, per_lb: 0.75 },
+          super_oversize_gt_150: { base: { lt10: 194.18, mid: 194.95, high: 194.95 }, start_lb: 151, per_lb: 0.19 }
+        },
+        peak_2025: {
+          small_standard: { steps: [2,4,6,8,10,12,14,16], lt10: [2.73,2.73,2.90,2.90,3.22,3.22,3.50,3.50], mid: [3.50,3.50,3.67,3.67,3.99,3.99,4.27,4.27], high: [3.50,3.50,3.67,3.67,3.99,3.99,4.27,4.27] },
+          large_standard: { pre3_steps_oz: [4,8,12,16,20,24,28,32,36,40,44,48], lt10_pre3: [3.79,4.00,4.23,4.69,5.50,5.50,5.76,5.76,6.27,6.27,6.50,6.50], mid_pre3: [4.56,4.77,5.00,5.46,6.27,6.27,6.53,6.53,7.04,7.04,7.27,7.27], high_pre3: [4.56,4.77,5.00,5.46,6.27,6.27,6.53,6.53,7.04,7.04,7.27,7.27], post3_base: { lt10: 6.82, mid: 7.59, high: 7.59 }, post3_increment_per_half_lb: 0.16 },
+          small_oversize_0_50: { base: { lt10: 9.88, mid: 10.65, high: 10.65 }, per_lb: 0.38 },
+          large_oversize_0_50: { base: { lt10: 9.88, mid: 10.65, high: 10.65 }, per_lb: 0.38 },
+          super_oversize_0_50: { base: { lt10: 28.29, mid: 29.06, high: 29.06 }, per_lb: 0.38 },
+          super_oversize_50_70: { base: { lt10: 42.16, mid: 42.93, high: 42.93 }, start_lb: 51, per_lb: 0.75 },
+          super_oversize_70_150: { base: { lt10: 58.46, mid: 59.23, high: 59.23 }, start_lb: 71, per_lb: 0.75 },
+          super_oversize_gt_150: { base: { lt10: 202.69, mid: 203.46, high: 203.46 }, start_lb: 151, per_lb: 0.19 }
+        }
+      },
+      danger: {
+        non_peak_2025: {
+          small_standard: { steps: [2,4,6,8,10,12,14,16], lt10: [3.26,3.32,3.39,3.45,3.53,3.59,3.64,3.64], mid: [4.03,4.09,4.16,4.22,4.30,4.36,4.41,4.41], high: [4.03,4.09,4.16,4.22,4.30,4.36,4.41,4.41] },
+          large_standard: { pre3_steps_oz: [20,24,28,32,36,40,44,48], lt10_pre3: [4.82,5.20,5.35,5.49,5.56,5.74,5.90,6.31], mid_pre3: [5.59,5.97,6.12,6.26,6.33,6.51,6.67,7.08], high_pre3: [5.59,5.97,6.12,6.26,6.33,6.51,6.67,7.08], post3_base: { lt10: 6.61, mid: 7.38, high: 7.38 }, post3_increment_per_4oz: 0.08 },
+          small_oversize_0_50: { base: { lt10: 9.56, mid: 10.33, high: 10.33 }, per_lb: 0.38 },
+          large_oversize_0_50: { base: { lt10: 9.56, mid: 10.33, high: 10.33 }, per_lb: 0.38 },
+          super_oversize_0_50: { base: { lt10: 27.67, mid: 28.44, high: 28.44 }, per_lb: 0.38 },
+          super_oversize_50_70: { base: { lt10: 42.56, mid: 43.33, high: 43.33 }, start_lb: 50, per_lb: 0.75 },
+          super_oversize_70_150: { base: { lt10: 61.17, mid: 61.94, high: 61.94 }, start_lb: 71, per_lb: 0.75 },
+          super_oversize_gt_150: { base: { lt10: 218.76, mid: 219.53, high: 219.53 }, start_lb: 151, per_lb: 0.19 }
+        },
+        non_peak_2026: {
+          small_standard: { steps: [2,4,6,8,10,12,14,16], lt10: [3.40,3.43,3.48,3.55,3.64,3.65,3.73,3.73], mid: [4.29,4.36,4.37,4.43,4.55,4.61,4.72,4.72], high: [4.55,4.62,4.63,4.69,4.81,4.87,4.98,4.98] },
+          large_standard: { pre3_steps_oz: [20,24,28,32,36,40,44,48], lt10_pre3: [4.82,5.20,5.35,5.49,5.56,5.74,5.90,6.31], mid_pre3: [5.64,6.02,6.17,6.31,6.38,6.56,6.72,7.13], high_pre3: [5.90,6.28,6.43,6.57,6.64,6.82,6.98,7.39], post3_base: { lt10: 6.61, mid: 7.43, high: 7.69 }, post3_increment_per_4oz: 0.08 },
+          small_oversize_0_50: { base: { lt10: 7.5, mid: 8.27, high: 8.27 }, per_lb: 0.38 },
+          large_oversize_0_50: { base: { lt10: 9.3, mid: 10.07, high: 10.07 }, per_lb: 0.38 },
+          super_oversize_0_50: { base: { lt10: 27.67, mid: 28.44, high: 28.44 }, per_lb: 0.38 },
+          super_oversize_50_70: { base: { lt10: 39.76, mid: 40.53, high: 40.53 }, start_lb: 50, per_lb: 0.75 },
+          super_oversize_70_150: { base: { lt10: 57.68, mid: 58.45, high: 58.45 }, start_lb: 71, per_lb: 0.75 },
+          super_oversize_gt_150: { base: { lt10: 218.76, mid: 219.53, high: 219.53 }, start_lb: 151, per_lb: 0.19 }
+        },
+        peak_2025: {
+          small_standard: { steps: [2,4,6,8,10,12,14,16], lt10: [3.60,3.69,3.79,3.88,3.99,4.08,4.16,4.25], mid: [4.37,4.46,4.56,4.65,4.76,4.85,4.93,5.02], high: [4.37,4.46,4.56,4.65,4.76,4.85,4.93,5.02] },
+          large_standard: { pre3_steps_oz: [4,8,12,16,20,24,28,32,36,40,44,48], lt10_pre3: [4.32,4.56,4.82,5.04,5.51,5.91,6.08,6.24,6.33,6.53,6.70,7.12], mid_pre3: [5.09,5.33,5.59,5.81,6.28,6.68,6.85,7.01,7.10,7.30,7.47,7.89], high_pre3: [5.09,5.33,5.59,5.81,6.28,6.68,6.85,7.01,7.10,7.30,7.47,7.89], post3_base: { lt10: 7.51, mid: 8.28, high: 8.28 }, post3_increment_per_4oz: 0.08 },
+          small_oversize_0_50: { base: { lt10: 11.12, mid: 11.89, high: 11.89 }, per_lb: 0.38 },
+          large_oversize_0_50: { base: { lt10: 11.12, mid: 11.89, high: 11.89 }, per_lb: 0.38 },
+          super_oversize_0_50: { base: { lt10: 31.71, mid: 32.48, high: 32.48 }, per_lb: 0.38 },
+          super_oversize_50_70: { base: { lt10: 46.66, mid: 47.43, high: 47.43 }, start_lb: 50, per_lb: 0.75 },
+          super_oversize_70_150: { base: { lt10: 67.53, mid: 68.30, high: 68.30 }, start_lb: 71, per_lb: 0.75 },
+          super_oversize_gt_150: { base: { lt10: 230.84, mid: 231.61, high: 231.61 }, start_lb: 151, per_lb: 0.19 }
+        }
+      }
+    };
+
+    function sort3(a, b, c) {
+      let arr = [a, b, c].sort((x, y) => y - x);
+      return { l: arr[0], w: arr[1], h: arr[2] };
+    }
+
+    function getTier(l, w, h, shipWeightOz) {
+      const { l: L, w: W, h: H } = sort3(l, w, h);
+      const sum = L + 2 * W + 2 * H;
+      if (shipWeightOz <= 16 && L <= 15 && W <= 12 && H <= 0.75) return "小号标准尺寸";
+      if (shipWeightOz <= 320 && L <= 18 && W <= 14 && H <= 8) return "大号标准尺寸";
+      const weightLb = shipWeightOz / 16;
+      if (weightLb > 150 || L > 108 || sum > 165) return "超大件";
+      if (weightLb <= 70 && L <= 60 && W <= 30 && sum <= 130) return "小号大件";
+      if (weightLb <= 50 && L <= 108 && sum <= 165) return "大号大件";
+      return "超大件";
+    }
+
+    function getVolumeWeight(l, w, h) {
+      let _w = Math.max(w, 2);
+      let _h = Math.max(h, 2);
+      let volumeLb = (l * _w * _h) / 139;
+      if (volumeLb < 0) volumeLb = 0;
+      return volumeLb;
+    }
+
+    function getPriceBand(price) { if (price < 10) return 'lt10'; if (price <= 50) return 'mid'; return 'high'; }
+    function getSeasonKey() { const s = document.getElementById('season').value; const v = document.getElementById('version').value; if (s === 'peak') return 'peak_2025'; return v === '2026' ? 'non_peak_2026' : 'non_peak_2025'; }
+    function autoDetectSeasonVersion() { const now = new Date(); const y = now.getFullYear(); const m = now.getMonth() + 1; const d = now.getDate(); const toNum = (yy,mm,dd) => yy * 10000 + mm * 100 + dd; const cur = toNum(y,m,d); const inRange = (sY,sM,sD,eY,eM,eD) => { const s = toNum(sY,sM,sD); const e = toNum(eY,eM,eD); return cur >= s && cur <= e; }; let season = 'non_peak'; let version = '2025'; if (inRange(2025,10,15,2026,1,14)) { season = 'peak'; version = '2025'; } else if (toNum(y,m,d) >= toNum(2026,1,15)) { season = 'non_peak'; version = '2026'; } else { season = 'non_peak'; version = '2025'; } document.getElementById('season').value = season; document.getElementById('version').value = version; renderCurrentFeeTable(); }
+    
+    function getFee(productType, tier, shipWeightOz, price) {
+      const seasonKey = getSeasonKey();
+      const dataset = feeData[productType][seasonKey];
+      if (!dataset) return 'N/A';
+      const band = getPriceBand(price);
+      const weightLb = shipWeightOz / 16;
+      if (tier === '小号标准尺寸') {
+        const steps = dataset.small_standard.steps;
+        const fees = dataset.small_standard[band];
+        for (let i = 0; i < steps.length; i++) { if (shipWeightOz <= steps[i]) return fees[i]; } // return number directly
+        return 'N/A';
+      }
+      if (tier === '大号标准尺寸') {
+        const ls = dataset.large_standard;
+        const steps = ls.pre3_steps_oz;
+        const fees = ls[band + '_pre3'];
+        for (let i = 0; i < steps.length; i++) { if (shipWeightOz <= steps[i]) return fees[i]; }
+        if (productType === 'apparel') {
+          if (weightLb > 3) { const base = ls.post3_base[band]; const extra = Math.ceil((shipWeightOz - 48) / 8) * (ls.post3_increment_per_half_lb || 0); return base + extra; }
+        } else {
+          if (weightLb > 3) { const base = ls.post3_base[band]; const extra = Math.ceil((shipWeightOz - 48) / 4) * (ls.post3_increment_per_4oz || 0); return base + extra; }
+        }
+        return 'N/A';
+      }
+      if (tier === '小号大件') { const cfg = dataset.small_oversize_0_50; let fee = cfg.base[band]; if (weightLb > 1) fee += Math.ceil(weightLb - 1) * cfg.per_lb; return fee; }
+      if (tier === '大号大件') { const cfg = dataset.large_oversize_0_50; let fee = cfg.base[band]; if (weightLb > 1) fee += Math.ceil(weightLb - 1) * cfg.per_lb; return fee; }
+      if (tier === '超大件') {
+        if (weightLb <= 50) { const cfg = dataset.super_oversize_0_50; let fee = cfg.base[band]; if (weightLb > 1) fee += Math.ceil(weightLb - 1) * cfg.per_lb; return fee; }
+        if (weightLb <= 70) { const cfg = dataset.super_oversize_50_70; const fee = cfg.base[band] + Math.ceil(weightLb - cfg.start_lb) * cfg.per_lb; return fee; }
+        if (weightLb <= 150) { const cfg = dataset.super_oversize_70_150; const fee = cfg.base[band] + Math.ceil(weightLb - cfg.start_lb) * cfg.per_lb; return fee; }
+        const cfg = dataset.super_oversize_gt_150; const fee = cfg.base[band] + Math.ceil(weightLb - cfg.start_lb) * cfg.per_lb; return fee;
+      }
+      return 'N/A';
+    }
+
+    // Main Calculation Controller
+    function calculateAll() {
+      // 1. Calculate Shipping Fee
+      let l = parseFloat(document.getElementById('length').value);
+      let w = parseFloat(document.getElementById('width').value);
+      let h = parseFloat(document.getElementById('height').value);
+      let lU = document.getElementById('lengthUnit').value;
+      let wU = document.getElementById('widthUnit').value;
+      let hU = document.getElementById('heightUnit').value;
+      let actualWeight = parseFloat(document.getElementById('actualWeight').value);
+      let weightU = document.getElementById('weightUnit').value;
+      let productType = document.getElementById('productType').value;
+      const auto = document.getElementById('autoSeason').checked;
+      
+      // Auto Season Check (Only if this function wasn't triggered by season toggles themselves to avoid loops, 
+      // but here we just check checkbox state)
+      // Note: autoDetectSeasonVersion modifies DOM, so be careful.
+      // We will assume if auto is checked, we trust the current values or run autoDetect once on load/toggle.
+      // To keep it simple, we don't call autoDetect here every time unless necessary, but let's do it for consistency if auto is checked.
+      // Actually, better to only call it on specific events or load. Let's skip calling it here to avoid resetting user manual selection if they just unchecked it.
+      
+      if (lU === 'cm') l = cmToInch(l);
+      if (wU === 'cm') w = cmToInch(w);
+      if (hU === 'cm') h = cmToInch(h);
+
+      let actualWeightOz = actualWeight;
+      if (weightU === 'g') actualWeightOz = gToOz(actualWeight);
+      if (weightU === 'lb') actualWeightOz = lbToOz(actualWeight);
+
+      let volumeWeightLb = getVolumeWeight(l, w, h);
+      let volumeWeightOz = volumeWeightLb * 16;
+
+      let tierTemp = getTier(l, w, h, actualWeightOz);
+      let shipWeightOz = actualWeightOz;
+      if (!(tierTemp === "小号标准尺寸" || (tierTemp === "超大件" && actualWeightOz >= 2400))) {
+        shipWeightOz = Math.max(actualWeightOz, volumeWeightOz);
+      }
+      let tier = getTier(l, w, h, shipWeightOz);
+
+      const priceUSD = parseFloat(document.getElementById('priceUSD').value) || 0;
+      let fee = getFee(productType, tier, shipWeightOz, priceUSD);
+      
+      let feeNum = 0;
+      if (fee !== 'N/A') {
+        feeNum = parseFloat(fee);
+      }
+
+      const dims = sort3(l,w,h);
+      const sum = dims.l + 2*dims.w + 2*dims.h;
+      const weightLb = shipWeightOz / 16;
+      const surchargeSuggest = (tier === '超大件' && weightLb <= 150 && (dims.l > 96 || sum > 130));
+      const surchargeUSD = parseFloat(document.getElementById('surchargeUSD').value) || 0;
+      const hasLithium = document.getElementById('hasLithium').checked;
+      const lithiumUSD = (productType !== 'danger' && hasLithium) ? 0.11 : 0;
+      const totalShippingFee = feeNum + surchargeUSD + lithiumUSD;
+
+      // Update Shipping Result UI
+      let res = `
+        <b>尺寸标准：</b> ${tier}<br>
+        <b>配送重量：</b> ${round2(shipWeightOz)} oz (${round2(ozToLb(shipWeightOz))} lb)<br>
+        <b>基本配送费：</b> $${fee === 'N/A' ? 'N/A' : fee.toFixed(2)}<br>
+        ${lithiumUSD > 0 ? `<b>锂电池费：</b> $${lithiumUSD.toFixed(2)}<br>` : ''}
+        ${surchargeUSD > 0 ? `<b>附加费：</b> $${surchargeUSD.toFixed(2)}<br>` : ''}
+        <div style="margin-top:5px;font-size:16px;color:#2a5d9f;"><b>总配送费：$${totalShippingFee.toFixed(2)}</b></div>
+        ${surchargeSuggest ? '<div style="font-size:12px;color:#856404;margin-top:5px;">⚠️ 可能产生特大号附加费</div>' : ''}
+      `;
+      const resBox = document.getElementById('shippingResult');
+      resBox.style.display = 'block';
+      resBox.innerHTML = res;
+
+      // 2. Sync to Profit Calculator
+      // Only sync if the calculated fee is valid (>0) and we want to auto-fill.
+      // We will always update the input, but user can override. 
+      // To allow override, we only update if the user hasn't manually focused/edited? 
+      // Simpler: Just update it. If user wants to override, they do it after. 
+      // But if they change dimensions, it overwrites again. This is usually desired.
+      document.getElementById('fbaFeeInput').value = totalShippingFee.toFixed(2);
+
+      // 3. Calculate Profit
+      calculateProfit();
+    }
+
+    function calculateProfit() {
+      const price = parseFloat(document.getElementById('profitPrice').value) || 0;
+      const exchangeRate = parseFloat(document.getElementById('exchangeRate').value) || 7.2;
+      
+      const productCostCNY = parseFloat(document.getElementById('productCostCNY').value) || 0;
+      const shippingCostCNY = parseFloat(document.getElementById('shippingCostCNY').value) || 0;
+      const productCostUSD = (productCostCNY + shippingCostCNY) / exchangeRate;
+
+      // Referral Fee Calculation
+      const categorySelect = document.getElementById('categorySelect');
+      const selectedCategory = categorySelect ? categorySelect.value : 'custom';
+      let referralFee = 0;
+      
+      const customInput = document.getElementById('referralRateCustom');
+      if (customInput) customInput.disabled = (selectedCategory !== 'custom');
+
+      if (selectedCategory === 'custom') {
+        const customRate = parseFloat(customInput ? customInput.value : 0) || 0;
+        referralFee = price * customRate;
+      } else {
+        const rule = REFERRAL_RULES[selectedCategory];
+        referralFee = calculateReferralFee(price, rule);
+      }
+      
+      // Update Referral Fee Display
+      const feeDisplay = document.getElementById('referralFeeDisplay');
+      if (feeDisplay) feeDisplay.value = referralFee.toFixed(2);
+
+      const fbaFee = parseFloat(document.getElementById('fbaFeeInput').value) || 0;
+      const storageFee = parseFloat(document.getElementById('storageFee').value) || 0;
+      const otherFee = parseFloat(document.getElementById('otherFee').value) || 0;
+
+      // Returns
+      const returnRate = parseFloat(document.getElementById('returnRate').value) / 100;
+      const unsellableRate = parseFloat(document.getElementById('unsellableRate').value) / 100;
+      
+      // Refund Admin Fee: Min of $5.00 or 20% of Referral Fee
+      const refundAdminFeeUnit = Math.min(5.00, referralFee * 0.20);
+      
+      // Return Loss Calculation
+      // Formula: (Price + FBA Fee) * Return% * Unsellable% + RefundAdmin * Return%
+      // Note: When a return happens:
+      // 1. Amazon refunds customer (We lose Price).
+      // 2. Amazon charges Refund Admin Fee.
+      // 3. Amazon returns Referral Fee (minus Admin Fee). So we get back (ReferralFee - AdminFee).
+      // 4. We do NOT get back FBA Fee.
+      // 5. If unsellable, we lose the COGS.
+      
+      // Simplified "Loss" approach per requirements:
+      // Requirement Formula: `退货损失 = (售价 + FBA配送费) * 退货率 * 不可售比例 + 退款管理费 * 退货率`
+      // Let's stick to the requirement formula exactly to be safe, though "售价" usually implies we lose the item cost? 
+      // Wait, if it's unsellable, we lose the Manufacturing Cost + Shipping Cost (COGS), not the Selling Price.
+      // But the formula says "售价". Maybe it implies lost revenue opportunity? 
+      // Usually: Cost of Return = (Non-refundable FBA Fees + Refund Admin Fee) * Return% + (COGS) * Return% * Unsellable%
+      // The requirement formula: (Selling Price + FBA Fee) * Return% * Unsellable% ... this looks like we are refunding the customer (Price) AND paying FBA?
+      // Actually, let's look at the requirement again carefully:
+      // `退货损失 = (售价 + FBA配送费) * 退货率 * 不可售比例 + 退款管理费 * 退货率`
+      // If Unsellable: We lose the Item (Price? No, Cost). 
+      // Let's assume the user wants exactly this formula.
+      
+      const returnLoss = (price + fbaFee) * returnRate * unsellableRate + refundAdminFeeUnit * returnRate;
+
+      // Ads
+      const acos = parseFloat(document.getElementById('acos').value) / 100;
+      const adsCost = price * acos;
+
+      // Totals
+      const amazonPayout = price - referralFee - fbaFee;
+      const totalOperatingCost = adsCost + storageFee + returnLoss + otherFee; // + Promotion Cost if we had it
+      const grossProfit = amazonPayout - productCostUSD; // This is a bit weird. Gross Profit usually = Revenue - COGS.
+      // Requirement: Gross Profit = Payout - (Product Cost + Shipping Cost). 
+      // Payout already deducted Amazon Fees. So this is "Gross Profit after Amazon Fees". Okay.
+      const realGrossProfit = amazonPayout - productCostUSD;
+      
+      const netProfit = realGrossProfit - totalOperatingCost;
+      const netProfitMargin = (price > 0) ? (netProfit / price) : 0;
+      const breakEvenACoS = (price > 0) ? (realGrossProfit / price) : 0; // Assuming Operating Costs (Storage/Returns) are 0 for BE ACoS? Or should we deduct them?
+      // Requirement: Break-even ACoS = 毛利润 / 售价. (Gross Profit / Price).
+      // If we use the definition of Gross Profit above (Payout - COGS), then yes.
+      
+      // Update UI
+      document.getElementById('resPayout').textContent = `$${amazonPayout.toFixed(2)}`;
+      document.getElementById('resTotalCost').textContent = `$${(productCostUSD + referralFee + fbaFee + totalOperatingCost).toFixed(2)}`;
+      document.getElementById('resGrossProfit').textContent = `$${realGrossProfit.toFixed(2)}`;
+      document.getElementById('resAds').textContent = `$${adsCost.toFixed(2)}`;
+      document.getElementById('resReturnLoss').textContent = `$${returnLoss.toFixed(2)}`;
+      
+      const npEl = document.getElementById('resNetProfit');
+      npEl.textContent = `$${netProfit.toFixed(2)}`;
+      npEl.className = netProfit >= 0 ? 'profit-positive' : 'profit-negative';
+      
+      document.getElementById('resMargin').textContent = `${(netProfitMargin * 100).toFixed(2)}%`;
+      document.getElementById('resBreakEven').textContent = `${(breakEvenACoS * 100).toFixed(2)}%`;
+      
+      // Emoji
+      const emojiEl = document.getElementById('profitEmoji');
+      if (netProfitMargin > 0.2) emojiEl.textContent = '😊'; // High profit
+      else if (netProfitMargin > 0.05) emojiEl.textContent = '😐'; // Low profit
+      else emojiEl.textContent = '😩'; // Loss or very low
+
+      // CNY Net Profit
+      const netProfitCNY = netProfit * exchangeRate;
+      document.getElementById('resNetProfitCNY').textContent = `¥${netProfitCNY.toFixed(2)}`;
+      
+      // --- Batch Analysis Calculation ---
+      const shipmentQty = parseInt(document.getElementById('shipmentQty').value) || 1;
+      
+      // Total Investment (CNY) = (ProductCostCNY + ShippingCostCNY) * Qty
+      // Note: This is the upfront investment.
+      const totalInvestmentCNY = (productCostCNY + shippingCostCNY) * shipmentQty;
+      
+      // Total Net Profit (CNY)
+      const totalNetProfitCNY = netProfitCNY * shipmentQty;
+      
+      // Total Payout (USD)
+      const totalPayoutUSD = amazonPayout * shipmentQty;
+      
+      // ROI = Total Net Profit / Total Investment
+      let roi = 0;
+      if (totalInvestmentCNY > 0) {
+        roi = (totalNetProfitCNY / totalInvestmentCNY);
+      } else if (totalNetProfitCNY > 0) {
+        roi = 999; // Infinite return if no investment?
+      }
+      
+      document.getElementById('batchInvestment').textContent = `¥${totalInvestmentCNY.toFixed(2)}`;
+      document.getElementById('batchNetProfit').textContent = `¥${totalNetProfitCNY.toFixed(2)}`;
+      document.getElementById('batchNetProfit').className = totalNetProfitCNY >= 0 ? 'profit-positive' : 'profit-negative';
+      document.getElementById('batchPayout').textContent = `$${totalPayoutUSD.toFixed(2)}`;
+      document.getElementById('batchROI').textContent = `${(roi * 100).toFixed(2)}%`;
+      document.getElementById('batchROI').className = roi >= 0 ? 'profit-positive' : 'profit-negative';
+
+      updateChart(productCostUSD, fbaFee, referralFee, adsCost, totalOperatingCost, netProfit, price);
+    }
+
+    function syncPrice() {
+      document.getElementById('profitPrice').value = document.getElementById('priceUSD').value;
+      calculateAll();
+    }
+    function syncPriceFromProfit() {
+      document.getElementById('priceUSD').value = document.getElementById('profitPrice').value;
+      calculateAll();
+    }
+
+    function syncSlider(inputId, sliderId) {
+      document.getElementById(sliderId).value = document.getElementById(inputId).value;
+      updateSliderDisplay();
+    }
+    function syncInput(inputId, sliderId) {
+      document.getElementById(inputId).value = document.getElementById(sliderId).value;
+      updateSliderDisplay();
+    }
+    function updateSliderDisplay() {
+      document.getElementById('returnRateDisplay').textContent = document.getElementById('returnRateSlider').value;
+      document.getElementById('acosDisplay').textContent = document.getElementById('acosSlider').value;
+    }
+
+    function resetInputs() {
+      document.getElementById('length').value = 0;
+      document.getElementById('width').value = 0;
+      document.getElementById('height').value = 0;
+      document.getElementById('actualWeight').value = 0;
+      document.getElementById('priceUSD').value = 0;
+      document.getElementById('surchargeUSD').value = 0;
+      document.getElementById('hasLithium').checked = false;
+      document.getElementById('profitPrice').value = 0;
+      document.getElementById('productCostCNY').value = 0;
+      document.getElementById('shippingCostCNY').value = 0;
+      document.getElementById('fbaFeeInput').value = 0;
+      
+      document.getElementById('shippingResult').style.display = 'none';
+      
+      calculateAll();
+    }
+
+    function toggleRules() {
+      const el = document.getElementById('rulesSection');
+      if (el.classList.contains('hidden')) el.classList.remove('hidden');
+      else el.classList.add('hidden');
+    }
+
+    // --- Table Logic (Ported) ---
+    function switchTab(type) {
+      document.querySelectorAll('.tab-btns button').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.fee-table').forEach(tab => tab.classList.remove('active'));
+      if (type === 'normal') {
+        document.querySelector('.tab-btns button:nth-child(1)').classList.add('active');
+        document.getElementById('fee-normal').classList.add('active');
+      } else if (type === 'apparel') {
+        document.querySelector('.tab-btns button:nth-child(2)').classList.add('active');
+        document.getElementById('fee-apparel').classList.add('active');
+      } else if (type === 'danger') {
+        document.querySelector('.tab-btns button:nth-child(3)').classList.add('active');
+        document.getElementById('fee-danger').classList.add('active');
+      }
+      renderCurrentFeeTable();
+    }
+
+    function showFeeTab() {
+      let type = document.getElementById('productType').value;
+      switchTab(type);
+      const lithiumEl = document.getElementById('hasLithium');
+      if (type === 'danger') { lithiumEl.checked = false; lithiumEl.disabled = true; } else { lithiumEl.disabled = false; }
+    }
+
+    function onAutoSeasonToggle() {
+      const auto = document.getElementById('autoSeason').checked;
+      document.getElementById('season').disabled = auto;
+      document.getElementById('version').disabled = auto;
+      const ts = document.getElementById('tableSeason');
+      const tv = document.getElementById('tableVersion');
+      const tas = document.getElementById('tableAutoSeason');
+      if (ts && tv) {
+        ts.disabled = auto;
+        tv.disabled = auto;
+        if (auto) {
+          autoDetectSeasonVersion();
+          ts.value = document.getElementById('season').value;
+          tv.value = document.getElementById('version').value;
+        }
+      }
+      if (tas) tas.checked = auto;
+      if (auto) autoDetectSeasonVersion();
+    }
+
+    function getCurrentTableType() {
+      if (document.getElementById('fee-normal').classList.contains('active')) return 'normal';
+      if (document.getElementById('fee-apparel').classList.contains('active')) return 'apparel';
+      if (document.getElementById('fee-danger').classList.contains('active')) return 'danger';
+      return 'normal';
+    }
+
+    function getTableTitle(type) {
+      const titles = { 'normal': '普通商品配送费用表', 'apparel': '服装配送费用表', 'danger': '危险品配送费用表' };
+      return titles[type] || '配送费用表';
+    }
+
+    function downloadCurrentTable() {
+      const type = getCurrentTableType();
+      const title = getTableTitle(type);
+      const tableId = `fee-${type}`;
+      const table = document.getElementById(tableId).querySelector('table');
+      if (!table) { alert('未找到表格数据'); return; }
+      let csv = '\uFEFF';
+      const seasonLabel = document.getElementById('season').value === 'peak' ? '旺季' : '非旺季';
+      const versionLabel = document.getElementById('version').value;
+      csv += `${title} (${seasonLabel}-${versionLabel})\n\n`;
+      const rows = table.querySelectorAll('tr');
+      rows.forEach((row) => {
+        const cells = row.querySelectorAll('th, td');
+        const rowData = [];
+        cells.forEach(cell => {
+          let text = cell.textContent.trim();
+          if (text.includes(',') || text.includes('"') || text.includes('\n')) {
+            text = '"' + text.replace(/"/g, '""') + '"';
+          }
+          rowData.push(text);
+        });
+        csv += rowData.join(',') + '\n';
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `${title}_${new Date().toISOString().slice(0,10)}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      alert('下载已开始');
+    }
+
+    function renderCurrentFeeTable() {
+      const type = getCurrentTableType();
+      const seasonKey = getSeasonKey();
+      const dataset = feeData[type][seasonKey];
+      const container = document.getElementById(`fee-${type}`);
+      if (!dataset) { container.innerHTML = '<div style="color:#888">暂无数据</div>'; return; }
+      const rows = [];
+      rows.push('<table><tr><th>尺寸分段</th><th>重量范围</th><th>费用(<$10)</th><th>费用($10~$50)</th><th>费用(>$50)</th></tr>');
+      const pushRow = (tier, range, lt10, mid, high) => { rows.push(`<tr><td>${tier}</td><td>${range}</td><td>$${lt10.toFixed(2)}</td><td>$${mid.toFixed(2)}</td><td>$${high.toFixed(2)}</td></tr>`); };
+      const ss = dataset.small_standard;
+      for (let i = 0; i < ss.steps.length; i++) {
+        const range = (i === 0 ? '≤' + ss.steps[i] + '盎司' : ss.steps[i-1] + '至' + ss.steps[i] + '盎司');
+        pushRow('小号标准尺寸', range, ss.lt10[i], ss.mid[i], ss.high[i]);
+      }
+      const ls = dataset.large_standard;
+      for (let i = 0; i < ls.pre3_steps_oz.length; i++) {
+        const prev = i === 0 ? 0 : ls.pre3_steps_oz[i-1];
+        const curr = ls.pre3_steps_oz[i];
+        const range = (i === 0 ? '≤' + curr + '盎司' : (prev + '至' + curr + '盎司'));
+        pushRow('大号标准尺寸', range, ls.lt10_pre3[i], ls.mid_pre3[i], ls.high_pre3[i]);
+      }
+      if (ls.post3_base) {
+        const incText = type === 'apparel' ? ` + 每半磅$${(ls.post3_increment_per_half_lb || 0).toFixed(2)}` : ` + 每4盎司$${(ls.post3_increment_per_4oz || 0).toFixed(2)}`;
+        rows.push(`<tr><td>大号标准尺寸</td><td>3至20磅</td><td>$${ls.post3_base.lt10.toFixed(2)}${incText}</td><td>$${ls.post3_base.mid.toFixed(2)}${incText}</td><td>$${ls.post3_base.high.toFixed(2)}${incText}</td></tr>`);
+      }
+      const so = dataset.small_oversize_0_50;
+      if (so) rows.push(`<tr><td>小号大件</td><td>0至50磅</td><td>$${so.base.lt10.toFixed(2)} + 每磅$${so.per_lb.toFixed(2)}</td><td>$${so.base.mid.toFixed(2)} + 每磅$${so.per_lb.toFixed(2)}</td><td>$${so.base.high.toFixed(2)} + 每磅$${so.per_lb.toFixed(2)}</td></tr>`);
+      const lo = dataset.large_oversize_0_50;
+      if (lo) rows.push(`<tr><td>大号大件</td><td>0至50磅</td><td>$${lo.base.lt10.toFixed(2)} + 每磅$${lo.per_lb.toFixed(2)}</td><td>$${lo.base.mid.toFixed(2)} + 每磅$${lo.per_lb.toFixed(2)}</td><td>$${lo.base.high.toFixed(2)} + 每磅$${lo.per_lb.toFixed(2)}</td></tr>`);
+      const su0 = dataset.super_oversize_0_50;
+      if (su0) rows.push(`<tr><td>超大件</td><td>0至50磅</td><td>$${su0.base.lt10.toFixed(2)} + 每磅$${su0.per_lb.toFixed(2)}</td><td>$${su0.base.mid.toFixed(2)} + 每磅$${su0.per_lb.toFixed(2)}</td><td>$${su0.base.high.toFixed(2)} + 每磅$${su0.per_lb.toFixed(2)}</td></tr>`);
+      const su5070 = dataset.super_oversize_50_70;
+      if (su5070) rows.push(`<tr><td>超大件</td><td>50至70磅</td><td>$${su5070.base.lt10.toFixed(2)} + 超出首重${su5070.start_lb}磅每磅$${su5070.per_lb.toFixed(2)}</td><td>$${su5070.base.mid.toFixed(2)} + 超出首重${su5070.start_lb}磅每磅$${su5070.per_lb.toFixed(2)}</td><td>$${su5070.base.high.toFixed(2)} + 超出首重${su5070.start_lb}磅每磅$${su5070.per_lb.toFixed(2)}</td></tr>`);
+      const su70150 = dataset.super_oversize_70_150;
+      if (su70150) rows.push(`<tr><td>超大件</td><td>70至150磅</td><td>$${su70150.base.lt10.toFixed(2)} + 超出首重${su70150.start_lb}磅每磅$${su70150.per_lb.toFixed(2)}</td><td>$${su70150.base.mid.toFixed(2)} + 超出首重${su70150.start_lb}磅每磅$${su70150.per_lb.toFixed(2)}</td><td>$${su70150.base.high.toFixed(2)} + 超出首重${su70150.start_lb}磅每磅$${su70150.per_lb.toFixed(2)}</td></tr>`);
+      const su150 = dataset.super_oversize_gt_150;
+      if (su150) rows.push(`<tr><td>超大件</td><td>超过150磅</td><td>$${su150.base.lt10.toFixed(2)} + 超出首重${su150.start_lb}磅每磅$${su150.per_lb.toFixed(2)}</td><td>$${su150.base.mid.toFixed(2)} + 超出首重${su150.start_lb}磅每磅$${su150.per_lb.toFixed(2)}</td><td>$${su150.base.high.toFixed(2)} + 超出首重${su150.start_lb}磅每磅$${su150.per_lb.toFixed(2)}</td></tr>`);
+      rows.push('</table>');
+      container.innerHTML = rows.join('');
+    }
+
+    function onTableSeasonChange(el) {
+      document.getElementById('autoSeason').checked = false;
+      document.getElementById('season').disabled = false;
+      document.getElementById('version').disabled = false;
+      const tas = document.getElementById('tableAutoSeason');
+      if (tas) tas.checked = false;
+      document.getElementById('season').value = el.value;
+      renderCurrentFeeTable();
+    }
+    function onTableVersionChange(el) {
+      document.getElementById('autoSeason').checked = false;
+      document.getElementById('season').disabled = false;
+      document.getElementById('version').disabled = false;
+      const tas = document.getElementById('tableAutoSeason');
+      if (tas) tas.checked = false;
+      document.getElementById('version').value = el.value;
+      renderCurrentFeeTable();
+    }
+    function onTableAutoSeasonToggle() {
+      const checked = document.getElementById('tableAutoSeason').checked;
+      document.getElementById('autoSeason').checked = checked;
+      onAutoSeasonToggle();
+      renderCurrentFeeTable();
+    }
+
+      
+      // Referral Fee Rules (Ported from 佣金率.md)
+      const REFERRAL_RULES = {
+        "Amazon Device Accessories": { name: "亚马逊设备配件", rate: 0.45, min: 0.30 },
+        "Automotive": { name: "汽车和户外动力设备", rate: 0.12, min: 0.30 },
+        "Baby": { name: "母婴", type: "threshold", threshold: 10.00, lowRate: 0.08, highRate: 0.15, min: 0.30 },
+        "Backpacks": { name: "背包、手提包和箱包", rate: 0.15, min: 0.30 },
+        "Power Tools": { name: "基础设备电动工具", rate: 0.12, min: 0.30 },
+        "Beauty": { name: "美妆和个护健康", type: "threshold", threshold: 10.00, lowRate: 0.08, highRate: 0.15, min: 0.30 },
+        "Business": { name: "商业、工业与科学用品", rate: 0.12, min: 0.30 },
+        "Clothing": { name: "服装和配饰", type: "threshold_multi", ranges: [{max:15, rate:0.05}, {max:20, rate:0.10}, {max:Infinity, rate:0.17}], min: 0.30 },
+        "Small Appliances": { name: "小型电器", type: "tiered", threshold: 300.00, rate1: 0.15, rate2: 0.08, min: 0.30 },
+        "Computers": { name: "电脑", rate: 0.08, min: 0.30 },
+        "Consumer Electronics": { name: "消费类电子产品", rate: 0.08, min: 0.30 },
+        "Electronics Accessories": { name: "电子产品配件", type: "tiered", threshold: 100.00, rate1: 0.15, rate2: 0.08, min: 0.30 },
+        "Other": { name: "其他", rate: 0.15, min: 0.30 },
+        "Eyewear": { name: "眼镜", rate: 0.15, min: 0.30 },
+        "Fine Art": { name: "艺术品", type: "tiered_multi", ranges: [{limit:100, rate:0.20}, {limit:1000, rate:0.15}, {limit:5000, rate:0.10}, {limit:Infinity, rate:0.05}], min: 0 },
+        "Footwear": { name: "鞋靴", rate: 0.15, min: 0.30 },
+        "Full-Size Appliances": { name: "全尺寸电器", rate: 0.08, min: 0.30 },
+        "Furniture": { name: "家具", type: "tiered", threshold: 200.00, rate1: 0.15, rate2: 0.10, min: 0.30 },
+        "Gift Cards": { name: "礼品卡", rate: 0.20, min: 0 },
+        "Grocery": { name: "食品", type: "threshold", threshold: 15.00, lowRate: 0.08, highRate: 0.15, min: 0 },
+        "Home & Kitchen": { name: "家居及厨房用品", rate: 0.15, min: 0.30 },
+        "Jewelry": { name: "珠宝首饰", type: "tiered", threshold: 250.00, rate1: 0.20, rate2: 0.05, min: 0.30 },
+        "Lawn & Garden": { name: "草坪和园艺", rate: 0.15, min: 0.30 },
+        "Mowers": { name: "割草机和除雪机", type: "threshold", threshold: 500.00, lowRate: 0.15, highRate: 0.08, min: 0.30 },
+        "Mattresses": { name: "床垫", rate: 0.15, min: 0.30 },
+        "Media": { name: "媒介类商品", rate: 0.15, min: 0 },
+        "Musical Instruments": { name: "乐器和影音制作", rate: 0.15, min: 0.30 },
+        "Office Products": { name: "办公用品", rate: 0.15, min: 0.30 },
+        "Pet Products": { name: "宠物用品", rate: 0.15, min: 0.30 },
+        "Sports": { name: "运动户外", rate: 0.15, min: 0.30 },
+        "Tires": { name: "轮胎", rate: 0.10, min: 0.30 },
+        "Tools": { name: "工具和家居装修", rate: 0.15, min: 0.30 },
+        "Toys": { name: "玩具和游戏", rate: 0.15, min: 0.30 },
+        "Video Game Consoles": { name: "视频游戏机", rate: 0.08, min: 0 },
+        "Video Games": { name: "视频游戏和游戏配件", rate: 0.15, min: 0 },
+        "Watches": { name: "钟表", type: "tiered", threshold: 1500.00, rate1: 0.16, rate2: 0.03, min: 0.30 }
+      };
+
+      function calculateReferralFee(price, rule) {
+        if (!rule) return 0;
+        let fee = 0;
+        if (rule.type === 'threshold') {
+          // If price <= threshold, use lowRate, else highRate (applied to WHOLE price)
+          // Exception: Some categories might apply different logic, but based on "Baby" example: <=$10 -> 8%, >$10 -> 15%.
+          const rate = price <= rule.threshold ? rule.lowRate : rule.highRate;
+          fee = price * rate;
+        } else if (rule.type === 'threshold_multi') {
+           // Find the first range that covers the price
+           let rate = rule.ranges[rule.ranges.length - 1].rate;
+           for (let r of rule.ranges) {
+             if (price <= r.max) {
+               rate = r.rate;
+               break;
+             }
+           }
+           fee = price * rate;
+        } else if (rule.type === 'tiered') {
+          // Portion <= threshold at rate1, portion > threshold at rate2
+          if (price <= rule.threshold) {
+            fee = price * rule.rate1;
+          } else {
+            fee = (rule.threshold * rule.rate1) + ((price - rule.threshold) * rule.rate2);
+          }
+        } else if (rule.type === 'tiered_multi') {
+           // Multiple tiers
+           let remaining = price;
+           let prevLimit = 0;
+           for (let r of rule.ranges) {
+             const limit = r.limit;
+             const rangeSize = limit - prevLimit; // Size of this tier
+             const taxableAmount = Math.min(remaining, rangeSize);
+             if (taxableAmount > 0) {
+               fee += taxableAmount * r.rate;
+               remaining -= taxableAmount;
+             }
+             prevLimit = limit;
+             if (remaining <= 0) break;
+           }
+        } else {
+          // Simple flat rate
+          fee = price * rule.rate;
+        }
+        // Apply Minimum
+        if (rule.min && fee < rule.min) {
+          fee = rule.min;
+        }
+        return fee;
+      }
+
+      // --- New Features: Chart, History, Copy ---
+
+      function updateChart(cost, fba, ref, ads, other, profit, price) {
+        if (price <= 0) return;
+        const total = price; 
+        const getPct = (val) => Math.max(0, (val / total) * 100);
+        
+        const costPct = getPct(cost);
+        const fbaPct = getPct(fba);
+        const refPct = getPct(ref);
+        const adsPct = getPct(ads);
+        // 'other' passed in includes adsCost in calculateAll logic (totalOperatingCost).
+        // So we subtract ads to isolate "True Other".
+        const realOther = Math.max(0, other - ads); 
+        const realOtherPct = getPct(realOther);
+        
+        // Profit for display. If negative, chart doesn't show "negative bar" well in this simple stack.
+        // We only show positive profit segment.
+        const profitPct = profit > 0 ? getPct(profit) : 0;
+        
+        const chart = document.getElementById('costChart');
+        if(chart) {
+            chart.innerHTML = `
+                <div class="chart-segment bg-cost" style="width:${costPct}%" title="采购+头程: $${cost.toFixed(2)} (${costPct.toFixed(1)}%)"></div>
+                <div class="chart-segment bg-fba" style="width:${fbaPct}%" title="FBA配送: $${fba.toFixed(2)} (${fbaPct.toFixed(1)}%)"></div>
+                <div class="chart-segment bg-ref" style="width:${refPct}%" title="佣金: $${ref.toFixed(2)} (${refPct.toFixed(1)}%)"></div>
+                <div class="chart-segment bg-ads" style="width:${adsPct}%" title="广告: $${ads.toFixed(2)} (${adsPct.toFixed(1)}%)"></div>
+                <div class="chart-segment bg-loss" style="width:${realOtherPct}%" title="其他(退货/仓储): $${realOther.toFixed(2)} (${realOtherPct.toFixed(1)}%)"></div>
+                ${profit > 0 ? `<div class="chart-segment bg-profit" style="width:${profitPct}%" title="净利润: $${profit.toFixed(2)} (${profitPct.toFixed(1)}%)"></div>` : ''}
+            `;
+        }
+      }
+
+      const STORAGE_KEY = 'fba_calc_history';
+
+      function saveHistory() {
+        const name = document.getElementById('productName').value || '未命名商品';
+        const price = document.getElementById('priceUSD').value;
+        const netProfit = document.getElementById('resNetProfit').textContent;
+        const margin = document.getElementById('resMargin').textContent;
+        const time = new Date().toLocaleString('zh-CN', { hour12: false });
+        
+        const data = {
+            id: Date.now(),
+            time, name, price, netProfit, margin,
+            inputs: {
+                length: document.getElementById('length').value,
+                width: document.getElementById('width').value,
+                height: document.getElementById('height').value,
+                lengthUnit: document.getElementById('lengthUnit').value,
+                widthUnit: document.getElementById('widthUnit').value,
+                heightUnit: document.getElementById('heightUnit').value,
+                actualWeight: document.getElementById('actualWeight').value,
+                weightUnit: document.getElementById('weightUnit').value,
+                productType: document.getElementById('productType').value,
+                hasLithium: document.getElementById('hasLithium').checked,
+                priceUSD: document.getElementById('priceUSD').value,
+                season: document.getElementById('season').value,
+                version: document.getElementById('version').value,
+                autoSeason: document.getElementById('autoSeason').checked,
+                surchargeUSD: document.getElementById('surchargeUSD').value,
+                exchangeRate: document.getElementById('exchangeRate').value,
+                productCostCNY: document.getElementById('productCostCNY').value,
+                shippingCostCNY: document.getElementById('shippingCostCNY').value,
+                categorySelect: document.getElementById('categorySelect').value,
+                referralRateCustom: document.getElementById('referralRateCustom').value,
+                fbaFeeInput: document.getElementById('fbaFeeInput').value,
+                storageFee: document.getElementById('storageFee').value,
+                otherFee: document.getElementById('otherFee').value,
+                returnRate: document.getElementById('returnRate').value,
+                unsellableRate: document.getElementById('unsellableRate').value,
+                acos: document.getElementById('acos').value,
+                // Sliders
+                returnRateSlider: document.getElementById('returnRateSlider').value,
+                acosSlider: document.getElementById('acosSlider').value,
+                // Batch
+                shipmentQty: document.getElementById('shipmentQty').value
+            }
+        };
+        
+        const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        history.unshift(data);
+        if (history.length > 20) history.pop(); // Limit to 20
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+        renderHistory();
+        alert('记录已保存');
+      }
+
+      function loadHistory(id) {
+        const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        const item = history.find(i => i.id === id);
+        if (!item) return;
+        
+        const i = item.inputs;
+        const setVal = (k, v) => { const el = document.getElementById(k); if(el && v !== undefined) el.value = v; };
+        const setChk = (k, v) => { const el = document.getElementById(k); if(el && v !== undefined) el.checked = v; };
+        
+        setVal('productName', item.name);
+        setVal('length', i.length); setVal('width', i.width); setVal('height', i.height);
+        setVal('lengthUnit', i.lengthUnit); setVal('widthUnit', i.widthUnit); setVal('heightUnit', i.heightUnit);
+        setVal('actualWeight', i.actualWeight); setVal('weightUnit', i.weightUnit);
+        setVal('productType', i.productType); setChk('hasLithium', i.hasLithium);
+        setVal('priceUSD', i.priceUSD); setVal('profitPrice', i.priceUSD);
+        setVal('season', i.season); setVal('version', i.version); setChk('autoSeason', i.autoSeason);
+        setVal('surchargeUSD', i.surchargeUSD);
+        setVal('exchangeRate', i.exchangeRate);
+        setVal('productCostCNY', i.productCostCNY); setVal('shippingCostCNY', i.shippingCostCNY);
+        setVal('categorySelect', i.categorySelect);
+        setVal('referralRateCustom', i.referralRateCustom);
+        setVal('fbaFeeInput', i.fbaFeeInput);
+        setVal('storageFee', i.storageFee); setVal('otherFee', i.otherFee);
+        setVal('returnRate', i.returnRate); setVal('unsellableRate', i.unsellableRate);
+        setVal('acos', i.acos);
+        
+        // Sync sliders
+        if (i.returnRateSlider) { setVal('returnRateSlider', i.returnRateSlider); document.getElementById('returnRateDisplay').textContent = i.returnRateSlider; }
+        if (i.acosSlider) { setVal('acosSlider', i.acosSlider); document.getElementById('acosDisplay').textContent = i.acosSlider; }
+        
+        setVal('shipmentQty', i.shipmentQty);
+
+        showFeeTab(); 
+        onAutoSeasonToggle();
+        calculateAll();
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      function deleteHistory(id) {
+        if(!confirm('确定删除此记录?')) return;
+        let history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        history = history.filter(i => i.id !== id);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+        renderHistory();
+      }
+
+      function clearHistory() {
+        if(confirm('确定要清空所有记录吗？')) {
+            localStorage.removeItem(STORAGE_KEY);
+            renderHistory();
+        }
+      }
+
+      function renderHistory() {
+        const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        const tbody = document.getElementById('historyList');
+        if (!tbody) return;
+        tbody.innerHTML = history.map(item => `
+            <tr>
+                <td>${item.time.split(' ')[0]}</td>
+                <td title="${item.name}">${item.name}</td>
+                <td>$${item.price}</td>
+                <td class="${String(item.netProfit).includes('-') ? 'profit-negative' : 'profit-positive'}">${item.netProfit}</td>
+                <td>${item.margin}</td>
+                <td>
+                    <button class="secondary btn-sm btn-load" onclick="loadHistory(${item.id})">加载</button>
+                    <button class="secondary btn-sm btn-danger" onclick="deleteHistory(${item.id})">删除</button>
+                </td>
+            </tr>
+        `).join('');
+      }
+
+      function copyResults() {
+        const payout = document.getElementById('resPayout').textContent;
+        const totalCost = document.getElementById('resTotalCost').textContent;
+        const profit = document.getElementById('resNetProfit').textContent;
+        const margin = document.getElementById('resMargin').textContent;
+        const name = document.getElementById('productName').value || '商品';
+        
+        const batchInvestment = document.getElementById('batchInvestment').textContent;
+        const batchNetProfit = document.getElementById('batchNetProfit').textContent;
+        const batchPayout = document.getElementById('batchPayout').textContent;
+        const batchROI = document.getElementById('batchROI').textContent;
+        const shipmentQty = document.getElementById('shipmentQty').value;
+
+        // Simple text copy
+        const text = `【${name}】利润分析
+回款: ${payout}
+总成本: ${totalCost}
+净利润: ${profit}
+净利率: ${margin}
+
+【整批分析 (数量: ${shipmentQty})】
+总资金投入: ${batchInvestment}
+预计总净利: ${batchNetProfit}
+最后回款: ${batchPayout}
+投资回报率: ${batchROI}`;
+        
+        navigator.clipboard.writeText(text).then(() => {
+            alert('结果已复制到剪贴板');
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+            alert('复制失败，请手动复制');
+        });
+      }
+
+    // Init
+    document.addEventListener('DOMContentLoaded', () => {
+      // Populate Category Select
+      const catSelect = document.getElementById('categorySelect');
+      const sortedKeys = Object.keys(REFERRAL_RULES).sort((a,b) => REFERRAL_RULES[a].name.localeCompare(REFERRAL_RULES[b].name, 'zh'));
+      
+      sortedKeys.forEach(key => {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = `${REFERRAL_RULES[key].name} (${key})`;
+        catSelect.appendChild(option);
+      });
+      
+      autoDetectSeasonVersion();
+      onAutoSeasonToggle();
+      
+      // Removed old listener for 'referralRate' as it's replaced
+      // But we need to handle the new UI logic
+      
+      renderHistory(); // Init history table
+      calculateAll();
+    });
+  </script>
+</body>
+</html>
