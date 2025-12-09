@@ -1,30 +1,12 @@
 'use client'
 
-import React, { useEffect, useState, useMemo, useCallback } from 'react'
-import dynamic from 'next/dynamic'
+import React, { useEffect, useState, useMemo, useCallback, Suspense } from 'react'
 import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download, AlertCircle, CheckCircle, Filter, LayoutGrid, Maximize2, Minimize2, Image as ImageIcon, MoreHorizontal, Receipt, Crosshair, Globe, Star } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 import Head from 'next/head'
 import Link from 'next/link'
+import ToolContainer from '@/components/ToolContainer'
 
-const EditorPage = dynamic(() => import('../components/EditorPage'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
-const FBACalculatorPage = dynamic(() => import('../components/FBACalculator'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
-const ForbiddenWordsChecker = dynamic(() => import('@/components/ForbiddenWordsChecker'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
-const TextComparator = dynamic(() => import('../components/TextComparator'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
-const DuplicateRemover = dynamic(() => import('../components/DuplicateRemover'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
-const ContentFilter = dynamic(() => import('../components/ContentFilter'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
-const ImageResizer = dynamic(() => import('@/components/ImageResizer'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
-const InvoiceGenerator = dynamic(() => import('@/components/InvoiceGenerator'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
-const CpcCalculator = dynamic(() => import('@/components/CpcCalculator'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
-const AmazonGlobalTool = dynamic(() => import('@/components/AmazonGlobalTool'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
-const AmazonRatingSalesReverse = dynamic(() => import('@/components/AmazonRatingSalesReverse'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
-const ListingCheckerPage = dynamic(() => import('@/components/ListingCheckerPage'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
-const ReturnsV2Page = dynamic(() => import('@/components/ReturnsV2Page'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
-const AdCalculatorPage = dynamic(() => import('@/components/AdCalculatorPage'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
-const UnitConverterPage = dynamic(() => import('@/components/UnitConverterPage'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
-const CaseConverterPage = dynamic(() => import('@/components/CaseConverterPage'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
-const WordCountPage = dynamic(() => import('@/components/WordCountPage'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
-const CharCountPage = dynamic(() => import('@/components/CharCountPage'), { loading: () => <div className="p-8 text-center text-gray-500">正在加载工具...</div> })
 import { useRef } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 
@@ -169,13 +151,13 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
       </div>
       {showMore && (
         <div className="text-center mt-8">
-          <button 
-            onClick={() => router.push('/functionality')}
-            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-lg font-medium hover:shadow-lg transform hover:-translate-y-1 transition-all flex items-center gap-2 mx-auto"
+          <Link 
+            href="/functionality"
+            className="inline-flex bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-lg font-medium hover:shadow-lg transform hover:-translate-y-1 transition-all items-center gap-2 mx-auto"
           >
             查看更多工具
             <ArrowLeftRight className="h-4 w-4" />
-          </button>
+          </Link>
         </div>
       )}
     </div>
@@ -192,21 +174,7 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
 
 
 
-const PlaceholderPage = ({ title, icon: Icon }: { title: string; icon: any }) => (
-  <div className="space-y-6">
-    <div className="flex items-center gap-2 mb-2">
-      <Icon className="h-6 w-6 text-gray-400" />
-      <h2 className="text-xl font-bold text-gray-800">{title}</h2>
-    </div>
-    <Card className="h-[60vh] flex flex-col items-center justify-center text-gray-400 bg-gray-50/50 border-dashed">
-      <div className="p-6 bg-white rounded-full shadow-sm mb-6">
-        <Hammer className="h-12 w-12 text-indigo-200" />
-      </div>
-      <h3 className="text-lg font-medium text-gray-600 mb-2">功能开发中</h3>
-      <p className="text-sm text-gray-400 max-w-xs text-center">这个工具模块正在紧锣密鼓地开发中，<br/>请稍后回来查看更新。</p>
-    </Card>
-  </div>
-)
+
 
 export default function HomeLayoutClient({ initialModules, initialNavItems, initialActiveTab, initialFull, initialCategories }: { initialModules: any[]; initialNavItems: any[]; initialActiveTab?: string; initialFull?: boolean; initialCategories?: any[] }) {
   const searchParams = useSearchParams()
@@ -319,13 +287,17 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
     }
   }, [activeTab])
           useEffect(() => {
-            if (activeTab) {
+            if (activeTab && activeTab !== 'home') {
               try { 
-                fetch('/api/analytics/visits', { 
-                  method: 'POST', 
-                  headers: { 'Content-Type': 'application/json' }, 
-                  body: JSON.stringify({ module: activeTab }) 
-                }) 
+                // Use non-blocking fetch
+                setTimeout(() => {
+                  fetch('/api/analytics/visits', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ module: activeTab }),
+                    keepalive: true
+                  }).catch(() => {})
+                }, 1000)
               } catch {}
             }
             // 页面切换时滚动到顶部
@@ -338,28 +310,6 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
           }, [activeTab])
           const { settings } = useSettings()
           const safeOrigin = (typeof window !== 'undefined' && (window as any).location) ? (window as any).location.origin : ''
-
-          const activeToolContent = useMemo(() => {
-            if (activeTab === 'ad-calc') return <AdCalculatorPage />
-            if (activeTab === 'cpc-compass') return <CpcCalculator />
-            if (activeTab === 'unit') return <UnitConverterPage />
-            if (activeTab === 'editor') return <EditorPage />
-            if (activeTab === 'case') return <CaseConverterPage />
-            if (activeTab === 'word-count') return <WordCountPage />
-            if (activeTab === 'char-count') return <CharCountPage />
-            if (activeTab === 'delivery') return <FBACalculatorPage />
-            if (activeTab === 'returns-v2') return <ReturnsV2Page />
-            if (activeTab === 'listing-check') return <ListingCheckerPage />
-            if (activeTab === 'forbidden-words') return <ForbiddenWordsChecker />
-            if (activeTab === 'text-compare') return <TextComparator />
-            if (activeTab === 'duplicate-remover') return <DuplicateRemover />
-            if (activeTab === 'content-filter') return <ContentFilter />
-            if (activeTab === 'image-resizer') return <ImageResizer />
-            if (activeTab === 'invoice-generator') return <InvoiceGenerator />
-            if (activeTab === 'amazon-global') return <AmazonGlobalTool />
-            if (activeTab === 'rating-sales-reverse') return <AmazonRatingSalesReverse />
-            return <PlaceholderPage title="功能开发中" icon={Hammer} />
-          }, [activeTab])
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -690,7 +640,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                 </div>
               </div>
             ) : (
-              activeToolContent
+              <ToolContainer activeTab={activeTab} />
             )}
           </div>
           

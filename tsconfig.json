@@ -17,9 +17,6 @@
         "*"
       ]
     },
-    "types": [
-      "node"
-    ],
     "allowJs": true,
     "skipLibCheck": true,
     "noEmit": true,

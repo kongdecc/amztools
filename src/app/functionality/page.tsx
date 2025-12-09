@@ -25,37 +25,40 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function FunctionalityPage() {
+  const settingsPromise = (db as any).siteSettings.findMany().catch(() => [])
+  const categoriesPromise = (db as any).toolCategory.findMany({ orderBy: { order: 'asc' } }).catch(() => [])
+  const modulesPromise = (db as any).toolModule.findMany({ orderBy: { order: 'asc' } }).catch(() => [])
+  const navPromise = (db as any).siteSettings.findUnique({ where: { key: 'navigation' } }).catch(() => null)
+
+  const [settingsRows, categoriesRows, modulesRows, navRow] = await Promise.all([
+    settingsPromise,
+    categoriesPromise,
+    modulesPromise,
+    navPromise
+  ])
+
   let initialSettings: Record<string, any> = {}
-  let initialModules: any[] = []
-  let navItems: any[] = []
-  let initialCategories: any[] = []
   try {
-    const rows = await (db as any).siteSettings.findMany()
-    for (const r of rows as any) initialSettings[String((r as any).key)] = String((r as any).value ?? '')
+    for (const r of settingsRows as any) initialSettings[String((r as any).key)] = String((r as any).value ?? '')
   } catch {}
-  try {
-    initialCategories = await (db as any).toolCategory.findMany({ orderBy: { order: 'asc' } })
-    if (initialCategories.length === 0) {
-      initialCategories = [
-        { key: 'operation', label: '运营工具', order: 1 },
-        { key: 'advertising', label: '广告工具', order: 2 },
-        { key: 'image-text', label: '图片文本', order: 3 }
-      ]
-    }
-  } catch {
+
+  let initialCategories: any[] = categoriesRows
+  if (!Array.isArray(initialCategories) || initialCategories.length === 0) {
     initialCategories = [
       { key: 'operation', label: '运营工具', order: 1 },
       { key: 'advertising', label: '广告工具', order: 2 },
       { key: 'image-text', label: '图片文本', order: 3 }
     ]
   }
+
+  let initialModules: any[] = []
   try {
-    initialModules = await (db as any).toolModule.findMany({ orderBy: { order: 'asc' } })
-    initialModules = Array.isArray(initialModules) ? initialModules.filter((m:any)=>m.status !== '下架') : []
+    initialModules = Array.isArray(modulesRows) ? modulesRows.filter((m:any)=>m.status !== '下架') : []
   } catch { initialModules = [] }
+
+  let navItems: any[] = []
   try {
-    const row = await (db as any).siteSettings.findUnique({ where: { key: 'navigation' } })
-    const arr = row && (row as any).value ? JSON.parse(String((row as any).value)) : []
+    const arr = navRow && (navRow as any).value ? JSON.parse(String((navRow as any).value)) : []
     navItems = Array.isArray(arr) ? arr : []
   } catch { navItems = [] }
 

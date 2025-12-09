@@ -5,15 +5,26 @@ import { Suspense } from 'react'
 export const revalidate = 0
 
 export default async function Page({ searchParams }: { searchParams?: Record<string, string> }) {
+  const settingsPromise = (db as any).siteSettings.findMany().catch(() => [])
+  const navPromise = (db as any).siteSettings.findUnique({ where: { key: 'navigation' } }).catch(() => null)
+  const modulesPromise = (db as any).toolModule.findMany({ orderBy: { order: 'asc' } }).catch(() => [])
+  const categoriesPromise = (db as any).toolCategory.findMany({ where: { enabled: true }, orderBy: { order: 'asc' } }).catch(() => [])
+
+  const [settingsRows, navRow, modulesRows, categoriesRows] = await Promise.all([
+    settingsPromise,
+    navPromise,
+    modulesPromise,
+    categoriesPromise
+  ])
+
   let initialSettings: Record<string, any> = {}
   try {
-    const rows = await (db as any).siteSettings.findMany()
-    for (const r of rows as any) initialSettings[String((r as any).key)] = String((r as any).value ?? '')
+    for (const r of settingsRows as any) initialSettings[String((r as any).key)] = String((r as any).value ?? '')
   } catch {}
+
   let navItems: any[] = []
   try {
-    const row = await (db as any).siteSettings.findUnique({ where: { key: 'navigation' } })
-    const arr = row && (row as any).value ? JSON.parse(String((row as any).value)) : []
+    const arr = navRow && (navRow as any).value ? JSON.parse(String((navRow as any).value)) : []
     navItems = Array.isArray(arr) && arr.length > 0 ? arr : [
       { id: 'about', label: '关于', href: '/about', order: 1, isExternal: false, active: true },
       { id: 'blog', label: '博客', href: '/blog', order: 2, isExternal: false, active: true },
@@ -26,9 +37,9 @@ export default async function Page({ searchParams }: { searchParams?: Record<str
       { id: 'suggest', label: '提需求', href: '/suggest', order: 3, isExternal: false, active: true }
     ]
   }
-  let modules: any[] = []
+
+  let modules: any[] = modulesRows
   try {
-    modules = await (db as any).toolModule.findMany({ orderBy: { order: 'asc' } })
     const ensure = (arr: any[]) => {
       const keys = new Set(arr.map((x: any) => x.key))
       const need = [
@@ -42,6 +53,7 @@ export default async function Page({ searchParams }: { searchParams?: Record<str
     }
     modules = ensure(Array.isArray(modules) ? modules : [])
     if (!Array.isArray(modules) || modules.length === 0) {
+      // Fallback modules list (kept same as original)
       modules = [
         { key: 'ad-calc', title: '广告竞价计算', desc: '亚马逊广告策略实时出价计算，支持Fixed/Dynamic策略', status: '启用', views: 0, color: 'blue', order: 1, category: 'advertising' },
         { key: 'cpc-compass', title: 'CPC利润测算', desc: '集成FBA费率、佣金计算，精准推导盈亏平衡CPC及ACOS', status: '启用', views: 0, color: 'blue', order: 1.5, category: 'advertising' },
@@ -82,14 +94,8 @@ export default async function Page({ searchParams }: { searchParams?: Record<str
     ]
   }
 
-  let categories: any[] = []
-  try {
-    categories = await (db as any).toolCategory.findMany({
-      where: { enabled: true },
-      orderBy: { order: 'asc' }
-    })
-  } catch {
-    // Fallback defaults if DB fails
+  let categories = categoriesRows
+  if (!categories || categories.length === 0) {
     categories = [
       { key: 'operation', label: '运营工具', enabled: true },
       { key: 'advertising', label: '广告工具', enabled: true },

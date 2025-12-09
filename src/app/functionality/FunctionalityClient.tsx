@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { LayoutDashboard, ChevronDown, Search, MoreHorizontal, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Trash2, AlertCircle, CheckCircle, Filter, Image as ImageIcon, Receipt, Crosshair, Globe, Star, Hammer, ArrowLeftRight } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 
@@ -207,27 +208,29 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((module) => (
-              <Card key={module.key} className="group relative p-6 hover:shadow-xl transition-all duration-300 cursor-pointer border-transparent hover:border-gray-100 bg-white overflow-hidden" onClick={() => handleNavigate(module.key)}>
-                <div className="flex items-start gap-4 mb-4">
-                  <div className={`w-12 h-12 rounded-xl ${colorSolidMap[colorOverride[module.key] || module.color] || 'bg-blue-600'} flex items-center justify-center shadow-md shrink-0 group-hover:scale-105 transition-transform duration-300`}>
-                    {(() => {
-                      const I = iconMap[module.key] || Hammer
-                      return <I className="h-6 w-6 text-white" />
-                    })()}
+              <Link key={module.key} href={`/?tab=${module.key}&full=1`} className="block group" prefetch={false}>
+                <Card className="h-full relative p-6 hover:shadow-xl transition-all duration-300 cursor-pointer border-transparent hover:border-gray-100 bg-white overflow-hidden">
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className={`w-12 h-12 rounded-xl ${colorSolidMap[colorOverride[module.key] || module.color] || 'bg-blue-600'} flex items-center justify-center shadow-md shrink-0 group-hover:scale-105 transition-transform duration-300`}>
+                      {(() => {
+                        const I = iconMap[module.key] || Hammer
+                        return <I className="h-6 w-6 text-white" />
+                      })()}
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-800 pt-1 group-hover:text-gray-900">{module.status === '维护' ? `${titleOverride[module.key] || module.title}（维护）` : (titleOverride[module.key] || module.title)}</h3>
+                      {module.status === '维护' && (
+                        <span className="ml-auto px-2 py-0.5 text-xs rounded border bg-yellow-50 text-yellow-600 border-yellow-200">维护中</span>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-800 pt-1 group-hover:text-gray-900">{module.status === '维护' ? `${titleOverride[module.key] || module.title}（维护）` : (titleOverride[module.key] || module.title)}</h3>
-                    {module.status === '维护' && (
-                      <span className="ml-auto px-2 py-0.5 text-xs rounded border bg-yellow-50 text-yellow-600 border-yellow-200">维护中</span>
-                    )}
+                  <p className="text-sm text-gray-500 leading-relaxed mb-8 line-clamp-2">{module.desc}</p>
+                  <div className={`absolute bottom-6 left-6 flex items-center gap-2 text-sm font-bold ${colorTextMap[colorOverride[module.key] || module.color] || 'text-blue-600'} opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300`}>
+                    <span>立即使用</span>
+                    <ArrowLeftRight className="h-4 w-4" />
                   </div>
-                </div>
-                <p className="text-sm text-gray-500 leading-relaxed mb-8 line-clamp-2">{module.desc}</p>
-                <div className={`absolute bottom-6 left-6 flex items-center gap-2 text-sm font-bold ${colorTextMap[colorOverride[module.key] || module.color] || 'text-blue-600'} opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300`}>
-                  <span>立即使用</span>
-                  <ArrowLeftRight className="h-4 w-4" />
-                </div>
-              </Card>
+                </Card>
+              </Link>
             ))}
           </div>
           {filtered.length === 0 && (
