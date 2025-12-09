@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "buildCommand": "npm run vercel-build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "functions": {
+    "src/app/api/**/*.ts": {
+      "maxDuration": 30,
+      "includeFiles": "node_modules/.prisma/**"
+    }
+  },
+  "env": {
+    "PRISMA_CLIENT_ENGINE_TYPE": "library"
+  }
+}

@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="UTF-8">
+  <title>亚马逊Listing文案合规及埋词检查工具（2025版）</title>
+  <style>
+    body { font-family: "微软雅黑", Arial, sans-serif; margin: 30px; background: #f7f7f7; }
+    h1 { color: #234e70; margin-bottom: 8px; }
+    .author { font-size: 16px; color: #666; margin-bottom: 18px;}
+    label { font-weight: bold; }
+    textarea, input[type="text"] {
+      width: 100%; box-sizing: border-box; margin-bottom: 10px;
+      min-height: 36px; resize: none;
+      overflow: hidden; font-size: 15px;
+    }
+    .section { background: #fff; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 8px #eee; }
+    .result { margin-top: 10px; padding: 10px; border-radius: 6px; }
+    .ok { color: #22a745; font-weight: bold; }
+    .warn { color: #f39c12; font-weight: bold; }
+    .err { color: #d32f2f; font-weight: bold; }
+    ul { margin: 0; padding-left: 20px; }
+    .btn { padding: 6px 14px; background: #234e70; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; margin-left: 6px;}
+    .btn:hover { background: #346fa7; }
+    .row { display: flex; align-items: flex-start; margin-bottom: 10px;}
+    .row textarea, .row input[type="text"] { width: 75%; }
+    .info { margin-left: 8px; min-width: 90px;}
+    .item-result { margin-left: 12px; flex: 1;}
+    .highlight { background: #ffe066; font-weight: bold; border-radius: 3px; padding: 0 2px;}
+    .stat-table { width:100%; border-collapse:collapse; margin-top: 10px;}
+    .stat-table th, .stat-table td { border:1px solid #ddd; padding: 6px 10px; text-align:left;}
+    .stat-table th { background:#f3f3f3;}
+    .disclaimer {
+      margin-top: 32px; text-align: center; color: #888; font-size: 15px; letter-spacing: 1px;
+    }
+    @media (max-width: 800px) {
+      .row { flex-direction: column; }
+      .row textarea, .row input[type="text"], .info, .item-result { width: 100%; margin: 0; }
+    }
+  </style>
+</head>
+<body>
+  <h1>亚马逊Listing文案合规及埋词检查工具（2025版）</h1>
+  <div class="author">作者：達哥</div>
+  <div class="section">
+    <label for="title">商品标题：</label>
+    <div class="row">
+      <textarea id="title" maxlength="250" placeholder="请输入商品标题（建议80字符内）"></textarea>
+      <div class="info" id="titleInfo">0/200</div>
+      <button type="button" class="btn" onclick="checkTitle()">检查</button>
+    </div>
+    <div id="titleResult" class="result"></div>
+    <div id="titleHighlight" class="result"></div>
+  </div>
+  <div class="section">
+    <label>五点描述（每个要点单独填写）：</label>
+    <div id="bulletsBox">
+      <div class="row">
+        <textarea id="bullet1" maxlength="500" placeholder="要点1"></textarea>
+        <div class="info" id="info1">0/500</div>
+        <button type="button" class="btn" onclick="checkBullet(1)">检查</button>
+        <div class="item-result" id="result1"></div>
+      </div>
+      <div id="highlight1" class="result"></div>
+      <div class="row">
+        <textarea id="bullet2" maxlength="500" placeholder="要点2"></textarea>
+        <div class="info" id="info2">0/500</div>
+        <button type="button" class="btn" onclick="checkBullet(2)">检查</button>
+        <div class="item-result" id="result2"></div>
+      </div>
+      <div id="highlight2" class="result"></div>
+      <div class="row">
+        <textarea id="bullet3" maxlength="500" placeholder="要点3"></textarea>
+        <div class="info" id="info3">0/500</div>
+        <button type="button" class="btn" onclick="checkBullet(3)">检查</button>
+        <div class="item-result" id="result3"></div>
+      </div>
+      <div id="highlight3" class="result"></div>
+      <div class="row">
+        <textarea id="bullet4" maxlength="500" placeholder="要点4"></textarea>
+        <div class="info" id="info4">0/500</div>
+        <button type="button" class="btn" onclick="checkBullet(4)">检查</button>
+        <div class="item-result" id="result4"></div>
+      </div>
+      <div id="highlight4" class="result"></div>
+      <div class="row">
+        <textarea id="bullet5" maxlength="500" placeholder="要点5"></textarea>
+        <div class="info" id="info5">0/500</div>
+        <button type="button" class="btn" onclick="checkBullet(5)">检查</button>
+        <div class="item-result" id="result5"></div>
+      </div>
+      <div id="highlight5" class="result"></div>
+    </div>
+  </div>
+  <div class="section">
+    <label for="longdesc">长描述：</label>
+    <div class="row">
+      <textarea id="longdesc" rows="5" maxlength="2000" placeholder="请输入长描述"></textarea>
+      <div class="info" id="longdescInfo">0/2000</div>
+      <button type="button" class="btn" onclick="checkLongDesc()">检查</button>
+    </div>
+    <div id="longdescResult" class="result"></div>
+    <div id="longdescHighlight" class="result"></div>
+  </div>
+  <div class="section">
+    <label for="st">ST关键词（建议用空格分隔）：</label>
+    <div class="row">
+      <textarea id="st" maxlength="300" placeholder="如：shoe shoes men women running"></textarea>
+      <div class="info" id="stInfo">0/250</div>
+      <button type="button" class="btn" onclick="checkST()">检查</button>
+    </div>
+    <div id="stResult" class="result"></div>
+    <div id="stHighlight" class="result"></div>
+  </div>
+  <!-- 关键词输入区移到最底部 -->
+  <div class="section">
+    <label for="keywords">产品关键词（用逗号分隔或分行填写）：</label>
+    <textarea id="keywords" rows="3" placeholder="如：running shoes, waterproof,&#10;或每行一个词/词组"></textarea>
+    <button type="button" class="btn" onclick="checkKeywordEmbedding()">检查关键词埋入</button>
+    <div id="keywordStatResult" class="result"></div>
+  </div>
+  <div class="disclaimer">
+    本工具仅供参考，最终以亚马逊平台政策为准。<br>
+    如有疑问请以官方文档和平台实际要求为准，作者不承担任何因使用本工具造成的后果。
+    <br>版权归 跨境乐趣园所有 官网： <a href="https://amzlink.top/" target="_blank" rel="noopener noreferrer">https://amzlink.top/</a> | 作者：達哥
+  </div>
+  <script>
+    // 禁用符号
+    const forbiddenTitle = /[!_{}^¬¦]/g;
+    const forbiddenBullets = /[™®€…✅❌]/g;
+    const forbiddenPhrases = ["生态友好", "全额退款"];
+    const forbiddenBulletPhrases = ["ASIN", "公司", "外部链接", "http", "https", "促销", "折扣", "优惠", "满减", "包邮", "限时"];
+    const stopWords = ["的", "和", "或", "与", "在", "以", "于", "为", "to", "of", "and", "in", "on", "for", "with", "by", "a", "an", "the", "at"];
+    // 覆盖所有常见中英文结尾标点
+    const forbiddenEndPunct = /[,.，。;；、!！?？:：]$/;
+
+    // 支持逗号与分行分隔关键词
+    function getKeywordsArr() {
+      let raw = document.getElementById('keywords').value.trim();
+      if (!raw) return [];
+      // 先按行切分，再按逗号切分，去重
+      let arr = [];
+      raw.split('\n').forEach(line => {
+        line.split(/[,，]/).forEach(token => {
+          let kw = token.trim();
+          if (kw) arr.push(kw);
+        });
+      });
+      return Array.from(new Set(arr));
+    }
+
+    // 文本域自适应高度
+    function autoResize(el) {
+      el.style.height = 'auto';
+      el.style.height = (el.scrollHeight) + 'px';
+    }
+    window.onload = function() {
+      ['keywords','longdesc','title','st'].forEach(id=>{
+        let el=document.getElementById(id);
+        el.addEventListener('input',function(){autoResize(this);});
+        autoResize(el);
+      });
+      for(let i=1;i<=5;i++){
+        let el=document.getElementById('bullet'+i);
+        el.addEventListener('input',function(){
+          document.getElementById('info'+i).innerText = this.value.length + "/500";
+          autoResize(this);
+        });
+        autoResize(el);
+      }
+      document.getElementById('longdesc').addEventListener('input',function(){
+        document.getElementById('longdescInfo').innerText = this.value.length + "/2000";
+      });
+      document.getElementById('title').addEventListener('input',function(){
+        document.getElementById('titleInfo').innerText = this.value.length + "/200";
+      });
+      document.getElementById('st').addEventListener('input',function(){
+        document.getElementById('stInfo').innerText = this.value.length + "/250";
+      });
+    }
+
+    // 高亮关键词
+    function highlightKeywords(str, keywords) {
+      if (!str || !keywords || keywords.length === 0) return str.replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      let safeStr = str.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      keywords.sort((a,b)=>b.length-a.length); // 长的优先，避免嵌套
+      keywords.forEach(kw => {
+        if(!kw) return;
+        let pattern = kw.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+        let reg = new RegExp(pattern, "gi");
+        safeStr = safeStr.replace(reg, match => `<span class="highlight">${match}</span>`);
+      });
+      return safeStr;
+    }
+
+    // 标题检查（已修正：字数统计一致、重复词检测准确）
+    function checkTitle() {
+      const title = document.getElementById("title").value; // 不再trim，和info一致
+      let html = "";
+      let errors = 0;
+
+      if (title.length > 200) {
+        html += `<div class="err">字符数超限：${title.length}/200</div>`;
+        errors++;
+      } else if (title.length > 80) {
+        html += `<div class="warn">字符数：${title.length}，建议80字符内以适配移动端</div>`;
+      } else if (title.length === 0) {
+        html += `<div class="err">标题不能为空</div>`;
+        errors++;
+      } else {
+        html += `<div class="ok">字符数合规：${title.length}/200</div>`;
+      }
+
+      if (forbiddenTitle.test(title)) {
+        html += `<div class="err">包含禁用符号（!、_、{}、^、¬、¦）</div>`;
+        errors++;
+      }
+
+      // 全词统计重复（支持SD等缩写）
+      let wordCount = {};
+      let wordPattern = /\b[a-z0-9\u4e00-\u9fa5\-]+\b/gi; // 匹配单词、数字、汉字、短横线
+      let match;
+      while ((match = wordPattern.exec(title)) !== null) {
+        let w = match[0];
+        if (!stopWords.includes(w.toLowerCase())) {
+          let key = w.replace(/s$/i, "").toLowerCase(); // 忽略末尾s
+          wordCount[key] = (wordCount[key] || 0) + 1;
+        }
+      }
+      let repeated = Object.entries(wordCount).filter(([w, n]) => n > 2);
+      if (repeated.length > 0) {
+        html += `<div class="err">以下词语重复超过2次：${repeated.map(([w, n]) => `"${w}"(${n}次)`).join("，")}</div>`;
+        errors++;
+      }
+
+      // 首字母大写检测
+      let notCap = [];
+      let titleWords = title.split(/\s+/);
+      titleWords.forEach(word => {
+        if (
+          word &&
+          !stopWords.includes(word.toLowerCase()) &&
+          /^[a-zA-Z]/.test(word) && // 只检测英文单词
+          word[0] !== word[0].toUpperCase()
+        ) {
+          notCap.push(word);
+        }
+      });
+      if (notCap.length > 0) {
+        html += `<div class="warn">部分词语未首字母大写（介词/冠词/连词除外）：${notCap.join(", ")}</div>`;
+      }
+
+      html += `<div>结构建议：品牌名→核心属性→产品类型→关键卖点→颜色/尺寸→型号。</div>`;
+
+      if (errors === 0) html = `<div class="ok">标题合规</div>` + html;
+      document.getElementById("titleResult").innerHTML = html;
+
+      // 只高亮，不再统计
+      let keywords = getKeywordsArr();
+      document.getElementById("titleHighlight").innerHTML = keywords.length>0 ? "关键词高亮：" + highlightKeywords(title, keywords) : "";
+    }
+
+    // 五点描述单条检查
+    function checkBullet(idx) {
+      const val = document.getElementById('bullet'+idx).value.trim();
+      let html = "";
+      let errors = 0;
+
+      if (!val) {
+        html += `<span class="err">内容为空</span>`;
+        errors++;
+      }
+      if (forbiddenBullets.test(val)) {
+        html += `<span class="err">含禁用符号（™、®、€、…、✅、❌）</span>`;
+        errors++;
+      }
+      forbiddenPhrases.forEach(p => {
+        if (val.includes(p)) {
+          html += `<span class="err">含禁用短语：“${p}”</span>`;
+          errors++;
+        }
+      });
+      forbiddenBulletPhrases.forEach(p => {
+        if (val.toLowerCase().includes(p.toLowerCase())) {
+          html += `<span class="err">含违禁内容：“${p}”</span>`;
+          errors++;
+        }
+      });
+      if (val.length > 300) {
+        html += `<span class="warn">字符数：${val.length}，建议不超300字符，移动端可能被折叠</span>`;
+      } else if(val.length>0) {
+        html += `<span class="ok">字符数：${val.length}/500</span>`;
+      }
+      if (val.length > 500) {
+        html += `<span class="err">字符数超限：${val.length}/500</span>`;
+        errors++;
+      }
+      // 结尾不能有标点（全符号覆盖）
+      if (forbiddenEndPunct.test(val)) {
+        html += `<span class="err">结尾不能有标点（, . ， 。 ; ； 、 ! ！ ? ？ : ：等）</span>`;
+        errors++;
+      }
+      if(errors===0 && val.length>0){
+        html = `<span class="ok">该要点合规</span> ` + html;
+      }
+      document.getElementById('result'+idx).innerHTML = html;
+
+      // 只高亮，不再统计
+      let keywords = getKeywordsArr();
+      document.getElementById("highlight"+idx).innerHTML = keywords.length>0 ? "关键词高亮：" + highlightKeywords(val, keywords) : "";
+    }
+
+    // 长描述检查与高亮
+    function checkLongDesc() {
+      const val = document.getElementById('longdesc').value.trim();
+      let html = "";
+      let errors = 0;
+      if (!val) {
+        html += `<span class="err">内容为空</span>`;
+        errors++;
+      }
+      if (forbiddenBullets.test(val)) {
+        html += `<span class="err">含禁用符号（™、®、€、…、✅、❌）</span>`;
+        errors++;
+      }
+      forbiddenPhrases.forEach(p => {
+        if (val.includes(p)) {
+          html += `<span class="err">含禁用短语：“${p}”</span>`;
+          errors++;
+        }
+      });
+      forbiddenBulletPhrases.forEach(p => {
+        if (val.toLowerCase().includes(p.toLowerCase())) {
+          html += `<span class="err">含违禁内容：“${p}”</span>`;
+          errors++;
+        }
+      });
+      if (val.length > 2000) {
+        html += `<span class="err">字符数：${val.length}/2000，超限</span>`;
+        errors++;
+      } else if(val.length>0) {
+        html += `<span class="ok">字符数：${val.length}/2000</span>`;
+      }
+      if(errors===0 && val.length>0){
+        html = `<span class="ok">长描述合规</span> ` + html;
+      }
+      document.getElementById('longdescResult').innerHTML = html;
+
+      // 只高亮，不再统计
+      let keywords = getKeywordsArr();
+      document.getElementById("longdescHighlight").innerHTML = keywords.length>0 ? "关键词高亮：" + highlightKeywords(val, keywords) : "";
+    }
+
+    // ST检查
+    function checkST() {
+      const st = document.getElementById("st").value.trim();
+      let html = "";
+      let errors = 0;
+      if (!st) {
+        html += `<div class="err">ST关键词不能为空</div>`;
+        errors++;
+      }
+      if (st.length > 250) {
+        html += `<div class="err">字符数超限：${st.length}/250</div>`;
+        errors++;
+      } else {
+        html += `<div class="ok">字符数：${st.length}/250</div>`;
+      }
+      if (/[,.;，。；、]/.test(st)) {
+        html += `<div class="err">请仅用空格分隔关键词，不要使用标点符号</div>`;
+        errors++;
+      }
+      let words = st.split(/\s+/).filter(w => w.length > 0);
+      let hasVerb = words.some(w => /ing$|ed$|en$|ize$|use$|make$|do$|is$|are$|be$/.test(w));
+      if (hasVerb) {
+        html += `<div class="warn">建议仅填写名词或名词词组，避免动词</div>`;
+      }
+      let wordSet = new Set();
+      let repeats = [];
+      words.forEach(w => {
+        let key = w.toLowerCase();
+        if (wordSet.has(key)) repeats.push(w);
+        wordSet.add(key);
+      });
+      if (repeats.length > 0) {
+        html += `<div class="warn">有重复关键词：${[...new Set(repeats)].join(" / ")}</div>`;
+      }
+      if (errors === 0) html = `<div class="ok">ST关键词合规</div>` + html;
+      document.getElementById("stResult").innerHTML = html;
+
+      // 只高亮，不再统计
+      let keywords = getKeywordsArr();
+      document.getElementById("stHighlight").innerHTML = keywords.length>0 ? "关键词高亮：" + highlightKeywords(st, keywords) : "";
+    }
+
+    // 关键词埋入检查与统计
+    function checkKeywordEmbedding() {
+      let keywords = getKeywordsArr();
+      if (keywords.length === 0) {
+        document.getElementById("keywordStatResult").innerHTML = `<div class="err">请先输入关键词</div>`;
+        return;
+      }
+      // 获取所有内容
+      let title = document.getElementById("title").value || "";
+      let bullets = [];
+      for(let i=1;i<=5;i++) {
+        bullets.push(document.getElementById("bullet"+i).value || "");
+      }
+      let longdesc = document.getElementById("longdesc").value || "";
+      let st = document.getElementById("st").value || "";
+
+      // 统计每个关键词在所有字段中出现的总次数
+      let stats = keywords.map(kw => {
+        let pattern = kw.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+        let reg = new RegExp(pattern, "gi");
+        let count = 0;
+        count += (title.match(reg) || []).length;
+        bullets.forEach(b=>{ count += (b.match(reg) || []).length; });
+        count += (longdesc.match(reg) || []).length;
+        count += (st.match(reg) || []).length;
+        return {kw, count};
+      });
+
+      // 按降序排序
+      stats.sort((a,b)=>b.count-b.count?b.count-a.count: a.kw.localeCompare(b.kw));
+
+      // 结果表格
+      let table = `<table class="stat-table"><tr><th>关键词</th><th>埋入总次数</th></tr>`;
+      stats.forEach(item=>{
+        table += `<tr><td>${item.kw}</td><td>${item.count}</td></tr>`;
+      });
+      table += `</table>`;
+
+      // 高亮所有区
+      document.getElementById("titleHighlight").innerHTML =
+        keywords.length>0 ? "关键词高亮：" + highlightKeywords(title, keywords) : "";
+      for(let i=1;i<=5;i++) {
+        document.getElementById("highlight"+i).innerHTML =
+          keywords.length>0 ? "关键词高亮：" + highlightKeywords(bullets[i-1], keywords) : "";
+      }
+      document.getElementById("longdescHighlight").innerHTML =
+        keywords.length>0 ? "关键词高亮：" + highlightKeywords(longdesc, keywords) : "";
+      document.getElementById("stHighlight").innerHTML =
+        keywords.length>0 ? "关键词高亮：" + highlightKeywords(st, keywords) : "";
+
+      document.getElementById("keywordStatResult").innerHTML =
+        `<div class="ok">关键词埋入统计：</div>` + table +
+        `<div class="warn" style="margin-top:8px;">如需刷新高亮/统计，请重新点击本按钮</div>`;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,701 @@
+/* 主要样式 */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Arial', sans-serif;
+  color: #333;
+}
+
+/* 使用说明样式 */
+.helpSection {
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.helpHeader {
+  padding: 15px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.helpHeader:hover {
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+}
+
+.helpHeader h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.helpToggle {
+  transition: transform 0.3s ease;
+  font-size: 14px;
+}
+
+.helpContent {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  background: #f8f9fa;
+}
+
+.helpContent.show {
+  max-height: 500px;
+  padding: 20px;
+}
+
+.helpGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.helpItem {
+  background: white;
+  padding: 15px;
+  border-radius: 6px;
+  border-left: 4px solid #667eea;
+}
+
+.helpItem h4 {
+  color: #333;
+  margin-bottom: 8px;
+  font-size: 14px;
+  margin-top: 0;
+}
+
+.helpItem p {
+  color: #666;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* 作者信息样式 */
+.authorInfo {
+  text-align: center;
+  margin-top: 30px;
+  padding: 15px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.authorInfo p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.authorInfo strong {
+  color: #ffd700;
+}
+
+.authorInfo a {
+  color: #ffd700;
+  text-decoration: underline;
+}
+
+/* 预览模态框样式 */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  animation: fadeIn 0.3s;
+}
+
+.modal.show {
+  display: block;
+}
+
+.modalContent {
+  background-color: white;
+  margin: 2% auto;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 1000px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.modalHeader {
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8f9fa;
+  border-radius: 8px 8px 0 0;
+}
+
+.modalHeader h3 {
+  margin: 0;
+  color: #333;
+}
+
+.close {
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #999;
+  line-height: 1;
+}
+
+.close:hover {
+  color: #333;
+}
+
+.modalBody {
+  padding: 20px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.modalFooter {
+  padding: 20px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  background: #f8f9fa;
+  border-radius: 0 0 8px 8px;
+}
+
+#previewContent {
+  transform: scale(0.8);
+  transform-origin: top left;
+  width: 125%;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.toolbar {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.btnPrimary { background-color: #007bff; color: white; }
+.btnSecondary { background-color: #6c757d; color: white; }
+.btnSuccess { background-color: #28a745; color: white; }
+.btnInfo { background-color: #17a2b8; color: white; }
+.btnWarning { background-color: #ffc107; color: #212529; }
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+.btnSmall {
+  padding: 4px 8px;
+  font-size: 12px;
+  border: 1px solid #ddd;
+  background: #f8f9fa;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.btnRemove {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/* Logo更换按钮样式 */
+.btnChangeLogo {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,123,255,0.9);
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btnChangeLogo:hover {
+  background: rgba(0,123,255,1);
+}
+
+.invoiceContainer {
+  background: white;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  min-height: 800px;
+}
+
+.invoiceHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 30px;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 20px;
+}
+
+.invoiceTitle h1 {
+  font-size: 48px;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+}
+
+.invoiceInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.infoGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.infoGroup label {
+  font-weight: bold;
+  color: #666;
+  font-size: 14px;
+}
+
+.infoGroup input, .infoGroup select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  min-width: 200px;
+}
+
+.companySection {
+  margin-bottom: 30px;
+}
+
+.companyInfo {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.companyFrom {
+  flex: 1;
+  margin-right: 20px;
+}
+
+.companyFrom label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #666;
+}
+
+.companyFrom textarea {
+  width: 100%;
+  height: 120px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.templateControls {
+  display: flex;
+  gap: 5px;
+  margin-top: 10px;
+  align-items: center;
+}
+
+.templateControls select {
+  flex: 1;
+  padding: 4px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+}
+
+.companyLogo {
+  width: 200px;
+  text-align: center;
+}
+
+.logoPlaceholder {
+  width: 180px;
+  height: 120px;
+  border: 2px dashed #ddd;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  position: relative;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.logoPlaceholder input[type="file"] {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.logoPlaceholder img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.billToSection {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.billTo {
+  flex: 1;
+}
+
+.billTo label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #666;
+}
+
+.billTo textarea {
+  width: 100%;
+  height: 120px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.orderInfo {
+  flex: 1;
+}
+
+.orderDetails {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.orderDetails .infoGroup {
+  margin-bottom: 15px;
+}
+
+.orderDetails .infoGroup:last-child {
+  margin-bottom: 0;
+}
+
+.productsSection {
+  margin-top: 30px;
+}
+
+.productControls {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.productsTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.productsTable th,
+.productsTable td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.productsTable th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+  color: #495057;
+}
+
+.productsTable input {
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  font-size: 14px;
+}
+
+.productsTable .productAmount {
+  font-weight: bold;
+  text-align: right;
+}
+
+.invoiceTotal {
+  text-align: right;
+  margin-top: 20px;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 20px;
+  padding: 15px 0;
+  border-top: 2px solid #333;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.totalLabel {
+  color: #333;
+}
+
+.totalAmount {
+  color: #333;
+  min-width: 120px;
+}
+
+/* Logo隐藏样式 - 通用 */
+.noLogo {
+  display: none !important;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .container {
+      padding: 10px;
+  }
+  
+  .invoiceContainer {
+      padding: 20px;
+  }
+  
+  .invoiceHeader {
+      flex-direction: column;
+      gap: 20px;
+  }
+  
+  .companyInfo {
+      flex-direction: column;
+  }
+  
+  .companyFrom {
+      margin-right: 0;
+      margin-bottom: 20px;
+  }
+  
+  .billToSection {
+      flex-direction: column;
+  }
+  
+  .productsTable {
+      font-size: 12px;
+  }
+  
+  .productsTable input {
+      padding: 4px;
+      font-size: 12px;
+  }
+  
+  .helpGrid {
+      grid-template-columns: 1fr;
+  }
+  
+  .modalContent {
+      width: 95%;
+      margin: 5% auto;
+  }
+  
+  #previewContent {
+      transform: scale(0.6);
+      width: 167%;
+  }
+}
+
+@media print {
+  :global(body) {
+      background: white;
+      font-size: 10px;
+      line-height: 1.2;
+      margin: 0;
+      padding: 0;
+  }
+  
+  .container {
+      max-width: none;
+      margin: 0;
+      padding: 0;
+  }
+  
+  .invoiceContainer {
+      box-shadow: none;
+      border-radius: 0;
+      padding: 8px;
+      margin: 0;
+      max-height: none;
+      transform: none;
+      width: 100%;
+  }
+  
+  .invoiceHeader {
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+  }
+  
+  .companySection {
+      margin-bottom: 8px;
+  }
+  
+  .productsSection {
+      margin-top: 8px;
+      margin-bottom: 8px;
+  }
+  
+  .invoiceTitle h1 {
+      font-size: 28px;
+      margin-bottom: 5px;
+      margin-top: 0;
+  }
+  
+  .productsTable {
+      margin-bottom: 8px;
+      width: 100%;
+  }
+  
+  .productsTable th,
+  .productsTable td {
+      padding: 2px 4px;
+      font-size: 9px;
+      line-height: 1.1;
+  }
+  
+  .container input, .container textarea, .container select {
+      border: none !important;
+      background: transparent !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      font-size: inherit !important;
+      line-height: inherit !important;
+  }
+  
+  .companyInfo {
+      margin-bottom: 8px;
+  }
+  
+  .companyFrom textarea,
+  .billTo textarea {
+      line-height: 1.1 !important;
+      padding: 0 !important;
+  }
+  
+  .orderDetails {
+      background: transparent !important;
+      border: 1px solid #ddd !important;
+      margin: 2px 0;
+      padding: 8px !important;
+  }
+  
+  .orderDetails .infoGroup {
+      margin-bottom: 4px;
+  }
+  
+  .invoiceTotal {
+      margin-top: 8px;
+  }
+  
+  .totalRow {
+      padding: 8px 0;
+      font-size: 12px;
+  }
+  
+  @page {
+      margin: 0.2in;
+      size: A4;
+  }
+  
+  .toolbar,
+  .templateControls,
+  .productControls,
+  .btn,
+  .btnRemove,
+  .btnSmall,
+  .btnChangeLogo,
+  .helpSection,
+  .authorInfo,
+  .pageHeader {
+      display: none !important;
+  }
+  
+  .productsTable th:last-child,
+  .productsTable td:last-child {
+      display: none !important;
+  }
+  
+  .logoPlaceholder {
+      border: none !important;
+  }
+  
+  .companyLogo.noLogo {
+      display: none !important;
+  }
+  
+  .productsTable {
+      page-break-inside: auto;
+  }
+  
+  .productsTable thead {
+      display: table-header-group;
+  }
+  
+  .productsTable tr {
+      page-break-inside: avoid;
+  }
+}

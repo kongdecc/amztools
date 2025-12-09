@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可视化HTML编辑器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            min-height: 100vh;
+        }
+
+        .header {
+            margin-bottom: 30px;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        /* 作者信息样式 */
+        .author {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 15px;
+            font-weight: normal;
+        }
+
+        .tips {
+            background-color: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 15px;
+            color: #1976d2;
+            font-size: 14px;
+        }
+
+        .tips strong {
+            font-weight: 600;
+        }
+        
+        /* 新的提示容器样式 */
+        .tips-container {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .tips-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background-color: #e9ecef;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .tips-header:hover {
+            background-color: #dee2e6;
+        }
+        
+        .tips-toggle {
+            font-size: 12px;
+            transition: transform 0.3s;
+        }
+        
+        .tips-content {
+            padding: 15px;
+        }
+        
+        .tips-section {
+            margin-bottom: 15px;
+        }
+        
+        .tips-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .tips-section h4 {
+            margin-bottom: 8px;
+            color: #495057;
+            font-size: 16px;
+        }
+        
+        .tips-section ul {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .tips-section li {
+            margin-bottom: 5px;
+            color: #6c757d;
+        }
+        
+        .feature-highlight {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 8px 12px;
+            margin-top: 10px;
+            border-radius: 0 4px 4px 0;
+            font-size: 13px;
+            color: #856404;
+        }
+
+        .toolbar {
+            border: 1px solid #ddd;
+            border-radius: 8px 8px 0 0;
+            background-color: #f8f9fa;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background-color: #2196f3;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #1976d2;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .btn-format {
+            background-color: transparent;
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        .btn-format:hover {
+            background-color: #e9ecef;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
+        .btn-warning {
+            background-color: #fd7e14;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background-color: #e8590c;
+        }
+
+        .divider {
+            width: 1px;
+            height: 24px;
+            background-color: #ddd;
+        }
+
+        .editor-container {
+            border-left: 1px solid #ddd;
+            border-right: 1px solid #ddd;
+            border-bottom: 1px solid #ddd;
+            border-radius: 0 0 8px 8px;
+            background-color: white;
+        }
+
+        .editor {
+            min-height: 250px;
+            padding: 15px;
+            outline: none;
+            border: none;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .editor:empty:before {
+            content: "这里输入文字...";
+            color: #999;
+        }
+
+        .code-view {
+            padding: 15px;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .code-textarea {
+            width: 100%;
+            height: 250px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            resize: vertical;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .symbols-section {
+            margin-top: 30px;
+        }
+
+        .symbols-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .symbols-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .symbols-more {
+            color: #2196f3;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .symbols-more:hover {
+            text-decoration: underline;
+        }
+
+        .symbols-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .symbol-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background-color: #fafafa;
+            transition: all 0.2s;
+        }
+
+        .symbol-item:hover {
+            background-color: #f0f0f0;
+            transform: translateY(-1px);
+        }
+
+        .symbol-char {
+            font-size: 20px;
+            font-weight: bold;
+            width: 30px;
+            text-align: center;
+            color: #333;
+        }
+
+        .symbol-btn {
+            padding: 4px 12px;
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .symbol-btn:hover {
+            background-color: #1976d2;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #fff;
+            color: #333;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .footer h4 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .footer p {
+            font-size: 14px;
+            color: #666;
+        }
+        .footer a {
+            color: #2196f3;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+                .tips-content {
+            padding: 0 15px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+        }
+        
+        .tips-content.expanded {
+            max-height: 1000px;
+            padding: 15px;
+            transition: max-height 0.5s ease-in, padding 0.3s ease-in;
+        }
+        
+        .tips-toggle.expanded {
+            transform: rotate(180deg);
+        }
+        /* 改进响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .symbols-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .toolbar-group {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .btn {
+                font-size: 12px;
+                padding: 6px 8px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .toolbar-group {
+                flex-direction: column;
+            }
+            
+            .divider {
+                width: 100%;
+                height: 1px;
+                margin: 5px 0;
+            }
+        }
+        /* 颜色选择器样式优化 */
+        input[type="color"] {
+            -webkit-appearance: none;
+            appearance: none;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        
+        input[type="color"]::-webkit-color-swatch {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .color-label {
+            font-size: 12px;
+            color: #666;
+            white-space: nowrap;
+        }
+        
+        .color-picker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 标题和作者信息 -->
+        <div class="header">
+            <h1 class="title">可视化HTML编辑器</h1>
+            <div class="author">作者：達哥</div>
+            <div class="tips-container">
+            <div class="tips-header" onclick="toggleTips()">
+                <h3 style="margin: 0; color: #333;">📖 使用说明</h3>
+                <span class="tips-toggle" id="tipsToggle">▼</span>
+            </div>
+            <div class="tips-content" id="tipsContent">
+                <div class="tips-section">
+                    <h4>🚀 快速开始</h4>
+                    <ul>
+                        <li><strong>第一步：</strong>在编辑区域输入文字，使用工具栏按钮编辑出想要的效果</li>
+                        <li><strong>第二步：</strong>点击"查看HTML代码"，全选、复制生成的代码</li>
+                        <li><strong>第三步：</strong>将复制的代码粘贴到需要的地方使用</li>
+                    </ul>
+                    <div class="feature-highlight">
+                        <strong>💡 小贴士：</strong>从其他页面复制过来的文字，建议先点击"清除文字效果"按钮，然后再重新编辑
+                    </div>
+                </div>
+                
+                <div class="tips-section">
+                    <h4>🎨 文本格式化</h4>
+                    <ul>
+                        <li><strong>基本格式：</strong>粗体、斜体、下划线</li>
+                        <li><strong>文本对齐：</strong>左对齐、居中对齐、右对齐</li>
+                        <li><strong>列表：</strong>无序列表、有序列表</li>
+                        <li><strong>字体大小：</strong>小、正常、大、特大</li>
+                        <li><strong>颜色设置：</strong>字体颜色、背景颜色</li>
+                    </ul>
+                </div>
+                
+                <div class="tips-section">
+                    <h4>🔧 高级功能</h4>
+                    <ul>
+                        <li><strong>撤销/重做：</strong>支持操作历史记录，可以撤销和重做编辑操作</li>
+                        <li><strong>插入链接：</strong>点击链接按钮，输入URL和链接文本</li>
+                        <li><strong>插入图片：</strong>点击图片按钮，输入图片URL和替代文本</li>
+                        <li><strong>实时预览：</strong>点击"实时预览"查看最终效果</li>
+                    </ul>
+                </div>
+                
+                <div class="tips-section">
+                    <h4>💾 数据管理</h4>
+                    <ul>
+                        <li><strong>保存到本地：</strong>将当前编辑内容保存到浏览器本地存储</li>
+                        <li><strong>从本地加载：</strong>从浏览器本地存储加载之前保存的内容</li>
+                        <li><strong>导出HTML：</strong>将编辑内容导出为独立的HTML文件</li>
+                        <li><strong>导出文本：</strong>将编辑内容导出为纯文本文件</li>
+                    </ul>
+                </div>
+                
+                <div class="tips-section">
+                    <h4>✨ 符号插入</h4>
+                    <ul>
+                        <li><strong>常用符号：</strong>点击符号网格中的符号直接插入到编辑器</li>
+                        <li><strong>搜索符号：</strong>在搜索框中输入关键词快速查找符号</li>
+                        <li><strong>更多符号：</strong>点击"更多"按钮展开额外的符号集合</li>
+                    </ul>
+                </div>
+                
+                <div class="tips-section">
+                    <h4>⌨️ 快捷操作</h4>
+                    <ul>
+                        <li><strong>清除格式：</strong>选中文字后点击"清除文字效果"按钮</li>
+                        <li><strong>字符统计：</strong>状态栏实时显示输入字符数量</li>
+                        <li><strong>代码查看：</strong>随时切换查看HTML源代码</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <!-- 工具栏 -->
+        <div class="toolbar">
+            <!-- 视图切换组 -->
+            <div class="toolbar-group">
+                <button class="btn btn-primary" onclick="toggleView()">
+                    <span id="viewModeText">👁 查看HTML代码</span>
+                </button>
+                <button class="btn btn-primary" onclick="togglePreview()">
+                    👁 实时预览
+                </button>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <!-- 基本格式组 -->
+            <div class="toolbar-group">
+                <button class="btn btn-format" onclick="undo()" title="撤销">↶ 撤销</button>
+                <button class="btn btn-format" onclick="redo()" title="重做">↷ 重做</button>
+                <div class="divider"></div>
+                <button class="btn btn-format" onclick="formatText('bold')" title="粗体"><strong>B</strong></button>
+                <button class="btn btn-format" onclick="formatText('italic')" title="斜体"><em>I</em></button>
+                <button class="btn btn-format" onclick="formatText('underline')" title="下划线"><u>U</u></button>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <!-- 列表组 -->
+            <div class="toolbar-group">
+                <button class="btn btn-format" onclick="formatText('insertUnorderedList')" title="无序列表">• 列表</button>
+                <button class="btn btn-format" onclick="formatText('insertOrderedList')" title="有序列表">1. 列表</button>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <!-- 对齐组 -->
+            <div class="toolbar-group">
+                <button class="btn btn-format" onclick="formatText('justifyLeft')" title="左对齐">⬅ 左对齐</button>
+                <button class="btn btn-format" onclick="formatText('justifyCenter')" title="居中对齐">⬌ 居中</button>
+                <button class="btn btn-format" onclick="formatText('justifyRight')" title="右对齐">➡ 右对齐</button>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <!-- 颜色组 -->
+            <div class="toolbar-group">
+                <div class="color-picker-wrapper">
+                    <span class="color-label">字体:</span>
+                    <input type="color" onchange="changeColor(this.value)" title="文字颜色" class="btn" style="width: 30px; height: 30px; padding: 2px;">
+                </div>
+                <div class="color-picker-wrapper">
+                    <span class="color-label">背景:</span>
+                    <input type="color" onchange="changeBackgroundColor(this.value)" title="背景颜色" class="btn" style="width: 30px; height: 30px; padding: 2px;">
+                </div>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <!-- 字体组 -->
+            <div class="toolbar-group">
+                <select onchange="changeFontSize(this.value)" class="btn">
+                    <option value="">字号</option>
+                    <option value="1">小</option>
+                    <option value="3">正常</option>
+                    <option value="5">大</option>
+                    <option value="7">特大</option>
+                </select>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <!-- 插入组 -->
+            <div class="toolbar-group">
+                <button class="btn btn-format" onclick="insertLink()" title="插入链接">🔗 链接</button>
+                <button class="btn btn-format" onclick="insertImage()" title="插入图片">🖼 图片</button>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <!-- 存储组 -->
+            <div class="toolbar-group">
+                <button class="btn btn-secondary" onclick="saveToLocal()" title="保存到本地">
+                    💾 保存
+                </button>
+                <button class="btn btn-secondary" onclick="loadFromLocal()" title="从本地加载">
+                    📁 加载
+                </button>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <!-- 导出组 -->
+            <div class="toolbar-group">
+                <button class="btn btn-success" onclick="exportAsHTML()" title="导出为HTML">
+                    📄 导出HTML
+                </button>
+                <button class="btn btn-success" onclick="exportAsText()" title="导出为文本">
+                    📝 导出文本
+                </button>
+            </div>
+        </div>
+
+        <!-- 编辑区域 -->
+        <div class="editor-container">
+            <div id="editor" class="editor" contenteditable="true" oninput="debouncedUpdateContent()"></div>
+            
+            <div id="codeView" class="code-view" style="display: none;">
+                <div class="code-header">
+                    <span>HTML代码：</span>
+                    <button class="btn btn-success" onclick="copyHTML()">
+                        📋 复制代码
+                    </button>
+                </div>
+                <textarea id="htmlCode" class="code-textarea" placeholder="HTML代码将显示在这里..."></textarea>
+            </div>
+        </div>
+
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <span>输入 <span id="charCount">0</span> 字符</span>
+            <button class="btn btn-warning" onclick="clearFormat()">
+                🔄 清除文字效果
+            </button>
+        </div>
+
+        <!-- 预览区域 -->
+        <div class="preview-section" style="display: none; margin-top: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 8px;">
+            <div class="preview-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h4>实时预览</h4>
+                <button class="btn btn-secondary" onclick="togglePreview()">关闭预览</button>
+            </div>
+            <div id="previewContent" style="border: 1px solid #eee; padding: 15px; min-height: 100px; background-color: white;"></div>
+        </div>
+
+        <!-- 常用符号 -->
+        <div class="symbols-section">
+            <div class="symbols-header">
+                <h3 class="symbols-title">常用符号</h3>
+                <span class="symbols-more" style="cursor: pointer;">更多</span>
+            </div>
+            
+            <div class="symbols-search" style="margin-bottom: 15px;">
+                <input type="text" id="symbolSearch" placeholder="搜索符号..." 
+                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
+                       oninput="filterSymbols(this.value)">
+            </div>
+            
+            <div class="symbols-grid" id="symbolsGrid">
+                <!-- 符号将通过JavaScript动态生成 -->
+            </div>
+        </div>
+        
+        <!-- 页脚 -->
+        <div class="footer">
+            <p>版权归 跨境乐趣园所有 官网： <a href="https://amzlink.top/" target="_blank" rel="noopener">https://amzlink.top/</a> | 作者：達哥</p>
+        </div>
+       
+
+    <script>
+        // 添加防抖函数
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        // 常用符号数据
+        const commonSymbols = [
+            { symbol: '√', name: '对勾' },
+            { symbol: '™', name: '商标' },
+            { symbol: '★', name: '星号' },
+            { symbol: '△', name: '三角' },
+            { symbol: '↑', name: '上箭头' },
+            { symbol: '↓', name: '下箭头' },
+            { symbol: '←', name: '左箭头' },
+            { symbol: '→', name: '右箭头' },
+            { symbol: '☺', name: '笑脸' },
+            { symbol: '@', name: 'at符号' },
+            { symbol: '①', name: '数字1' },
+            { symbol: '②', name: '数字2' },
+            { symbol: '③', name: '数字3' },
+            { symbol: '④', name: '数字4' },
+            { symbol: '⑤', name: '数字5' },
+            { symbol: '⑥', name: '数字6' },
+            { symbol: '⑦', name: '数字7' },
+            { symbol: '⑧', name: '数字8' },
+            { symbol: '⑨', name: '数字9' },
+            { symbol: '⑩', name: '数字10' },
+            { symbol: '©', name: '版权' },
+            { symbol: '®', name: '注册' },
+            { symbol: '☑', name: '选中' },
+            { symbol: '+', name: '加号' },
+            { symbol: '●', name: '实心圆' },
+            { symbol: '♥', name: '心形' },
+            { symbol: '•', name: '项目符号' },
+            { symbol: '▲', name: '上三角' },
+            { symbol: '▼', name: '下三角' },
+            { symbol: '□', name: '方框' }
+        ];
+
+        // 更多符号数据
+        const moreSymbols = [
+            { symbol: '※', name: '米号' },
+            { symbol: '№', name: '序号' },
+            { symbol: '♂', name: '男性' },
+            { symbol: '♀', name: '女性' },
+            { symbol: '♠', name: '黑桃' },
+            { symbol: '♣', name: '梅花' },
+            { symbol: '♥', name: '红心' },
+            { symbol: '♦', name: '方块' },
+            { symbol: '♪', name: '音符' },
+            { symbol: '♫', name: '双音符' },
+            { symbol: '☀', name: '太阳' },
+            { symbol: '☁', name: '云朵' },
+            { symbol: '☂', name: '雨伞' },
+            { symbol: '☃', name: '雪花' },
+            { symbol: '☄', name: '彗星' },
+            { symbol: '♨', name: '温泉' },
+            { symbol: '♩', name: '四分音符' },
+            { symbol: '♬', name: '十六分音符' },
+            { symbol: '♭', name: '降号' },
+            { symbol: '♮', name: '还原号' },
+            { symbol: '♯', name: '升号' },
+            { symbol: '♰', name: '双升号' },
+            { symbol: '♱', name: '双降号' },
+            { symbol: '♲', name: '循环' },
+            { symbol: '♳', name: '回收' },
+            { symbol: '♴', name: '纸张' },
+            { symbol: '♵', name: '塑料' },
+            { symbol: '♶', name: '玻璃' },
+            { symbol: '♷', name: '金属' },
+            { symbol: '♸', name: '电子' },
+            { symbol: '♹', name: '堆肥' },
+            { symbol: '♺', name: '叶子' },
+            { symbol: '♻', name: '循环利用' },
+            { symbol: '♼', name: '谷物' },
+            { symbol: '♽', name: '可回收' },
+            { symbol: '♾', name: '永久' },
+            { symbol: '♿', name: '轮椅' },
+            { symbol: '⚀', name: '骰子1' },
+            { symbol: '⚁', name: '骰子2' },
+            { symbol: '⚂', name: '骰子3' },
+            { symbol: '⚃', name: '骰子4' },
+            { symbol: '⚄', name: '骰子5' },
+            { symbol: '⚅', name: '骰子6' },
+            { symbol: '⚆', name: '白圆圈' },
+            { symbol: '⚇', name: '闪电' },
+            { symbol: '⚈', name: '彗星' },
+            { symbol: '⚉', name: '爆炸' },
+            { symbol: '⚐', name: '白旗' },
+            { symbol: '⚑', name: '黑旗' },
+            { symbol: '⚒', name: '锤子' },
+            { symbol: '⚓', name: '锚' },
+            { symbol: '⚔', name: '交叉剑' },
+            { symbol: '⚕', name: '医疗' },
+            { symbol: '⚖', name: '天平' },
+            { symbol: '⚗', name: '烧瓶' },
+            { symbol: '⚘', name: '花朵' },
+            { symbol: '⚙', name: '齿轮' },
+            { symbol: '⚚', name: '调和' },
+            { symbol: '⚛', name: '原子' },
+            { symbol: '⚜', name: '鸢尾花' },
+            { symbol: '⚝', name: '星星' },
+            { symbol: '⚞', name: '指北针' },
+            { symbol: '⚟', name: '指南针' },
+            { symbol: '⚠', name: '警告' },
+            { symbol: '⚡', name: '高压电' },
+            { symbol: '⚢', name: '女性双性' },
+            { symbol: '⚣', name: '男性双性' },
+            { symbol: '⚤', name: '异性恋' },
+            { symbol: '⚥', name: '双性恋' },
+            { symbol: '⚦', name: '男性带箭头' },
+            { symbol: '⚧', name: '跨性别' },
+            { symbol: '⚨', name: '垂直双性' },
+            { symbol: '⚩', name: '水平双性' },
+            { symbol: '⚪', name: '白圆' },
+            { symbol: '⚫', name: '黑圆' },
+            { symbol: '⚬', name: '中空圆' },
+            { symbol: '⚭', name: '波浪线' },
+            { symbol: '⚮', name: '禁止' },
+            { symbol: '⚯', name: '离开' },
+            { symbol: '⚰', name: '骨灰盒' },
+            { symbol: '⚱', name: '骨灰瓮' },
+            { symbol: '⚲', name: '地球' },
+            { symbol: '⚳', name: '水瓶座' },
+            { symbol: '⚴', name: '双鱼座' },
+            { symbol: '⚵', name: '白羊座' },
+            { symbol: '⚶', name: '金牛座' },
+            { symbol: '⚷', name: '双子座' },
+            { symbol: '⚸', name: '巨蟹座' },
+            { symbol: '⚹', name: '狮子座' },
+            { symbol: '⚺', name: '处女座' },
+            { symbol: '⚻', name: '天秤座' },
+            { symbol: '⚼', name: '天蝎座' },
+            { symbol: '⚽', name: '足球' },
+            { symbol: '⚾', name: '棒球' },
+            { symbol: '⚿', name: '台球' },
+            { symbol: '⛀', name: '斯诺克' },
+            { symbol: '⛁', name: '国际象棋' },
+            { symbol: '⛂', name: '国际象棋' },
+            { symbol: '⛃', name: '国际象棋' },
+            { symbol: '⛄', name: '雪人' },
+            { symbol: '⛇', name: '雪崩' },
+            { symbol: '⛈', name: '雷雨' },
+            { symbol: '⛉', name: '日出' },
+            { symbol: '⛊', name: '日落' },
+            { symbol: '⛋', name: '月亮' },
+            { symbol: '⛌', name: '日食' },
+            { symbol: '⛍', name: '月食' },
+            { symbol: '⛎', name: '上升' },
+            { symbol: '⛏', name: '镐' },
+            { symbol: '⛐', name: '电钻' },
+            { symbol: '⛑', name: '救援' },
+            { symbol: '⛒', name: '海关' },
+            { symbol: '⛓', name: '锁链' },
+            { symbol: '⛔', name: '禁止' },
+            { symbol: '⛕', name: '禁止进入' },
+            { symbol: '⛖', name: '禁止吸烟' },
+            { symbol: '⛗', name: '禁止停车' },
+            { symbol: '⛘', name: '禁止左转' },
+            { symbol: '⛙', name: '禁止右转' },
+            { symbol: '⛚', name: '禁止掉头' },
+            { symbol: '⛛', name: '禁止超车' },
+            { symbol: '⛜', name: '禁止鸣笛' },
+            { symbol: '⛝', name: '禁止行人' },
+            { symbol: '⛞', name: '禁止自行车' },
+            { symbol: '⛟', name: '禁止摩托车' },
+            { symbol: '⛠', name: '注意儿童' },
+            { symbol: '⛡', name: '注意行人' },
+            { symbol: '⛢', name: '注意自行车' },
+            { symbol: '⛣', name: '注意动物' },
+            { symbol: '⛤', name: '注意施工' },
+            { symbol: '⛥', name: '注意落石' },
+            { symbol: '⛦', name: '注意弯道' },
+            { symbol: '⛧', name: '注意坡道' },
+            { symbol: '⛨', name: '注意隧道' },
+            { symbol: '⛩', name: '鸟居' },
+            { symbol: '⛪', name: '教堂' },
+            { symbol: '⛫', name: '清真寺' },
+            { symbol: '⛬', name: '犹太教堂' },
+            { symbol: '⛭', name: '寺庙' },
+            { symbol: '⛮', name: '神社' },
+            { symbol: '⛯', name: '墓地' },
+            { symbol: '⛰', name: '山' },
+            { symbol: '⛱', name: '沙滩' },
+            { symbol: '⛲', name: '喷泉' },
+            { symbol: '⛳', name: '高尔夫' },
+            { symbol: '⛴', name: '渡轮' },
+            { symbol: '⛵', name: '帆船' },
+            { symbol: '⛶', name: '划艇' },
+            { symbol: '⛷', name: '滑雪' },
+            { symbol: '⛸', name: '滑冰' },
+            { symbol: '⛹', name: '篮球' },
+            { symbol: '⛺', name: '露营' },
+            { symbol: '⛻', name: '日本' },
+            { symbol: '⛼', name: '韩国' },
+            { symbol: '⛽', name: '加油站' },
+            { symbol: '⛾', name: '公交站' },
+            { symbol: '⛿', name: '地铁站' },
+            { symbol: '✀', name: '回车' },
+            { symbol: '✁', name: '剪刀' },
+            { symbol: '✂', name: '剪刀' },
+            { symbol: '✃', name: '剪刀' },
+            { symbol: '✄', name: '剪刀' },
+            { symbol: '✅', name: '对勾' },
+            { symbol: '✆', name: '电话' },
+            { symbol: '✇', name: '磁带' },
+            { symbol: '✈', name: '飞机' },
+            { symbol: '✉', name: '信封' },
+            { symbol: '✊', name: '拳头' },
+            { symbol: '✋', name: '手掌' },
+            { symbol: '✌', name: '胜利' },
+            { symbol: '✍', name: '写字' },
+            { symbol: '✎', name: '铅笔' },
+            { symbol: '✏', name: '铅笔' },
+            { symbol: '✐', name: '铅笔' },
+            { symbol: '✑', name: '钢笔' },
+            { symbol: '✒', name: '钢笔' },
+            { symbol: '✓', name: '对勾' },
+            { symbol: '✔', name: '十字' },
+            { symbol: '✕', name: '叉号' },
+            { symbol: '✖', name: '叉号' },
+            { symbol: '✗', name: '叉号' },
+            { symbol: '✘', name: '叉号' },
+            { symbol: '✙', name: '十字架' },
+            { symbol: '✚', name: '加号' },
+            { symbol: '✛', name: '加号' },
+            { symbol: '✜', name: '加号' },
+            { symbol: '✝', name: '十字架' },
+            { symbol: '✞', name: '十字架' },
+            { symbol: '✟', name: '十字架' },
+            { symbol: '✠', name: '万字符' },
+            { symbol: '✡', name: '大卫之星' },
+            { symbol: '✢', name: '星号' },
+            { symbol: '✣', name: '星号' },
+            { symbol: '✤', name: '星号' },
+            { symbol: '✥', name: '星号' },
+            { symbol: '✦', name: '星号' },
+            { symbol: '✧', name: '星号' },
+            { symbol: '✨', name: '星星' },
+            { symbol: '✩', name: '星号' },
+            { symbol: '✪', name: '星号' },
+            { symbol: '✫', name: '星号' },
+            { symbol: '✬', name: '星号' },
+            { symbol: '✭', name: '星号' },
+            { symbol: '✮', name: '星号' },
+            { symbol: '✯', name: '星号' },
+            { symbol: '✰', name: '星号' },
+            { symbol: '✱', name: '星号' },
+            { symbol: '✲', name: '星号' },
+            { symbol: '✳', name: '星号' },
+            { symbol: '✴', name: '星号' },
+            { symbol: '✵', name: '星号' },
+            { symbol: '✶', name: '星号' },
+            { symbol: '✷', name: '星号' },
+            { symbol: '✸', name: '星号' },
+            { symbol: '✹', name: '星号' },
+            { symbol: '✺', name: '星号' },
+            { symbol: '✻', name: '星号' },
+            { symbol: '✼', name: '星号' },
+            { symbol: '✽', name: '星号' },
+            { symbol: '✾', name: '星号' },
+            { symbol: '✿', name: '花朵' },
+            { symbol: '❀', name: '花朵' },
+            { symbol: '❁', name: '花朵' },
+            { symbol: '❂', name: '花朵' },
+            { symbol: '❃', name: '花朵' },
+            { symbol: '❄', name: '雪花' },
+            { symbol: '❅', name: '雪花' },
+            { symbol: '❆', name: '雪花' },
+            { symbol: '❇', name: '星号' },
+            { symbol: '❈', name: '星号' },
+            { symbol: '❉', name: '星号' },
+            { symbol: '❊', name: '星号' },
+            { symbol: '❋', name: '星号' },
+            { symbol: '❌', name: '叉号' },
+            { symbol: '❍', name: '圆圈' },
+            { symbol: '❎', name: '叉号' },
+            { symbol: '❏', name: '方块' },
+            { symbol: '❐', name: '方块' },
+            { symbol: '❑', name: '方块' },
+            { symbol: '❒', name: '方块' },
+            { symbol: '❓', name: '问号' },
+            { symbol: '❔', name: '白问号' },
+            { symbol: '❕', name: '感叹号' },
+            { symbol: '❖', name: '菱形' },
+            { symbol: '❗', name: '感叹号' },
+            { symbol: '❘', name: '竖线' },
+            { symbol: '❙', name: '竖线' },
+            { symbol: '❚', name: '竖线' },
+            { symbol: '❛', name: '单引号' },
+            { symbol: '❜', name: '单引号' },
+            { symbol: '❝', name: '双引号' },
+            { symbol: '❞', name: '双引号' },
+            { symbol: '❟', name: '逗号' },
+            { symbol: '❠', name: '问号' },
+            { symbol: '❡', name: '音符' },
+            { symbol: '❢', name: '双叹号' },
+            { symbol: '❣', name: '心形' },
+            { symbol: '❤', name: '心形' },
+            { symbol: '❥', name: '心形' },
+            { symbol: '❦', name: '花朵' },
+            { symbol: '❧', name: '花朵' },
+            { symbol: '❨', name: '左括号' },
+            { symbol: '❩', name: '右括号' },
+            { symbol: '❪', name: '左括号' },
+            { symbol: '❫', name: '右括号' },
+            { symbol: '❬', name: '左括号' },
+            { symbol: '❭', name: '右括号' },
+            { symbol: '❮', name: '左三角' },
+            { symbol: '❯', name: '右三角' },
+            { symbol: '❰', name: '左三角' },
+            { symbol: '❱', name: '右三角' },
+            { symbol: '❲', name: '左括号' },
+            { symbol: '❳', name: '右括号' },
+            { symbol: '❴', name: '左花括号' },
+            { symbol: '❵', name: '右花括号' },
+            { symbol: '❶', name: '数字1' },
+            { symbol: '❷', name: '数字2' },
+            { symbol: '❸', name: '数字3' },
+            { symbol: '❹', name: '数字4' },
+            { symbol: '❺', name: '数字5' },
+            { symbol: '❻', name: '数字6' },
+            { symbol: '❼', name: '数字7' },
+            { symbol: '❽', name: '数字8' },
+            { symbol: '❾', name: '数字9' },
+            { symbol: '❿', name: '数字10' },
+            { symbol: '⓫', name: '数字11' },
+            { symbol: '⓬', name: '数字12' },
+            { symbol: '⓭', name: '数字13' },
+            { symbol: '⓮', name: '数字14' },
+            { symbol: '⓯', name: '数字15' },
+            { symbol: '⓰', name: '数字16' },
+            { symbol: '⓱', name: '数字17' },
+            { symbol: '⓲', name: '数字18' },
+            { symbol: '⓳', name: '数字19' },
+            { symbol: '⓴', name: '数字20' },
+            { symbol: '⓵', name: '数字1' },
+            { symbol: '⓶', name: '数字2' },
+            { symbol: '⓷', name: '数字3' },
+            { symbol: '⓸', name: '数字4' },
+            { symbol: '⓹', name: '数字5' },
+            { symbol: '⓺', name: '数字6' },
+            { symbol: '⓻', name: '数字7' },
+            { symbol: '⓼', name: '数字8' },
+            { symbol: '⓽', name: '数字9' },
+            { symbol: '⓾', name: '数字10' },
+            { symbol: '⓿', name: '数字0' },
+            { symbol: '❀', name: '花朵' },
+            { symbol: '❁', name: '花朵' },
+            { symbol: '❂', name: '花朵' },
+            { symbol: '❃', name: '花朵' },
+            { symbol: '❄', name: '雪花' },
+            { symbol: '❅', name: '雪花' },
+            { symbol: '❆', name: '雪花' },
+            { symbol: '❇', name: '星号' },
+            { symbol: '❈', name: '星号' },
+            { symbol: '❉', name: '星号' },
+            { symbol: '❊', name: '星号' },
+            { symbol: '❋', name: '星号' }
+        ];
+
+        // 全局变量
+        let isCodeView = false;
+        let charCount = 0;
+        let showMoreSymbols = false;
+        let isPreviewMode = false;
+        
+        // 历史记录功能
+        let history = [];
+        let historyStep = -1;
+
+        // 添加本地存储功能
+        function saveToLocal() {
+            const editor = document.getElementById('editor');
+            localStorage.setItem('editorContent', editor.innerHTML);
+            localStorage.setItem('editorHistory', JSON.stringify(history));
+            localStorage.setItem('historyStep', historyStep);
+        }
+        
+        function loadFromLocal() {
+            const savedContent = localStorage.getItem('editorContent');
+            const savedHistory = localStorage.getItem('editorHistory');
+            const savedStep = localStorage.getItem('historyStep');
+            
+            if (savedContent) {
+                const editor = document.getElementById('editor');
+                editor.innerHTML = savedContent;
+                updateContent();
+            }
+            
+            if (savedHistory) {
+                history = JSON.parse(savedHistory);
+            }
+            
+            if (savedStep) {
+                historyStep = parseInt(savedStep);
+            }
+        }
+        
+        // 自动保存
+        setInterval(saveToLocal, 30000); // 每30秒自动保存
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFromLocal();
+            generateSymbols();
+            updateContent();
+            
+            // 为'更多'按钮添加点击事件
+            const moreButton = document.querySelector('.symbols-more');
+            if (moreButton) {
+                moreButton.addEventListener('click', toggleMoreSymbols);
+            }
+            
+            // 初始化历史记录
+            saveHistory();
+            
+            // 初始化提示状态
+            const tipsExpanded = localStorage.getItem('tipsExpanded');
+            if (tipsExpanded === 'false') {
+                const tipsContent = document.getElementById('tipsContent');
+                const tipsToggle = document.getElementById('tipsToggle');
+                tipsContent.style.display = 'none';
+                tipsToggle.textContent = '▶';
+            }
+        });
+
+        // 切换更多符号显示
+        function toggleMoreSymbols() {
+            showMoreSymbols = !showMoreSymbols;
+            
+            // 获取当前搜索词并重新过滤符号
+            const searchInput = document.getElementById('symbolSearch');
+            const searchTerm = searchInput ? searchInput.value : '';
+            
+            if (searchTerm) {
+                filterSymbols(searchTerm);
+            } else {
+                generateSymbols();
+            }
+            
+            const moreButton = document.querySelector('.symbols-more');
+            if (showMoreSymbols) {
+                moreButton.textContent = '收起';
+            } else {
+                moreButton.textContent = '更多';
+            }
+        }
+
+        // 切换预览模式
+        function togglePreview() {
+            isPreviewMode = !isPreviewMode;
+            const previewSection = document.querySelector('.preview-section');
+            const previewContent = document.getElementById('previewContent');
+            
+            if (isPreviewMode) {
+                previewSection.style.display = 'block';
+                updatePreview();
+            } else {
+                previewSection.style.display = 'none';
+            }
+        }
+        
+        // 更新预览内容
+        function updatePreview() {
+            if (isPreviewMode) {
+                const editor = document.getElementById('editor');
+                const previewContent = document.getElementById('previewContent');
+                previewContent.innerHTML = editor.innerHTML;
+            }
+        }
+        
+        // 生成符号网格
+        function generateSymbols() {
+            const grid = document.getElementById('symbolsGrid');
+            grid.innerHTML = '';
+            
+            // 显示常用符号
+            commonSymbols.forEach(item => {
+                const symbolDiv = document.createElement('div');
+                symbolDiv.className = 'symbol-item';
+                symbolDiv.innerHTML = `
+                    <span class="symbol-char">${item.symbol}</span>
+                    <button class="symbol-btn" onclick="insertSymbol('${item.symbol}')">复制</button>
+                `;
+                grid.appendChild(symbolDiv);
+            });
+            
+            // 如果显示更多符号，则添加更多符号
+            if (showMoreSymbols) {
+                moreSymbols.forEach(item => {
+                    const symbolDiv = document.createElement('div');
+                    symbolDiv.className = 'symbol-item';
+                    symbolDiv.innerHTML = `
+                        <span class="symbol-char">${item.symbol}</span>
+                        <button class="symbol-btn" onclick="insertSymbol('${item.symbol}')">复制</button>
+                    `;
+                    grid.appendChild(symbolDiv);
+                });
+            }
+        }
+        
+        // 符号过滤函数
+        function filterSymbols(searchTerm) {
+            const grid = document.getElementById('symbolsGrid');
+            const allSymbols = showMoreSymbols ? [...commonSymbols, ...moreSymbols] : commonSymbols;
+            
+            grid.innerHTML = '';
+            
+            const filteredSymbols = allSymbols.filter(item => 
+                item.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                item.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            
+            filteredSymbols.forEach(item => {
+                const symbolDiv = document.createElement('div');
+                symbolDiv.className = 'symbol-item';
+                symbolDiv.innerHTML = `
+                    <span class="symbol-char">${item.symbol}</span>
+                    <button class="symbol-btn" onclick="insertSymbol('${item.symbol}')">复制</button>
+                `;
+                grid.appendChild(symbolDiv);
+            });
+        }
+
+        // 切换视图模式
+        function toggleView() {
+            const editor = document.getElementById('editor');
+            const codeView = document.getElementById('codeView');
+            const viewModeText = document.getElementById('viewModeText');
+            
+            isCodeView = !isCodeView;
+            
+            if (isCodeView) {
+                editor.style.display = 'none';
+                codeView.style.display = 'block';
+                viewModeText.textContent = '✏️ 编辑模式';
+                document.getElementById('htmlCode').value = editor.innerHTML;
+            } else {
+                editor.style.display = 'block';
+                codeView.style.display = 'none';
+                viewModeText.textContent = '👁 查看HTML代码';
+                editor.innerHTML = document.getElementById('htmlCode').value;
+                updateContent();
+            }
+        }
+
+        // 格式化文本
+        function formatText(command, value = null) {
+            document.execCommand(command, false, value);
+            updateContent();
+            document.getElementById('editor').focus();
+        }
+
+        // 改变字体大小
+        function changeFontSize(size) {
+            if (size) {
+                formatText('fontSize', size);
+            }
+        }
+
+        // 改变文字颜色
+        function changeColor(color) {
+            const editor = document.getElementById('editor');
+            const selection = window.getSelection();
+            
+            if (selection.rangeCount > 0 && !selection.isCollapsed) {
+                // 如果有选中的文字，应用颜色到选中内容
+                formatText('foreColor', color);
+            } else {
+                // 如果没有选中文字，设置光标位置的颜色，以便后续输入的文字使用该颜色
+                const range = document.createRange();
+                range.selectNodeContents(editor);
+                range.collapse(false); // 移动到末尾
+                selection.removeAllRanges();
+                selection.addRange(range);
+                
+                // 创建一个带有颜色的span元素
+                const span = document.createElement('span');
+                span.style.color = color;
+                span.innerHTML = '\u200B'; // 使用零宽空格
+                
+                range.insertNode(span);
+                
+                // 将光标移动到span之后
+                range.setStartAfter(span);
+                range.collapse(true);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }
+            
+            updateContent();
+            editor.focus();
+        }
+        
+        // 背景颜色函数
+        function changeBackgroundColor(color) {
+            const editor = document.getElementById('editor');
+            const selection = window.getSelection();
+            
+            if (selection.rangeCount > 0 && !selection.isCollapsed) {
+                // 如果有选中的文字，应用背景颜色到选中内容
+                formatText('backColor', color);
+            } else {
+                // 如果没有选中文字，设置光标位置的背景颜色
+                const range = document.createRange();
+                range.selectNodeContents(editor);
+                range.collapse(false);
+                selection.removeAllRanges();
+                selection.addRange(range);
+                
+                const span = document.createElement('span');
+                span.style.backgroundColor = color;
+                span.innerHTML = '\u200B';
+                
+                range.insertNode(span);
+                
+                range.setStartAfter(span);
+                range.collapse(true);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }
+            
+            updateContent();
+            editor.focus();
+        }
+
+        // 插入符号
+        function insertSymbol(symbol) {
+            const editor = document.getElementById('editor');
+            editor.focus();
+            formatText('insertText', symbol);
+        }
+        
+        // 插入链接函数
+        function insertLink() {
+            const url = prompt('请输入链接地址：', 'https://');
+            if (url && url !== 'https://') {
+                formatText('createLink', url);
+            }
+        }
+        
+        // 插入图片函数
+        function insertImage() {
+            const url = prompt('请输入图片地址：', 'https://');
+            if (url && url !== 'https://') {
+                const alt = prompt('请输入图片描述：', '');
+                const img = `<img src="${url}" alt="${alt || '图片'}" style="max-width: 100%; height: auto;">`;
+                const editor = document.getElementById('editor');
+                editor.focus();
+                
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    range.deleteContents();
+                    const fragment = range.createContextualFragment(img);
+                    range.insertNode(fragment);
+                }
+                
+                updateContent();
+            }
+        }
+
+        // 清除格式
+        function clearFormat() {
+            const editor = document.getElementById('editor');
+            const text = editor.innerText || editor.textContent;
+            editor.innerHTML = text;
+            updateContent();
+        }
+
+        // 保存历史记录
+        function saveHistory() {
+            const editor = document.getElementById('editor');
+            historyStep++;
+            if (historyStep < history.length) {
+                history.length = historyStep;
+            }
+            history.push(editor.innerHTML);
+            // 限制历史记录数量
+            if (history.length > 50) {
+                history.shift();
+                historyStep--;
+            }
+        }
+        
+        // 撤销操作
+        function undo() {
+            if (historyStep > 0) {
+                historyStep--;
+                const editor = document.getElementById('editor');
+                editor.innerHTML = history[historyStep];
+                updateContent();
+            }
+        }
+        
+        // 重做操作
+        function redo() {
+            if (historyStep < history.length - 1) {
+                historyStep++;
+                const editor = document.getElementById('editor');
+                editor.innerHTML = history[historyStep];
+                updateContent();
+            }
+        }
+        
+        // 更新内容和字符计数
+        function updateContent() {
+            const editor = document.getElementById('editor');
+            const text = editor.innerText || editor.textContent || '';
+            charCount = text.length;
+            document.getElementById('charCount').textContent = charCount;
+            
+            if (isCodeView) {
+                document.getElementById('htmlCode').value = editor.innerHTML;
+            }
+            
+            // 更新预览
+            updatePreview();
+        }
+        
+        // 使用防抖处理updateContent
+        const debouncedUpdateContent = debounce(updateContent, 300);
+
+        // 复制HTML代码
+        function copyHTML() {
+            const htmlCode = document.getElementById('htmlCode');
+            htmlCode.select();
+            htmlCode.setSelectionRange(0, 99999);
+            
+            try {
+                document.execCommand('copy');
+                alert('HTML代码已复制到剪贴板！');
+            } catch (err) {
+                // 备用方案
+                navigator.clipboard.writeText(htmlCode.value).then(() => {
+                    alert('HTML代码已复制到剪贴板！');
+                }).catch(() => {
+                    alert('复制失败，请手动选择复制');
+                });
+            }
+        }
+
+        // 添加导出功能
+        function exportAsHTML() {
+            const editor = document.getElementById('editor');
+            const htmlContent = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>导出的文档</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+    </style>
+</head>
+<body>
+${editor.innerHTML}
+</body>
+</html>`;
+            
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'document.html';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function exportAsText() {
+            const editor = document.getElementById('editor');
+            const textContent = editor.innerText || editor.textContent || '';
+            const blob = new Blob([textContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'document.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'b':
+                        e.preventDefault();
+                        formatText('bold');
+                        break;
+                    case 'i':
+                        e.preventDefault();
+                        formatText('italic');
+                        break;
+                    case 'u':
+                        e.preventDefault();
+                        formatText('underline');
+                        break;
+                }
+            }
+        });
+        
+        // 折叠式使用说明功能
+        function toggleTips() {
+            const content = document.getElementById('tipsContent');
+            const toggle = document.getElementById('tipsToggle');
+            
+            if (content.classList.contains('expanded')) {
+                content.classList.remove('expanded');
+                toggle.classList.remove('expanded');
+                toggle.textContent = '▼';
+            } else {
+                content.classList.add('expanded');
+                toggle.classList.add('expanded');
+                toggle.textContent = '▲';
+            }
+        }
+    </script>
+
+
+</html>

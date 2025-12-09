@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>去除重复文本工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+        
+        .author-info {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 0.9em;
+            opacity: 0.8;
+            background: rgba(255,255,255,0.1);
+            padding: 5px 12px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .help-toggle {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        
+        .help-toggle:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-1px);
+        }
+        
+        .help-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: rgba(255,255,255,0.1);
+            margin-top: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .help-content.show {
+            max-height: 500px;
+            transition: max-height 0.5s ease-in;
+        }
+        
+        .help-inner {
+            padding: 20px;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+        
+        .help-section {
+            margin-bottom: 15px;
+        }
+        
+        .help-section h4 {
+            margin-bottom: 8px;
+            font-size: 1em;
+            opacity: 0.95;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .help-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .help-section li {
+            margin-bottom: 5px;
+            padding-left: 20px;
+            position: relative;
+            opacity: 0.9;
+        }
+        
+        .help-section li:before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: rgba(255,255,255,0.8);
+        }
+        
+        .main-content {
+            padding: 40px;
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .option-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .option-group label {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9em;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #6366f1;
+        }
+        
+        select {
+            padding: 8px 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            transition: border-color 0.3s;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        
+        .text-areas {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .text-section {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .text-section h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .text-section h3::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 2px;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: vertical;
+            transition: border-color 0.3s;
+            font-family: 'Courier New', monospace;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 120px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #e1e5e9;
+        }
+        
+        .btn-secondary:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transform: translateX(400px);
+            transition: transform 0.3s;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        .footer {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e1e5e9;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+        }
+        .footer a {
+            color: #6366f1;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            .text-areas {
+                grid-template-columns: 1fr;
+            }
+            
+            .options {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .author-info {
+                position: static;
+                margin-top: 10px;
+                display: inline-block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="author-info">👨‍💻 作者：達哥</div>
+            <h1>🔧 去除重复文本工具</h1>
+            <p>智能去重，多种模式，让您的文本处理更高效</p>
+            <button class="help-toggle" onclick="toggleHelp()">📖 使用说明</button>
+            
+            <div class="help-content" id="helpContent">
+                <div class="help-inner">
+                    <div class="help-section">
+                        <h4>🚀 快速开始</h4>
+                        <ul>
+                            <li>在左侧输入框粘贴或输入需要去重的文本</li>
+                            <li>选择合适的分隔符和处理选项</li>
+                            <li>点击"去除重复"按钮即可获得结果</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="help-section">
+                        <h4>⚙️ 功能说明</h4>
+                        <ul>
+                            <li><strong>分隔符：</strong>支持按行、空格、逗号、分号或自定义分隔符</li>
+                            <li><strong>区分大小写：</strong>开启后"Apple"和"apple"视为不同项</li>
+                            <li><strong>去除首尾空格：</strong>自动清理每个条目的前后空格</li>
+                            <li><strong>排序选项：</strong>可对结果进行升序、降序或按长度排序</li>
+                            <li><strong>过滤功能：</strong>可移除空行和纯数字项</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="help-section">
+                        <h4>💡 使用技巧</h4>
+                        <ul>
+                            <li>处理邮箱列表时建议开启"区分大小写"</li>
+                            <li>处理关键词时可使用"按长度排序"便于查看</li>
+                            <li>大量数据建议先"移除空行"提高处理效率</li>
+                            <li>结果可一键复制或下载为txt文件</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="options">
+                <div class="option-group">
+                    <label>分隔符</label>
+                    <select id="separator">
+                        <option value="line">按行分隔</option>
+                        <option value="space">按空格分隔</option>
+                        <option value="comma">按逗号分隔</option>
+                        <option value="semicolon">按分号分隔</option>
+                        <option value="custom">自定义分隔符</option>
+                    </select>
+                    <input type="text" id="customSeparator" placeholder="输入自定义分隔符" style="display:none; padding: 8px; border: 2px solid #e1e5e9; border-radius: 6px; margin-top: 5px;">
+                </div>
+                
+                <div class="option-group">
+                    <label>去重模式</label>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="caseSensitive">
+                        <label for="caseSensitive">区分大小写</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="trimSpaces" checked>
+                        <label for="trimSpaces">去除首尾空格</label>
+                    </div>
+                </div>
+                
+                <div class="option-group">
+                    <label>排序选项</label>
+                    <select id="sortOption">
+                        <option value="none">保持原顺序</option>
+                        <option value="asc">升序排列</option>
+                        <option value="desc">降序排列</option>
+                        <option value="length">按长度排序</option>
+                    </select>
+                </div>
+                
+                <div class="option-group">
+                    <label>过滤选项</label>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="removeEmpty" checked>
+                        <label for="removeEmpty">移除空行</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="removeNumbers">
+                        <label for="removeNumbers">移除纯数字</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="originalCount">0</div>
+                    <div class="stat-label">原始条目</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="duplicateCount">0</div>
+                    <div class="stat-label">重复条目</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="uniqueCount">0</div>
+                    <div class="stat-label">去重后</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="reductionRate">0%</div>
+                    <div class="stat-label">压缩率</div>
+                </div>
+            </div>
+            
+            <div class="text-areas">
+                <div class="text-section">
+                    <h3>📝 输入文本</h3>
+                    <textarea id="inputText" placeholder="请输入要去重的文本，每行一个条目或使用指定分隔符分隔..."></textarea>
+                </div>
+                
+                <div class="text-section">
+                    <h3>✨ 去重结果</h3>
+                    <textarea id="outputText" placeholder="去重后的文本将显示在这里..." readonly></textarea>
+                </div>
+            </div>
+            
+            <div class="buttons">
+                <button class="btn-primary" onclick="deduplicateText()">🚀 去除重复</button>
+                <button class="btn-secondary" onclick="copyResult()">📋 复制结果</button>
+                <button class="btn-secondary" onclick="downloadResult()">💾 下载文件</button>
+                <button class="btn-danger" onclick="clearAll()">🗑️ 清空所有</button>
+            </div>
+        </div>
+        <div class="footer">版权归 跨境乐趣园所有 官网： <a href="https://amzlink.top/" target="_blank" rel="noopener noreferrer">https://amzlink.top/</a> | 作者：達哥</div>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+    
+    <script>
+        // 切换帮助内容显示
+        function toggleHelp() {
+            const helpContent = document.getElementById('helpContent');
+            const button = document.querySelector('.help-toggle');
+            
+            if (helpContent.classList.contains('show')) {
+                helpContent.classList.remove('show');
+                button.textContent = '📖 使用说明';
+            } else {
+                helpContent.classList.add('show');
+                button.textContent = '📖 收起说明';
+            }
+        }
+        
+        // 监听分隔符选择变化
+        document.getElementById('separator').addEventListener('change', function() {
+            const customInput = document.getElementById('customSeparator');
+            if (this.value === 'custom') {
+                customInput.style.display = 'block';
+            } else {
+                customInput.style.display = 'none';
+            }
+        });
+        
+        // 监听输入文本变化，实时更新统计
+        document.getElementById('inputText').addEventListener('input', updateStats);
+        
+        function getSeparator() {
+            const separatorType = document.getElementById('separator').value;
+            const customSeparator = document.getElementById('customSeparator').value;
+            
+            switch(separatorType) {
+                case 'line': return '\n';
+                case 'space': return ' ';
+                case 'comma': return ',';
+                case 'semicolon': return ';';
+                case 'custom': return customSeparator || '\n';
+                default: return '\n';
+            }
+        }
+        
+        function deduplicateText() {
+            const inputText = document.getElementById('inputText').value;
+            if (!inputText.trim()) {
+                showToast('请输入要去重的文本！', 'error');
+                return;
+            }
+            
+            const separator = getSeparator();
+            const caseSensitive = document.getElementById('caseSensitive').checked;
+            const trimSpaces = document.getElementById('trimSpaces').checked;
+            const removeEmpty = document.getElementById('removeEmpty').checked;
+            const removeNumbers = document.getElementById('removeNumbers').checked;
+            const sortOption = document.getElementById('sortOption').value;
+            
+            // 分割文本
+            let items = inputText.split(separator);
+            const originalCount = items.length;
+            
+            // 处理每个条目
+            items = items.map(item => {
+                if (trimSpaces) {
+                    item = item.trim();
+                }
+                return item;
+            });
+            
+            // 过滤空行
+            if (removeEmpty) {
+                items = items.filter(item => item !== '');
+            }
+            
+            // 过滤纯数字
+            if (removeNumbers) {
+                items = items.filter(item => !/^\d+$/.test(item.trim()));
+            }
+            
+            // 去重
+            const uniqueItems = [];
+            const seen = new Set();
+            
+            items.forEach(item => {
+                const key = caseSensitive ? item : item.toLowerCase();
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    uniqueItems.push(item);
+                }
+            });
+            
+            // 排序
+            switch(sortOption) {
+                case 'asc':
+                    uniqueItems.sort();
+                    break;
+                case 'desc':
+                    uniqueItems.sort().reverse();
+                    break;
+                case 'length':
+                    uniqueItems.sort((a, b) => a.length - b.length);
+                    break;
+            }
+            
+            // 输出结果
+            const result = uniqueItems.join(separator === '\n' ? '\n' : separator + ' ');
+            document.getElementById('outputText').value = result;
+            
+            // 更新统计
+            updateStatsWithData(originalCount, originalCount - uniqueItems.length, uniqueItems.length);
+            
+            showToast('去重完成！', 'success');
+        }
+        
+        function updateStats() {
+            const inputText = document.getElementById('inputText').value;
+            if (!inputText.trim()) {
+                updateStatsWithData(0, 0, 0);
+                return;
+            }
+            
+            const separator = getSeparator();
+            const items = inputText.split(separator).filter(item => item.trim() !== '');
+            updateStatsWithData(items.length, 0, 0);
+        }
+        
+        function updateStatsWithData(original, duplicates, unique) {
+            document.getElementById('originalCount').textContent = original;
+            document.getElementById('duplicateCount').textContent = duplicates;
+            document.getElementById('uniqueCount').textContent = unique;
+            
+            const reductionRate = original > 0 ? Math.round((duplicates / original) * 100) : 0;
+            document.getElementById('reductionRate').textContent = reductionRate + '%';
+        }
+        
+        function copyResult() {
+            const outputText = document.getElementById('outputText');
+            if (!outputText.value.trim()) {
+                showToast('没有可复制的内容！', 'error');
+                return;
+            }
+            
+            outputText.select();
+            document.execCommand('copy');
+            showToast('复制成功！', 'success');
+        }
+        
+        function downloadResult() {
+            const outputText = document.getElementById('outputText').value;
+            if (!outputText.trim()) {
+                showToast('没有可下载的内容！', 'error');
+                return;
+            }
+            
+            const blob = new Blob([outputText], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '去重结果_' + new Date().toISOString().slice(0, 19).replace(/:/g, '-') + '.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast('下载成功！', 'success');
+        }
+        
+        function clearAll() {
+            if (confirm('确定要清空所有内容吗？')) {
+                document.getElementById('inputText').value = '';
+                document.getElementById('outputText').value = '';
+                updateStatsWithData(0, 0, 0);
+                showToast('已清空所有内容！', 'success');
+            }
+        }
+        
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.background = type === 'error' ? '#dc3545' : '#28a745';
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // 初始化统计
+        updateStats();
+    </script>
+</body>
+</html>
