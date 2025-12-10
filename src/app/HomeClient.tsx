@@ -47,6 +47,7 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
     'invoice-generator': Receipt,
     'amazon-global': Globe,
     'rating-sales-reverse': Star,
+    'max-reserve-fee': Calculator,
   }
   const colorSolidMap: Record<string, string> = {
     blue: 'bg-blue-600',
@@ -258,6 +259,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
     'invoice-generator': Receipt,
     'amazon-global': Globe,
     'rating-sales-reverse': Star,
+    'max-reserve-fee': Calculator,
   }), [])
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({})
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
