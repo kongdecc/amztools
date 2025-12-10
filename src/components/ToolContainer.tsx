@@ -27,6 +27,7 @@ const CaseConverterPage = dynamic(() => import('@/components/CaseConverterPage')
 const WordCountPage = dynamic(() => import('@/components/WordCountPage'), { loading: LoadingTool })
 const CharCountPage = dynamic(() => import('@/components/CharCountPage'), { loading: LoadingTool })
 const MaxReserveFeeCalculator = dynamic(() => import('@/components/MaxReserveFeeCalculator'), { loading: LoadingTool })
+const KeywordStrategyTool = dynamic(() => import('@/components/KeywordStrategyTool'), { loading: LoadingTool })
 
 const PlaceholderPage = ({ title, icon: Icon }: { title: string; icon: any }) => (
   <div className="space-y-6">
@@ -65,6 +66,7 @@ const ToolContainer = memo(({ activeTab }: { activeTab: string }) => {
     case 'amazon-global': return <AmazonGlobalTool />
     case 'rating-sales-reverse': return <AmazonRatingSalesReverse />
     case 'max-reserve-fee': return <MaxReserveFeeCalculator />
+    case 'keyword-strategy': return <KeywordStrategyTool />
     default: return <PlaceholderPage title="功能开发中" icon={Hammer} />
   }
 })

@@ -48,6 +48,7 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
     'amazon-global': Globe,
     'rating-sales-reverse': Star,
     'max-reserve-fee': Calculator,
+    'keyword-strategy': Filter,
   }
   const colorSolidMap: Record<string, string> = {
     blue: 'bg-blue-600',

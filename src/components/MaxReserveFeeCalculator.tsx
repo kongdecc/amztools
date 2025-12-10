@@ -64,8 +64,8 @@ export default function MaxReserveFeeCalculator() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <Card className="p-6 md:p-8">
+    <div className="max-w-4xl mx-auto space-y-6">
+      <Card className="p-8 md:p-10">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">白嫖库容的最高预留费计算工具</h1>
           <p className="text-gray-500 text-sm">作者：必胜哥&nbsp;&nbsp;&nbsp;&nbsp;公众号：必胜哥的三板斧</p>

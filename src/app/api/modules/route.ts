@@ -24,7 +24,8 @@ const defaults = [
   { key: 'invoice-generator', title: '发票生成工具', desc: '在线生成和打印发票，支持多币种、自定义Logo，可导出PDF', status: '启用', views: 0, color: 'cyan', order: 15, category: 'operation' },
   { key: 'amazon-global', title: '亚马逊批量查询', desc: '关键词排名监控与ASIN全球跟卖侦查，支持多站点一键打开', status: '启用', views: 0, color: 'orange', order: 16, category: 'operation' },
   { key: 'rating-sales-reverse', title: '好评及销量反推计算器', desc: 'Listing 补单计算 + 销量反推 (支持自定义留评率)', status: '启用', views: 0, color: 'indigo', order: 17, category: 'operation' },
-  { key: 'max-reserve-fee', title: '白嫖库容的最高预留费计算工具', desc: '根据销售额预估和库容申请计划，计算出不亏本的最高预留费单价', status: '启用', views: 0, color: 'emerald', order: 18, category: 'operation' }
+  { key: 'max-reserve-fee', title: '白嫖库容的最高预留费计算工具', desc: '根据销售额预估和库容申请计划，计算出不亏本的最高预留费单价', status: '启用', views: 0, color: 'emerald', order: 18, category: 'operation' },
+  { key: 'keyword-strategy', title: '亚马逊投放关键词选择策略', desc: '根据ASIN转化份额和ABA排名范围，精准筛选和分类关键词（头部/腰部/尾部）', status: '启用', views: 0, color: 'indigo', order: 19, category: 'operation' }
 ]
 
 function getLocalData() {

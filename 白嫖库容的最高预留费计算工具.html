@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>白嫖库容的最高预留费计算工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #1d1d1f;
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+
+        .author {
+            color: #86868b;
+            font-size: 16px;
+            margin-bottom: 20px;
+            font-weight: 400;
+        }
+
+        .qr-code {
+            margin: 20px 0;
+        }
+
+        .qr-code img {
+            width: 150px;
+            height: 150px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            color: #1d1d1f;
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e5e7;
+            border-radius: 10px;
+            font-size: 16px;
+            background: #fafafa;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #007aff;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        .input-group input::placeholder {
+            color: #86868b;
+        }
+
+        .calculate-btn {
+            background: linear-gradient(135deg, #007aff, #0056cc);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 30px 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3);
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 122, 255, 0.4);
+        }
+
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            background: linear-gradient(135deg, #34c759, #30a14e);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(52, 199, 89, 0.3);
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .calculation-details {
+            background: #f2f2f7;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #1d1d1f;
+            text-align: left;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .qr-code img {
+                width: 120px;
+                height: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>白嫖库容的最高预留费计算工具</h1>
+        <div class="author">作者公众号：必胜哥的三板斧</div>
+        
+        <div class="qr-code">
+            <img src="https://tc.z.wiki/autoupload/edKd7EnrdtB-UwY97x0oKsS6MvGWw9YIYwMnL2_E4yayl5f0KlZfm6UsKj-HyTuv/20250705/KWaE/430X430/qrcode_for_gh_3938b401b10d_430.jpg" alt="公众号二维码">
+        </div>
+
+        <div class="input-group">
+            <label for="currentCapacity">现有FBA库容限制：</label>
+            <input type="number" id="currentCapacity" placeholder="填写立方英尺">
+        </div>
+
+        <div class="input-group">
+            <label for="plannedCapacity">计划申请FBA库容：</label>
+            <input type="number" id="plannedCapacity" placeholder="填写立方英尺">
+        </div>
+
+        <div class="input-group">
+            <label for="estimatedSales">申请月份销售额预估：</label>
+            <input type="number" id="estimatedSales" placeholder="填写美元金额">
+        </div>
+
+        <button class="calculate-btn" onclick="calculateMaxReserveFee()">进行分析计算</button>
+
+        <div class="result" id="result">
+            <div id="resultText"></div>
+            <div class="calculation-details" id="calculationDetails"></div>
+        </div>
+    </div>
+
+    <script>
+        function calculateMaxReserveFee() {
+            // 获取输入值
+            const currentCapacity = parseFloat(document.getElementById('currentCapacity').value);
+            const plannedCapacity = parseFloat(document.getElementById('plannedCapacity').value);
+            const estimatedSales = parseFloat(document.getElementById('estimatedSales').value);
+
+            // 验证输入
+            if (isNaN(currentCapacity) || isNaN(plannedCapacity) || isNaN(estimatedSales)) {
+                alert('请填写所有必要信息');
+                return;
+            }
+
+            if (currentCapacity <= 0 || plannedCapacity <= 0 || estimatedSales <= 0) {
+                alert('请输入有效的正数');
+                return;
+            }
+
+            // 计算过程
+            const newTotalCapacity = currentCapacity + plannedCapacity;
+            const extraCapacityRatio = plannedCapacity / newTotalCapacity;
+            const proportionalSales = estimatedSales * extraCapacityRatio;
+            const performancePointsRate = 0.15; // 每1美元销售额产生\$0.15积分
+            const totalPerformancePoints = proportionalSales * performancePointsRate;
+            
+            // 计算最高预留费
+            const maxReserveFee = totalPerformancePoints / plannedCapacity;
+
+            // 显示结果
+            const resultDiv = document.getElementById('result');
+            const resultText = document.getElementById('resultText');
+            const calculationDetails = document.getElementById('calculationDetails');
+
+            resultText.innerHTML = `白嫖库容的最高预留费是 $${maxReserveFee.toFixed(2)} 每立方英尺`;
+            
+            calculationDetails.innerHTML = `
+                <strong>详细计算过程：</strong><br>
+                1. 新的总FBA库容限制：${currentCapacity.toFixed(2)} + ${plannedCapacity.toFixed(2)} = ${newTotalCapacity.toFixed(2)} 立方英尺<br>
+                2. 额外库容占比：${plannedCapacity.toFixed(2)} ÷ ${newTotalCapacity.toFixed(2)} = ${(extraCapacityRatio * 100).toFixed(2)}%<br>
+                3. 按比例分摊销售额：$${estimatedSales.toFixed(2)} × ${(extraCapacityRatio * 100).toFixed(2)}% = $${proportionalSales.toFixed(2)}<br>
+                4. 绩效积分赚取率：每\$1销售额产生\$0.15积分<br>
+                5. 绩效积分总额：$${proportionalSales.toFixed(2)} × \$0.15 = $${totalPerformancePoints.toFixed(2)}<br>
+                6. 最高预留费：$${totalPerformancePoints.toFixed(2)} ÷ ${plannedCapacity.toFixed(2)} = $${maxReserveFee.toFixed(2)} 每立方英尺
+            `;
+
+            resultDiv.classList.add('show');
+        }
+
+        // 添加回车键支持
+        document.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                calculateMaxReserveFee();
+            }
+        });
+    </script>
+</body>
+</html>

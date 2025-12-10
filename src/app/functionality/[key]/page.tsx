@@ -18,6 +18,7 @@ import CpcCalculator from '@/components/CpcCalculator'
 import AmazonGlobalTool from '@/components/AmazonGlobalTool'
 import AmazonRatingSalesReverse from '@/components/AmazonRatingSalesReverse'
 import MaxReserveFeeCalculator from '@/components/MaxReserveFeeCalculator'
+import KeywordStrategyTool from '@/components/KeywordStrategyTool'
 
 const DetailClient = () => {
   const { key } = useParams<{ key: string }>()
@@ -47,6 +48,7 @@ const DetailClient = () => {
     'amazon-global': Globe,
     'rating-sales-reverse': Star,
     'max-reserve-fee': Calculator,
+    'keyword-strategy': Filter,
   }
 
   const titleOverride: Record<string, string> = {
@@ -96,6 +98,8 @@ const DetailClient = () => {
         return <AmazonRatingSalesReverse />
       case 'max-reserve-fee':
         return <MaxReserveFeeCalculator />
+      case 'keyword-strategy':
+        return <KeywordStrategyTool />
       default:
         return (
           <div className="bg-white p-6 rounded-xl border">
