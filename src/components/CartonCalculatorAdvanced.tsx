@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { Card, Input } from '@/components/SharedUI'
-import { Calculator, RotateCcw, Box, Info } from 'lucide-react'
+import { Calculator, RotateCcw, Box, Info, Settings, Edit } from 'lucide-react'
 
 // --- Local UI Components ---
 const Button = ({ children, className = "", variant = "primary", ...props }: any) => {
@@ -145,6 +145,7 @@ function calculateBestPacking(carton: { L: number, W: number, H: number }, unit:
 }
 
 export default function CartonCalculatorAdvanced() {
+  const [mode, setMode] = useState<'auto' | 'manual'>('auto');
   const [inputs, setInputs] = useState({
     cartonL: '',
     cartonW: '',
@@ -154,6 +155,7 @@ export default function CartonCalculatorAdvanced() {
     unitW: '',
     unitH: '',
     unitWeight: '',
+    manualPieces: '',
     rulePreset: 'express_6000',
     volDivisor: '6000'
   });
@@ -184,6 +186,7 @@ export default function CartonCalculatorAdvanced() {
       unitW: '',
       unitH: '',
       unitWeight: '',
+      manualPieces: '',
       rulePreset: 'express_6000',
       volDivisor: '6000'
     });
@@ -201,6 +204,7 @@ export default function CartonCalculatorAdvanced() {
 
     const cartonActualWeight = parseFloat(inputs.cartonActualWeight);
     const unitWeight = parseFloat(inputs.unitWeight);
+    const manualPieces = parseInt(inputs.manualPieces);
 
     const divisor = parseFloat(inputs.volDivisor);
 
@@ -209,18 +213,32 @@ export default function CartonCalculatorAdvanced() {
       return;
     }
 
+    if (mode === 'manual' && (!manualPieces || manualPieces <= 0)) {
+        setResult({ error: '请输入有效的每箱装箱数量。' });
+        return;
+    }
+
     const carton = { L: cartonL, W: cartonW, H: cartonH };
     const unit = { l: unitL, w: unitW, h: unitH };
 
-    // 1. 算最佳装箱方案（多朝向 + 补洞）
-    const best = calculateBestPacking(carton, unit);
+    let piecesPerCarton = 0;
+    let best = null;
 
-    if (!best || best.total === 0) {
-      setResult({ error: '注意：在尝试多种朝向和补洞后，仍无法装入完整一件，请检查箱规或产品尺寸。' });
-      return;
+    if (mode === 'auto') {
+        // 1. 算最佳装箱方案（多朝向 + 补洞）
+        best = calculateBestPacking(carton, unit);
+
+        if (!best || best.total === 0) {
+            setResult({ error: '注意：在尝试多种朝向和补洞后，仍无法装入完整一件，请检查箱规或产品尺寸。' });
+            return;
+        }
+        piecesPerCarton = best.total;
+    } else {
+        // 手动模式
+        piecesPerCarton = manualPieces;
+        // 仅作参考计算
+        best = calculateBestPacking(carton, unit);
     }
-
-    const piecesPerCarton = best.total;
 
     // 2. 箱体积 & 体积重
     const volumeCm3 = cartonL * cartonW * cartonH;         // cm³
@@ -236,13 +254,19 @@ export default function CartonCalculatorAdvanced() {
     let utilText = '';
     if (utilization < 0.6) {
       utilClass = 'text-orange-500'; // low
-      utilText = '体积利用率偏保守，实际打样可能能多装一些。';
+      utilText = '体积利用率偏低';
     } else if (utilization < 0.85) {
       utilClass = 'text-green-600'; // mid
-      utilText = '体积利用率为中等偏上，接近常见实际装箱情况。';
+      utilText = '体积利用率中等';
     } else {
       utilClass = 'text-blue-600'; // high
-      utilText = '体积利用率较高，接近理论紧凑装箱，实际通常不会高出太多。';
+      utilText = '体积利用率较高';
+    }
+    
+    // 如果利用率超过100%，给个警告
+    if (utilization > 1) {
+        utilClass = 'text-red-600';
+        utilText = '体积利用率超100%，可能装不下！';
     }
 
     // 4. 算实重
@@ -283,6 +307,7 @@ export default function CartonCalculatorAdvanced() {
 
     setResult({
       success: true,
+      mode,
       best,
       piecesPerCarton,
       volumeCm3,
@@ -306,8 +331,37 @@ export default function CartonCalculatorAdvanced() {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="text-center space-y-2 mb-8">
-        <h1 className="text-2xl font-bold text-gray-800">箱规装箱数量 & 体积重 / 实重 计算器</h1>
-        <p className="text-gray-500 text-sm">支持 6 种朝向 + 单层补洞混合摆放，估算更接近实际装箱结果</p>
+        <h1 className="text-2xl font-bold text-gray-800">箱规装箱数量 & 体积重/实重 计算器</h1>
+        <p className="text-gray-500 text-sm">
+            {mode === 'auto' 
+                ? '支持 6 种朝向 + 单层补洞混合摆放，估算更接近实际装箱结果' 
+                : '已知装箱数量，快速计算体积重、实重及利用率'
+            }
+        </p>
+      </div>
+      
+      {/* Mode Switcher */}
+      <div className="flex justify-center mb-6">
+        <div className="bg-gray-100 p-1 rounded-lg flex gap-1">
+            <button 
+                onClick={() => setMode('auto')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${mode === 'auto' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+                <div className="flex items-center gap-2">
+                    <Box className="w-4 h-4" />
+                    智能测算装箱数
+                </div>
+            </button>
+            <button 
+                onClick={() => setMode('manual')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${mode === 'manual' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+                <div className="flex items-center gap-2">
+                    <Edit className="w-4 h-4" />
+                    已知装箱数
+                </div>
+            </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -335,7 +389,7 @@ export default function CartonCalculatorAdvanced() {
           </div>
         </Card>
 
-        {/* ② 单件尺寸 */}
+        {/* ② 单件尺寸 & 数量 */}
         <Card className="p-4 space-y-4">
           <h2 className="font-semibold border-l-4 border-blue-500 pl-2">② 单件产品尺寸</h2>
           
@@ -348,9 +402,18 @@ export default function CartonCalculatorAdvanced() {
             </div>
           </div>
 
-          <div className="text-xs text-gray-500 bg-gray-50 p-2 rounded">
-            ※ 本工具会尝试产品的多种朝向，单层主方案 + 边角补洞摆放，结果较简单整除更接近实际，但不保证与实测完全一致。
-          </div>
+          {mode === 'manual' && (
+             <div className="space-y-2 pt-2 border-t border-gray-100">
+                <label className="text-sm text-blue-600 font-medium">每箱装箱数量（件）</label>
+                <Input id="manualPieces" type="number" step="1" min="1" placeholder="例：50" value={inputs.manualPieces} onChange={handleInputChange} className="border-blue-300 ring-1 ring-blue-100" />
+             </div>
+          )}
+
+          {mode === 'auto' && (
+            <div className="text-xs text-gray-500 bg-gray-50 p-2 rounded">
+              ※ 本工具会尝试产品的多种朝向，单层主方案 + 边角补洞摆放，结果较简单整除更接近实际。
+            </div>
+          )}
         </Card>
 
         {/* ③ 计费规则 */}
@@ -413,18 +476,35 @@ export default function CartonCalculatorAdvanced() {
                 <div>
                   <div className="font-bold mb-1 flex items-center gap-1">
                     一、装箱结果
-                    <span className="inline-block px-1.5 py-0.5 rounded text-xs bg-blue-500 text-white font-normal">多朝向+补洞</span>
+                    {result.mode === 'auto' 
+                        ? <span className="inline-block px-1.5 py-0.5 rounded text-xs bg-blue-500 text-white font-normal">智能测算</span>
+                        : <span className="inline-block px-1.5 py-0.5 rounded text-xs bg-purple-500 text-white font-normal">指定数量</span>
+                    }
                   </div>
-                  <p>理论每箱可装：<strong className="text-blue-600 text-lg">{result.piecesPerCarton}</strong> 件</p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    (每层 {result.best.perLayer} 件 × {result.best.layers} 层)
-                  </p>
-                  <p className="text-xs text-gray-600 mt-1">
-                    朝向：{result.best.orientation.name}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1 bg-gray-50 p-1 rounded">
-                    {result.best.desc}
-                  </p>
+                  <p>每箱装箱：<strong className="text-blue-600 text-lg">{result.piecesPerCarton}</strong> 件</p>
+                  
+                  {result.mode === 'auto' && (
+                    <>
+                        <p className="text-xs text-gray-500 mt-1">
+                            (每层 {result.best.perLayer} 件 × {result.best.layers} 层)
+                        </p>
+                        <p className="text-xs text-gray-600 mt-1">
+                            朝向：{result.best.orientation.name}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1 bg-gray-50 p-1 rounded">
+                            {result.best.desc}
+                        </p>
+                    </>
+                  )}
+
+                  {result.mode === 'manual' && result.best && result.best.total > 0 && (
+                      <div className="mt-2 text-xs bg-gray-50 p-2 rounded border border-gray-100">
+                          <p className="text-gray-500 mb-1">参考：系统智能测算最大可装 <strong>{result.best.total}</strong> 件</p>
+                          {result.piecesPerCarton > result.best.total && (
+                              <p className="text-orange-500">注意：您输入的数量大于测算最大值，请确认是否能装下。</p>
+                          )}
+                      </div>
+                  )}
                 </div>
 
                 <div>
@@ -466,7 +546,7 @@ export default function CartonCalculatorAdvanced() {
       </div>
 
       <div className="text-center text-xs text-gray-400 mt-8 pb-4">
-        本工具采用简化装箱算法（多朝向 + 单层补洞），仅作估算参考；实际出货请以打样装箱结果为准。
+        本工具提供“智能测算”与“已知数量”两种模式，仅作估算参考；实际出货请以打样装箱结果为准。
       </div>
     </div>
   )

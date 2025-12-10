@@ -30,6 +30,7 @@ const MaxReserveFeeCalculator = dynamic(() => import('@/components/MaxReserveFee
 const KeywordStrategyTool = dynamic(() => import('@/components/KeywordStrategyTool'), { loading: LoadingTool })
 const SearchTermVolatilityTool = dynamic(() => import('@/components/SearchTermVolatilityTool'), { loading: LoadingTool })
 const PartnerEquityCalculator = dynamic(() => import('@/components/PartnerEquityCalculator'), { loading: LoadingTool })
+const CartonCalculatorAdvanced = dynamic(() => import('@/components/CartonCalculatorAdvanced'), { loading: LoadingTool })
 
 const PlaceholderPage = ({ title, icon: Icon }: { title: string; icon: any }) => (
   <div className="space-y-6">
@@ -71,6 +72,7 @@ const ToolContainer = memo(({ activeTab }: { activeTab: string }) => {
     case 'keyword-strategy': return <KeywordStrategyTool />
     case 'search-term-volatility': return <SearchTermVolatilityTool />
     case 'partner-equity-calculator': return <PartnerEquityCalculator />
+    case 'carton-calc-advanced': return <CartonCalculatorAdvanced />
     default: return <PlaceholderPage title="功能开发中" icon={Hammer} />
   }
 })
