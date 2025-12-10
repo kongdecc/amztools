@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { LayoutDashboard, Calculator, Crosshair, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Trash2, AlertCircle, CheckCircle, Filter, Image as ImageIcon, Receipt, Globe, Star, Hammer, Search } from 'lucide-react'
+import { LayoutDashboard, Calculator, Crosshair, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Trash2, AlertCircle, CheckCircle, Filter, Image as ImageIcon, Receipt, Globe, Star, Hammer, Search, Activity } from 'lucide-react'
 import { SettingsProvider, useSettings } from '@/components/SettingsProvider'
 import { ChevronDown } from 'lucide-react'
 import EditorPage from '@/components/EditorPage'
@@ -19,6 +19,7 @@ import AmazonGlobalTool from '@/components/AmazonGlobalTool'
 import AmazonRatingSalesReverse from '@/components/AmazonRatingSalesReverse'
 import MaxReserveFeeCalculator from '@/components/MaxReserveFeeCalculator'
 import KeywordStrategyTool from '@/components/KeywordStrategyTool'
+import SearchTermVolatilityTool from '@/components/SearchTermVolatilityTool'
 
 const DetailClient = () => {
   const { key } = useParams<{ key: string }>()
@@ -49,6 +50,7 @@ const DetailClient = () => {
     'rating-sales-reverse': Star,
     'max-reserve-fee': Calculator,
     'keyword-strategy': Filter,
+    'search-term-volatility': Activity,
   }
 
   const titleOverride: Record<string, string> = {
@@ -100,6 +102,8 @@ const DetailClient = () => {
         return <MaxReserveFeeCalculator />
       case 'keyword-strategy':
         return <KeywordStrategyTool />
+      case 'search-term-volatility':
+        return <SearchTermVolatilityTool />
       default:
         return (
           <div className="bg-white p-6 rounded-xl border">
