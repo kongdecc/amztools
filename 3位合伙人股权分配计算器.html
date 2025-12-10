@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3位合伙人股权分配计算器</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .author-info {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+        .section h3 {
+            color: #34495e;
+            margin-top: 0;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: white;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 14px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 14px;
+        }
+        input[type="number"]:focus, input[type="text"]:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        .result {
+            background-color: #e8f5e8;
+            font-weight: bold;
+        }
+        .partner-a {
+            background-color: #e3f2fd;
+        }
+        .partner-b {
+            background-color: #fff3e0;
+        }
+        .partner-c {
+            background-color: #f3e5f5;
+        }
+        .download-btn {
+            background-color: #27ae60;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+            transition: background-color 0.3s;
+        }
+        .download-btn:hover {
+            background-color: #219a52;
+        }
+        .ratio-input {
+            background-color: #fff3cd;
+            font-weight: bold;
+        }
+        .warning {
+            color: #d32f2f;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .error-warning {
+            color: #d32f2f;
+            font-size: 14px;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #ffebee;
+            border: 1px solid #f8bbd9;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .investment-error {
+            border-color: #d32f2f !important;
+            background-color: #ffebee !important;
+        }
+        .readonly-input {
+            background-color: #f0f0f0 !important;
+            color: #666;
+            cursor: not-allowed;
+        }
+        .input-warning {
+            color: #f39c12;
+            font-size: 12px;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 3位合伙人股权分配计算器</h1>
+        <div class="author-info">作者公众号：必胜哥的三板斧</div>
+        
+        <div class="section">
+            <h3>💰 基础投资信息</h3>
+            <table>
+                <tr>
+                    <th>项目</th>
+                    <th>金额/比例</th>
+                    <th>说明</th>
+                </tr>
+                <tr>
+                    <td>总投资金额</td>
+                    <td><input type="number" id="totalInvestment" value="300000" oninput="calculate()"> 元</td>
+                    <td>项目启动所需的总资金</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h3>⚖️ 股权结构分配</h3>
+            <table>
+                <tr>
+                    <th>股权类型</th>
+                    <th>占总股权比例</th>
+                    <th>说明</th>
+                </tr>
+                <tr class="ratio-input">
+                    <td>资金股</td>
+                    <td><input type="number" id="fundRatio" value="50" min="0" max="100" oninput="updateLaborRatio(); calculate()">%</td>
+                    <td>按出资比例分配的股权</td>
+                </tr>
+                <tr class="ratio-input">
+                    <td>人力股</td>
+                    <td><span id="laborRatio">50</span>%</td>
+                    <td>按工作投入分配的股权</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h3>💸 资金股分配 (占总股权<span id="fundRatioDisplay">50</span>%)</h3>
+            <table>
+                <tr>
+                    <th>合伙人</th>
+                    <th>出资金额 (元)</th>
+                    <th>资金股占比</th>
+                    <th>对应总股权比例</th>
+                </tr>
+                <tr class="partner-a">
+                    <td>合伙人 A</td>
+                    <td>
+                        <input type="number" id="investmentA" value="120000" oninput="calculate()">
+                        <div class="input-warning" id="investmentAWarning" style="display:none;">
+                            ⚠️ 出资金额不能超过总投资金额
+                        </div>
+                    </td>
+                    <td><span id="fundShareA">40.0%</span></td>
+                    <td><span id="fundEquityA">20.0%</span></td>
+                </tr>
+                <tr class="partner-b">
+                    <td>合伙人 B</td>
+                    <td>
+                        <input type="number" id="investmentB" value="120000" oninput="calculate()">
+                        <div class="input-warning" id="investmentBWarning" style="display:none;">
+                            ⚠️ 出资金额不能超过总投资金额
+                        </div>
+                    </td>
+                    <td><span id="fundShareB">40.0%</span></td>
+                    <td><span id="fundEquityB">20.0%</span></td>
+                </tr>
+                <tr class="partner-c">
+                    <td>合伙人 C</td>
+                    <td>
+                        <input type="number" id="investmentC" value="60000" class="readonly-input" readonly>
+                        <div class="input-warning">
+                            💡 自动计算 = 总投资 - 合伙人A出资 - 合伙人B出资
+                        </div>
+                    </td>
+                    <td><span id="fundShareC">20.0%</span></td>
+                    <td><span id="fundEquityC">10.0%</span></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h3>👥 人力股分配 (占总股权<span id="laborRatioDisplay">50</span>%)</h3>
+            <table>
+                <tr>
+                    <th>合伙人</th>
+                    <th>人力股占比</th>
+                    <th>对应总股权比例</th>
+                    <th>主要职责</th>
+                </tr>
+                <tr class="partner-a">
+                    <td>合伙人 A</td>
+                    <td>
+                        <input type="number" id="laborShareA" value="50" min="0" max="100" oninput="calculate()">%
+                        <div class="input-warning" id="laborShareAWarning" style="display:none;">
+                            ⚠️ 人力股占比总和不能超过100%
+                        </div>
+                    </td>
+                    <td><span id="laborEquityA">25.0%</span></td>
+                    <td><input type="text" id="roleA" value="CEO、战略规划、核心运营" style="width:200px;"></td>
+                </tr>
+                <tr class="partner-b">
+                    <td>合伙人 B</td>
+                    <td>
+                        <input type="number" id="laborShareB" value="30" min="0" max="100" oninput="calculate()">%
+                        <div class="input-warning" id="laborShareBWarning" style="display:none;">
+                            ⚠️ 人力股占比总和不能超过100%
+                        </div>
+                    </td>
+                    <td><span id="laborEquityB">15.0%</span></td>
+                    <td><input type="text" id="roleB" value="技术总监、产品开发" style="width:200px;"></td>
+                </tr>
+                <tr class="partner-c">
+                    <td>合伙人 C</td>
+                    <td>
+                        <input type="number" id="laborShareC" value="20" class="readonly-input" readonly>%
+                        <div class="input-warning">
+                            💡 自动计算 = 100% - 合伙人A人力股 - 合伙人B人力股
+                        </div>
+                    </td>
+                    <td><span id="laborEquityC">10.0%</span></td>
+                    <td><input type="text" id="roleC" value="销售总监、市场拓展" style="width:200px;"></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h3>📈 最终股权分配结果</h3>
+            <table>
+                <tr>
+                    <th>合伙人</th>
+                    <th>资金股权</th>
+                    <th>人力股权</th>
+                    <th>总股权比例</th>
+                    <th>股权价值 (元)</th>
+                </tr>
+                <tr class="partner-a result">
+                    <td>合伙人 A</td>
+                    <td><span id="finalFundA">20.0%</span></td>
+                    <td><span id="finalLaborA">25.0%</span></td>
+                    <td><span id="finalTotalA">45.0%</span></td>
+                    <td><span id="finalValueA">135,000</span></td>
+                </tr>
+                <tr class="partner-b result">
+                    <td>合伙人 B</td>
+                    <td><span id="finalFundB">20.0%</span></td>
+                    <td><span id="finalLaborB">15.0%</span></td>
+                    <td><span id="finalTotalB">35.0%</span></td>
+                    <td><span id="finalValueB">105,000</span></td>
+                </tr>
+                <tr class="partner-c result">
+                    <td>合伙人 C</td>
+                    <td><span id="finalFundC">10.0%</span></td>
+                    <td><span id="finalLaborC">10.0%</span></td>
+                    <td><span id="finalTotalC">20.0%</span></td>
+                    <td><span id="finalValueC">60,000</span></td>
+                </tr>
+            </table>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="download-btn" onclick="downloadExcel()">📥 下载 Excel 表格</button>
+            <button class="download-btn" onclick="window.print()" style="background-color: #3498db;">🖨️ 打印报告</button>
+        </div>
+    </div>
+
+    <script>
+        function updateLaborRatio() {
+            const fundRatio = parseFloat(document.getElementById('fundRatio').value) || 0;
+            const laborRatio = Math.max(0, 100 - fundRatio);
+            document.getElementById('laborRatio').textContent = laborRatio;
+            document.getElementById('fundRatioDisplay').textContent = fundRatio;
+            document.getElementById('laborRatioDisplay').textContent = laborRatio;
+        }
+        
+        function calculate() {
+            const totalInv = parseFloat(document.getElementById('totalInvestment').value) || 0;
+            const invA = parseFloat(document.getElementById('investmentA').value) || 0;
+            const invB = parseFloat(document.getElementById('investmentB').value) || 0;
+            const laborA = parseFloat(document.getElementById('laborShareA').value) || 0;
+            const laborB = parseFloat(document.getElementById('laborShareB').value) || 0;
+            const fundRatio = parseFloat(document.getElementById('fundRatio').value) || 0;
+            const laborRatio = 100 - fundRatio;
+            
+            // 更新显示的比例
+            updateLaborRatio();
+            
+            // 检查合伙人A出资是否超过总投资
+            const investmentAWarning = document.getElementById('investmentAWarning');
+            const investmentAInput = document.getElementById('investmentA');
+            if (invA > totalInv) {
+                investmentAWarning.style.display = 'block';
+                investmentAInput.classList.add('investment-error');
+            } else {
+                investmentAWarning.style.display = 'none';
+                investmentAInput.classList.remove('investment-error');
+            }
+            
+            // 检查合伙人B出资是否超过总投资
+            const investmentBWarning = document.getElementById('investmentBWarning');
+            const investmentBInput = document.getElementById('investmentB');
+            if (invB > totalInv) {
+                investmentBWarning.style.display = 'block';
+                investmentBInput.classList.add('investment-error');
+            } else {
+                investmentBWarning.style.display = 'none';
+                investmentBInput.classList.remove('investment-error');
+            }
+            
+            // 检查A、B出资总和是否超过总投资
+            if (invA + invB > totalInv) {
+                investmentAWarning.style.display = 'block';
+                investmentBWarning.style.display = 'block';
+                investmentAInput.classList.add('investment-error');
+                investmentBInput.classList.add('investment-error');
+            }
+            
+            // 自动计算合伙人C的出资金额
+            const invC = Math.max(0, totalInv - invA - invB);
+            document.getElementById('investmentC').value = invC;
+            
+            // 检查人力股分配是否超过100%
+            const laborShareAWarning = document.getElementById('laborShareAWarning');
+            const laborShareBWarning = document.getElementById('laborShareBWarning');
+            const laborShareAInput = document.getElementById('laborShareA');
+            const laborShareBInput = document.getElementById('laborShareB');
+            
+            if (laborA + laborB > 100) {
+                laborShareAWarning.style.display = 'block';
+                laborShareBWarning.style.display = 'block';
+                laborShareAInput.classList.add('investment-error');
+                laborShareBInput.classList.add('investment-error');
+            } else {
+                laborShareAWarning.style.display = 'none';
+                laborShareBWarning.style.display = 'none';
+                laborShareAInput.classList.remove('investment-error');
+                laborShareBInput.classList.remove('investment-error');
+            }
+            
+            // 自动计算合伙人C的人力股占比
+            const laborC = Math.max(0, 100 - laborA - laborB);
+            document.getElementById('laborShareC').value = laborC;
+            
+            // 计算资金股比例
+            const totalFund = invA + invB + invC;
+            const fundShareA = totalFund > 0 ? (invA / totalFund * 100) : 0;
+            const fundShareB = totalFund > 0 ? (invB / totalFund * 100) : 0;
+            const fundShareC = totalFund > 0 ? (invC / totalFund * 100) : 0;
+            
+            // 资金股对应的总股权比例
+            const fundEquityA = (fundShareA / 100) * fundRatio;
+            const fundEquityB = (fundShareB / 100) * fundRatio;
+            const fundEquityC = (fundShareC / 100) * fundRatio;
+            
+            // 人力股对应的总股权比例
+            const laborEquityA = (laborA / 100) * laborRatio;
+            const laborEquityB = (laborB / 100) * laborRatio;
+            const laborEquityC = (laborC / 100) * laborRatio;
+            
+            // 最终总股权
+            const totalEquityA = fundEquityA + laborEquityA;
+            const totalEquityB = fundEquityB + laborEquityB;
+            const totalEquityC = fundEquityC + laborEquityC;
+            
+            // 股权价值
+            const valueA = totalInv * (totalEquityA / 100);
+            const valueB = totalInv * (totalEquityB / 100);
+            const valueC = totalInv * (totalEquityC / 100);
+            
+            // 更新显示
+            document.getElementById('fundShareA').textContent = fundShareA.toFixed(1) + '%';
+            document.getElementById('fundShareB').textContent = fundShareB.toFixed(1) + '%';
+            document.getElementById('fundShareC').textContent = fundShareC.toFixed(1) + '%';
+            document.getElementById('fundEquityA').textContent = fundEquityA.toFixed(1) + '%';
+            document.getElementById('fundEquityB').textContent = fundEquityB.toFixed(1) + '%';
+            document.getElementById('fundEquityC').textContent = fundEquityC.toFixed(1) + '%';
+            document.getElementById('laborEquityA').textContent = laborEquityA.toFixed(1) + '%';
+            document.getElementById('laborEquityB').textContent = laborEquityB.toFixed(1) + '%';
+            document.getElementById('laborEquityC').textContent = laborEquityC.toFixed(1) + '%';
+            
+            document.getElementById('finalFundA').textContent = fundEquityA.toFixed(1) + '%';
+            document.getElementById('finalFundB').textContent = fundEquityB.toFixed(1) + '%';
+            document.getElementById('finalFundC').textContent = fundEquityC.toFixed(1) + '%';
+            document.getElementById('finalLaborA').textContent = laborEquityA.toFixed(1) + '%';
+            document.getElementById('finalLaborB').textContent = laborEquityB.toFixed(1) + '%';
+            document.getElementById('finalLaborC').textContent = laborEquityC.toFixed(1) + '%';
+            document.getElementById('finalTotalA').textContent = totalEquityA.toFixed(1) + '%';
+            document.getElementById('finalTotalB').textContent = totalEquityB.toFixed(1) + '%';
+            document.getElementById('finalTotalC').textContent = totalEquityC.toFixed(1) + '%';
+            document.getElementById('finalValueA').textContent = valueA.toLocaleString('zh-CN');
+            document.getElementById('finalValueB').textContent = valueB.toLocaleString('zh-CN');
+            document.getElementById('finalValueC').textContent = valueC.toLocaleString('zh-CN');
+        }
+        
+        function downloadExcel() {
+            const totalInv = parseFloat(document.getElementById('totalInvestment').value) || 0;
+            const invA = parseFloat(document.getElementById('investmentA').value) || 0;
+            const invB = parseFloat(document.getElementById('investmentB').value) || 0;
+            const laborA = parseFloat(document.getElementById('laborShareA').value) || 0;
+            const laborB = parseFloat(document.getElementById('laborShareB').value) || 0;
+            
+            // 检查合伙人A、B出资是否超过总投资
+            if (invA > totalInv || invB > totalInv || invA + invB > totalInv) {
+                alert('错误：合伙人出资金额配置有误，请先修正后再下载！');
+                return;
+            }
+            
+            // 检查合伙人A、B人力股是否超过100%
+            if (laborA + laborB > 100) {
+                alert('错误：合伙人A、B人力股占比总和不能超过100%，请先修正后再下载！');
+                return;
+            }
+            
+            const invC = totalInv - invA - invB;
+            const laborC = 100 - laborA - laborB;
+            const fundRatio = parseFloat(document.getElementById('fundRatio').value) || 0;
+            const laborRatio = 100 - fundRatio;
+            const roleA = document.getElementById('roleA').value;
+            const roleB = document.getElementById('roleB').value;
+            const roleC = document.getElementById('roleC').value;
+            
+            // 计算数据
+            const totalFund = invA + invB + invC;
+            const fundShareA = totalFund > 0 ? (invA / totalFund * 100) : 0;
+            const fundShareB = totalFund > 0 ? (invB / totalFund * 100) : 0;
+            const fundShareC = totalFund > 0 ? (invC / totalFund * 100) : 0;
+            const fundEquityA = (fundShareA / 100) * fundRatio;
+            const fundEquityB = (fundShareB / 100) * fundRatio;
+            const fundEquityC = (fundShareC / 100) * fundRatio;
+            const laborEquityA = (laborA / 100) * laborRatio;
+            const laborEquityB = (laborB / 100) * laborRatio;
+            const laborEquityC = (laborC / 100) * laborRatio;
+            const totalEquityA = fundEquityA + laborEquityA;
+            const totalEquityB = fundEquityB + laborEquityB;
+            const totalEquityC = fundEquityC + laborEquityC;
+            const valueA = totalInv * (totalEquityA / 100);
+            const valueB = totalInv * (totalEquityB / 100);
+            const valueC = totalInv * (totalEquityC / 100);
+            
+            // 创建Excel数据
+            const data = [
+                ['3位合伙人股权分配计算表'],
+                ['作者公众号：必胜哥的三板斧'],
+                [''],
+                ['基础信息'],
+                ['总投资金额', totalInv, '元'],
+                [''],
+                ['股权结构分配'],
+                ['股权类型', '占总股权比例', '说明'],
+                ['资金股', fundRatio + '%', '按出资比例分配的股权'],
+                ['人力股', laborRatio + '%', '按工作投入分配的股权'],
+                [''],
+                ['资金股分配 (占总股权' + fundRatio + '%)'],
+                ['合伙人', '出资金额(元)', '资金股占比', '对应总股权比例'],
+                ['合伙人 A', invA, fundShareA.toFixed(1) + '%', fundEquityA.toFixed(1) + '%'],
+                ['合伙人 B', invB, fundShareB.toFixed(1) + '%', fundEquityB.toFixed(1) + '%'],
+                ['合伙人 C (自动计算)', invC, fundShareC.toFixed(1) + '%', fundEquityC.toFixed(1) + '%'],
+                [''],
+                ['人力股分配 (占总股权' + laborRatio + '%)'],
+                ['合伙人', '人力股占比', '对应总股权比例', '主要职责'],
+                ['合伙人 A', laborA + '%', laborEquityA.toFixed(1) + '%', roleA],
+                ['合伙人 B', laborB + '%', laborEquityB.toFixed(1) + '%', roleB],
+                ['合伙人 C (自动计算)', laborC + '%', laborEquityC.toFixed(1) + '%', roleC],
+                [''],
+                ['最终股权分配结果'],
+                ['合伙人', '资金股权', '人力股权', '总股权比例', '股权价值(元)'],
+                ['合伙人 A', fundEquityA.toFixed(1) + '%', laborEquityA.toFixed(1) + '%', totalEquityA.toFixed(1) + '%', valueA],
+                ['合伙人 B', fundEquityB.toFixed(1) + '%', laborEquityB.toFixed(1) + '%', totalEquityB.toFixed(1) + '%', valueB],
+                ['合伙人 C', fundEquityC.toFixed(1) + '%', laborEquityC.toFixed(1) + '%', totalEquityC.toFixed(1) + '%', valueC]
+            ];
+            
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "股权分配");
+            
+            // 设置列宽
+            ws['!cols'] = [
+                {wch: 15},
+                {wch: 15},
+                {wch: 15},
+                {wch: 15},
+                {wch: 20}
+            ];
+            
+            XLSX.writeFile(wb, '3位合伙人股权分配计算表.xlsx');
+        }
+        
+        // 页面加载时计算一次
+        window.onload = function() {
+            calculate();
+        };
+    </script>
+</body>
+</html>

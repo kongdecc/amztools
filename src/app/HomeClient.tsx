@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState, useMemo, useCallback, Suspense } from 'react'
-import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download, AlertCircle, CheckCircle, Filter, LayoutGrid, Maximize2, Minimize2, Image as ImageIcon, MoreHorizontal, Receipt, Crosshair, Globe, Star, Activity } from 'lucide-react'
+import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download, AlertCircle, CheckCircle, Filter, LayoutGrid, Maximize2, Minimize2, Image as ImageIcon, MoreHorizontal, Receipt, Crosshair, Globe, Star, Activity, Users } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 import Head from 'next/head'
 import Link from 'next/link'
@@ -50,6 +50,7 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
     'max-reserve-fee': Calculator,
     'keyword-strategy': Filter,
     'search-term-volatility': Activity,
+    'partner-equity-calculator': Users,
   }
   const colorSolidMap: Record<string, string> = {
     blue: 'bg-blue-600',
