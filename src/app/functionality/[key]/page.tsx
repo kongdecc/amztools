@@ -17,6 +17,7 @@ import InvoiceGenerator from '@/components/InvoiceGenerator'
 import CpcCalculator from '@/components/CpcCalculator'
 import AmazonGlobalTool from '@/components/AmazonGlobalTool'
 import AmazonRatingSalesReverse from '@/components/AmazonRatingSalesReverse'
+import MaxReserveFeeCalculator from '@/components/MaxReserveFeeCalculator'
 
 const DetailClient = () => {
   const { key } = useParams<{ key: string }>()
@@ -45,6 +46,7 @@ const DetailClient = () => {
     'invoice-generator': Receipt,
     'amazon-global': Globe,
     'rating-sales-reverse': Star,
+    'max-reserve-fee': Calculator,
   }
 
   const titleOverride: Record<string, string> = {
@@ -92,6 +94,8 @@ const DetailClient = () => {
         return <AmazonGlobalTool />
       case 'rating-sales-reverse':
         return <AmazonRatingSalesReverse />
+      case 'max-reserve-fee':
+        return <MaxReserveFeeCalculator />
       default:
         return (
           <div className="bg-white p-6 rounded-xl border">
