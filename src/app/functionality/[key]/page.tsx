@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { LayoutDashboard, Calculator, Crosshair, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Trash2, AlertCircle, CheckCircle, Filter, Image as ImageIcon, Receipt, Globe, Star, Hammer, Search, Activity, Users } from 'lucide-react'
+import { LayoutDashboard, Calculator, Crosshair, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Trash2, AlertCircle, CheckCircle, Filter, Image as ImageIcon, Receipt, Globe, Star, Hammer, Search, Activity, Users, Box } from 'lucide-react'
 import { SettingsProvider, useSettings } from '@/components/SettingsProvider'
 import { ChevronDown } from 'lucide-react'
 import EditorPage from '@/components/EditorPage'
@@ -21,6 +21,7 @@ import MaxReserveFeeCalculator from '@/components/MaxReserveFeeCalculator'
 import KeywordStrategyTool from '@/components/KeywordStrategyTool'
 import SearchTermVolatilityTool from '@/components/SearchTermVolatilityTool'
 import PartnerEquityCalculator from '@/components/PartnerEquityCalculator'
+import CartonCalculatorAdvanced from '@/components/CartonCalculatorAdvanced'
 
 const DetailClient = () => {
   const { key } = useParams<{ key: string }>()
@@ -53,6 +54,7 @@ const DetailClient = () => {
     'keyword-strategy': Filter,
     'search-term-volatility': Activity,
     'partner-equity-calculator': Users,
+    'carton-calc-advanced': Box,
   }
 
   const titleOverride: Record<string, string> = {
@@ -108,6 +110,8 @@ const DetailClient = () => {
         return <SearchTermVolatilityTool />
       case 'partner-equity-calculator':
         return <PartnerEquityCalculator />
+      case 'carton-calc-advanced':
+        return <CartonCalculatorAdvanced />
       default:
         return (
           <div className="bg-white p-6 rounded-xl border">

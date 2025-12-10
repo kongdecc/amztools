@@ -27,7 +27,8 @@ const defaults = [
   { key: 'max-reserve-fee', title: '白嫖库容的最高预留费计算工具', desc: '根据销售额预估和库容申请计划，计算出不亏本的最高预留费单价', status: '启用', views: 0, color: 'emerald', order: 18, category: 'operation' },
   { key: 'keyword-strategy', title: '亚马逊投放关键词选择策略', desc: '根据ASIN转化份额和ABA排名范围，精准筛选和分类关键词（头部/腰部/尾部）', status: '启用', views: 0, color: 'indigo', order: 19, category: 'operation' },
   { key: 'search-term-volatility', title: '快速查询波动率高的搜索词', desc: '对比分析多份CSV报告，快速识别ABA排名、点击份额和转化份额波动较大的搜索词', status: '启用', views: 0, color: 'purple', order: 20, category: 'operation' },
-  { key: 'partner-equity-calculator', title: '合伙人股权分配计算器', desc: '支持2人/3人合伙模式，自动计算资金股/人力股比例及股权价值，支持Excel导出和打印', status: '启用', views: 0, color: 'teal', order: 21, category: 'operation' }
+  { key: 'partner-equity-calculator', title: '合伙人股权分配计算器', desc: '支持2人/3人合伙模式，自动计算资金股/人力股比例及股权价值，支持Excel导出和打印', status: '启用', views: 0, color: 'teal', order: 21, category: 'operation' },
+  { key: 'carton-calc-advanced', title: '箱规装箱 & 体积重/实重 计算器', desc: '支持 6 种朝向 + 单层补洞混合摆放，估算更接近实际装箱结果', status: '启用', views: 0, color: 'orange', order: 22, category: 'other' }
 ]
 
 function getLocalData() {
