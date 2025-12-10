@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
-import { Upload, Download, FileSpreadsheet, Loader2 } from 'lucide-react';
+import { Upload, Download, FileSpreadsheet, Loader2, Filter } from 'lucide-react';
 
 const Card = ({ children, className = "", ...props }: any) => (
   <div className={`bg-white rounded-xl border border-gray-100 shadow-sm ${className}`} {...props}>{children}</div>
@@ -146,9 +146,12 @@ export default function KeywordStrategyTool() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      <div className="flex items-center gap-2 mb-2">
+        <Filter className="h-6 w-6 text-indigo-600" />
+        <h2 className="text-xl font-bold text-gray-800">亚马逊投放关键词选择策略</h2>
+      </div>
       <Card className="p-8 md:p-10">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">亚马逊投放关键词选择策略</h1>
           <p className="text-gray-500 text-sm mb-4">作者公众号：必胜哥的三板斧</p>
           <div className="flex justify-center">
             <div className="text-center">

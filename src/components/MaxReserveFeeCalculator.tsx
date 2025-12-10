@@ -65,10 +65,23 @@ export default function MaxReserveFeeCalculator() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      <div className="flex items-center gap-2 mb-2">
+        <Calculator className="h-6 w-6 text-emerald-600" />
+        <h2 className="text-xl font-bold text-gray-800">白嫖库容的最高预留费计算工具</h2>
+      </div>
       <Card className="p-8 md:p-10">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">白嫖库容的最高预留费计算工具</h1>
-          <p className="text-gray-500 text-sm">作者：必胜哥&nbsp;&nbsp;&nbsp;&nbsp;公众号：必胜哥的三板斧</p>
+          <p className="text-gray-500 text-sm mb-4">作者：必胜哥&nbsp;&nbsp;&nbsp;&nbsp;公众号：必胜哥的三板斧</p>
+          <div className="flex justify-center">
+            <div className="text-center">
+              <img 
+                src="https://tc.z.wiki/autoupload/edKd7EnrdtB-UwY97x0oKsS6MvGWw9YIYwMnL2_E4yayl5f0KlZfm6UsKj-HyTuv/20250705/KWaE/430X430/qrcode_for_gh_3938b401b10d_430.jpg" 
+                alt="公众号二维码" 
+                className="w-32 h-32 rounded-xl shadow-lg border-2 border-white mx-auto hover:scale-105 transition-transform"
+              />
+              <p className="text-xs text-gray-400 mt-2">扫码关注公众号</p>
+            </div>
+          </div>
         </div>
 
         <div className="space-y-6">
