@@ -18,15 +18,16 @@ const Input = ({ className = "", ...props }: any) => (
   <input className={`flex h-9 w-full rounded-md border border-gray-300 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 ${className}`} {...props} />
 )
 
-const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; modules: Array<any> }) => {
+const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: string) => void; modules: Array<any>; categories?: Array<any> }) => {
   const { settings } = useSettings()
   const router = useRouter()
   const safeOrigin = (typeof window !== 'undefined' && (window as any).location) ? (window as any).location.origin : ''
-  const categories = [
+  const defaultCategories = [
     { key: 'operation', label: '运营工具' },
     { key: 'advertising', label: '广告工具' },
     { key: 'image-text', label: '图片文本' }
   ]
+  const activeCategories = categories.length > 0 ? categories : defaultCategories
 
   const iconMap: Record<string, any> = {
     'ad-calc': Calculator,
@@ -88,11 +89,15 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
   const [searchKeyword, setSearchKeyword] = useState('')
   const visible = modules.filter((m: any) => {
     if (m.status === '下架') return false
-    if (m.category && categories.length > 0 && !categories.some(c => c.key === m.category)) return false
+    
+    // 如果有搜索关键词，忽略分类限制，进行全局搜索
     if (searchKeyword.trim()) {
       const k = searchKeyword.trim().toLowerCase()
       return m.title.toLowerCase().includes(k) || m.desc.toLowerCase().includes(k)
     }
+
+    // 没有搜索关键词时，应用分类过滤
+    if (m.category && activeCategories.length > 0 && !activeCategories.some(c => c.key === m.category)) return false
     return true
   })
   // 首页显示的卡片数量，默认6个
@@ -579,7 +584,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
           )}
           <div className="max-w-7xl mx-auto">
             {activeTab === 'home' ? (
-              <HomePage onNavigate={handleNavigate} modules={modules} />
+              <HomePage onNavigate={handleNavigate} modules={modules} categories={categories} />
             ) : activeTab === 'functionality' ? (
               <div className="space-y-6">
                 <div className="flex items-center gap-2 mb-2">
