@@ -33,6 +33,7 @@ const PartnerEquityCalculator = dynamic(() => import('@/components/PartnerEquity
 const CartonCalculatorAdvanced = dynamic(() => import('@/components/CartonCalculatorAdvanced'), { loading: LoadingTool })
 const PinyinConverter = dynamic(() => import('@/components/PinyinConverter'), { loading: LoadingTool })
 const NaturalTrafficTool = dynamic(() => import('@/components/NaturalTrafficTool'), { loading: LoadingTool })
+const KeywordCombiner = dynamic(() => import('@/components/KeywordCombiner'), { loading: LoadingTool })
 
 const PlaceholderPage = ({ title, icon: Icon }: { title: string; icon: any }) => (
   <div className="space-y-6">
@@ -77,6 +78,7 @@ const ToolContainer = memo(({ activeTab }: { activeTab: string }) => {
     case 'carton-calc-advanced': return <CartonCalculatorAdvanced />
     case 'pinyin-converter': return <PinyinConverter />
     case 'natural-traffic-tool': return <NaturalTrafficTool />
+    case 'keyword-combiner': return <KeywordCombiner />
     default: return <PlaceholderPage title="功能开发中" icon={Hammer} />
   }
 })
