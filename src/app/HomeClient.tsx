@@ -85,9 +85,14 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
     lime: 'text-lime-600',
     fuchsia: 'text-fuchsia-600',
   }
+  const [searchKeyword, setSearchKeyword] = useState('')
   const visible = modules.filter((m: any) => {
     if (m.status === '下架') return false
     if (m.category && categories.length > 0 && !categories.some(c => c.key === m.category)) return false
+    if (searchKeyword.trim()) {
+      const k = searchKeyword.trim().toLowerCase()
+      return m.title.toLowerCase().includes(k) || m.desc.toLowerCase().includes(k)
+    }
     return true
   })
   // 首页显示的卡片数量，默认6个
@@ -114,7 +119,13 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
         })()}
         <div className="max-w-xl mx-auto relative z-10">
           <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-          <input type="text" placeholder="搜索工具，例如：竞价、大小写..." className="w-full pl-10 pr-4 py-3 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm" />
+          <input 
+            type="text" 
+            placeholder="搜索工具，例如：竞价、大小写..." 
+            className="w-full pl-10 pr-4 py-3 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm" 
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+          />
         </div>
       </Card>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
