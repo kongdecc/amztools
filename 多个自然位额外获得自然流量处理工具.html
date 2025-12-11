@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>多个自然位额外获得自然流量处理工具</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root { --bg: #ffffff; --text: #1d1d1f; --secondary: #86868b; --border: #d2d2d7; --card-bg: #fbfbfd; --accent: #0071e3; --accent-hover: #0077ed; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.47059; font-weight: 400; letter-spacing: -.022em; }
+    .hero { text-align: center; padding: 60px 20px 40px; background: linear-gradient(135deg, #f5f5f7 0%, #ffffff 100%); }
+    .hero h1 { font-size: 48px; line-height: 1.0834933333; font-weight: 600; letter-spacing: -.003em; margin-bottom: 12px; background: linear-gradient(135deg, #0071e3 0%, #00a4e4 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .author { display: flex; align-items: center; justify-content: center; gap: 20px; margin-top: 30px; padding: 20px; }
+    .author-info { text-align: left; }
+    .author-label { font-size: 14px; color: var(--secondary); margin-bottom: 8px; }
+    .author-name { font-size: 20px; font-weight: 600; color: var(--text); margin-bottom: 12px; }
+    .qrcode { width: 120px; height: 120px; border-radius: 18px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); transition: transform 0.3s ease; }
+    .qrcode:hover { transform: scale(1.05); }
+    .container { max-width: 980px; margin: 0 auto; padding: 0 20px 80px; }
+    .section { background: var(--card-bg); border-radius: 18px; padding: 40px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    .section-title { font-size: 24px; font-weight: 600; margin-bottom: 24px; color: var(--text); }
+    .description { font-size: 17px; line-height: 1.5; color: var(--secondary); margin-bottom: 30px; }
+    .description strong { color: var(--text); font-weight: 600; }
+    .file-upload { background: #ffffff; border: 2px dashed var(--border); border-radius: 12px; padding: 30px; margin-bottom: 20px; transition: all 0.3s ease; }
+    .file-upload:hover { border-color: var(--accent); background: #fafafa; }
+    .file-upload h3 { font-size: 17px; font-weight: 600; margin-bottom: 16px; color: var(--text); }
+    input[type=file] { width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px; font-size: 15px; background: #ffffff; cursor: pointer; transition: all 0.2s ease; }
+    input[type=file]:hover { border-color: var(--accent); }
+    .file-status { margin-top: 12px; font-size: 14px; color: var(--secondary); }
+    .actions { display: flex; gap: 12px; margin-top: 30px; }
+    .btn { flex: 1; padding: 16px 24px; font-size: 17px; font-weight: 500; border: none; border-radius: 980px; cursor: pointer; transition: all 0.2s ease; }
+    .btn-primary { background: var(--accent); color: #ffffff; }
+    .btn-primary:hover:not(:disabled) { background: var(--accent-hover); transform: scale(1.02); }
+    .btn-primary:active:not(:disabled) { transform: scale(0.98); }
+    .btn-secondary { background: #ffffff; color: var(--accent); border: 2px solid var(--accent); }
+    .btn-secondary:hover:not(:disabled) { background: var(--accent); color: #ffffff; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .status-box { background: #ffffff; border-radius: 12px; padding: 20px; margin-top: 20px; border: 1px solid var(--border); font-family: "SF Mono", Monaco, monospace; font-size: 13px; line-height: 1.6; color: var(--text); max-height: 300px; overflow-y: auto; }
+    .status-ok { color: #30d158; }
+    .status-warn { color: #ff9f0a; }
+    .status-err { color: #ff3b30; }
+    .status-info { color: var(--accent); }
+    .preview { margin-top: 40px; display: none; }
+    .preview h3 { font-size: 24px; font-weight: 600; margin-bottom: 20px; }
+    .preview-note { font-size: 14px; color: var(--secondary); margin-bottom: 16px; }
+    table { width: 100%; border-collapse: collapse; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
+    th { background: #f5f5f7; font-weight: 600; color: var(--text); }
+    td { color: var(--secondary); }
+    tr:last-child td { border-bottom: none; }
+    .variant-col { background: #e8f4fd !important; color: var(--accent) !important; font-weight: 500; }
+    .extra-traffic-col { background: #fff3cd !important; color: #856404 !important; font-weight: 500; }
+    @media (max-width: 768px) { .hero h1 { font-size: 32px; } .author { flex-direction: column; gap: 16px; } .author-info { text-align: center; } .qrcode { width: 100px; height: 100px; } .section { padding: 24px; } .actions { flex-direction: column; } table { font-size: 12px; } th, td { padding: 8px 12px; } }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <h1>多个自然位额外获得自然流量处理工具</h1>
+    <div class="author">
+      <div class="author-info">
+        <div class="author-label">作者公众号</div>
+        <div class="author-name">必胜哥的三板斧</div>
+      </div>
+      <img src="https://tc.z.wiki/autoupload/edKd7EnrdtB-UwY97x0oKsS6MvGWw9YIYwMnL2_E4yayl5f0KlZfm6UsKj-HyTuv/20250705/KWaE/430X430/qrcode_for_gh_3938b401b10d_430.jpg" alt="公众号二维码" class="qrcode" />
+    </div>
+  </div>
+  <div class="container">
+    <div class="section">
+      <h2 class="section-title">工具说明</h2>
+      <div class="description">
+        <strong>步骤1：</strong>处理「查多变体自然位表格」- H列拆分为6列（新增"子体额外自然流量"），<strong>自动跳过第一组数据</strong>，合并单元格<br>
+        <strong>步骤2：</strong>使用「查流量结构表格」匹配ASIN对应的变体类型数据<br>
+        <strong>步骤3：</strong>在"获得多自然位的变体"后插入变体类型列（变体类型1、变体类型2等）<br>
+        <strong>计算公式：</strong>子体额外自然流量 = 自然流量占比 × 关键词给该Listing贡献的自然流量
+      </div>
+      <div class="file-upload">
+        <h3>📋 表格1：查多变体自然位表格</h3>
+        <input id="file1" type="file" accept=".xlsx,.xls,.csv" />
+        <div class="file-status" id="status1">未选择文件</div>
+      </div>
+      <div class="file-upload">
+        <h3>📋 表格2：查流量结构表格</h3>
+        <input id="file2" type="file" accept=".xlsx,.xls,.csv" />
+        <div class="file-status" id="status2">未选择文件</div>
+      </div>
+      <div class="actions">
+        <button id="process" class="btn btn-primary">开始处理</button>
+        <button id="download" class="btn btn-secondary" disabled>下载结果</button>
+      </div>
+      <div id="status" class="status-box status-info">⏳ 正在加载 Excel 库...</div>
+    </div>
+    <div id="previewWrap" class="preview">
+      <h3>数据预览</h3>
+      <div class="preview-note">最多显示前30行，变体类型列以蓝色高亮显示，子体额外自然流量列以黄色高亮显示</div>
+      <div id="preview" style="overflow-x:auto"></div>
+    </div>
+  </div>
+<script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>if(typeof XLSX==='undefined'){document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"><\/script>');}</script>
+<script>
+(function(){'use strict';let outputWB=null;function log(msg,cls='status-info'){const s=document.getElementById('status');if(s){s.innerHTML=msg;s.className='status-box '+cls;}}function waitForXLSX(callback,attempts=0){if(typeof XLSX!=='undefined'){callback();}else if(attempts<50){setTimeout(()=>waitForXLSX(callback,attempts+1),100);}else{log('❌ Excel库加载失败,请刷新页面重试','status-err');}}function initApp(){const fileInput1=document.getElementById('file1');const fileInput2=document.getElementById('file2');const btnProcess=document.getElementById('process');const btnDownload=document.getElementById('download');fileInput1.addEventListener('change',function(){const statusDiv=document.getElementById('status1');if(this.files&&this.files[0]){const f=this.files[0];statusDiv.innerHTML=`✅ ${f.name} <span style="color: var(--secondary)">(${(f.size/1024).toFixed(1)} KB)</span>`;statusDiv.style.color='#30d158';}else{statusDiv.innerHTML='未选择文件';statusDiv.style.color='var(--secondary)';}btnDownload.disabled=true;outputWB=null;});fileInput2.addEventListener('change',function(){const statusDiv=document.getElementById('status2');if(this.files&&this.files[0]){const f=this.files[0];statusDiv.innerHTML=`✅ ${f.name} <span style="color: var(--secondary)">(${(f.size/1024).toFixed(1)} KB)</span>`;statusDiv.style.color='#30d158';}else{statusDiv.innerHTML='未选择文件';statusDiv.style.color='var(--secondary)';}btnDownload.disabled=true;outputWB=null;});btnProcess.addEventListener('click',async function(){const file1=fileInput1.files&&fileInput1.files[0];const file2=fileInput2.files&&fileInput2.files[0];if(!file1||!file2){log('⚠️ 请先选择两个Excel文件','status-warn');return;}btnProcess.disabled=true;btnDownload.disabled=true;try{log('⏳ 读取表格1（查多变体自然位）...','status-info');const arrayBuffer1=await readFile(file1);const wb1=XLSX.read(new Uint8Array(arrayBuffer1),{type:'array'});log('⏳ 读取表格2（查流量结构）...','status-info');const arrayBuffer2=await readFile(file2);const wb2=XLSX.read(new Uint8Array(arrayBuffer2),{type:'array'});log('⏳ 处理表格1数据（拆分H列,计算子体额外自然流量）...','status-info');const ws1=wb1.Sheets[wb1.SheetNames[0]];const result1=transformSheet(ws1);log('⏳ 解析表格2（构建变体类型映射）...','status-info');const ws2=wb2.Sheets[wb2.SheetNames[0]];const variantMap=buildVariantMap(ws2);log('⏳ 匹配变体类型数据并插入列...','status-info');const finalResult=matchAndAddVariantTypes(result1,variantMap);renderPreview(finalResult.outAOA,finalResult.variantColStart,finalResult.maxVariantCols,finalResult.extraTrafficColIndex);outputWB=buildWorkbookWithMerges(finalResult.outAOA,finalResult.merges);btnDownload.disabled=false;log(`✅ 处理完成！\n\n📊 表格1拆分: ${result1.expanded} 行（已跳过第一组数据）\n📊 跳过的数据组: ${result1.skippedFirst} 个\n📊 表格2映射: ${Object.keys(variantMap).length} 条ASIN\n📊 成功匹配: ${finalResult.matchedCount} 个变体\n📊 未匹配: ${finalResult.unmatchedCount} 个变体\n📊 变体类型列数: ${finalResult.maxVariantCols} 列\n📊 合并单元格数: ${finalResult.merges.length} 个\n📊 总输出行数: ${finalResult.outAOA.length-1} 行\n\n💡 点击「下载结果」保存文件`,'status-ok');}catch(err){log('❌ 处理失败: '+err.message,'status-err');}finally{btnProcess.disabled=false;}});btnDownload.addEventListener('click',function(){if(!outputWB)return;const timestamp=new Date().toISOString().slice(0,16).replace(/[:-]/g,'');const filename=`处理结果_${timestamp}.xlsx`;XLSX.writeFile(outputWB,filename);log('✅ 文件已下载: '+filename,'status-ok');});log('✅ 系统就绪,请选择两个Excel文件开始处理','status-ok');}function readFile(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=e=>resolve(e.target.result);reader.onerror=()=>reject(new Error('文件读取失败'));reader.readAsArrayBuffer(file);});}function transformSheet(ws){const aoa=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});if(!aoa||aoa.length===0)throw new Error('表格1为空');const headerRow=aoa[0]||[];let hIndex=7;const targetName='获得多自然位的变体｜自然流量占比｜获得自然位的天数｜平均自然排名｜近30天销量';const found=headerRow.findIndex(h=>String(h).trim()===targetName);if(found!==-1)hIndex=found;let trafficColIndex=-1;const trafficColNames=['关键词给该Listing贡献的自然流量','自然流量','关键词给该listing贡献的自然流量'];for(let i=0;i<headerRow.length;i++){const header=String(headerRow[i]||'').trim();if(trafficColNames.some(name=>header.includes(name)||header===name)){trafficColIndex=i;break;}}const newHeaders=[];for(let i=0;i<headerRow.length;i++){if(i===hIndex){newHeaders.push('获得多自然位的变体','自然流量占比','子体额外自然流量','获得自然位的天数','平均自然排名','近30天销量');}else{newHeaders.push(headerRow[i]||`列${i+1}`);}}const outAOA=[newHeaders];const merges=[];let expanded=0,skipped=0,skippedFirst=0,currentRow=1;for(let r=1;r<aoa.length;r++){const row=aoa[r];if(!row||row.length===0)continue;const hVal=row[hIndex];const groups=parseHCell(hVal);let keywordTraffic=0;if(trafficColIndex!==-1){const trafficValue=row[trafficColIndex];keywordTraffic=parseFloat(String(trafficValue||'0').replace(/[,%]/g,''))||0;}let processGroups=groups;if(groups.length>0){processGroups=groups.slice(1);skippedFirst++;}const groupCount=processGroups.length;const startRow=currentRow;if(groupCount===0){const newRow=[];for(let i=0;i<row.length;i++){if(i===hIndex){newRow.push('','','','','','');}else{newRow.push(row[i]||'');}}outAOA.push(newRow);skipped++;currentRow++;}else{processGroups.forEach((g)=>{const newRow=[];for(let i=0;i<row.length;i++){if(i===hIndex){const naturalTrafficRatio=parseFloat(String(g[1]||'0').replace(/[,%]/g,''))||0;const extraTraffic=(naturalTrafficRatio/100)*keywordTraffic;newRow.push(g[0]||'',g[1]||'',extraTraffic.toFixed(2),g[2]||'',g[3]||'',g[4]||'');}else{newRow.push(row[i]||'');}}outAOA.push(newRow);expanded++;});currentRow+=groupCount;if(groupCount>1){let colIdx=0;for(let i=0;i<row.length;i++){if(i!==hIndex){merges.push({s:{r:startRow,c:colIdx},e:{r:currentRow-1,c:colIdx}});colIdx++;}else{colIdx+=6;}}}}}return{outAOA,merges,expanded,skipped,skippedFirst,hIndex,outputCols:newHeaders.length,trafficColIndex};}function parseHCell(raw){if(!raw)return[];const text=String(raw).trim();if(!text)return[];const groups=[];const regex=/\[([^\]]+)\]/g;let match;while((match=regex.exec(text))!==null){const parts=splitFiveParts(match[1]);if(parts)groups.push(parts);}return groups;}function splitFiveParts(str){const parts=[];let remaining=str.trim();for(let i=0;i<4;i++){const commaIdx=remaining.indexOf(',');if(commaIdx===-1)return null;parts.push(remaining.substring(0,commaIdx).trim());remaining=remaining.substring(commaIdx+1).trim();}if(remaining){parts.push(remaining);return parts;}return null;}function buildVariantMap(ws){const aoa=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});if(!aoa||aoa.length===0)throw new Error('表格2为空');const headerRow=aoa[0]||[];let asinIndex=-1,variantTypeIndex=-1;headerRow.forEach((h,idx)=>{const headerStr=String(h).trim().toUpperCase();if(headerStr==='ASIN')asinIndex=idx;if(headerStr==='变体类型'||headerStr.includes('变体类型'))variantTypeIndex=idx;});if(asinIndex===-1)throw new Error('表格2中未找到ASIN列');if(variantTypeIndex===-1)throw new Error('表格2中未找到变体类型列');const map={};for(let r=1;r<aoa.length;r++){const row=aoa[r];if(!row||row.length===0)continue;const asin=String(row[asinIndex]||'').trim();const variantType=String(row[variantTypeIndex]||'').trim();if(asin)map[asin]=variantType;}return map;}function matchAndAddVariantTypes(result1,variantMap){const{outAOA,merges}=result1;const headerRow=outAOA[0];const variantColIndex=headerRow.findIndex(h=>String(h).trim()==='获得多自然位的变体');if(variantColIndex===-1)throw new Error('未找到"获得多自然位的变体"列');const extraTrafficColIndex=headerRow.findIndex(h=>String(h).trim()==='子体额外自然流量');let maxVariantCols=0,matchedCount=0,unmatchedCount=0;for(let r=1;r<outAOA.length;r++){const asin=String(outAOA[r][variantColIndex]||'').trim();if(asin&&variantMap[asin]){const parts=splitVariantType(variantMap[asin]);maxVariantCols=Math.max(maxVariantCols,parts.length);matchedCount++;}else if(asin){unmatchedCount++;}}const newHeaderRow=[];for(let i=0;i<headerRow.length;i++){newHeaderRow.push(headerRow[i]);if(i===variantColIndex){for(let j=1;j<=maxVariantCols;j++){newHeaderRow.push(`变体类型${j}`);}}}const variantColStart=variantColIndex+1;const newAOA=[newHeaderRow];for(let r=1;r<outAOA.length;r++){const row=outAOA[r];const asin=String(row[variantColIndex]||'').trim();const newRow=[];for(let i=0;i<row.length;i++){newRow.push(row[i]);if(i===variantColIndex){if(asin&&variantMap[asin]){const parts=splitVariantType(variantMap[asin]);for(let j=0;j<maxVariantCols;j++){newRow.push(parts[j]||'');}}else{for(let j=0;j<maxVariantCols;j++){newRow.push('');}}}}newAOA.push(newRow);}const newMerges=[];for(const merge of merges){const oldCol=merge.s.c;let newCol=oldCol;if(oldCol>variantColIndex){newCol=oldCol+maxVariantCols;}newMerges.push({s:{r:merge.s.r,c:newCol},e:{r:merge.e.r,c:newCol}});}let newExtraTrafficColIndex=extraTrafficColIndex;if(extraTrafficColIndex>variantColIndex){newExtraTrafficColIndex=extraTrafficColIndex+maxVariantCols;}return{outAOA:newAOA,merges:newMerges,matchedCount,unmatchedCount,maxVariantCols,variantColStart,extraTrafficColIndex:newExtraTrafficColIndex};}function splitVariantType(variantType){if(!variantType)return[];let text=variantType.trim();text=text.replace(/^\[|\]$/g,'');return text.split(',').map(p=>p.trim()).filter(p=>p);}function renderPreview(aoa,variantColStart,variantColCount,extraTrafficColIndex){const wrap=document.getElementById('preview');const previewWrap=document.getElementById('previewWrap');const table=document.createElement('table');const maxRows=Math.min(aoa.length,31);for(let r=0;r<maxRows;r++){const tr=document.createElement('tr');const row=aoa[r]||[];row.forEach((val,c)=>{const cell=document.createElement(r===0?'th':'td');cell.textContent=val||'';if(c>=variantColStart&&c<variantColStart+variantColCount){cell.className='variant-col';}else if(c===extraTrafficColIndex){cell.className='extra-traffic-col';}tr.appendChild(cell);});table.appendChild(tr);}wrap.innerHTML='';wrap.appendChild(table);previewWrap.style.display='block';}function buildWorkbookWithMerges(aoa,merges){const ws=XLSX.utils.aoa_to_sheet(aoa);if(merges&&merges.length>0){ws['!merges']=merges;}const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Result');return wb;}waitForXLSX(initApp);})();
+</script>
+</body>
+</html>

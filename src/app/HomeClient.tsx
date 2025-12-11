@@ -51,6 +51,7 @@ const HomePage = ({ onNavigate, modules }: { onNavigate: (id: string) => void; m
     'keyword-strategy': Filter,
     'search-term-volatility': Activity,
     'partner-equity-calculator': Users,
+    'natural-traffic-tool': BarChart3,
   }
   const colorSolidMap: Record<string, string> = {
     blue: 'bg-blue-600',
@@ -265,6 +266,8 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
     'max-reserve-fee': Calculator,
     'keyword-strategy': Filter,
     'search-term-volatility': Activity,
+    'partner-equity-calculator': Users,
+    'natural-traffic-tool': BarChart3,
   }), [])
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({})
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)

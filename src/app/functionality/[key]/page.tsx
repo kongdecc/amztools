@@ -22,6 +22,7 @@ import KeywordStrategyTool from '@/components/KeywordStrategyTool'
 import SearchTermVolatilityTool from '@/components/SearchTermVolatilityTool'
 import PartnerEquityCalculator from '@/components/PartnerEquityCalculator'
 import CartonCalculatorAdvanced from '@/components/CartonCalculatorAdvanced'
+import NaturalTrafficTool from '@/components/NaturalTrafficTool'
 
 const DetailClient = () => {
   const { key } = useParams<{ key: string }>()
@@ -55,6 +56,7 @@ const DetailClient = () => {
     'search-term-volatility': Activity,
     'partner-equity-calculator': Users,
     'carton-calc-advanced': Box,
+    'natural-traffic-tool': BarChart3,
   }
 
   const titleOverride: Record<string, string> = {
@@ -112,6 +114,8 @@ const DetailClient = () => {
         return <PartnerEquityCalculator />
       case 'carton-calc-advanced':
         return <CartonCalculatorAdvanced />
+      case 'natural-traffic-tool':
+        return <NaturalTrafficTool />
       default:
         return (
           <div className="bg-white p-6 rounded-xl border">
