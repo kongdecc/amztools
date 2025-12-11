@@ -29,7 +29,8 @@ const defaults = [
   { key: 'search-term-volatility', title: '快速查询波动率高的搜索词', desc: '对比分析多份CSV报告，快速识别ABA排名、点击份额和转化份额波动较大的搜索词', status: '启用', views: 0, color: 'purple', order: 20, category: 'operation' },
   { key: 'partner-equity-calculator', title: '合伙人股权分配计算器', desc: '支持2人/3人合伙模式，自动计算资金股/人力股比例及股权价值，支持Excel导出和打印', status: '启用', views: 0, color: 'teal', order: 21, category: 'operation' },
   { key: 'carton-calc-advanced', title: '箱规装箱 & 体积重/实重 计算器', desc: '支持 6 种朝向 + 单层补洞混合摆放，估算更接近实际装箱结果', status: '启用', views: 0, color: 'orange', order: 22, category: 'other' },
-  { key: 'natural-traffic-tool', title: '多个自然位额外获得自然流量处理工具', desc: '自动化匹配/拆分/计算Excel数据，识别变体类型并计算子体额外自然流量', status: '启用', views: 0, color: 'blue', order: 23, category: 'operation' }
+  { key: 'pinyin-converter', title: '在线汉字转拼音', desc: '支持声调/无声调拼音转换，拼音对照，语音朗读', status: '启用', views: 0, color: 'blue', order: 23, category: 'image-text' },
+  { key: 'natural-traffic-tool', title: '多个自然位额外获得自然流量处理工具', desc: '自动化匹配/拆分/计算Excel数据，识别变体类型并计算子体额外自然流量', status: '启用', views: 0, color: 'blue', order: 24, category: 'operation' }
 ]
 
 function getLocalData() {
