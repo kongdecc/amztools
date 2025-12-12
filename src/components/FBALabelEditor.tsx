@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
-import { Upload, ChevronLeft, ChevronRight, Download, Loader2 } from 'lucide-react';
+import { Upload, ChevronLeft, ChevronRight, Download, Loader2, RotateCcw } from 'lucide-react';
 
 // Configure PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
@@ -28,6 +28,26 @@ const FBALabelEditor = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const dragBoxRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleReset = () => {
+    setPdfDocProxy(null);
+    setRawPdfBytes(null);
+    setCurrentPage(1);
+    setTotalPages(0);
+    setCurrentScale(1.2);
+    setPdfPageSize({ width: 0, height: 0 });
+    setRenderTask(null);
+    setIsProcessing(false);
+    setTextInput('Made in China');
+    setFontSize(10);
+    setDragPosition({ x: 50, y: 100 });
+    setIsDragging(false);
+    setDragStart({ x: 0, y: 0 });
+    
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -203,24 +223,33 @@ const FBALabelEditor = () => {
             />
             
             {pdfDocProxy && (
-              <div className="flex items-center bg-gray-100 rounded border border-gray-200">
+              <div className="flex items-center gap-2">
                 <button 
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  disabled={currentPage <= 1}
-                  className="px-3 py-1 hover:bg-white text-gray-600 rounded-l font-bold disabled:opacity-30 flex items-center"
+                  onClick={handleReset}
+                  className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded font-bold text-sm transition flex items-center gap-2"
+                  title="重置"
                 >
-                  <ChevronLeft size={16} />
+                  <RotateCcw size={16} />
                 </button>
-                <span className="px-3 text-sm font-mono text-gray-700 min-w-[60px] text-center">
-                  {currentPage} / {totalPages}
-                </span>
-                <button 
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  disabled={currentPage >= totalPages}
-                  className="px-3 py-1 hover:bg-white text-gray-600 rounded-r font-bold disabled:opacity-30 flex items-center"
-                >
-                  <ChevronRight size={16} />
-                </button>
+                <div className="flex items-center bg-gray-100 rounded border border-gray-200">
+                  <button 
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage <= 1}
+                    className="px-3 py-1 hover:bg-white text-gray-600 rounded-l font-bold disabled:opacity-30 flex items-center"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <span className="px-3 text-sm font-mono text-gray-700 min-w-[60px] text-center">
+                    {currentPage} / {totalPages}
+                  </span>
+                  <button 
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage >= totalPages}
+                    className="px-3 py-1 hover:bg-white text-gray-600 rounded-r font-bold disabled:opacity-30 flex items-center"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
               </div>
             )}
           </div>
