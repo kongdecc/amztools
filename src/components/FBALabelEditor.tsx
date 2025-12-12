@@ -188,7 +188,7 @@ const FBALabelEditor = () => {
       });
 
       const bytes = await pdfDoc.save();
-      const blob = new Blob([bytes], { type: 'application/pdf' });
+      const blob = new Blob([bytes as any], { type: 'application/pdf' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = `FBA_Processed_${Date.now()}.pdf`;
