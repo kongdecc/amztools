@@ -125,6 +125,10 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
     'rating-sales-reverse': '好评及销量反推计算器'
   }
 
+  const descOverride: Record<string, string> = {
+    'fba-label-editor': '在线编辑FBA标签PDF，支持添加文字（如批量添加Made in China)、手动拖拽调整位置和大小，自动应用到所有页面'
+  }
+
   const handleNavigate = (key: string) => { router.push(`/?tab=${key}&full=1`) }
 
   return (
@@ -231,7 +235,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
                       )}
                     </div>
                   </div>
-                  <p className="text-sm text-gray-500 leading-relaxed mb-8 line-clamp-2">{module.desc}</p>
+                  <p className="text-sm text-gray-500 leading-relaxed mb-8 line-clamp-2">{descOverride[module.key] || module.desc}</p>
                   <div className={`absolute bottom-6 left-6 flex items-center gap-2 text-sm font-bold ${colorTextMap[colorOverride[module.key] || module.color] || 'text-blue-600'} opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300`}>
                     <span>立即使用</span>
                     <ArrowLeftRight className="h-4 w-4" />
