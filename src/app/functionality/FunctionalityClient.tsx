@@ -66,7 +66,19 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
     })()
   }, [])
 
-  const filtered = modules.filter(module => {
+  const titleOverride: Record<string, string> = {
+    'rating-sales-reverse': '好评及销量反推计算器'
+  }
+
+  const descOverride: Record<string, string> = {
+    'fba-label-editor': '在线编辑FBA标签PDF，支持添加文字（如批量添加Made in China)、手动拖拽调整位置和大小，自动应用到所有页面'
+  }
+
+  const filtered = modules.map(m => ({
+    ...m,
+    title: titleOverride[m.key] || m.title,
+    desc: descOverride[m.key] || m.desc
+  })).filter(module => {
     if (!keyword.trim()) return true
     const k = keyword.trim().toLowerCase()
     return module.title.toLowerCase().includes(k) || module.desc.toLowerCase().includes(k)
@@ -119,14 +131,6 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
     'returns-v2': 'red',
     'listing-check': 'teal',
     'rating-sales-reverse': 'indigo',
-  }
-
-  const titleOverride: Record<string, string> = {
-    'rating-sales-reverse': '好评及销量反推计算器'
-  }
-
-  const descOverride: Record<string, string> = {
-    'fba-label-editor': '在线编辑FBA标签PDF，支持添加文字（如批量添加Made in China)、手动拖拽调整位置和大小，自动应用到所有页面'
   }
 
   const handleNavigate = (key: string) => { router.push(`/?tab=${key}&full=1`) }
@@ -229,13 +233,13 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
                       })()}
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-gray-800 pt-1 group-hover:text-gray-900">{module.status === '维护' ? `${titleOverride[module.key] || module.title}（维护）` : (titleOverride[module.key] || module.title)}</h3>
+                      <h3 className="text-lg font-bold text-gray-800 pt-1 group-hover:text-gray-900">{module.status === '维护' ? `${module.title}（维护）` : module.title}</h3>
                       {module.status === '维护' && (
                         <span className="ml-auto px-2 py-0.5 text-xs rounded border bg-yellow-50 text-yellow-600 border-yellow-200">维护中</span>
                       )}
                     </div>
                   </div>
-                  <p className="text-sm text-gray-500 leading-relaxed mb-8 line-clamp-2">{descOverride[module.key] || module.desc}</p>
+                  <p className="text-sm text-gray-500 leading-relaxed mb-8 line-clamp-2">{module.desc}</p>
                   <div className={`absolute bottom-6 left-6 flex items-center gap-2 text-sm font-bold ${colorTextMap[colorOverride[module.key] || module.color] || 'text-blue-600'} opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300`}>
                     <span>立即使用</span>
                     <ArrowLeftRight className="h-4 w-4" />

@@ -55,9 +55,32 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
     'natural-traffic-tool': BarChart3,
     'fba-label-editor': FileText,
   }
+  const titleOverride: Record<string, string> = {
+    'rating-sales-reverse': '好评及销量反推计算器'
+  }
   const descOverride: Record<string, string> = {
     'fba-label-editor': '在线编辑FBA标签PDF，支持添加文字（如批量添加Made in China)、手动拖拽调整位置和大小，自动应用到所有页面'
   }
+  
+  const [searchKeyword, setSearchKeyword] = useState('')
+  const visible = modules.map(m => ({
+    ...m,
+    title: titleOverride[m.key] || m.title,
+    desc: descOverride[m.key] || m.desc
+  })).filter((m: any) => {
+    if (m.status === '下架') return false
+    
+    // 如果有搜索关键词，忽略分类限制，进行全局搜索
+    if (searchKeyword.trim()) {
+      const k = searchKeyword.trim().toLowerCase()
+      return m.title.toLowerCase().includes(k) || m.desc.toLowerCase().includes(k)
+    }
+
+    // 没有搜索关键词时，应用分类过滤
+    if (m.category && activeCategories.length > 0 && !activeCategories.some(c => c.key === m.category)) return false
+    return true
+  })
+  
   const colorSolidMap: Record<string, string> = {
     blue: 'bg-blue-600',
     indigo: 'bg-indigo-600',
@@ -90,20 +113,7 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
     lime: 'text-lime-600',
     fuchsia: 'text-fuchsia-600',
   }
-  const [searchKeyword, setSearchKeyword] = useState('')
-  const visible = modules.filter((m: any) => {
-    if (m.status === '下架') return false
-    
-    // 如果有搜索关键词，忽略分类限制，进行全局搜索
-    if (searchKeyword.trim()) {
-      const k = searchKeyword.trim().toLowerCase()
-      return m.title.toLowerCase().includes(k) || m.desc.toLowerCase().includes(k)
-    }
 
-    // 没有搜索关键词时，应用分类过滤
-    if (m.category && activeCategories.length > 0 && !activeCategories.some(c => c.key === m.category)) return false
-    return true
-  })
   // 首页显示的卡片数量，默认6个
   const homeCardLimit = Number(settings.homeCardLimit || 6)
   const showMore = visible.length > homeCardLimit
@@ -162,10 +172,10 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
                     return <I className="h-6 w-6 text-white" />
                   })()}
                 </div>
-                <h3 className="text-lg font-bold text-gray-800 pt-1 group-hover:text-gray-900">{titleOverride[tool.key] || tool.title}</h3>
+                <h3 className="text-lg font-bold text-gray-800 pt-1 group-hover:text-gray-900">{tool.title}</h3>
                 {tool.status === '维护' && <span className="ml-auto px-2 py-0.5 text-xs rounded border bg-yellow-50 text-yellow-600 border-yellow-200">维护中</span>}
               </div>
-              <p className="text-sm text-gray-500 leading-relaxed mb-8 line-clamp-2">{descOverride[tool.key] || tool.desc}</p>
+              <p className="text-sm text-gray-500 leading-relaxed mb-8 line-clamp-2">{tool.desc}</p>
               <div className={`absolute bottom-6 left-6 flex items-center gap-2 text-sm font-bold ${colorTextMap[colorKey] || 'text-blue-600'} opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300`}>
                 <span>立即使用</span>
                 <ArrowLeftRight className="h-4 w-4" />
