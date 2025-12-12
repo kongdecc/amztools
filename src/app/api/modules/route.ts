@@ -31,7 +31,8 @@ const defaults = [
   { key: 'carton-calc-advanced', title: '箱规装箱 & 体积重/实重 计算器', desc: '支持 6 种朝向 + 单层补洞混合摆放，估算更接近实际装箱结果', status: '启用', views: 0, color: 'orange', order: 22, category: 'other' },
   { key: 'pinyin-converter', title: '在线汉字转拼音', desc: '支持声调/无声调拼音转换，拼音对照，语音朗读', status: '启用', views: 0, color: 'blue', order: 23, category: 'image-text' },
   { key: 'natural-traffic-tool', title: '多个自然位额外获得自然流量处理工具', desc: '自动化匹配/拆分/计算Excel数据，识别变体类型并计算子体额外自然流量', status: '启用', views: 0, color: 'blue', order: 24, category: 'operation' },
-  { key: 'keyword-combiner', title: '关键词组合工具 Pro', desc: '专业版长尾词生成器：支持多组词根、自定义分隔符及批量处理', status: '启用', views: 0, color: 'blue', order: 25, category: 'operation' }
+  { key: 'keyword-combiner', title: '关键词组合工具 Pro', desc: '专业版长尾词生成器：支持多组词根、自定义分隔符及批量处理', status: '启用', views: 0, color: 'blue', order: 25, category: 'operation' },
+  { key: 'fba-warehouses', title: 'FBA 仓库数据查询', desc: '查询FBA仓库地址、邮编等信息，支持国家、地区筛选和偏远地区查询', status: '启用', views: 0, color: 'indigo', order: 26, category: 'other' }
 ]
 
 function getLocalData() {

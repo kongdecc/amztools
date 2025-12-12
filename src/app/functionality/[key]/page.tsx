@@ -3,11 +3,12 @@
 import React from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { LayoutDashboard, Calculator, Crosshair, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Trash2, AlertCircle, CheckCircle, Filter, Image as ImageIcon, Receipt, Globe, Star, Hammer, Search, Activity, Users, Box } from 'lucide-react'
+import { LayoutDashboard, Calculator, Crosshair, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Trash2, AlertCircle, CheckCircle, Filter, Image as ImageIcon, Receipt, Globe, Star, Hammer, Search, Activity, Users, Box, Warehouse } from 'lucide-react'
 import { SettingsProvider, useSettings } from '@/components/SettingsProvider'
 import { ChevronDown } from 'lucide-react'
 import EditorPage from '@/components/EditorPage'
 import FBACalculatorPage from '@/components/FBACalculator'
+import FBAWarehouses from '@/components/FBAWarehouses'
 import ForbiddenWordsChecker from '@/components/ForbiddenWordsChecker'
 import TextComparator from '@/components/TextComparator'
 import DuplicateRemover from '@/components/DuplicateRemover'
@@ -57,6 +58,7 @@ const DetailClient = () => {
     'partner-equity-calculator': Users,
     'carton-calc-advanced': Box,
     'natural-traffic-tool': BarChart3,
+    'fba-warehouses': Warehouse,
   }
 
   const titleOverride: Record<string, string> = {
@@ -116,6 +118,8 @@ const DetailClient = () => {
         return <CartonCalculatorAdvanced />
       case 'natural-traffic-tool':
         return <NaturalTrafficTool />
+      case 'fba-warehouses':
+        return <FBAWarehouses />
       default:
         return (
           <div className="bg-white p-6 rounded-xl border">
