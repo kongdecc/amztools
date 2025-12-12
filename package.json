@@ -23,6 +23,8 @@
     "lucide-react": "0.446.0",
     "marked": "^17.0.1",
     "next": "16.0.7",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^5.4.449",
     "pinyin-pro": "^3.27.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",

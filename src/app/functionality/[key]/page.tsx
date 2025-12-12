@@ -9,6 +9,7 @@ import { ChevronDown } from 'lucide-react'
 import EditorPage from '@/components/EditorPage'
 import FBACalculatorPage from '@/components/FBACalculator'
 import FBAWarehouses from '@/components/FBAWarehouses'
+import FBALabelEditor from '@/components/FBALabelEditor'
 import ForbiddenWordsChecker from '@/components/ForbiddenWordsChecker'
 import TextComparator from '@/components/TextComparator'
 import DuplicateRemover from '@/components/DuplicateRemover'
@@ -59,7 +60,8 @@ const DetailClient = () => {
     'carton-calc-advanced': Box,
     'natural-traffic-tool': BarChart3,
     'fba-warehouses': Warehouse,
-  }
+  'fba-label-editor': FileText,
+}
 
   const titleOverride: Record<string, string> = {
     'rating-sales-reverse': '好评及销量反推计算器'
@@ -119,8 +121,10 @@ const DetailClient = () => {
       case 'natural-traffic-tool':
         return <NaturalTrafficTool />
       case 'fba-warehouses':
-        return <FBAWarehouses />
-      default:
+      return <FBAWarehouses />
+    case 'fba-label-editor':
+      return <FBALabelEditor />
+    default:
         return (
           <div className="bg-white p-6 rounded-xl border">
             <p className="text-gray-600">该功能的独立详情页暂未提供，请从首页进入。</p>

@@ -104,6 +104,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
     'partner-equity-calculator': Users,
     'natural-traffic-tool': BarChart3,
     'fba-warehouses': Warehouse,
+    'fba-label-editor': FileText,
   }
 
   const colorOverride: Record<string, string> = {
