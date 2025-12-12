@@ -33,7 +33,7 @@ const defaults = [
   { key: 'natural-traffic-tool', title: '多个自然位额外获得自然流量处理工具', desc: '自动化匹配/拆分/计算Excel数据，识别变体类型并计算子体额外自然流量', status: '启用', views: 0, color: 'blue', order: 24, category: 'operation' },
   { key: 'keyword-combiner', title: '关键词组合工具 Pro', desc: '专业版长尾词生成器：支持多组词根、自定义分隔符及批量处理', status: '启用', views: 0, color: 'blue', order: 25, category: 'operation' },
   { key: 'fba-warehouses', title: 'FBA 仓库数据查询', desc: '查询FBA仓库地址、邮编等信息，支持国家、地区筛选和偏远地区查询', status: '启用', views: 0, color: 'indigo', order: 26, category: 'other' },
-  { key: 'fba-label-editor', title: 'FBA 标签编辑器', desc: '在线编辑FBA标签PDF，支持添加文字、调整位置和大小，自动应用到所有页面', status: '启用', views: 0, color: 'red', order: 27, category: 'other' }
+  { key: 'fba-label-editor', title: 'FBA 标签编辑器', desc: '在线编辑FBA标签PDF，支持添加文字（如批量添加Made in China)、手动拖拽调整位置和大小，自动应用到所有页面', status: '启用', views: 0, color: 'red', order: 27, category: 'other' }
 ]
 
 function getLocalData() {

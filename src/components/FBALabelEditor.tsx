@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
-import { Upload, ChevronLeft, ChevronRight, Download, Loader2, RotateCcw } from 'lucide-react';
+import { Upload, ChevronLeft, ChevronRight, Download, Loader2, RotateCcw, FileText } from 'lucide-react';
 
 // Configure PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
@@ -202,16 +202,27 @@ const FBALabelEditor = () => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-100px)] bg-gray-100">
+    <div className="flex flex-col h-[calc(100vh-100px)] bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center gap-3 shadow-sm">
+        <div className="p-2 bg-red-50 rounded-lg">
+          <FileText className="w-6 h-6 text-red-600" />
+        </div>
+        <div>
+          <h1 className="text-xl font-bold text-gray-800">FBA 标签编辑器</h1>
+          <p className="text-sm text-gray-500">在线编辑FBA标签PDF，支持批量添加文字、调整位置和大小</p>
+        </div>
+      </div>
+
       {/* Toolbar */}
       <div className="bg-white border-b border-gray-200 p-3 shadow-sm z-10">
-        <div className="max-w-[1400px] mx-auto flex flex-wrap items-center justify-between gap-4">
+        <div className="max-w-[1400px] mx-auto flex flex-wrap items-center justify-center gap-6">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => fileInputRef.current?.click()}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold text-sm transition flex items-center gap-2"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-bold text-sm transition flex items-center gap-2 shadow-sm hover:shadow-md"
             >
-              <Upload size={16} />
+              <Upload size={18} />
               上传 PDF
             </button>
             <input 
@@ -221,61 +232,33 @@ const FBALabelEditor = () => {
               accept="application/pdf" 
               className="hidden"
             />
-            
-            {pdfDocProxy && (
-              <div className="flex items-center gap-2">
-                <button 
-                  onClick={handleReset}
-                  className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded font-bold text-sm transition flex items-center gap-2"
-                  title="重置"
-                >
-                  <RotateCcw size={16} />
-                </button>
-                <div className="flex items-center bg-gray-100 rounded border border-gray-200">
-                  <button 
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                    disabled={currentPage <= 1}
-                    className="px-3 py-1 hover:bg-white text-gray-600 rounded-l font-bold disabled:opacity-30 flex items-center"
-                  >
-                    <ChevronLeft size={16} />
-                  </button>
-                  <span className="px-3 text-sm font-mono text-gray-700 min-w-[60px] text-center">
-                    {currentPage} / {totalPages}
-                  </span>
-                  <button 
-                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                    disabled={currentPage >= totalPages}
-                    className="px-3 py-1 hover:bg-white text-gray-600 rounded-r font-bold disabled:opacity-30 flex items-center"
-                  >
-                    <ChevronRight size={16} />
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
 
-          <div className="flex items-center gap-3 bg-gray-50 p-2 rounded border border-gray-200">
+          <div className="h-8 w-px bg-gray-300 hidden md:block"></div>
+
+          <div className="flex items-center gap-4 bg-gray-50 p-2 rounded-lg border border-gray-200 shadow-inner">
             <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-bold text-gray-500 uppercase">文字内容</label>
+              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">文字内容</label>
               <input 
                 type="text" 
                 value={textInput}
                 onChange={(e) => setTextInput(e.target.value)}
-                className="border rounded px-2 py-1 text-sm w-32"
+                className="border border-gray-300 rounded px-2 py-1 text-sm w-40 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                placeholder="输入文字..."
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-bold text-gray-500 uppercase">字号</label>
+              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">字号</label>
               <input 
                 type="number" 
                 value={fontSize}
                 onChange={(e) => setFontSize(Number(e.target.value))}
-                className="border rounded px-2 py-1 text-sm w-16"
+                className="border border-gray-300 rounded px-2 py-1 text-sm w-20 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
               />
             </div>
-            <div className="h-8 w-px bg-gray-300"></div>
+            <div className="h-8 w-px bg-gray-300 mx-1"></div>
             <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-bold text-gray-500 uppercase">视图缩放</label>
+              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">视图缩放</label>
               <input 
                 type="range" 
                 min="0.5" 
@@ -283,26 +266,60 @@ const FBALabelEditor = () => {
                 step="0.1" 
                 value={currentScale}
                 onChange={(e) => setCurrentScale(Number(e.target.value))}
-                className="w-24 h-5 accent-blue-600"
+                className="w-32 h-5 accent-blue-600 cursor-pointer"
               />
             </div>
           </div>
 
+          <div className="h-8 w-px bg-gray-300 hidden md:block"></div>
+
           <button 
             onClick={handleDownload}
             disabled={!rawPdfBytes || isProcessing}
-            className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded shadow transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-sm hover:shadow-md transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
           >
-            {isProcessing ? <Loader2 className="animate-spin" size={16} /> : <Download size={16} />}
+            {isProcessing ? <Loader2 className="animate-spin" size={18} /> : <Download size={18} />}
             下载 PDF
           </button>
         </div>
         
         {pdfPageSize.width > 0 && (
-          <div className="text-xs text-gray-500 mt-2 text-center">
-            页面尺寸: <span className="font-mono text-gray-800">
+          <div className="text-xs text-gray-500 mt-3 text-center flex items-center justify-center gap-4">
+            <span className="bg-gray-100 px-2 py-1 rounded">页面尺寸: <span className="font-mono text-gray-800">
               {Math.round(pdfPageSize.width * 0.3527)}mm x {Math.round(pdfPageSize.height * 0.3527)}mm
-            </span>
+            </span></span>
+            
+            {pdfDocProxy && (
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={handleReset}
+                  className="bg-white hover:bg-red-50 text-red-600 border border-gray-200 hover:border-red-200 px-3 py-1 rounded-md font-medium text-xs transition flex items-center gap-1.5 shadow-sm"
+                  title="重置所有更改"
+                >
+                  <RotateCcw size={12} />
+                  重置
+                </button>
+                <div className="flex items-center bg-white rounded-md border border-gray-200 shadow-sm overflow-hidden">
+                  <button 
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage <= 1}
+                    className="px-2 py-1 hover:bg-gray-50 text-gray-600 disabled:opacity-30 disabled:hover:bg-white border-r border-gray-100 transition"
+                  >
+                    <ChevronLeft size={14} />
+                  </button>
+                  <span className="px-3 text-xs font-mono text-gray-700 min-w-[50px] text-center bg-gray-50/50">
+                    {currentPage} / {totalPages}
+                  </span>
+                  <button 
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage >= totalPages}
+                    className="px-2 py-1 hover:bg-gray-50 text-gray-600 disabled:opacity-30 disabled:hover:bg-white border-l border-gray-100 transition"
+                  >
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
