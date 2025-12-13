@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import rawData from './fba_warehouses_data.json';
-import { Copy, RotateCcw } from 'lucide-react';
+import { Copy, RotateCcw, Warehouse } from 'lucide-react';
 
 interface WarehouseData {
   "国家": string;
@@ -17,9 +17,14 @@ interface WarehouseData {
 const ITEMS_PER_PAGE = 15;
 
 const FBAWarehouses = () => {
+  // Filter out unwanted countries
+  const cleanData = useMemo(() => {
+    return (rawData as WarehouseData[]).filter(d => d['国家'] !== 'AE' && d['国家'] !== 'CE');
+  }, []);
+
   // State
-  const [data, setData] = useState<WarehouseData[]>(rawData as WarehouseData[]);
-  const [filteredData, setFilteredData] = useState<WarehouseData[]>(rawData as WarehouseData[]);
+  const [data, setData] = useState<WarehouseData[]>(cleanData);
+  const [filteredData, setFilteredData] = useState<WarehouseData[]>(cleanData);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortCol, setSortCol] = useState<keyof WarehouseData | ''>('');
   const [sortAsc, setSortAsc] = useState(true);
@@ -32,12 +37,12 @@ const FBAWarehouses = () => {
   const [remoteFilter, setRemoteFilter] = useState(false);
 
   // Derived lists for selects
-  const countries = useMemo(() => Array.from(new Set(rawData.map((d: any) => d['国家']))).sort(), []);
-  const regions = useMemo(() => Array.from(new Set(rawData.map((d: any) => d['地区']))).sort(), []);
+  const countries = useMemo(() => Array.from(new Set(cleanData.map((d: any) => d['国家']))).sort(), [cleanData]);
+  const regions = useMemo(() => Array.from(new Set(cleanData.map((d: any) => d['地区']))).sort(), [cleanData]);
 
   // Filter Logic
   useEffect(() => {
-    let res = rawData as WarehouseData[];
+    let res = cleanData;
 
     if (countryFilter) {
       res = res.filter(d => d['国家'] === countryFilter);
@@ -107,8 +112,13 @@ const FBAWarehouses = () => {
   };
 
   return (
-    <div className="w-full max-w-[1400px] mx-auto bg-white p-5 rounded-lg shadow-[0_2px_10px_rgba(0,0,0,0.1)] font-sans text-[#333]">
-      <h1 className="text-center text-[#2c3e50] text-2xl font-bold mb-8">FBA 仓库数据查询</h1>
+    <div className="space-y-6">
+      <div className="flex items-center gap-2 mb-2">
+        <Warehouse className="h-6 w-6 text-blue-600" />
+        <h2 className="text-xl font-bold text-gray-800">FBA 仓库数据查询</h2>
+      </div>
+
+      <div className="w-full max-w-[1400px] mx-auto bg-white p-5 rounded-lg shadow-[0_2px_10px_rgba(0,0,0,0.1)] font-sans text-[#333]">
 
       {/* Controls */}
       <div className="flex flex-wrap gap-4 mb-5 p-5 bg-[#f8f9fa] rounded-md border border-[#e9ecef] items-end">
@@ -260,6 +270,7 @@ const FBAWarehouses = () => {
           {toastMessage}
         </div>
       )}
+      </div>
     </div>
   );
 };
