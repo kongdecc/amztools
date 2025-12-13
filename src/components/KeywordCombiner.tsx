@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Trash2, Copy, Play, Download, Settings2, FileSpreadsheet, FileText } from 'lucide-react'
+import { Trash2, Copy, Play, Download, Settings2, FileSpreadsheet, FileText, Shuffle } from 'lucide-react'
 import { Card, Input } from '@/components/SharedUI'
 
 // --- Local UI Components ---
@@ -204,7 +204,7 @@ export default function KeywordCombiner() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-            <Settings2 className="w-6 h-6 text-blue-600" />
+            <Shuffle className="w-6 h-6 text-blue-600" />
             关键词组合
           </h1>
           <p className="text-slate-500 text-sm mt-1">

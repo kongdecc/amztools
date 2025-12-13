@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { LayoutDashboard, ChevronDown, Search, MoreHorizontal, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Trash2, AlertCircle, CheckCircle, Filter, Image as ImageIcon, Receipt, Crosshair, Globe, Star, Hammer, ArrowLeftRight, Activity, Users, Box, Warehouse, FileText } from 'lucide-react'
+import { LayoutDashboard, ChevronDown, Search, MoreHorizontal, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Trash2, AlertCircle, CheckCircle, Filter, Image as ImageIcon, Receipt, Crosshair, Globe, Star, Hammer, ArrowLeftRight, Activity, Users, Box, Warehouse, FileText, Languages, Shuffle } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 
 const Card = ({ children, className = '', onClick, ...props }: any) => (
@@ -117,6 +117,8 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
     'natural-traffic-tool': BarChart3,
     'fba-warehouses': Warehouse,
     'fba-label-editor': FileText,
+    'pinyin-converter': Languages,
+    'keyword-combiner': Shuffle,
   }
 
   const colorOverride: Record<string, string> = {

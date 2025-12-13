@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react'
 import { pinyin } from 'pinyin-pro'
-import { Volume2, Copy, Trash2, ArrowRightLeft } from 'lucide-react'
+import { Volume2, Copy, Trash2, ArrowRightLeft, Languages } from 'lucide-react'
 import { Card } from '@/components/SharedUI'
 
 export default function PinyinConverter() {
@@ -174,10 +174,9 @@ export default function PinyinConverter() {
       `}</style>
 
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center text-gray-500 text-sm">
-           <span className="font-bold text-gray-700 text-xl">在线汉字转拼音</span>
-        </div>
+      <div className="flex items-center gap-2 mb-6">
+        <Languages className="h-6 w-6 text-blue-600" />
+        <h2 className="text-xl font-bold text-gray-800">汉字转拼音</h2>
       </div>
 
       <Card className="p-6 md:p-8">
