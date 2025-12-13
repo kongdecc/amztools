@@ -222,6 +222,9 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
           <div className="max-w-xl mx-auto relative z-10 mb-10">
             <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
             <input type="text" placeholder="搜索工具，例如：竞价、大小写..." className="w-full pl-10 pr-4 py-3 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm" value={keyword} onChange={(e) => setKeyword(e.target.value)} />
+            <div className="text-center mt-3 text-sm text-gray-500 font-medium">
+              已经累计上传：<span className="text-indigo-600 font-bold">{modules.filter((m: any) => m.status !== '下架').length}</span> 个工具
+            </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((module) => (
