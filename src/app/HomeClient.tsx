@@ -148,6 +148,9 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
             value={searchKeyword}
             onChange={(e) => setSearchKeyword(e.target.value)}
           />
+          <div className="text-center mt-3 text-sm text-gray-500 font-medium">
+            已经累计上传：<span className="text-indigo-600 font-bold">{modules.filter((m: any) => m.status !== '下架').length}</span> 个工具
+          </div>
         </div>
       </Card>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

@@ -136,20 +136,6 @@ const UnitConverterPage = () => {
     setVolume(n)
   }
 
-  const UnitGroup = ({ title, units, state, handler }: any) => (
-    <div className="space-y-4">
-      <h3 className="font-bold text-gray-700 text-sm">{title}</h3>
-      <div className="space-y-3">
-        {units.map((u: any) => (
-          <div key={u.key} className="flex items-center gap-3">
-            <label className="w-24 text-sm text-gray-600">{u.label}</label>
-            <Input type="number" value={state[u.key]} onChange={(e: any) => handler(u.key, e.target.value)} />
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 mb-2">
@@ -181,5 +167,19 @@ const UnitConverterPage = () => {
     </div>
   )
 }
+
+const UnitGroup = ({ title, units, state, handler }: any) => (
+  <div className="space-y-4">
+    <h3 className="font-bold text-gray-700 text-sm">{title}</h3>
+    <div className="space-y-3">
+      {units.map((u: any) => (
+        <div key={u.key} className="flex items-center gap-3">
+          <label className="w-24 text-sm text-gray-600">{u.label}</label>
+          <Input type="number" value={state[u.key]} onChange={(e: any) => handler(u.key, e.target.value)} />
+        </div>
+      ))}
+    </div>
+  </div>
+)
 
 export default UnitConverterPage

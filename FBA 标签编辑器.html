@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FBA 标签编辑器 (稳定修复版)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- PDF.js 3.11 (使用 jsdelivr 国内访问更佳) -->
+    <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+    <!-- PDF-Lib -->
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    
+    <style>
+        html, body { height: 100%; margin: 0; background-color: #e5e7eb; display: flex; flex-direction: column; }
+        
+        /* 顶部栏 */
+        #toolbar {
+            flex: 0 0 auto;
+            background: white;
+            border-bottom: 1px solid #d1d5db;
+            padding: 0.75rem;
+            z-index: 50;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* 主视口 */
+        #main-viewport {
+            flex: 1;
+            overflow: auto;
+            padding: 40px;
+            text-align: center;
+        }
+
+        /* 画布容器 */
+        #canvas-container {
+            display: inline-block;
+            position: relative;
+            background-color: white;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+            text-align: left;
+            border: 1px solid #9ca3af;
+        }
+
+        canvas { display: block; }
+
+        /* 拖拽框 */
+        #drag-box {
+            position: absolute;
+            top: 0; left: 0;
+            cursor: grab;
+            border: 2px dashed #dc2626;
+            padding: 2px;
+            white-space: nowrap;
+            line-height: 1;
+            z-index: 100;
+            user-select: none;
+            display: none;
+            color: black;
+            font-family: Helvetica, Arial, sans-serif;
+            font-weight: bold;
+            /* 确保背景透明 */
+            background-color: transparent; 
+        }
+        #drag-box:active { cursor: grabbing; border-style: solid; }
+
+        .spinner {
+            display: inline-block;
+            width: 12px; height: 12px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<!-- 工具栏 -->
+<div id="toolbar">
+    <div class="max-w-screen-2xl mx-auto flex flex-wrap items-center justify-between gap-4">
+        
+        <!-- 左侧 -->
+        <div class="flex items-center gap-3">
+            <button onclick="document.getElementById('fileInput').click()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold text-sm transition flex items-center gap-2">
+                📂 上传 PDF
+            </button>
+            <input type="file" id="fileInput" accept="application/pdf" class="hidden"/>
+            
+            <div id="page-nav" class="hidden flex items-center bg-gray-100 rounded border border-gray-200">
+                <button id="prevBtn" class="px-3 py-1 hover:bg-white text-gray-600 rounded-l font-bold disabled:opacity-30">◀</button>
+                <span id="pageInfo" class="px-3 text-sm font-mono text-gray-700 min-w-[60px] text-center">--/--</span>
+                <button id="nextBtn" class="px-3 py-1 hover:bg-white text-gray-600 rounded-r font-bold disabled:opacity-30">▶</button>
+            </div>
+        </div>
+
+        <!-- 中间 -->
+        <div class="flex items-center gap-3 bg-gray-50 p-2 rounded border border-gray-200">
+            <div class="flex flex-col gap-1">
+                <label class="text-[10px] font-bold text-gray-500 uppercase">文字内容</label>
+                <input type="text" id="textInput" value="Made in China" class="border rounded px-2 py-1 text-sm w-32">
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-[10px] font-bold text-gray-500 uppercase">字号</label>
+                <input type="number" id="fontSize" value="10" class="border rounded px-2 py-1 text-sm w-16">
+            </div>
+            <div class="h-8 w-px bg-gray-300"></div>
+            <div class="flex flex-col gap-1">
+                <label class="text-[10px] font-bold text-gray-500 uppercase">视图缩放</label>
+                <input type="range" id="zoomRange" min="0.5" max="2.0" step="0.1" value="1.2" class="w-24 h-5 accent-blue-600">
+            </div>
+        </div>
+
+        <!-- 右侧 -->
+        <button id="downloadBtn" disabled class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded shadow transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+            <span id="btnText">⬇️ 下载 PDF</span>
+        </button>
+    </div>
+    <div id="meta-info" class="text-xs text-gray-500 mt-2 text-center hidden">
+        页面尺寸: <span id="pageSizeDisplay" class="font-mono text-gray-800">--</span>
+    </div>
+</div>
+
+<!-- 主视口 -->
+<div id="main-viewport">
+    <div id="empty-state" class="mt-20 text-gray-400">
+        <div class="text-6xl mb-4">📄</div>
+        <p class="text-xl">请上传 FBA 标签文件</p>
+    </div>
+
+    <div id="canvas-container" style="display:none;">
+        <canvas id="the-canvas"></canvas>
+        <div id="drag-box">Made in China</div>
+    </div>
+</div>
+
+<script>
+    // 切换到 jsdelivr CDN，提高国内访问速度和稳定性
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+    const CMAP_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/';
+    const CMAP_PACKED = true;
+
+    const { PDFDocument, rgb, StandardFonts } = PDFLib;
+
+    let pdfDocProxy = null;
+    let rawPdfBytes = null; // 原始数据，用于保存
+    let currentPage = 1;
+    let totalPages = 0;
+    let currentScale = 1.2;
+    let pdfPageWidth = 0;
+    let pdfPageHeight = 0;
+    let renderTask = null;
+
+    const fileInput = document.getElementById('fileInput');
+    const canvasContainer = document.getElementById('canvas-container');
+    const canvas = document.getElementById('the-canvas');
+    const ctx = canvas.getContext('2d');
+    const dragBox = document.getElementById('drag-box');
+    const textInput = document.getElementById('textInput');
+    const fontSizeInput = document.getElementById('fontSize');
+    const zoomRange = document.getElementById('zoomRange');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const btnText = document.getElementById('btnText');
+
+    // 1. 加载文件
+    fileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        try {
+            btnText.innerHTML = '<div class="spinner"></div> 加载中...';
+            
+            const buffer = await file.arrayBuffer();
+            rawPdfBytes = buffer; // 保留原件
+            const bufferCopy = buffer.slice(0); // 复制一份给渲染器
+
+            // 使用 StandardFonts 路径，尝试修复字体加载问题
+            pdfDocProxy = await pdfjsLib.getDocument({
+                data: bufferCopy,
+                cMapUrl: CMAP_URL,
+                cMapPacked: CMAP_PACKED,
+                standardFontDataUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/'
+            }).promise;
+
+            totalPages = pdfDocProxy.numPages;
+            currentPage = 1;
+
+            // 获取尺寸 (使用原件)
+            const libDoc = await PDFDocument.load(rawPdfBytes);
+            const libPage = libDoc.getPages()[0];
+            const { width, height } = libPage.getSize();
+            pdfPageWidth = width;
+            pdfPageHeight = height;
+
+            const mmW = Math.round(width * 0.3527);
+            const mmH = Math.round(height * 0.3527);
+            document.getElementById('pageSizeDisplay').textContent = `${mmW}mm x ${mmH}mm`;
+            document.getElementById('meta-info').classList.remove('hidden');
+
+            document.getElementById('empty-state').style.display = 'none';
+            canvasContainer.style.display = 'inline-block';
+            document.getElementById('page-nav').classList.remove('hidden');
+            downloadBtn.disabled = false;
+            btnText.textContent = "⬇️ 下载 PDF";
+
+            await renderPage();
+
+            dragBox.style.display = 'block';
+            dragBox.style.left = '50px';
+            dragBox.style.top = '100px';
+            updateDragBox();
+
+        } catch (err) {
+            console.error(err);
+            alert("加载失败: " + err.message);
+            btnText.textContent = "⬇️ 下载 PDF";
+        }
+    });
+
+    // 2. 渲染
+    async function renderPage() {
+        if (!pdfDocProxy) return;
+        if (renderTask) await renderTask.cancel();
+
+        const page = await pdfDocProxy.getPage(currentPage);
+        const viewport = page.getViewport({ scale: currentScale });
+
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        canvasContainer.style.width = viewport.width + 'px';
+        canvasContainer.style.height = viewport.height + 'px';
+
+        renderTask = page.render({
+            canvasContext: ctx,
+            viewport: viewport,
+            annotationMode: 1
+        });
+        await renderTask.promise;
+
+        document.getElementById('pageInfo').textContent = `${currentPage} / ${totalPages}`;
+        document.getElementById('prevBtn').disabled = currentPage <= 1;
+        document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+        
+        updateDragBox();
+    }
+
+    // 3. 交互
+    zoomRange.addEventListener('input', (e) => {
+        currentScale = Number(e.target.value);
+        renderPage();
+    });
+
+    document.getElementById('prevBtn').addEventListener('click', () => {
+        if (currentPage > 1) { currentPage--; renderPage(); }
+    });
+    document.getElementById('nextBtn').addEventListener('click', () => {
+        if (currentPage < totalPages) { currentPage++; renderPage(); }
+    });
+
+    // 拖拽
+    let isDragging = false;
+    let startX, startY, initialLeft, initialTop;
+
+    dragBox.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        initialLeft = dragBox.offsetLeft;
+        initialTop = dragBox.offsetTop;
+        dragBox.style.cursor = 'grabbing';
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        
+        let newLeft = initialLeft + dx;
+        let newTop = initialTop + dy;
+
+        const maxLeft = canvasContainer.offsetWidth - dragBox.offsetWidth;
+        const maxTop = canvasContainer.offsetHeight - dragBox.offsetHeight;
+
+        if (newLeft < 0) newLeft = 0;
+        if (newTop < 0) newTop = 0;
+        if (newLeft > maxLeft) newLeft = maxLeft;
+        if (newTop > maxTop) newTop = maxTop;
+
+        dragBox.style.left = newLeft + 'px';
+        dragBox.style.top = newTop + 'px';
+    });
+
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+        dragBox.style.cursor = 'grab';
+    });
+
+    // 样式更新 (已移除遮罩逻辑)
+    function updateDragBox() {
+        dragBox.textContent = textInput.value;
+        const ratio = canvas.width / pdfPageWidth;
+        dragBox.style.fontSize = (fontSizeInput.value * ratio) + 'px';
+    }
+
+    textInput.addEventListener('input', updateDragBox);
+    fontSizeInput.addEventListener('input', updateDragBox);
+
+    // 4. 下载 (使用 rawPdfBytes 原件)
+    downloadBtn.addEventListener('click', async () => {
+        if (!rawPdfBytes) return;
+        btnText.innerHTML = '<div class="spinner"></div> 处理中...';
+
+        try {
+            // 使用保留的原始 Buffer，避免 Detached 错误
+            const pdfDoc = await PDFDocument.load(rawPdfBytes);
+            const helveticaFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+            const pages = pdfDoc.getPages();
+
+            const cssLeft = dragBox.offsetLeft;
+            const cssTop = dragBox.offsetTop;
+            const ratio = canvas.width / pdfPageWidth;
+
+            const pdfX = cssLeft / ratio;
+            const fontSize = Number(fontSizeInput.value);
+            const pdfY = pdfPageHeight - (cssTop / ratio) - (fontSize * 0.88);
+            const text = textInput.value;
+
+            pages.forEach(page => {
+                // 只绘制文字，不绘制背景框
+                page.drawText(text, {
+                    x: pdfX,
+                    y: pdfY,
+                    size: fontSize,
+                    font: helveticaFont,
+                    color: rgb(0, 0, 0),
+                });
+            });
+
+            const bytes = await pdfDoc.save();
+            const blob = new Blob([bytes], { type: 'application/pdf' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `FBA_Processed_${Date.now()}.pdf`;
+            link.click();
+
+            btnText.textContent = "⬇️ 下载 PDF";
+
+        } catch (err) {
+            console.error(err);
+            alert("保存失败: " + err.message);
+            btnText.textContent = "⬇️ 下载 PDF";
+        }
+    });
+</script>
+</body>
+</html>
