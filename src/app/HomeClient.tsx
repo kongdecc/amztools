@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState, useMemo, useCallback, Suspense } from 'react'
-import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download, AlertCircle, CheckCircle, Filter, LayoutGrid, Maximize2, Minimize2, Image as ImageIcon, MoreHorizontal, Receipt, Crosshair, Globe, Star, Activity, Users, FileText } from 'lucide-react'
+import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download, AlertCircle, CheckCircle, Filter, LayoutGrid, Maximize2, Minimize2, Image as ImageIcon, MoreHorizontal, Receipt, Crosshair, Globe, Star, Activity, Users, FileText, Warehouse } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 import Head from 'next/head'
 import Link from 'next/link'
@@ -54,6 +54,7 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
     'partner-equity-calculator': Users,
     'natural-traffic-tool': BarChart3,
     'fba-label-editor': FileText,
+    'fba-warehouses': Warehouse,
   }
   const titleOverride: Record<string, string> = {
     'rating-sales-reverse': '好评及销量反推计算器'
@@ -299,6 +300,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
     'partner-equity-calculator': Users,
     'natural-traffic-tool': BarChart3,
     'fba-label-editor': FileText,
+    'fba-warehouses': Warehouse,
   }), [])
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({})
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)

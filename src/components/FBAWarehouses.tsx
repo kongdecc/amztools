@@ -19,7 +19,7 @@ const ITEMS_PER_PAGE = 15;
 const FBAWarehouses = () => {
   // Filter out unwanted countries
   const cleanData = useMemo(() => {
-    return (rawData as WarehouseData[]).filter(d => d['国家'] !== 'AE' && d['国家'] !== 'CE');
+    return (rawData as WarehouseData[]).filter(d => d['国家'] !== 'AE' && d['国家'] !== 'CE' && d['国家'] !== 'CZ');
   }, []);
 
   // State
@@ -180,7 +180,7 @@ const FBAWarehouses = () => {
 
       {/* Stats */}
       <div className="mt-2.5 text-[0.9em] text-[#6c757d] text-right flex justify-between items-center mb-2">
-        <span>{filteredData.length === 0 ? '没有找到匹配的记录' : `显示 ${filteredData.length} 条记录 (共 ${rawData.length} 条)`}</span>
+        <span>{filteredData.length === 0 ? '没有找到匹配的记录' : `显示 ${filteredData.length} 条记录 (共 ${cleanData.length} 条)`}</span>
         <span className="text-[0.9em] text-[#666] font-medium">💡 提示：点击表格中的 <span className="text-[#4a90e2]">[仓库代码]</span> 或 <span className="text-[#4a90e2]">[地址]</span> 即可复制</span>
       </div>
 
