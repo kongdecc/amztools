@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react';
-import { Search, ExternalLink, Globe, Package, Map } from 'lucide-react';
+import { Search, ExternalLink, Globe, Package, Map, History, Trash2 } from 'lucide-react';
 
 // 亚马逊全球站点数据结构
 const REGIONS = {
@@ -47,6 +47,48 @@ const AmazonGlobalTool = () => {
   const [kwDomain, setKwDomain] = useState('https://www.amazon.com');
   const [keywords, setKeywords] = useState('');
   const [kwResults, setKwResults] = useState<{text: string, url: string}[]>([]);
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
+
+  // Load history on mount
+  React.useEffect(() => {
+    const saved = localStorage.getItem('amz_global_search_history');
+    if (saved) {
+      try {
+        setSearchHistory(JSON.parse(saved));
+      } catch (e) {
+        console.error('Failed to parse history', e);
+      }
+    }
+  }, []);
+
+  const saveToHistory = (input: string) => {
+    const lines = input.split('\n').map(l => l.trim()).filter(l => l);
+    if (lines.length === 0) return;
+
+    setSearchHistory(prev => {
+      const next = [...lines, ...prev];
+      const unique = Array.from(new Set(next));
+      const limited = unique.slice(0, 20);
+      localStorage.setItem('amz_global_search_history', JSON.stringify(limited));
+      return limited;
+    });
+  };
+
+  const clearHistory = () => {
+    if (window.confirm('确定要清空历史记录吗？')) {
+      setSearchHistory([]);
+      localStorage.removeItem('amz_global_search_history');
+    }
+  };
+
+  const useHistoryItem = (item: string) => {
+    setKeywords(prev => {
+      const cleanPrev = prev.trim();
+      if (!cleanPrev) return item;
+      if (cleanPrev.split('\n').map(l => l.trim()).includes(item)) return prev;
+      return cleanPrev + '\n' + item;
+    });
+  };
 
   // --- ASIN Mode State ---
   const [asins, setAsins] = useState('');
@@ -56,6 +98,9 @@ const AmazonGlobalTool = () => {
   // --- Handlers: Keyword ---
   const generateKeywords = () => {
     if (!keywords.trim()) return;
+    
+    saveToHistory(keywords);
+
     const lines = keywords.split('\n').filter(line => line.trim() !== '');
     const links = lines.map(line => {
       const clean = line.trim();
@@ -182,6 +227,34 @@ const AmazonGlobalTool = () => {
                   清空
                 </button>
               </div>
+
+              {/* History Section */}
+              {searchHistory.length > 0 && (
+                <div className="pt-2">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-xs font-semibold text-slate-500 flex items-center gap-1">
+                      <History className="w-3 h-3" /> 历史搜索记录
+                    </h3>
+                    <button 
+                      onClick={clearHistory}
+                      className="text-xs text-slate-400 hover:text-red-500 flex items-center gap-1"
+                    >
+                      <Trash2 className="w-3 h-3" /> 清空历史
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {searchHistory.map((item, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => useHistoryItem(item)}
+                        className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-1 rounded border border-slate-200 transition-colors"
+                      >
+                        {item}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {kwResults.length > 0 && (
                 <div className="border rounded-md divide-y mt-4">
