@@ -233,7 +233,7 @@ const AmazonGlobalTool = () => {
                 <div className="pt-2">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-xs font-semibold text-slate-500 flex items-center gap-1">
-                      <History className="w-3 h-3" /> 历史搜索记录
+                      <History className="w-3 h-3" /> 历史搜索记录 <span className="text-[10px] font-normal text-slate-400 ml-1">(仅保存在本地)</span>
                     </h3>
                     <button 
                       onClick={clearHistory}
