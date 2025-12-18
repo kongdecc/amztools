@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>亚马逊促销叠加计算器 </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; color: #334155; }
+        .checkbox-wrapper:checked + div { background-color: #eff6ff; border-color: #3b82f6; ring: 2px; ring-color: #bfdbfe; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Toggle Switch */
+        .toggle-checkbox:checked { right: 0; border-color: #68D391; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #68D391; }
+        
+        .highlight-box { background: linear-gradient(to right, #fffbeb, #fff); border-left: 4px solid #f59e0b; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
+        <!-- Header -->
+        <div class="bg-slate-900 p-6 text-white flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight flex items-center gap-2">
+                    <svg class="w-7 h-7 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                    亚马逊促销叠加计算器
+                </h1>
+                <p class="text-slate-400 text-xs mt-1 ml-9">基于2025版《各类促销叠加情况》矩阵表逻辑</p>
+            </div>
+            <div class="bg-slate-800 px-5 py-2 rounded-lg border border-slate-700 flex items-center gap-3">
+                <label class="text-xs text-slate-400 font-medium">商品原价 (Price)</label>
+                <div class="flex items-center">
+                    <span class="text-slate-400 mr-1">$</span>
+                    <input type="number" id="basePrice" value="100.00" class="bg-transparent text-xl font-mono font-bold text-white w-28 outline-none border-b border-slate-600 focus:border-yellow-400 transition-colors text-right" oninput="reCalc()">
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col lg:flex-row">
+            <!-- Left: Selection Area -->
+            <div class="w-full lg:w-3/5 p-6 border-b lg:border-b-0 lg:border-r border-slate-200 bg-slate-50">
+                <div class="flex justify-between items-end mb-4">
+                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <span class="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span>
+                        选择活动 & 设置力度
+                    </h2>
+                    <button onclick="resetAll()" class="text-xs text-slate-500 hover:text-red-500 underline transition-colors">重置所有</button>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4" id="promo-grid">
+                    <!-- Grid Items Injected JS -->
+                </div>
+            </div>
+
+            <!-- Right: Results Area -->
+            <div class="w-full lg:w-2/5 p-6 bg-white flex flex-col min-h-[500px]">
+                <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <span class="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span>
+                    叠加逻辑检测
+                </h2>
+
+                <!-- Conflict Resolver -->
+                <div id="conflict-area" class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                    <div id="empty-state" class="h-full flex flex-col items-center justify-center text-slate-400 text-sm py-10">
+                        <svg class="w-12 h-12 mb-3 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                        <span>👈 请在左侧勾选至少两个活动</span>
+                    </div>
+                    <div id="conflicts-container" class="space-y-3 hidden pb-4">
+                        <!-- Conflicts Injected Here -->
+                    </div>
+                </div>
+
+                <!-- Final Calculation -->
+                <div class="mt-auto border-t border-slate-100 pt-6 bg-white z-10">
+                    <div class="flex justify-between items-end mb-2 px-1">
+                        <span class="text-slate-500 text-sm">实际扣除金额</span>
+                        <span class="text-red-600 font-mono font-bold">- $<span id="total-deduction">0.00</span></span>
+                    </div>
+                    <div class="flex justify-between items-center bg-slate-900 text-white p-5 rounded-xl shadow-lg ring-1 ring-slate-900/5">
+                        <div>
+                            <span class="text-slate-400 text-xs uppercase tracking-wider font-semibold">预估最终售价</span>
+                            <div class="text-4xl font-bold font-mono mt-1">$<span id="final-price">100.00</span></div>
+                        </div>
+                        <div class="text-right pl-4 border-l border-slate-700">
+                            <div class="text-xs text-slate-400 mb-1">总折扣率</div>
+                            <div class="text-2xl font-bold text-yellow-400 leading-none"><span id="final-percent">0</span>%</div>
+                            <div class="text-[10px] text-yellow-400/60 mt-1">OFF</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rules & Notes Section (From Image) -->
+        <div class="bg-slate-50 border-t border-slate-200 p-6 md:p-8">
+            <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wide mb-4 flex items-center">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                官方活动注意事项 (Rules & Notes)
+            </h3>
+            
+            <div class="grid md:grid-cols-2 gap-8 text-xs text-slate-600 leading-relaxed">
+                <div>
+                    <p class="font-bold text-slate-800 mb-2 text-sm">⚠️ 核心建议</p>
+                    <p class="mb-3 highlight-box p-3 rounded text-slate-700">
+                        建议在同一时间段，对同一ASIN，<strong>只选择一种促销类型</strong>，以免造成价格折上折。
+                    </p>
+                    
+                    <p class="font-bold text-slate-800 mb-2">各类促销定义：</p>
+                    <ul class="list-disc pl-4 space-y-1 mb-4">
+                        <li><strong>秒杀</strong>：秒杀 / Z划算</li>
+                        <li><strong>促销-无限制型</strong>：折扣 Percentage off / 买赠 BxGy；<br><span class="text-slate-500">买家可针对同一订单同时使用两种不同的无限制型折扣优惠码（叠加）。</span></li>
+                        <li><strong>促销-优先型</strong>：折扣 Percentage off / 买赠 BxGy；<br><span class="text-slate-500">买家可针对同一订单采用优惠力度更高的优惠码（不叠加）。</span></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <p class="font-bold text-slate-800 mb-2 text-sm">💡 关于“可自主选择”的叠加说明</p>
+                    <div class="bg-white border border-slate-200 p-4 rounded-lg shadow-sm">
+                        <p class="mb-2 text-slate-700">
+                            *** 只有当您为优惠券和促销（买一赠一或折扣）都选择 <strong>“是，允许叠加使用”</strong> 时，促销才会叠加使用。
+                        </p>
+                        <p class="text-slate-500">
+                            如果对其中任一项您选择了 <strong>“否，不允许叠加使用”</strong>，促销将不会叠加使用，这意味着买家结账时，系统只会应用两个促销中优惠程度更高的促销。
+                        </p>
+                    </div>
+                    <p class="mt-3 text-[10px] text-slate-400 text-right">
+                        作者：達哥 |  <a href="https://amztoolbox.top/" target="_blank" rel="noopener noreferrer">工具聚合网站https://amztoolbox.top/</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const promoTypes = [
+            { id: 'coupon', name: '优惠券 (Coupon)', defaultType: '$', defaultVal: 5 },
+            { id: 'b2b', name: 'B2B价格', defaultType: '%', defaultVal: 10 },
+            { id: 'promo_unlimited', name: '促销-无限制型', defaultType: '%', defaultVal: 10 },
+            { id: 'promo_priority', name: '促销-优先型', defaultType: '%', defaultVal: 10 },
+            { id: 'social_code', name: '社交媒体促销代码', defaultType: '%', defaultVal: 15 },
+            { id: 'jp_points', name: '日本站积分', defaultType: '%', defaultVal: 1 },
+            { id: 'lightning_deal', name: '秒杀 (LD)', defaultType: '%', defaultVal: 20 },
+            { id: 'outlet', name: '奥特莱斯 (Outlet)', defaultType: '%', defaultVal: 20 },
+            { id: 'price_discount', name: '价格折扣', defaultType: '%', defaultVal: 10 },
+            { id: 'brand_promo', name: '品牌定制促销', defaultType: '%', defaultVal: 10 },
+            { id: 'brand_coupon', name: '品牌定制优惠券', defaultType: '$', defaultVal: 5 },
+            { id: 'prime_discount', name: 'Prime专享折扣', defaultType: '%', defaultVal: 20 }
+        ];
+
+        // 0=No Stack (不叠加), 1=Stack (叠加), 2=Optional (可自主选择)
+        // Rows/Cols correspond to promoTypes array order
+        const matrix = [
+            [null, 1, 2, 2, 2, 1, 1, 1, 1, 1, 0, 1], // Coupon
+            [1, null, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0], // B2B
+            [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1], // Unlimited
+            [2, 1, 1, 0, 0, 1, 1, 1, 1, 0, 2, 1], // Priority
+            [2, 1, 1, 0, 0, 1, 1, 1, 1, 0, 2, 1], // Social
+            [1, 0, 1, 1, 1, null, 1, 1, 1, 1, 1, 1], // JP Points
+            [1, 0, 1, 1, 1, 1, null, null, 0, 1, 1, 0], // LD
+            [1, 0, 1, 1, 1, 1, null, null, 0, 1, 1, 0], // Outlet
+            [1, 0, 1, 1, 1, 1, 0, 0, null, 1, 1, 0], // Price Discount
+            [1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 2, 1], // Brand Promo
+            [0, 1, 2, 2, 2, 1, 1, 1, 1, 2, null, 1], // Brand Coupon
+            [1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, null]  // Prime
+        ];
+
+        let optionalDecisions = {}; // Stores user choice for Type 2 conflicts
+
+        const grid = document.getElementById('promo-grid');
+
+        // Initialize Grid
+        promoTypes.forEach((t, i) => {
+            const el = document.createElement('div');
+            el.className = 'relative group';
+            el.innerHTML = `
+                <input type="checkbox" id="cb-${i}" data-index="${i}" class="peer checkbox-wrapper absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="toggleInput(${i})">
+                <div class="p-3 border border-slate-200 rounded-lg bg-white transition-all duration-200 h-full flex flex-col shadow-sm hover:shadow-md">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-semibold text-sm text-slate-700 leading-tight">${t.name}</span>
+                        <div class="w-4 h-4 rounded-full border border-slate-300 peer-checked:bg-blue-500 peer-checked:border-blue-500 flex-shrink-0 transition-colors"></div>
+                    </div>
+                    <div id="input-area-${i}" class="hidden mt-1 pt-2 border-t border-slate-100 z-20 relative">
+                        <div class="flex gap-1">
+                            <select id="unit-${i}" class="bg-slate-50 border border-slate-200 text-xs rounded px-1 py-1 outline-none focus:border-blue-500 text-slate-600" onchange="reCalc()">
+                                <option value="%" ${t.defaultType === '%' ? 'selected' : ''}>% Off</option>
+                                <option value="$" ${t.defaultType === '$' ? 'selected' : ''}>$ Off</option>
+                            </select>
+                            <input type="number" id="val-${i}" value="${t.defaultVal}" class="w-full bg-slate-50 border border-slate-200 text-sm rounded px-2 py-1 outline-none focus:border-blue-500 font-mono text-slate-700" oninput="reCalc()">
+                        </div>
+                        <div id="status-${i}" class="text-[10px] mt-1 text-right h-4 font-medium"></div>
+                    </div>
+                </div>
+            `;
+            grid.appendChild(el);
+        });
+
+        function toggleInput(i) {
+            const cb = document.getElementById(`cb-${i}`);
+            const area = document.getElementById(`input-area-${i}`);
+            if (cb.checked) {
+                area.classList.remove('hidden');
+            } else {
+                area.classList.add('hidden');
+            }
+            reCalc();
+        }
+
+        function resetAll() {
+            document.querySelectorAll('.checkbox-wrapper').forEach(cb => {
+                cb.checked = false;
+                toggleInput(cb.dataset.index);
+            });
+            optionalDecisions = {};
+            reCalc();
+        }
+
+        function getDiscountValue(index, basePrice) {
+            const unit = document.getElementById(`unit-${index}`).value;
+            const val = parseFloat(document.getElementById(`val-${index}`).value) || 0;
+            if (unit === '%') return (basePrice * val) / 100;
+            return val;
+        }
+
+        function updateOptionalDecision(key, isChecked) {
+            optionalDecisions[key] = isChecked;
+            reCalc();
+        }
+
+        function reCalc() {
+            const basePrice = parseFloat(document.getElementById('basePrice').value) || 0;
+            const checkboxes = document.querySelectorAll('.checkbox-wrapper:checked');
+            const selectedIndices = Array.from(checkboxes).map(cb => parseInt(cb.dataset.index));
+            
+            const container = document.getElementById('conflicts-container');
+            const emptyState = document.getElementById('empty-state');
+
+            // Reset visual states
+            promoTypes.forEach((_, i) => {
+                const statusEl = document.getElementById(`status-${i}`);
+                if(statusEl) statusEl.innerHTML = '';
+                const box = document.getElementById(`input-area-${i}`)?.parentElement;
+                if(box) {
+                    box.classList.remove('opacity-50', 'grayscale');
+                    box.querySelector('.font-semibold').classList.remove('line-through', 'text-slate-400');
+                }
+            });
+
+            if (selectedIndices.length < 2) {
+                container.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                let ded = 0;
+                if (selectedIndices.length === 1) {
+                    ded = getDiscountValue(selectedIndices[0], basePrice);
+                    document.getElementById(`status-${selectedIndices[0]}`).innerHTML = '<span class="text-green-600">✓ 生效中</span>';
+                }
+                updateFinal(basePrice, ded);
+                return;
+            }
+
+            container.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            container.innerHTML = '';
+
+            // 1. Identify Conflicts
+            let pairs = [];
+            for (let i = 0; i < selectedIndices.length; i++) {
+                for (let j = i + 1; j < selectedIndices.length; j++) {
+                    const idxA = selectedIndices[i];
+                    const idxB = selectedIndices[j];
+                    const status = matrix[idxA][idxB];
+                    const key = `${idxA}-${idxB}`;
+
+                    // Default optional to true (Stack) if new
+                    if (status === 2 && optionalDecisions[key] === undefined) {
+                        optionalDecisions[key] = true;
+                    }
+                    pairs.push({ idxA, idxB, status, key });
+                }
+            }
+
+            // 2. Render Conflict UI
+            pairs.forEach(p => {
+                const nameA = promoTypes[p.idxA].name.split(' ')[0];
+                const nameB = promoTypes[p.idxB].name.split(' ')[0];
+                
+                if (p.status === 1) {
+                    container.innerHTML += `
+                        <div class="flex justify-between items-center p-2.5 bg-red-50 border border-red-100 rounded-lg text-xs">
+                            <span class="text-red-800 font-bold flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                ${nameA} + ${nameB}
+                            </span>
+                            <span class="bg-red-200 text-red-900 px-2 py-0.5 rounded font-medium">叠加 (折上折)</span>
+                        </div>`;
+                } else if (p.status === 0) {
+                    container.innerHTML += `
+                        <div class="flex justify-between items-center p-2.5 bg-green-50 border border-green-100 rounded-lg text-xs">
+                            <span class="text-green-800 font-bold flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                ${nameA} + ${nameB}
+                            </span>
+                            <span class="bg-green-200 text-green-900 px-2 py-0.5 rounded font-medium">互斥 (取最优)</span>
+                        </div>`;
+                } else if (p.status === 2) {
+                    const isChecked = optionalDecisions[p.key];
+                    container.innerHTML += `
+                        <div class="flex justify-between items-center p-2.5 bg-yellow-50 border border-yellow-100 rounded-lg text-xs">
+                            <span class="text-yellow-800 font-bold flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                ${nameA} + ${nameB}
+                            </span>
+                            <label class="flex items-center cursor-pointer select-none">
+                                <span class="mr-2 text-slate-500">${isChecked ? '允许叠加' : '不叠加'}</span>
+                                <div class="relative">
+                                    <input type="checkbox" class="sr-only" onchange="updateOptionalDecision('${p.key}', this.checked)" ${isChecked ? 'checked' : ''}>
+                                    <div class="w-8 h-4 bg-gray-300 rounded-full shadow-inner transition-colors ${isChecked ? 'bg-blue-200' : ''}"></div>
+                                    <div class="dot absolute w-4 h-4 bg-white rounded-full shadow -left-1 -top-0 transition transform ${isChecked ? 'translate-x-full bg-blue-600' : ''}"></div>
+                                </div>
+                            </label>
+                        </div>`;
+                }
+            });
+
+            // 3. Logic: Disable weaker promos in conflicts
+            let disabledIndices = new Set();
+            
+            // Simple iterative resolution
+            pairs.forEach(p => {
+                let isConflict = false;
+                if (p.status === 0) isConflict = true;
+                if (p.status === 2 && optionalDecisions[p.key] === false) isConflict = true;
+
+                if (isConflict) {
+                    if (!disabledIndices.has(p.idxA) && !disabledIndices.has(p.idxB)) {
+                        const valA = getDiscountValue(p.idxA, basePrice);
+                        const valB = getDiscountValue(p.idxB, basePrice);
+                        if (valA >= valB) disabledIndices.add(p.idxB);
+                        else disabledIndices.add(p.idxA);
+                    }
+                }
+            });
+
+            // 4. Calculate Final
+            let totalPercent = 0;
+            let totalAmount = 0;
+
+            selectedIndices.forEach(idx => {
+                const elBox = document.getElementById(`input-area-${idx}`).parentElement;
+                const statusEl = document.getElementById(`status-${idx}`);
+
+                if (disabledIndices.has(idx)) {
+                    elBox.classList.add('opacity-50', 'grayscale');
+                    elBox.querySelector('.font-semibold').classList.add('line-through', 'text-slate-400');
+                    statusEl.innerHTML = '<span class="text-slate-400">已失效 (被更优覆盖)</span>';
+                } else {
+                    statusEl.innerHTML = '<span class="text-green-600 font-bold">✓ 生效中</span>';
+                    const unit = document.getElementById(`unit-${idx}`).value;
+                    const val = parseFloat(document.getElementById(`val-${idx}`).value) || 0;
+                    if (unit === '%') totalPercent += val;
+                    else totalAmount += val;
+                }
+            });
+
+            if (totalPercent > 100) totalPercent = 100;
+            const priceAfterPercent = basePrice * (1 - totalPercent / 100);
+            let finalPrice = priceAfterPercent - totalAmount;
+            if (finalPrice < 0) finalPrice = 0;
+
+            updateFinal(basePrice, basePrice - finalPrice);
+        }
+
+        function updateFinal(base, ded) {
+            const final = base - ded;
+            const per = base > 0 ? ((ded / base) * 100).toFixed(1) : 0;
+            
+            document.getElementById('total-deduction').innerText = ded.toFixed(2);
+            document.getElementById('final-price').innerText = final.toFixed(2);
+            document.getElementById('final-percent').innerText = per;
+        }
+    </script>
+</body>
+</html>

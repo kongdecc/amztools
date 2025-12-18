@@ -33,6 +33,7 @@ const PartnerEquityCalculator = dynamic(() => import('@/components/PartnerEquity
 const CartonCalculatorAdvanced = dynamic(() => import('@/components/CartonCalculatorAdvanced'), { loading: LoadingTool })
 const PinyinConverter = dynamic(() => import('@/components/PinyinConverter'), { loading: LoadingTool })
 const NaturalTrafficTool = dynamic(() => import('@/components/NaturalTrafficTool'), { loading: LoadingTool })
+const AmazonPromotionStackingCalculator = dynamic(() => import('@/components/AmazonPromotionStackingCalculator'), { loading: LoadingTool })
 const KeywordCombiner = dynamic(() => import('@/components/KeywordCombiner'), { loading: LoadingTool })
 const FBAWarehouses = dynamic(() => import('@/components/FBAWarehouses'), { loading: LoadingTool })
 const FBALabelEditor = dynamic(() => import('@/components/FBALabelEditor'), { loading: LoadingTool })
@@ -83,6 +84,7 @@ const ToolContainer = memo(({ activeTab }: { activeTab: string }) => {
     case 'keyword-combiner': return <KeywordCombiner />
     case 'fba-warehouses': return <FBAWarehouses />
     case 'fba-label-editor': return <FBALabelEditor />
+    case 'amazon-promotion-stacking': return <AmazonPromotionStackingCalculator />
     default: return <PlaceholderPage title="功能开发中" icon={Hammer} />
   }
 })
