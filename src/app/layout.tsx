@@ -9,6 +9,8 @@ export async function generateMetadata(): Promise<Metadata> {
   let logoUrl = ''
   let faviconUrl = ''
   let siteName = '运营魔方 ToolBox'
+  let siteDescription = ''
+  let siteKeywords = ''
   let googleVerification = ''
   let baiduVerification = ''
 
@@ -19,6 +21,8 @@ export async function generateMetadata(): Promise<Metadata> {
     logoUrl = settings.logoUrl || ''
     faviconUrl = settings.faviconUrl || ''
     siteName = settings.siteName || siteName
+    siteDescription = settings.seoDescription || settings.siteDescription || ''
+    siteKeywords = settings.siteKeywords || ''
     googleVerification = settings.googleVerification || ''
     baiduVerification = settings.baiduVerification || ''
 
@@ -39,9 +43,39 @@ export async function generateMetadata(): Promise<Metadata> {
     if (!faviconUrl) faviconUrl = logoUrl
   } catch {}
 
+  let metadataBase: URL | undefined = undefined
+  const rawBase = String(process.env.NEXT_PUBLIC_SITE_URL || '').trim()
+  if (rawBase) {
+    try {
+      metadataBase = new URL(rawBase.endsWith('/') ? rawBase : `${rawBase}/`)
+    } catch {}
+  }
+
+  const ogImage = (() => {
+    const u = String(logoUrl || '').trim()
+    if (!u) return undefined
+    if (/^https?:\/\//i.test(u)) return u
+    if (metadataBase && u.startsWith('/')) return new URL(u.slice(1), metadataBase).toString()
+    return undefined
+  })()
+
   return {
+    metadataBase,
     title: siteName,
+    description: siteDescription || undefined,
+    keywords: siteKeywords || undefined,
     icons: faviconUrl ? { icon: faviconUrl } : undefined,
+    openGraph: {
+      type: 'website',
+      title: siteName,
+      description: siteDescription || undefined,
+      url: '/',
+      images: ogImage ? [{ url: ogImage }] : undefined
+    },
+    robots: {
+      index: true,
+      follow: true
+    },
     verification: {
       google: googleVerification || undefined,
       other: baiduVerification ? { 'baidu-site-verification': baiduVerification } : undefined
@@ -56,6 +90,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   let siteName = ''
   let siteDescription = ''
   let logoUrl = ''
+  let siteUrl = ''
 
   try {
     const rows = await (db as any).siteSettings.findMany()
@@ -69,11 +104,17 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     logoUrl = settings.logoUrl || ''
   } catch {}
 
+  try {
+    const raw = String(process.env.NEXT_PUBLIC_SITE_URL || '').trim()
+    if (raw) siteUrl = String(new URL(raw.endsWith('/') ? raw : `${raw}/`)).replace(/\/$/, '')
+  } catch {}
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": siteName,
     "description": siteDescription,
+    "url": siteUrl || undefined,
     "logo": logoUrl
   }
 

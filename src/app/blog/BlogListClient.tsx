@@ -1,8 +1,7 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import Head from 'next/head'
 import { useSettings } from '@/components/SettingsProvider'
 import { LayoutDashboard, ChevronDown, MoreHorizontal } from 'lucide-react'
 
@@ -13,8 +12,7 @@ export default function BlogListClient({ initialList, initialTotal, initialNavIt
   const [list, setList] = useState<Post[]>(initialList || [])
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState<number>(initialTotal || 0)
-  const [navItems, setNavItems] = useState<Array<any>>(initialNavItems || [])
-  const [origin, setOrigin] = useState('')
+  const [navItems] = useState<Array<any>>(initialNavItems || [])
   const [modules, setModules] = useState<any[]>([])
   const [categories, setCategories] = useState<any[]>([])
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -47,43 +45,11 @@ export default function BlogListClient({ initialList, initialTotal, initialNavIt
       } catch { setList([]); setTotal(0) }
     })()
   }, [page])
-  useEffect(() => { try { setOrigin(window.location.origin) } catch {} }, [])
   useEffect(() => {
     (async () => { try { const r = await fetch('/api/modules', { cache: 'no-store' }); const d = await r.json(); const arr = Array.isArray(d) ? d : []; setModules(arr.filter((m:any)=>m.status !== '下架')) } catch {} })()
   }, [])
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      <Head>
-        <title>{settings.siteName} - 博客</title>
-        <meta name="description" content={String(settings.seoDescription || settings.siteDescription || '')} />
-        <meta name="keywords" content={String(settings.siteKeywords || '')} />
-        <link rel="canonical" href={`${origin}/blog`} />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "WebSite",
-          name: settings.siteName,
-          url: origin || undefined
-        }) }} />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Organization",
-          name: settings.siteName,
-          url: origin || undefined,
-          logo: settings.logoUrl || undefined
-        }) }} />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "CollectionPage",
-          name: `${settings.siteName} - 博客`,
-          url: `${origin}/blog`,
-          hasPart: (Array.isArray(list) ? list : []).map((item:any) => ({
-            "@type": "Article",
-            headline: item.title,
-            url: `${origin}/blog/${item.slug}`,
-            thumbnailUrl: item.coverUrl || undefined
-          }))
-        }) }} />
-      </Head>
       <header className="h-14 bg-[#5b5bd6] text-white flex items-center px-4 md:px-10 shadow-md z-20 justify-between md:justify-start">
         <div className={`flex items-center gap-2 font-bold text-lg min-w-0 flex-1`}>
           {String(settings.logoUrl || '').trim() ? (
@@ -164,16 +130,6 @@ export default function BlogListClient({ initialList, initialTotal, initialNavIt
       </header>
       <div className="flex-1">
       <div className="max-w-6xl mx-auto px-8 py-10">
-        <Head>
-          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            itemListElement: [
-              { "@type": "ListItem", position: 1, name: "首页", item: `${origin}/` },
-              { "@type": "ListItem", position: 2, name: "博客", item: `${origin}/blog` }
-            ]
-          }) }} />
-        </Head>
         <nav aria-label="breadcrumb" className="text-xs text-gray-500 mb-4 flex items-center gap-2">
           <Link href="/" className="hover:text-blue-600">首页</Link>
           <span>/</span>

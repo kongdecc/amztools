@@ -50,16 +50,32 @@ export async function GET(request: Request) {
   const settings = await getSettings(origin)
   const enabled = String(settings.sitemapEnabled || 'true') === 'true'
   if (!enabled) return NextResponse.json({ error: 'disabled' }, { status: 404 })
+  const frequency = String(settings.sitemapFrequency || '').trim().toLowerCase()
+  const allowedFreq = new Set(['always', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'never'])
+  const changefreq = allowedFreq.has(frequency) ? frequency : ''
   const posts = await getPosts(origin)
   const nav = await getNav(origin)
   const urls: string[] = []
   const seen = new Set<string>()
-  const pushUrl = (u: string) => { if (!seen.has(u)) { urls.push(`<url><loc>${u}</loc></url>`); seen.add(u) } }
-  pushUrl(`${origin}/`)
-  pushUrl(`${origin}/blog`)
-  pushUrl(`${origin}/about`)
-  pushUrl(`${origin}/privacy`)
-  pushUrl(`${origin}/suggest`)
+  const buildUrl = (loc: string, opts?: { lastmod?: string; priority?: string }) => {
+    const parts: string[] = [`<url><loc>${loc}</loc>`]
+    if (opts?.lastmod) parts.push(`<lastmod>${opts.lastmod}</lastmod>`)
+    if (changefreq) parts.push(`<changefreq>${changefreq}</changefreq>`)
+    if (opts?.priority) parts.push(`<priority>${opts.priority}</priority>`)
+    parts.push(`</url>`)
+    return parts.join('')
+  }
+  const pushUrl = (u: string, opts?: { lastmod?: string; priority?: string }) => {
+    if (seen.has(u)) return
+    urls.push(buildUrl(u, opts))
+    seen.add(u)
+  }
+  const nowIso = new Date().toISOString()
+  pushUrl(`${origin}/`, { lastmod: nowIso, priority: '1.0' })
+  pushUrl(`${origin}/blog`, { lastmod: nowIso, priority: '0.9' })
+  pushUrl(`${origin}/about`, { lastmod: nowIso, priority: '0.6' })
+  pushUrl(`${origin}/privacy`, { lastmod: nowIso, priority: '0.3' })
+  pushUrl(`${origin}/suggest`, { lastmod: nowIso, priority: '0.5' })
   const navLastmod = await getNavLastMod()
   nav
     .filter((n: any) => !n.isExternal && typeof n.href === 'string' && n.href.startsWith('/'))
@@ -67,7 +83,7 @@ export async function GET(request: Request) {
       const href = String(n.href || '/').replace(/\/$/, '') || '/'
       const url = href === '/' ? `${origin}/` : `${origin}${href}`
       if (!seen.has(url)) {
-        urls.push(`<url><loc>${url}</loc><lastmod>${navLastmod}</lastmod></url>`)
+        urls.push(buildUrl(url, { lastmod: navLastmod, priority: '0.8' }))
         seen.add(url)
       }
     })
@@ -77,7 +93,7 @@ export async function GET(request: Request) {
     const image = (p.coverUrl || '').trim()
     const imageNode = image ? `<image:image><image:loc>${image}</image:loc></image:image>` : ''
     if (!seen.has(loc)) {
-      urls.push(`<url><loc>${loc}</loc>${lastmod ? `<lastmod>${new Date(lastmod).toISOString()}</lastmod>` : ''}${imageNode}</url>`)
+      urls.push(`<url><loc>${loc}</loc>${lastmod ? `<lastmod>${new Date(lastmod).toISOString()}</lastmod>` : ''}${changefreq ? `<changefreq>${changefreq}</changefreq>` : ''}<priority>0.7</priority>${imageNode}</url>`)
       seen.add(loc)
     }
   })

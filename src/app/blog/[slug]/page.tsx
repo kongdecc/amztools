@@ -4,10 +4,29 @@ import BlogDetailClient from '../BlogDetailClient'
 import fs from 'fs'
 import path from 'path'
 import { marked } from 'marked'
+import { Metadata } from 'next'
 export const dynamic = 'force-dynamic'
 
-export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params
+function getSiteBase(): URL | null {
+  const raw = String(process.env.NEXT_PUBLIC_SITE_URL || '').trim()
+  if (!raw) return null
+  try {
+    return new URL(raw.endsWith('/') ? raw : `${raw}/`)
+  } catch {
+    return null
+  }
+}
+
+function stripText(html: string): string {
+  return String(html || '')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+async function getPostBySlug(slug: string) {
   let item: any = null
   try {
     const r = await db.blogPost.findUnique({ where: { slug } })
@@ -35,6 +54,72 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
       }
     } catch {}
   }
+  return item
+}
+
+async function getSettingsMap(): Promise<Record<string, string>> {
+  const out: Record<string, string> = {}
+  try {
+    const rows = await (db as any).siteSettings.findMany()
+    for (const r of rows as any) out[String((r as any).key)] = String((r as any).value ?? '')
+  } catch {}
+  return out
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params
+  const base = getSiteBase()
+  const settings = await getSettingsMap()
+  const siteName = settings.siteName || '运营魔方 ToolBox'
+  const siteDescription = settings.seoDescription || settings.siteDescription || ''
+  const siteKeywords = settings.siteKeywords || ''
+  const item = await getPostBySlug(slug)
+  const title = item?.title ? `${String(item.title)} - ${siteName}` : `${siteName} - 博客`
+
+  let description = siteDescription
+  try {
+    const html = String(marked.parse(String(item?.content || '')))
+    const text = stripText(html)
+    if (text) description = text.slice(0, 160)
+  } catch {}
+
+  const coverUrl = String(item?.coverUrl || '').trim()
+  const image = (() => {
+    if (!coverUrl) return undefined
+    if (/^https?:\/\//i.test(coverUrl)) return coverUrl
+    if (base && coverUrl.startsWith('/')) return new URL(coverUrl.slice(1), base).toString()
+    return coverUrl
+  })()
+
+  return {
+    metadataBase: base || undefined,
+    title,
+    description: description || undefined,
+    keywords: siteKeywords || undefined,
+    alternates: { canonical: `/blog/${slug}` },
+    openGraph: {
+      type: 'article',
+      title,
+      description,
+      url: `/blog/${slug}`,
+      images: image ? [{ url: image }] : undefined
+    },
+    twitter: {
+      card: image ? 'summary_large_image' : 'summary',
+      title,
+      description,
+      images: image ? [image] : undefined
+    },
+    robots: {
+      index: true,
+      follow: true
+    }
+  }
+}
+
+export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const item = await getPostBySlug(slug)
   const content = String(item?.content || '')
   let initialHtml = ''
   try { initialHtml = String(marked.parse(content)) } catch { initialHtml = '' }
@@ -74,9 +159,48 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
       { id: 'suggest', label: '提需求', href: '/suggest', order: 3, isExternal: false, active: true }
     ]
   }
+  const base = getSiteBase()
+  const origin = base ? String(base).replace(/\/$/, '') : ''
+  const title = String(item?.title || '')
+  let desc = ''
+  try {
+    const text = stripText(initialHtml)
+    desc = text.slice(0, 160)
+  } catch {}
+  const cover = String(item?.coverUrl || '').trim()
+  const image = (() => {
+    if (!cover) return undefined
+    if (/^https?:\/\//i.test(cover)) return cover
+    if (origin && cover.startsWith('/')) return `${origin}${cover}`
+    return cover
+  })()
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      origin ? { "@type": "ListItem", position: 1, name: "首页", item: `${origin}/` } : undefined,
+      origin ? { "@type": "ListItem", position: 2, name: "博客", item: `${origin}/blog` } : undefined,
+      origin ? { "@type": "ListItem", position: 3, name: title || slug, item: `${origin}/blog/${slug}` } : undefined
+    ].filter(Boolean)
+  }
+  const articleLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: title || slug,
+    datePublished: item?.createdAt || undefined,
+    dateModified: item?.updatedAt || undefined,
+    image: image ? [image] : undefined,
+    url: origin ? `${origin}/blog/${slug}` : undefined,
+    description: desc || undefined,
+    mainEntityOfPage: origin ? `${origin}/blog/${slug}` : undefined
+  }
   return (
-    <SettingsProvider initial={initialSettings}>
-      <BlogDetailClient item={item} initialNavItems={navItems} initialHtml={initialHtml} />
-    </SettingsProvider>
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleLd) }} />
+      <SettingsProvider initial={initialSettings}>
+        <BlogDetailClient item={item} initialNavItems={navItems} initialHtml={initialHtml} />
+      </SettingsProvider>
+    </>
   )
 }

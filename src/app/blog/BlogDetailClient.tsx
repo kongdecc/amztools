@@ -1,6 +1,5 @@
 'use client'
 
-import Head from 'next/head'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import { LayoutDashboard, MoreHorizontal } from 'lucide-react'
@@ -12,9 +11,7 @@ type Post = { id: string; title: string; slug: string; content: string; status: 
 export default function BlogDetailClient({ item, initialNavItems, initialHtml }: { item: Post | null; initialNavItems: any[]; initialHtml?: string }) {
   const { settings } = useSettings()
   const [navItems] = useState<Array<any>>(initialNavItems || [])
-  const [origin, setOrigin] = useState('')
   const [html, setHtml] = useState(initialHtml || '')
-  const [desc, setDesc] = useState('')
   const [views, setViews] = useState<number>(Number(item?.views || 0))
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -34,13 +31,10 @@ export default function BlogDetailClient({ item, initialNavItems, initialHtml }:
             .replace(/<[^>]+>/g, '')
             .replace(/\s+/g, ' ')
             .trim()
-          setDesc(text.slice(0, 160))
         } catch {}
       } catch { setHtml('') }
     })()
   }, [item?.content])
-
-  useEffect(() => { try { setOrigin(window.location.origin) } catch {} }, [])
 
   useEffect(() => {
     (async () => {
@@ -66,37 +60,6 @@ export default function BlogDetailClient({ item, initialNavItems, initialHtml }:
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      <Head>
-        <title>{title || '文章'}</title>
-        <link rel="canonical" href={`${origin}/blog/${slug}`} />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "BreadcrumbList",
-          itemListElement: [
-            { "@type": "ListItem", position: 1, name: "首页", item: `${origin}/` },
-            { "@type": "ListItem", position: 2, name: "博客", item: `${origin}/blog` },
-            { "@type": "ListItem", position: 3, name: title || slug, item: `${origin}/blog/${slug}` }
-          ]
-        }) }} />
-        <meta name="description" content={desc || String(settings.seoDescription || settings.siteDescription || '')} />
-        <meta name="keywords" content={String(settings.siteKeywords || '')} />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Article",
-          headline: title || slug,
-          datePublished: item?.createdAt || undefined,
-          dateModified: item?.updatedAt || undefined,
-          image: item?.coverUrl ? [item.coverUrl] : undefined,
-          url: `${origin}/blog/${slug}`,
-          description: desc || undefined,
-          mainEntityOfPage: `${origin}/blog/${slug}`,
-          interactionStatistic: views ? {
-            "@type": "InteractionCounter",
-            interactionType: { "@type": "ViewAction" },
-            userInteractionCount: Number(views || 0)
-          } : undefined
-        }) }} />
-      </Head>
       <header className="h-14 bg-[#5b5bd6] text-white flex items-center px-4 md:px-10 shadow-md z-20 justify-between md:justify-start">
         <div className={`flex items-center gap-2 font-bold text-lg min-w-0 flex-1`}>
           {String(settings.logoUrl || '').trim() ? (
