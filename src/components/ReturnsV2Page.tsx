@@ -7,8 +7,8 @@ const ReturnsV2Page = () => {
   const [filters, setFilters] = useState<any>({ startDate: '', endDate: '', asin: '', reason: '', fc: '' })
   const [stats, setStats] = useState<any>({ totalReturns: 0, totalQuantity: 0, totalAsins: 0, totalSkus: 0, avgDaily: '0.0', topReason: '-' })
   const [comments, setComments] = useState<any[]>([])
-  const [selectAll, setSelectAll] = useState(false)
   const [selectedIdx, setSelectedIdx] = useState<Set<number>>(new Set())
+  const [commentAsin, setCommentAsin] = useState('')
   const chartsRef = useRef<Record<string, any>>({})
   const ChartRef = useRef<any>(null)
   const COLORS = ['#FF9900','#232F3E','#37475A','#FF6600','#FFA724','#FFD814','#C45500','#8B9DC3']
@@ -87,7 +87,7 @@ const ReturnsV2Page = () => {
     }))
     setComments(cs)
     setSelectedIdx(new Set())
-    setSelectAll(false)
+    setCommentAsin('')
 
     const Chart = await ensureChartLib()
     const reasonCtx = (document.getElementById('reasonChart') as HTMLCanvasElement)?.getContext('2d')
@@ -170,7 +170,8 @@ const ReturnsV2Page = () => {
   }
 
   const downloadAllComments = () => {
-    const text = comments.map(c=>c.comment).join('\n')
+    const list = String(commentAsin || '').trim() ? comments.filter(c => String(c.asin || '') === String(commentAsin)) : comments
+    const text = list.map(c=>c.comment).join('\n')
     if (!text.trim()) { alert('无可下载的客户反馈内容'); return }
     const filename = `客户反馈汇总_${new Date().toISOString().split('T')[0]}.txt`
     downloadText(filename, text)
@@ -338,35 +339,41 @@ const ReturnsV2Page = () => {
         <>
           <div className="bg-white p-6 rounded-xl border border-gray-100">
             <h3 className="font-bold text-gray-700 mb-4">数据筛选</h3>
-            <div className="flex flex-wrap gap-4 items-center">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">日期范围</span>
-                <input type="date" value={filters.startDate} onChange={(e:any)=>setFilters((p:any)=>({ ...p, startDate: e.target.value }))} className="border rounded px-2 py-1 text-sm" />
-                <span className="text-sm text-gray-600">至</span>
-                <input type="date" value={filters.endDate} onChange={(e:any)=>setFilters((p:any)=>({ ...p, endDate: e.target.value }))} className="border rounded px-2 py-1 text-sm" />
+            <div className="space-y-3">
+              <div className="flex flex-wrap gap-4 items-center">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600">日期范围</span>
+                  <input type="date" value={filters.startDate} onChange={(e:any)=>setFilters((p:any)=>({ ...p, startDate: e.target.value }))} className="border rounded px-2 py-1 text-sm" />
+                  <span className="text-sm text-gray-600">至</span>
+                  <input type="date" value={filters.endDate} onChange={(e:any)=>setFilters((p:any)=>({ ...p, endDate: e.target.value }))} className="border rounded px-2 py-1 text-sm" />
+                </div>
+                <div>
+                  <span className="text-sm text-gray-600 mr-2">ASIN</span>
+                  <select value={filters.asin} onChange={(e:any)=>setFilters((p:any)=>({ ...p, asin: e.target.value }))} className="border rounded px-2 py-1 text-sm">
+                    <option value="">全部</option>
+                    {(filters.asinOptions||[]).map((a:string)=>(<option key={a} value={a}>{a}</option>))}
+                  </select>
+                </div>
+                <div>
+                  <span className="text-sm text-gray-600 mr-2">退货原因</span>
+                  <select value={filters.reason} onChange={(e:any)=>setFilters((p:any)=>({ ...p, reason: e.target.value }))} className="border rounded px-2 py-1 text-sm">
+                    <option value="">全部</option>
+                    {(filters.reasonOptions||[]).map((r:string)=>(<option key={r} value={r}>{r}</option>))}
+                  </select>
+                </div>
+                <div>
+                  <span className="text-sm text-gray-600 mr-2">配送中心</span>
+                  <select value={filters.fc} onChange={(e:any)=>setFilters((p:any)=>({ ...p, fc: e.target.value }))} className="border rounded px-2 py-1 text-sm">
+                    <option value="">全部</option>
+                    {(filters.fcOptions||[]).map((c:string)=>(<option key={c} value={c}>{c}</option>))}
+                  </select>
+                </div>
+                <div className="ml-auto flex items-center gap-2">
+                  <button onClick={applyFilters} className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded text-sm">应用筛选</button>
+                  <button onClick={resetFilters} className="border border-gray-200 text-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-50">重置</button>
+                </div>
               </div>
-              <div>
-                <span className="text-sm text-gray-600 mr-2">ASIN</span>
-                <select value={filters.asin} onChange={(e:any)=>setFilters((p:any)=>({ ...p, asin: e.target.value }))} className="border rounded px-2 py-1 text-sm">
-                  <option value="">全部</option>
-                  {(filters.asinOptions||[]).map((a:string)=>(<option key={a} value={a}>{a}</option>))}
-                </select>
-              </div>
-              <div>
-                <span className="text-sm text-gray-600 mr-2">退货原因</span>
-                <select value={filters.reason} onChange={(e:any)=>setFilters((p:any)=>({ ...p, reason: e.target.value }))} className="border rounded px-2 py-1 text-sm">
-                  <option value="">全部</option>
-                  {(filters.reasonOptions||[]).map((r:string)=>(<option key={r} value={r}>{r}</option>))}
-                </select>
-              </div>
-              <div>
-                <span className="text-sm text-gray-600 mr-2">配送中心</span>
-                <select value={filters.fc} onChange={(e:any)=>setFilters((p:any)=>({ ...p, fc: e.target.value }))} className="border rounded px-2 py-1 text-sm">
-                  <option value="">全部</option>
-                  {(filters.fcOptions||[]).map((c:string)=>(<option key={c} value={c}>{c}</option>))}
-                </select>
-              </div>
-              <div className="flex-1 flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2">
                 {[
                   { id: 'section-reason', label: '原因分布' },
                   { id: 'section-asin', label: 'ASIN排行' },
@@ -382,8 +389,6 @@ const ReturnsV2Page = () => {
                   </button>
                 ))}
               </div>
-              <button onClick={applyFilters} className="ml-auto bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded text-sm">应用筛选</button>
-              <button onClick={resetFilters} className="border border-gray-200 text-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-50">重置</button>
             </div>
           </div>
 
@@ -526,23 +531,44 @@ const ReturnsV2Page = () => {
               <h3 className="font-bold text-gray-700">客户评论分析</h3>
               <button onClick={()=>scrollTo('top-nav')} className="text-xs text-orange-600 hover:text-orange-700">返回顶部</button>
             </div>
-            <p className="text-xs text-gray-500">共收集到 <span className="font-medium">{comments.length}</span> 条客户反馈</p>
-            <div className="flex items-center gap-3 my-2 flex-wrap">
-              <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={selectAll} onChange={(e:any)=>{ const v=e.target.checked; setSelectAll(v); const s=new Set<number>(); if(v) comments.forEach((_,i)=>s.add(i)); setSelectedIdx(s) }} /> 全选</label>
-              <button className="bg-gray-800 hover:bg-gray-900 text-white px-3 py-1.5 rounded text-xs" onClick={downloadSelectedComments}>下载选中</button>
-              <button className="border border-gray-200 text-gray-700 px-3 py-1.5 rounded text-xs hover:bg-gray-50" onClick={downloadAllComments}>下载所有反馈</button>
-            </div>
-            <div className="space-y-3">
-              {comments.length === 0 ? (
-                <p className="text-center text-gray-500">暂无客户评论</p>
-              ) : comments.map((c:any, idx:number) => (
-                <div key={idx} className="p-3 bg-gray-50 rounded border-l-4 border-orange-500">
-                  <div className="text-xs text-gray-600 mb-1"><span className="font-semibold">{c.asin || '未知ASIN'}</span> | SKU: {c.sku || '-'} | 退货原因: {c.reason || '-'} | {new Date(c.date).toLocaleDateString()}</div>
-                  <div className="text-sm">{c.comment}</div>
-                  <div className="mt-2"><input type="checkbox" checked={selectedIdx.has(idx)} onChange={(e:any)=>{ const s = new Set(Array.from(selectedIdx)); if(e.target.checked) s.add(idx); else s.delete(idx); setSelectedIdx(s); setSelectAll(s.size === comments.length) }} /></div>
-                </div>
-              ))}
-            </div>
+            {(() => {
+              const asinOptions = Array.from(new Set(comments.map(c => String(c.asin || '')).filter(Boolean))).sort()
+              const list = String(commentAsin || '').trim()
+                ? comments.map((c, idx) => ({ c, idx })).filter(x => String(x.c.asin || '') === String(commentAsin))
+                : comments.map((c, idx) => ({ c, idx }))
+              const visibleIdxs = list.map(x => x.idx)
+              const allVisibleSelected = visibleIdxs.length > 0 && visibleIdxs.every(i => selectedIdx.has(i))
+              return (
+                <>
+                  <p className="text-xs text-gray-500">共收集到 <span className="font-medium">{comments.length}</span> 条客户反馈{String(commentAsin || '').trim() ? (<span>，当前筛选 <span className="font-medium">{list.length}</span> 条</span>) : null}</p>
+                  <div className="flex items-center gap-3 my-2 flex-wrap">
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="text-gray-700">ASIN</span>
+                      <select value={commentAsin} onChange={(e:any)=>{ setCommentAsin(e.target.value); setSelectedIdx(new Set()) }} className="border rounded px-2 py-1 text-sm">
+                        <option value="">全部</option>
+                        {asinOptions.map(a => (<option key={a} value={a}>{a}</option>))}
+                      </select>
+                    </div>
+                    <label className="flex items-center gap-2 text-sm">
+                      <input type="checkbox" checked={allVisibleSelected} onChange={(e:any)=>{ const v=e.target.checked; const s=new Set<number>(Array.from(selectedIdx)); if(v) visibleIdxs.forEach(i=>s.add(i)); else visibleIdxs.forEach(i=>s.delete(i)); setSelectedIdx(s) }} /> 全选
+                    </label>
+                    <button className="bg-gray-800 hover:bg-gray-900 text-white px-3 py-1.5 rounded text-xs" onClick={downloadSelectedComments}>下载选中</button>
+                    <button className="border border-gray-200 text-gray-700 px-3 py-1.5 rounded text-xs hover:bg-gray-50" onClick={downloadAllComments}>下载所有反馈</button>
+                  </div>
+                  <div className="space-y-3">
+                    {list.length === 0 ? (
+                      <p className="text-center text-gray-500">暂无客户评论</p>
+                    ) : list.map(({ c, idx }: any) => (
+                      <div key={idx} className="p-3 bg-gray-50 rounded border-l-4 border-orange-500">
+                        <div className="text-xs text-gray-600 mb-1"><span className="font-semibold">{c.asin || '未知ASIN'}</span> | SKU: {c.sku || '-'} | 退货原因: {c.reason || '-'} | {new Date(c.date).toLocaleDateString()}</div>
+                        <div className="text-sm">{c.comment}</div>
+                        <div className="mt-2"><input type="checkbox" checked={selectedIdx.has(idx)} onChange={(e:any)=>{ const s = new Set(Array.from(selectedIdx)); if(e.target.checked) s.add(idx); else s.delete(idx); setSelectedIdx(s) }} /></div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )
+            })()}
           </div>
 
           <div id="section-download" className="text-center space-x-2">

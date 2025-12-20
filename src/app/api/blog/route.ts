@@ -20,6 +20,16 @@ type BlogPost = {
 const dataDir = path.join(process.cwd(), '.data')
 const blogFile = path.join(dataDir, 'blog.json')
 
+function sortByLatestCreatedAt(items: BlogPost[]): BlogPost[] {
+  const toTime = (s: unknown) => {
+    const t = Date.parse(String(s || ''))
+    return Number.isFinite(t) ? t : 0
+  }
+  return items
+    .slice()
+    .sort((a, b) => (toTime(b.createdAt) - toTime(a.createdAt)) || (Number(a.order || 0) - Number(b.order || 0)))
+}
+
 function readFilePosts(): BlogPost[] {
   try {
     const raw = fs.readFileSync(blogFile, 'utf-8')
@@ -61,7 +71,7 @@ async function readDbPosts(includeDrafts: boolean): Promise<BlogPost[] | null> {
       coverUrl: String(r.coverUrl || r.cover || '')
     }))
     const filtered = includeDrafts ? items : items.filter(i => i.status === 'published')
-    return filtered.sort((a, b) => Number(a.order || 0) - Number(b.order || 0))
+    return sortByLatestCreatedAt(filtered)
   } catch {}
   return null
 }
@@ -99,7 +109,7 @@ export async function GET(request: Request) {
       items = readFilePosts()
     }
     const base = includeDrafts ? items : items.filter(i => i.status === 'published')
-    const list = base.sort((a, b) => Number(a.order || 0) - Number(b.order || 0))
+    const list = sortByLatestCreatedAt(base)
     if (slug) {
       const found = list.find(i => i.slug === slug)
       if (!found) return NextResponse.json({ error: 'not_found' }, { status: 404 })
