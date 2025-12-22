@@ -17,6 +17,35 @@ export default async function Page({ searchParams }: { searchParams?: Record<str
     categoriesPromise
   ])
 
+  // Auto-seed for image-compression if missing
+  if (Array.isArray(modulesRows) && !modulesRows.some((m: any) => m.key === 'image-compression')) {
+    try {
+      const existing = await (db as any).toolModule.findUnique({ where: { key: 'image-compression' } })
+      if (!existing) {
+        await (db as any).toolModule.create({
+          data: {
+            key: 'image-compression',
+            title: '图片压缩与格式转换',
+            desc: '批量压缩、格式转换，本地处理不上传服务器',
+            status: '启用',
+            views: 0,
+            color: 'blue',
+            order: 14,
+            category: 'image-text'
+          }
+        })
+      }
+      const existingCat = await (db as any).toolCategory.findUnique({ where: { key: 'image-text' } })
+      if (!existingCat) {
+        await (db as any).toolCategory.create({
+          data: { key: 'image-text', label: '图片文本', order: 3, enabled: true }
+        })
+      }
+    } catch (e) {
+      console.error('Auto-seed failed:', e)
+    }
+  }
+
   let initialSettings: Record<string, any> = {}
   try {
     for (const r of settingsRows as any) initialSettings[String((r as any).key)] = String((r as any).value ?? '')
@@ -46,7 +75,8 @@ export default async function Page({ searchParams }: { searchParams?: Record<str
         { key: 'cpc-compass', title: 'CPC利润测算', desc: '集成FBA费率、佣金计算，精准推导盈亏平衡CPC及ACOS', status: '启用', views: 0, color: 'blue', order: 1.5, category: 'advertising' },
         { key: 'amazon-promotion-stacking', title: '亚马逊促销叠加计算器', desc: '自动计算促销叠加或互斥，基于2025版《各类促销叠加情况》矩阵表逻辑', status: '启用', views: 0, color: 'blue', order: 1.8, category: 'operation' },
         { key: 'delivery', title: '美国站配送费计算', desc: '按2025/2026规则计算配送费用', status: '启用', views: 0, color: 'orange', order: 7 },
-        { key: 'returns-v2', title: '退货报告分析V2', desc: '上传退货报告，原因/趋势/仓库/评论多维分析', status: '启用', views: 0, color: 'blue', order: 8 }
+        { key: 'returns-v2', title: '退货报告分析V2', desc: '上传退货报告，原因/趋势/仓库/评论多维分析', status: '启用', views: 0, color: 'blue', order: 8 },
+        { key: 'image-compression', title: '图片压缩与格式转换', desc: '批量压缩、格式转换，本地处理不上传服务器', status: '启用', views: 0, color: 'blue', order: 14, category: 'image-text' }
       ]
       const merged = arr.slice()
       for (const d of need) if (!keys.has(d.key)) merged.push(d)

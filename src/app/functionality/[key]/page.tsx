@@ -15,6 +15,7 @@ import TextComparator from '@/components/TextComparator'
 import DuplicateRemover from '@/components/DuplicateRemover'
 import ContentFilter from '@/components/ContentFilter'
 import ImageResizer from '@/components/ImageResizer'
+import ImageCompressionPage from '@/components/ImageCompressionPage'
 import InvoiceGenerator from '@/components/InvoiceGenerator'
 import CpcCalculator from '@/components/CpcCalculator'
 import AmazonGlobalTool from '@/components/AmazonGlobalTool'
@@ -102,6 +103,8 @@ const DetailClient = () => {
         return <ContentFilter />
       case 'image-resizer':
         return <ImageResizer />
+      case 'image-compression':
+        return <ImageCompressionPage />
       case 'invoice-generator':
         return <InvoiceGenerator />
       case 'cpc-compass':
