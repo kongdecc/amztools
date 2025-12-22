@@ -37,6 +37,7 @@ const AmazonPromotionStackingCalculator = dynamic(() => import('@/components/Ama
 const KeywordCombiner = dynamic(() => import('@/components/KeywordCombiner'), { loading: LoadingTool })
 const FBAWarehouses = dynamic(() => import('@/components/FBAWarehouses'), { loading: LoadingTool })
 const FBALabelEditor = dynamic(() => import('@/components/FBALabelEditor'), { loading: LoadingTool })
+const ImageCompressionPage = dynamic(() => import('@/components/ImageCompressionPage'), { loading: LoadingTool })
 
 const PlaceholderPage = ({ title, icon: Icon }: { title: string; icon: any }) => (
   <div className="space-y-6">
@@ -84,6 +85,7 @@ const ToolContainer = memo(({ activeTab }: { activeTab: string }) => {
     case 'keyword-combiner': return <KeywordCombiner />
     case 'fba-warehouses': return <FBAWarehouses />
     case 'fba-label-editor': return <FBALabelEditor />
+    case 'image-compression': return <ImageCompressionPage />
     case 'amazon-promotion-stacking': return <AmazonPromotionStackingCalculator />
     default: return <PlaceholderPage title="功能开发中" icon={Hammer} />
   }
