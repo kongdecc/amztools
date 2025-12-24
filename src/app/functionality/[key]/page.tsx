@@ -27,6 +27,7 @@ import PartnerEquityCalculator from '@/components/PartnerEquityCalculator'
 import CartonCalculatorAdvanced from '@/components/CartonCalculatorAdvanced'
 import NaturalTrafficTool from '@/components/NaturalTrafficTool'
 import AmazonPromotionStackingCalculator from '@/components/AmazonPromotionStackingCalculator'
+import StorageFeeCalculatorPage from '@/components/StorageFeeCalculatorPage'
 
 const DetailClient = () => {
   const { key } = useParams<{ key: string }>()
@@ -131,6 +132,8 @@ const DetailClient = () => {
       return <FBALabelEditor />
     case 'amazon-promotion-stacking':
       return <AmazonPromotionStackingCalculator />
+    case 'storage-fee-calc':
+      return <StorageFeeCalculatorPage />
     default:
         return (
           <div className="bg-white p-6 rounded-xl border">

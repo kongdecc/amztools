@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>亚马逊 FBA 全能仓储费计算器 (专业版)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #f3f4f6; }
+        .input-group { display: flex; flex-direction: column; gap: 0.25rem; }
+        .input-label { font-size: 0.875rem; line-height: 1.25rem; font-weight: 500; color: rgb(55 65 81); }
+        .input-field { margin-top: 0.25rem; display: block; width: 100%; border-radius: 0.375rem; border-color: rgb(209 213 219); box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); padding: 0.5rem; border-width: 1px; }
+        .input-field:focus { border-color: rgb(99 102 241); outline: 2px solid transparent; outline-offset: 2px; --tw-ring-color: rgb(99 102 241); --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color); --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color); box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000); }
+        .card { background-color: rgb(255 255 255); overflow: hidden; box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1); border-radius: 0.5rem; }
+        .result-value { font-size: 1.5rem; line-height: 2rem; font-weight: 700; color: rgb(17 24 39); }
+        .result-label { font-size: 0.875rem; line-height: 1.25rem; font-weight: 500; color: rgb(107 114 128); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    </style>
+</head>
+<body class="p-6">
+
+    <div class="max-w-7xl mx-auto space-y-6">
+        <!-- Header -->
+        <div class="md:flex md:items-center md:justify-between">
+            <div class="flex-1 min-w-0">
+                <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+                    📦 亚马逊 FBA 仓储费计算器
+                </h2>
+                <p class="mt-1 text-sm text-gray-500">
+                    集成月度仓储费、利用率附加费及超龄库存附加费（含2026新规）
+                </p>
+            </div>
+            <div class="mt-4 flex md:mt-0 md:ml-4">
+                <details class="relative inline-block text-left">
+                    <summary class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none cursor-pointer">
+                        ℹ️ 功能介绍与逻辑
+                    </summary>
+                    <div class="origin-top-right absolute right-0 mt-2 w-96 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10 p-4">
+                        <h4 class="text-sm font-bold text-gray-900 mb-2">功能介绍</h4>
+                        <p class="text-xs text-gray-600 mb-3">
+                            本工具用于计算亚马逊 FBA 的综合仓储成本，包含月度仓储费、仓储利用率附加费及超龄库存附加费。
+                        </p>
+                        <h4 class="text-sm font-bold text-gray-900 mb-2">核心逻辑</h4>
+                        <ul class="text-xs text-gray-600 list-disc pl-4 space-y-1">
+                            <li><strong>尺寸分段</strong>：基于发货重量（取实重与体积重较大值），并应用最小 2 英寸规则。</li>
+                            <li><strong>月度仓储费</strong>：自动区分旺季（10-12月）与淡季，支持危险品费率。</li>
+                            <li><strong>利用率附加费</strong>：仅针对专业账户且仓储利用率超标（>22周）的卖家。</li>
+                            <li><strong>超龄库存</strong>：支持 2026 年新规（366-455天分段），并包含服装类 181-270 天豁免规则。</li>
+                        </ul>
+                    </div>
+                </details>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left Column: Inputs -->
+            <div class="lg:col-span-1 space-y-6">
+                
+                <!-- Section 1: 商品信息 -->
+                <div class="card p-5 space-y-4">
+                    <h3 class="text-lg font-medium text-gray-900 border-b pb-2">1. 商品基础信息</h3>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="input-group">
+                            <label class="input-label">计算日期</label>
+                            <input type="date" id="calcDate" class="input-field">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">库存数量 (件)</label>
+                            <input type="number" id="quantity" class="input-field" value="100" min="1">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="input-group">
+                            <label class="input-label">长 (英寸)</label>
+                            <input type="number" id="length" class="input-field" value="11" step="0.1">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">宽 (英寸)</label>
+                            <input type="number" id="width" class="input-field" value="8" step="0.1">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">高 (英寸)</label>
+                            <input type="number" id="height" class="input-field" value="2" step="0.1">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label class="input-label">单件重量 (磅 lbs)</label>
+                        <input type="number" id="weight" class="input-field" value="0.5" step="0.01">
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">商品类型</label>
+                        <select id="category" class="input-field">
+                            <option value="standard">一般商品 (非危险品)</option>
+                            <option value="dangerous">危险品</option>
+                            <option value="clothing">服装/鞋靴 (部分附加费豁免)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Section 2: 仓储状态 -->
+                <div class="card p-5 space-y-4">
+                    <h3 class="text-lg font-medium text-gray-900 border-b pb-2">2. 仓储状态设定</h3>
+                    
+                    <div class="input-group">
+                        <label class="input-label flex justify-between">
+                            <span>当前库龄 (天)</span>
+                            <span class="text-xs text-gray-400">决定超龄附加费</span>
+                        </label>
+                        <input type="number" id="ageDays" class="input-field" value="185" placeholder="例如: 366">
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label flex justify-between">
+                            <span>仓储利用率 (周)</span>
+                            <span class="text-xs text-gray-400">决定利用率附加费</span>
+                        </label>
+                        <input type="number" id="utilizationWeeks" class="input-field" value="10" placeholder="例如: 25">
+                        <p class="text-xs text-gray-500 mt-1">
+                            * 数据来源：请在亚马逊卖家后台 FBA 仪表盘中查看“仓储利用率”指标。<br>
+                            * 仅当您的首单发货超过365天且日均体积>25立方英尺时适用。
+                        </p>
+                    </div>
+
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">
+                            <input id="isNewSeller" type="checkbox" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="isNewSeller" class="font-medium text-gray-700">豁免条件</label>
+                            <p class="text-gray-500">我是新卖家(首单<365天) 或 日均体积<25立方英尺</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card p-5">
+                    <button type="button" onclick="calculateFees()" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        立即计算
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Right Column: Results -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Top Stats -->
+                <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
+                    <div class="card px-4 py-5 sm:p-6 border-l-4 border-blue-500">
+                        <dt class="result-label">总计月度费用</dt>
+                        <dd class="mt-1 result-value text-blue-600" id="totalFeeDisplay">$0.00</dd>
+                        <dd class="text-xs text-gray-500 mt-1">每件成本: <span id="perUnitFee">$0.00</span></dd>
+                    </div>
+                    <div class="card px-4 py-5 sm:p-6 border-l-4 border-green-500">
+                        <dt class="result-label">尺寸分段</dt>
+                        <dd class="mt-1 text-lg font-bold text-gray-900" id="sizeTierDisplay">-</dd>
+                        <dd class="text-xs text-gray-500 mt-1">体积: <span id="volumeDisplay">0</span> ft³</dd>
+                    </div>
+                    <div class="card px-4 py-5 sm:p-6 border-l-4 border-orange-500">
+                        <dt class="result-label">当前费率季节</dt>
+                        <dd class="mt-1 result-value text-gray-900" id="seasonDisplay">-</dd>
+                        <dd class="text-xs text-gray-500 mt-1" id="policyYearDisplay">适用 2024 政策</dd>
+                    </div>
+                </div>
+
+                <!-- Breakdown & Chart -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Table -->
+                    <div class="card p-5">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">费用明细表</h3>
+                        <div class="flow-root">
+                            <ul role="list" class="divide-y divide-gray-200">
+                                <li class="py-3 flex justify-between">
+                                    <div class="text-sm font-medium text-gray-900">基本月度仓储费</div>
+                                    <div class="text-sm text-gray-500" id="baseFeeDisplay">$0.00</div>
+                                </li>
+                                <li class="py-3 flex justify-between">
+                                    <div class="text-sm font-medium text-gray-900">
+                                        仓储利用率附加费
+                                        <span class="block text-xs text-gray-400 font-normal" id="utilizationRateMsg">未触发</span>
+                                    </div>
+                                    <div class="text-sm text-red-500" id="utilSurchargeDisplay">$0.00</div>
+                                </li>
+                                <li class="py-3 flex justify-between bg-red-50 -mx-5 px-5">
+                                    <div class="text-sm font-medium text-red-800">
+                                        超龄库存附加费
+                                        <span class="block text-xs text-red-600 font-normal" id="agedFeeMsg">库龄正常</span>
+                                    </div>
+                                    <div class="text-sm font-bold text-red-700" id="agedSurchargeDisplay">$0.00</div>
+                                </li>
+                                <li class="py-3 flex justify-between border-t-2 border-gray-200 mt-2">
+                                    <div class="text-base font-bold text-gray-900">总计</div>
+                                    <div class="text-base font-bold text-indigo-600" id="finalTotalDisplay">$0.00</div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Chart -->
+                    <div class="card p-5 flex flex-col items-center justify-center">
+                        <h3 class="text-lg font-medium text-gray-900 mb-2 w-full text-left">成本构成</h3>
+                        <div class="w-64 h-64">
+                            <canvas id="costChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Logic Explanation -->
+                <div class="card p-5 bg-gray-50">
+                    <h4 class="text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">计算逻辑说明</h4>
+                    <div class="text-xs text-gray-600 space-y-1" id="logicLog">
+                        <p>等待计算...</p>
+                    </div>
+                </div>
+
+                <!-- History Section -->
+                <div class="card p-5">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-medium text-gray-900">🕒 计算历史记录</h3>
+                        <button onclick="clearHistory()" class="text-xs text-red-600 hover:text-red-800 underline">清空历史</button>
+                    </div>
+                    <div id="historyList" class="max-h-60 overflow-y-auto">
+                        <!-- JS will populate this -->
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2 text-center">记录仅保存在本地浏览器中</p>
+                </div>
+
+            <!-- 1. Monthly Storage Fee Rates -->
+            <details class="bg-white overflow-hidden shadow rounded-lg">
+                <summary class="p-4 font-medium cursor-pointer flex justify-between items-center bg-gray-50 hover:bg-gray-100 transition">
+                    <span class="text-xl font-bold text-gray-900">📚 费用规则参考表</span>
+                    <span class="text-xs text-gray-500">点击查看详情</span>
+                </summary>
+                <div class="p-4 border-t space-y-6">
+                    <!-- Standard Size, Non-Peak -->
+                    <div>
+                        <h4 class="text-sm font-bold text-gray-700 mb-2">1. 非危险品 - 淡季 (1月 - 9月)</h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 text-xs text-center">
+                                <thead class="bg-gray-50 font-medium text-gray-500">
+                                    <tr>
+                                        <th class="px-2 py-2 text-left" rowspan="2">仓储利用率</th>
+                                        <th class="px-2 py-2 border-l" colspan="3">标准尺寸</th>
+                                        <th class="px-2 py-2 border-l" colspan="3">大件商品</th>
+                                    </tr>
+                                    <tr>
+                                        <th class="px-2 py-1 border-l">基本费</th>
+                                        <th class="px-2 py-1">附加费</th>
+                                        <th class="px-2 py-1 bg-gray-100 font-bold">总计</th>
+                                        <th class="px-2 py-1 border-l">基本费</th>
+                                        <th class="px-2 py-1">附加费</th>
+                                        <th class="px-2 py-1 bg-gray-100 font-bold">总计</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    <tr>
+                                        <td class="px-2 py-2 text-left">22 周以内 / 豁免</td>
+                                        <td class="px-2 py-2 border-l text-gray-500">$0.78</td>
+                                        <td class="px-2 py-2 text-gray-400">-</td>
+                                        <td class="px-2 py-2 bg-gray-50 font-bold">$0.78</td>
+                                        <td class="px-2 py-2 border-l text-gray-500">$0.56</td>
+                                        <td class="px-2 py-2 text-gray-400">-</td>
+                                        <td class="px-2 py-2 bg-gray-50 font-bold">$0.56</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-2 py-2 text-left">22 ~ 28 周</td>
+                                        <td class="px-2 py-2 border-l text-gray-500">$0.78</td>
+                                        <td class="px-2 py-2 text-red-500">$0.44</td>
+                                        <td class="px-2 py-2 bg-gray-50 font-bold">$1.22</td>
+                                        <td class="px-2 py-2 border-l text-gray-500">$0.56</td>
+                                        <td class="px-2 py-2 text-red-500">$0.23</td>
+                                        <td class="px-2 py-2 bg-gray-50 font-bold">$0.79</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-2 py-2 text-left">28 ~ 36 周</td>
+                                        <td class="px-2 py-2 border-l text-gray-500">$0.78</td>
+                                        <td class="px-2 py-2 text-red-500">$0.76</td>
+                                        <td class="px-2 py-2 bg-gray-50 font-bold">$1.54</td>
+                                        <td class="px-2 py-2 border-l text-gray-500">$0.56</td>
+                                        <td class="px-2 py-2 text-red-500">$0.46</td>
+                                        <td class="px-2 py-2 bg-gray-50 font-bold">$1.02</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-2 py-2 text-left">36 ~ 44 周</td>
+                                        <td class="px-2 py-2 border-l text-gray-500">$0.78</td>
+                                        <td class="px-2 py-2 text-red-500">$1.16</td>
+                                        <td class="px-2 py-2 bg-gray-50 font-bold">$1.94</td>
+                                        <td class="px-2 py-2 border-l text-gray-500">$0.56</td>
+                                        <td class="px-2 py-2 text-red-500">$0.63</td>
+                                        <td class="px-2 py-2 bg-gray-50 font-bold">$1.19</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-2 py-2 text-left">44 ~ 52 周</td>
+                                        <td class="px-2 py-2 border-l text-gray-500">$0.78</td>
+                                        <td class="px-2 py-2 text-red-500">$1.58</td>
+                                        <td class="px-2 py-2 bg-gray-50 font-bold">$2.36</td>
+                                        <td class="px-2 py-2 border-l text-gray-500">$0.56</td>
+                                        <td class="px-2 py-2 text-red-500">$0.76</td>
+                                        <td class="px-2 py-2 bg-gray-50 font-bold">$1.32</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-2 py-2 text-left">超过 52 周</td>
+                                        <td class="px-2 py-2 border-l text-gray-500">$0.78</td>
+                                        <td class="px-2 py-2 text-red-500">$1.88</td>
+                                        <td class="px-2 py-2 bg-gray-50 font-bold">$2.66</td>
+                                        <td class="px-2 py-2 border-l text-gray-500">$0.56</td>
+                                        <td class="px-2 py-2 text-red-500">$1.26</td>
+                                        <td class="px-2 py-2 bg-gray-50 font-bold">$1.82</td>
+                                    </tr>
+                                    <tr class="bg-green-50">
+                                        <td class="px-2 py-2 text-left font-medium text-green-800">豁免卖家*</td>
+                                        <td class="px-2 py-2 border-l text-green-700">$0.78</td>
+                                        <td class="px-2 py-2 text-gray-400">不适用</td>
+                                        <td class="px-2 py-2 font-bold text-green-800">$0.78</td>
+                                        <td class="px-2 py-2 border-l text-green-700">$0.56</td>
+                                        <td class="px-2 py-2 text-gray-400">不适用</td>
+                                        <td class="px-2 py-2 font-bold text-green-800">$0.56</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot class="bg-gray-50">
+                                    <tr>
+                                        <td colspan="7" class="px-2 py-1 text-left text-xs text-gray-500 italic">
+                                            * 豁免卖家：新卖家(<365天)、个人计划或日均体积≤25 ft³
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Non-Dangerous, Peak -->
+                    <div>
+                        <h4 class="text-sm font-bold text-orange-700 mb-2">2. 非危险品 - 旺季 (10月 - 12月)</h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-orange-200 text-xs text-center border border-orange-200">
+                                <thead class="bg-orange-50 font-medium text-orange-800">
+                                    <tr>
+                                        <th class="px-2 py-2 text-left" rowspan="2">仓储利用率</th>
+                                        <th class="px-2 py-2 border-l border-orange-200" colspan="3">标准尺寸</th>
+                                        <th class="px-2 py-2 border-l border-orange-200" colspan="3">大件商品</th>
+                                    </tr>
+                                    <tr>
+                                        <th class="px-2 py-1 border-l border-orange-200">基本费</th>
+                                        <th class="px-2 py-1">附加费</th>
+                                        <th class="px-2 py-1 bg-orange-100 font-bold">总计</th>
+                                        <th class="px-2 py-1 border-l border-orange-200">基本费</th>
+                                        <th class="px-2 py-1">附加费</th>
+                                        <th class="px-2 py-1 bg-orange-100 font-bold">总计</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-orange-200 bg-white">
+                                    <tr>
+                                        <td class="px-2 py-2 text-left">22 周以内 / 豁免</td>
+                                        <td class="px-2 py-2 border-l border-orange-200 text-gray-500">$2.40</td>
+                                        <td class="px-2 py-2 text-gray-400">-</td>
+                                        <td class="px-2 py-2 bg-orange-50 font-bold">$2.40</td>
+                                        <td class="px-2 py-2 border-l border-orange-200 text-gray-500">$1.40</td>
+                                        <td class="px-2 py-2 text-gray-400">-</td>
+                                        <td class="px-2 py-2 bg-orange-50 font-bold">$1.40</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-2 py-2 text-left">22 ~ 28 周</td>
+                                        <td class="px-2 py-2 border-l border-orange-200 text-gray-500">$2.40</td>
+                                        <td class="px-2 py-2 text-red-500">$0.44</td>
+                                        <td class="px-2 py-2 bg-orange-50 font-bold">$2.84</td>
+                                        <td class="px-2 py-2 border-l border-orange-200 text-gray-500">$1.40</td>
+                                        <td class="px-2 py-2 text-red-500">$0.23</td>
+                                        <td class="px-2 py-2 bg-orange-50 font-bold">$1.63</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-2 py-2 text-left">28 ~ 36 周</td>
+                                        <td class="px-2 py-2 border-l border-orange-200 text-gray-500">$2.40</td>
+                                        <td class="px-2 py-2 text-red-500">$0.76</td>
+                                        <td class="px-2 py-2 bg-orange-50 font-bold">$3.16</td>
+                                        <td class="px-2 py-2 border-l border-orange-200 text-gray-500">$1.40</td>
+                                        <td class="px-2 py-2 text-red-500">$0.46</td>
+                                        <td class="px-2 py-2 bg-orange-50 font-bold">$1.86</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-2 py-2 text-left">36 ~ 44 周</td>
+                                        <td class="px-2 py-2 border-l border-orange-200 text-gray-500">$2.40</td>
+                                        <td class="px-2 py-2 text-red-500">$1.16</td>
+                                        <td class="px-2 py-2 bg-orange-50 font-bold">$3.56</td>
+                                        <td class="px-2 py-2 border-l border-orange-200 text-gray-500">$1.40</td>
+                                        <td class="px-2 py-2 text-red-500">$0.63</td>
+                                        <td class="px-2 py-2 bg-orange-50 font-bold">$2.03</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-2 py-2 text-left">44 ~ 52 周</td>
+                                        <td class="px-2 py-2 border-l border-orange-200 text-gray-500">$2.40</td>
+                                        <td class="px-2 py-2 text-red-500">$1.58</td>
+                                        <td class="px-2 py-2 bg-orange-50 font-bold">$3.98</td>
+                                        <td class="px-2 py-2 border-l border-orange-200 text-gray-500">$1.40</td>
+                                        <td class="px-2 py-2 text-red-500">$0.76</td>
+                                        <td class="px-2 py-2 bg-orange-50 font-bold">$2.16</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-2 py-2 text-left">超过 52 周</td>
+                                        <td class="px-2 py-2 border-l border-orange-200 text-gray-500">$2.40</td>
+                                        <td class="px-2 py-2 text-red-500">$1.88</td>
+                                        <td class="px-2 py-2 bg-orange-50 font-bold">$4.28</td>
+                                        <td class="px-2 py-2 border-l border-orange-200 text-gray-500">$1.40</td>
+                                        <td class="px-2 py-2 text-red-500">$1.26</td>
+                                        <td class="px-2 py-2 bg-orange-50 font-bold">$2.66</td>
+                                    </tr>
+                                    <tr class="bg-green-50">
+                                        <td class="px-2 py-2 text-left font-medium text-green-800">豁免卖家*</td>
+                                        <td class="px-2 py-2 border-l border-green-200 text-green-700">$2.40</td>
+                                        <td class="px-2 py-2 text-gray-400">不适用</td>
+                                        <td class="px-2 py-2 font-bold text-green-800">$2.40</td>
+                                        <td class="px-2 py-2 border-l border-green-200 text-green-700">$1.40</td>
+                                        <td class="px-2 py-2 text-gray-400">不适用</td>
+                                        <td class="px-2 py-2 font-bold text-green-800">$1.40</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot class="bg-orange-50">
+                                    <tr>
+                                        <td colspan="7" class="px-2 py-1 text-left text-xs text-orange-800 italic">
+                                            * 豁免卖家：新卖家(<365天)、个人计划或日均体积≤25 ft³
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Dangerous Goods -->
+                    <div>
+                        <h4 class="text-sm font-bold text-gray-700 mb-2">3. 危险品 (无利用率附加费)</h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 text-xs text-left">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2">月份</th>
+                                        <th class="px-3 py-2">标准尺寸 (每 ft³)</th>
+                                        <th class="px-3 py-2">大件商品 (每 ft³)</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    <tr>
+                                        <td class="px-3 py-2">1月 - 9月 (淡季)</td>
+                                        <td class="px-3 py-2">$0.99</td>
+                                        <td class="px-3 py-2">$0.78</td>
+                                    </tr>
+                                    <tr class="bg-orange-50">
+                                        <td class="px-3 py-2 text-orange-800">10月 - 12月 (旺季)</td>
+                                        <td class="px-3 py-2 text-orange-800">$3.63</td>
+                                        <td class="px-3 py-2 text-orange-800">$2.43</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </details>
+
+            <!-- 2. Aged Inventory Surcharge -->
+            <details class="bg-white overflow-hidden shadow rounded-lg">
+                <summary class="p-4 font-medium cursor-pointer flex justify-between items-center bg-gray-50 hover:bg-gray-100 transition">
+                    <span>⏳ 超龄库存附加费率 (每立方英尺)</span>
+                    <span class="text-xs text-gray-500">点击查看详情</span>
+                </summary>
+                <div class="p-4 border-t space-y-6">
+                    
+                    <!-- Pre 2026 -->
+                    <div>
+                        <h4 class="text-sm font-bold text-gray-700 mb-2">1. 2026年1月16日 之前</h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 text-xs text-center">
+                                <thead class="bg-gray-50 font-medium text-gray-500">
+                                    <tr>
+                                        <th class="px-2 py-2 text-left">库龄 (天)</th>
+                                        <th class="px-2 py-2">181-210</th>
+                                        <th class="px-2 py-2">211-240</th>
+                                        <th class="px-2 py-2">241-270</th>
+                                        <th class="px-2 py-2">271-300</th>
+                                        <th class="px-2 py-2">301-330</th>
+                                        <th class="px-2 py-2">331-365</th>
+                                        <th class="px-2 py-2 bg-red-50 text-red-700 font-bold">366+</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    <tr>
+                                        <td class="px-2 py-2 text-left font-medium">费率 ($/ft³)</td>
+                                        <td class="px-2 py-2">$0.50*</td>
+                                        <td class="px-2 py-2">$1.00*</td>
+                                        <td class="px-2 py-2">$1.50*</td>
+                                        <td class="px-2 py-2">$5.45</td>
+                                        <td class="px-2 py-2">$5.70</td>
+                                        <td class="px-2 py-2">$5.90</td>
+                                        <td class="px-2 py-2 bg-red-50 font-bold">$6.90</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot class="bg-gray-50">
+                                    <tr>
+                                        <td colspan="8" class="px-2 py-1 text-left text-gray-500 italic">
+                                            * 服装、鞋靴等品类豁免
+                                            <span class="float-right font-normal">注: 366天+ 按件最低收费 $0.15/件</span>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Post 2026 -->
+                    <div>
+                        <h4 class="text-sm font-bold text-indigo-700 mb-2">2. 2026年1月16日 之后 (新规)</h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-indigo-200 text-xs text-center border border-indigo-200">
+                                <thead class="bg-indigo-50 font-medium text-indigo-800">
+                                    <tr>
+                                        <th class="px-2 py-2 text-left">库龄 (天)</th>
+                                        <th class="px-2 py-2">181-210</th>
+                                        <th class="px-2 py-2">211-240</th>
+                                        <th class="px-2 py-2">241-270</th>
+                                        <th class="px-2 py-2">271-300</th>
+                                        <th class="px-2 py-2">301-330</th>
+                                        <th class="px-2 py-2">331-365</th>
+                                        <th class="px-2 py-2 bg-red-50 text-red-700 font-bold">366-455</th>
+                                        <th class="px-2 py-2 bg-red-100 text-red-800 font-bold">456+</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-indigo-200 bg-white">
+                                    <tr>
+                                        <td class="px-2 py-2 text-left font-medium">费率 ($/ft³)</td>
+                                        <td class="px-2 py-2">$0.50*</td>
+                                        <td class="px-2 py-2">$1.00*</td>
+                                        <td class="px-2 py-2">$1.50*</td>
+                                        <td class="px-2 py-2">$5.45</td>
+                                        <td class="px-2 py-2">$5.70</td>
+                                        <td class="px-2 py-2">$5.90</td>
+                                        <td class="px-2 py-2 bg-red-50 font-bold">$6.90</td>
+                                        <td class="px-2 py-2 bg-red-100 font-bold">$7.90</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-2 py-2 text-left font-medium border-t border-indigo-100">按件最低 ($/件)</td>
+                                        <td class="px-2 py-2 border-t border-indigo-100">-</td>
+                                        <td class="px-2 py-2 border-t border-indigo-100">-</td>
+                                        <td class="px-2 py-2 border-t border-indigo-100">-</td>
+                                        <td class="px-2 py-2 border-t border-indigo-100">-</td>
+                                        <td class="px-2 py-2 border-t border-indigo-100">-</td>
+                                        <td class="px-2 py-2 border-t border-indigo-100">-</td>
+                                        <td class="px-2 py-2 bg-red-50 font-bold border-t border-red-100">$0.30</td>
+                                        <td class="px-2 py-2 bg-red-100 font-bold border-t border-red-200">$0.35</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot class="bg-indigo-50">
+                                    <tr>
+                                        <td colspan="9" class="px-2 py-1 text-left text-indigo-500 italic">
+                                            * 服装、鞋靴等品类豁免
+                                            <span class="float-right font-normal">注: 366天+ 取体积费与按件费较大值</span>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </details>
+
+            <!-- 3. Size Tiers -->
+            <details class="bg-white overflow-hidden shadow rounded-lg">
+                <summary class="p-4 font-medium cursor-pointer flex justify-between items-center bg-gray-50 hover:bg-gray-100 transition">
+                    <span>📏 尺寸分段标准 (2024 vs 2026)</span>
+                    <span class="text-xs text-gray-500">点击查看详情</span>
+                </summary>
+                <div class="p-4 border-t space-y-6">
+                    
+                    <!-- 2024 -->
+                    <div>
+                        <h4 class="text-sm font-bold text-gray-700 mb-2">1. 2024年标准 (当前适用)</h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 text-xs text-left">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2">商品尺寸分段</th>
+                                        <th class="px-3 py-2">发货重量¹</th>
+                                        <th class="px-3 py-2">最长边</th>
+                                        <th class="px-3 py-2">次长边</th>
+                                        <th class="px-3 py-2">最短边</th>
+                                        <th class="px-3 py-2">长度+围长</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    <tr>
+                                        <td class="px-3 py-2 font-medium">小号标准尺寸</td>
+                                        <td class="px-3 py-2">≤ 16 oz</td>
+                                        <td class="px-3 py-2">≤ 15"</td>
+                                        <td class="px-3 py-2">≤ 12"</td>
+                                        <td class="px-3 py-2">≤ 0.75"</td>
+                                        <td class="px-3 py-2">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-3 py-2 font-medium">大号标准尺寸</td>
+                                        <td class="px-3 py-2">≤ 20 lb</td>
+                                        <td class="px-3 py-2">≤ 18"</td>
+                                        <td class="px-3 py-2">≤ 14"</td>
+                                        <td class="px-3 py-2">≤ 8"</td>
+                                        <td class="px-3 py-2">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-3 py-2 font-medium">大号大件</td>
+                                        <td class="px-3 py-2">≤ 50 lb</td>
+                                        <td class="px-3 py-2">≤ 59"</td>
+                                        <td class="px-3 py-2">≤ 33"</td>
+                                        <td class="px-3 py-2">≤ 33"</td>
+                                        <td class="px-3 py-2">≤ 130"</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-3 py-2 font-medium">超大件</td>
+                                        <td class="px-3 py-2">> 50 lb</td>
+                                        <td class="px-3 py-2" colspan="4">超过大号大件任一限制或重量 > 50 lb</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 2026 -->
+                    <div>
+                        <h4 class="text-sm font-bold text-indigo-700 mb-2">2. 2026年标准 (2026/01/15 起生效)</h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-indigo-200 text-xs text-left border border-indigo-200">
+                                <thead class="bg-indigo-50 font-medium text-indigo-800">
+                                    <tr>
+                                        <th class="px-3 py-2">商品尺寸分段</th>
+                                        <th class="px-3 py-2">发货重量¹</th>
+                                        <th class="px-3 py-2">最长边</th>
+                                        <th class="px-3 py-2">次长边</th>
+                                        <th class="px-3 py-2">最短边</th>
+                                        <th class="px-3 py-2">长度+围长</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-indigo-200 bg-white">
+                                    <tr>
+                                        <td class="px-3 py-2 font-medium">小号标准尺寸</td>
+                                        <td class="px-3 py-2">≤ 16 oz</td>
+                                        <td class="px-3 py-2">≤ 15"</td>
+                                        <td class="px-3 py-2">≤ 12"</td>
+                                        <td class="px-3 py-2">≤ 0.75"</td>
+                                        <td class="px-3 py-2">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-3 py-2 font-medium">大号标准尺寸</td>
+                                        <td class="px-3 py-2">≤ 20 lb</td>
+                                        <td class="px-3 py-2">≤ 18"</td>
+                                        <td class="px-3 py-2">≤ 14"</td>
+                                        <td class="px-3 py-2">≤ 8"</td>
+                                        <td class="px-3 py-2">-</td>
+                                    </tr>
+                                    <tr class="bg-indigo-50">
+                                        <td class="px-3 py-2 font-bold text-indigo-700">小号大件 (新增)</td>
+                                        <td class="px-3 py-2">≤ 50 lb</td>
+                                        <td class="px-3 py-2">≤ 37"</td>
+                                        <td class="px-3 py-2">≤ 28"</td>
+                                        <td class="px-3 py-2">≤ 20"</td>
+                                        <td class="px-3 py-2">≤ 130"</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-3 py-2 font-medium">大号大件</td>
+                                        <td class="px-3 py-2">≤ 50 lb</td>
+                                        <td class="px-3 py-2">≤ 59"</td>
+                                        <td class="px-3 py-2">≤ 33"</td>
+                                        <td class="px-3 py-2">≤ 33"</td>
+                                        <td class="px-3 py-2">≤ 130"</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-3 py-2 font-medium">超大件 / 特大号</td>
+                                        <td class="px-3 py-2">> 50 lb</td>
+                                        <td class="px-3 py-2" colspan="4">超过大号大件任一限制</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">
+                            ¹ <strong>发货重量</strong>：取包装后的单件重量与体积重量的较大值（小号标准除外）。<br>
+                            体积重量公式：(长 x 宽 x 高) / 139。
+                        </p>
+                    </div>
+
+                </div>
+            </details>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Constants & Data ---
+        let myChart = null;
+
+        // 2024/2025 Base Rates (Non-Dangerous)
+        const BASE_RATES_2024 = {
+            offPeak: { standard: 0.78, oversize: 0.56 }, // Jan-Sep
+            peak: { standard: 2.40, oversize: 1.40 }     // Oct-Dec
+        };
+
+        // Utilization Surcharge Matrix (Simplified for Logic)
+        // [MinWeeks, MaxWeeks, StandardFee, OversizeFee]
+        const UTIL_SURCHARGE_TIERS = [
+            [0, 22, 0, 0],
+            [22, 28, 0.44, 0.23],
+            [28, 36, 0.76, 0.46],
+            [36, 44, 1.16, 0.63],
+            [44, 52, 1.58, 0.76],
+            [52, 9999, 1.88, 1.26]
+        ];
+
+        // Aged Inventory Rates (Pre 2026)
+        const AGED_RATES_PRE_2026 = [
+            { min: 0, max: 180, fee: 0 },
+            { min: 181, max: 210, fee: 0.50 },
+            { min: 211, max: 240, fee: 1.00 },
+            { min: 241, max: 270, fee: 1.50 },
+            { min: 271, max: 300, fee: 5.45 },
+            { min: 301, max: 330, fee: 5.70 },
+            { min: 331, max: 365, fee: 5.90 },
+            { min: 366, max: 99999, fee: 6.90, minUnit: 0.15 } // Special logic: Max of volume or unit
+        ];
+
+        // Aged Inventory Rates (Post Jan 16 2026)
+        const AGED_RATES_POST_2026 = [
+            { min: 0, max: 180, fee: 0 },
+            { min: 181, max: 210, fee: 0.50 },
+            { min: 211, max: 240, fee: 1.00 },
+            { min: 241, max: 270, fee: 1.50 },
+            { min: 271, max: 300, fee: 5.45 },
+            { min: 301, max: 330, fee: 5.70 },
+            { min: 331, max: 365, fee: 5.90 },
+            { min: 366, max: 455, fee: 6.90, minUnit: 0.30 },
+            { min: 456, max: 99999, fee: 7.90, minUnit: 0.35 }
+        ];
+
+        // --- Core Functions ---
+
+        function getSeason(date) {
+            const month = date.getMonth() + 1; // 1-12
+            return (month >= 10) ? 'peak' : 'offPeak';
+        }
+
+        function getSizeTier(l, w, h, weightLbs) {
+            // Sort dimensions to find longest, median, shortest
+            const dims = [l, w, h].sort((a, b) => b - a);
+            const longest = dims[0];
+            const median = dims[1];
+            const shortest = dims[2];
+
+            // 1. Check Small Standard Size (Uses Unit Weight, No Volumetric Weight)
+            // Rule: <= 16 oz (1 lb), <= 15" x 12" x 0.75"
+            if (weightLbs <= 1 && longest <= 15 && median <= 12 && shortest <= 0.75) {
+                return 'standard';
+            }
+
+            // 2. Calculate Volumetric Weight for Large Standard & Oversize
+            // Rule: Minimum 2 inches for width and height (effectively all dims for calc safety)
+            // Doc: "Assume minimum width and height are 2 inches"
+            const l_eff = Math.max(l, 2);
+            const w_eff = Math.max(w, 2);
+            const h_eff = Math.max(h, 2);
+            
+            const volWeight = (l_eff * w_eff * h_eff) / 139;
+            const shippingWeight = Math.max(weightLbs, volWeight);
+
+            // 3. Check Large Standard Size
+            // Rule: Shipping Weight <= 20 lbs, <= 18" x 14" x 8"
+            if (shippingWeight <= 20 && longest <= 18 && median <= 14 && shortest <= 8) {
+                return 'standard';
+            }
+
+            // Otherwise Oversize
+            return 'oversize';
+        }
+
+        function calculateFees(saveToHistory = true) {
+            // 1. Get Inputs
+            const dateStr = document.getElementById('calcDate').value;
+            const date = new Date(dateStr);
+            const qty = parseInt(document.getElementById('quantity').value) || 0;
+            const l = parseFloat(document.getElementById('length').value) || 0;
+            const w = parseFloat(document.getElementById('width').value) || 0;
+            const h = parseFloat(document.getElementById('height').value) || 0;
+            const weight = parseFloat(document.getElementById('weight').value) || 0;
+            const category = document.getElementById('category').value;
+            const ageDays = parseInt(document.getElementById('ageDays').value) || 0;
+            const utilWeeks = parseInt(document.getElementById('utilizationWeeks').value) || 0;
+            const isExempt = document.getElementById('isNewSeller').checked;
+
+            // 2. Basic Calculations
+            const cubicFeetPerUnit = (l * w * h) / 1728;
+            const totalVolume = cubicFeetPerUnit * qty;
+            const sizeTier = getSizeTier(l, w, h, weight);
+            const season = getSeason(date);
+            
+            // 3. Determine Base Rate
+            let baseRate = 0;
+            if (category === 'dangerous') {
+                // Simplified Dangerous Goods logic based on text
+                baseRate = (season === 'offPeak') 
+                    ? (sizeTier === 'standard' ? 0.99 : 0.78)
+                    : (sizeTier === 'standard' ? 3.63 : 2.43);
+            } else {
+                baseRate = BASE_RATES_2024[season][sizeTier];
+            }
+            const totalBaseFee = totalVolume * baseRate;
+
+            // 4. Determine Utilization Surcharge
+            let utilSurchargeRate = 0;
+            let utilMsg = "未触发 (周数不足或豁免)";
+            
+            // Logic: Must be Professional (assumed), >365 days since first shipment (User toggle), >25 cuft (Calc), >22 weeks
+            // Note: User toggle 'isExempt' covers "New Seller" AND "<25 cuft" logic for simplicity
+            if (!isExempt && totalVolume >= 25 && utilWeeks > 22) {
+                 const tier = UTIL_SURCHARGE_TIERS.find(t => utilWeeks >= t[0] && utilWeeks < t[1]);
+                 if (tier) {
+                     utilSurchargeRate = (sizeTier === 'standard') ? tier[2] : tier[3];
+                     utilMsg = `费率: $${utilSurchargeRate}/ft³ (${utilWeeks}周)`;
+                 }
+            } else if (isExempt) {
+                utilMsg = "已豁免 (新卖家或体积过小)";
+            } else if (totalVolume < 25) {
+                utilMsg = "未触发 (总体积 < 25 ft³)";
+            }
+
+            const totalUtilFee = totalVolume * utilSurchargeRate;
+
+            // 5. Determine Aged Inventory Surcharge
+            // Check Date for 2026 Policy
+            const policyDate = new Date('2026-01-16');
+            const isPost2026 = date >= policyDate;
+            const agedTable = isPost2026 ? AGED_RATES_POST_2026 : AGED_RATES_PRE_2026;
+
+            let agedFeePerUnit = 0;
+            let agedFeeTotal = 0;
+            let agedMsg = "库龄 < 181天，无附加费";
+            let agedRateApplied = 0;
+
+            // Find applicable tier
+            const agedTier = agedTable.find(t => ageDays >= t.min && ageDays <= t.max);
+            
+            if (agedTier && agedTier.fee > 0) {
+                // Check exclusions
+                // Doc: Clothing/Shoes/etc exempt for 181-270 days only.
+                if (category === 'clothing' && ageDays >= 181 && ageDays <= 270) { 
+                    agedMsg = "服装类豁免 (库龄 181-270天)";
+                } else {
+                    // Calculate Volume Based
+                    const volFee = cubicFeetPerUnit * agedTier.fee;
+                    
+                    // Calculate Unit Based (if applicable)
+                    let unitFee = 0;
+                    if (agedTier.minUnit) {
+                        unitFee = agedTier.minUnit;
+                    }
+
+                    // Take Max
+                    agedFeePerUnit = Math.max(volFee, unitFee);
+                    agedFeeTotal = agedFeePerUnit * qty;
+                    agedRateApplied = agedTier.fee;
+                    
+                    if (unitFee > volFee) {
+                        agedMsg = `按件收费 (库龄 ${ageDays}天, 费率 $${unitFee}/件)`;
+                    } else {
+                        agedMsg = `按体积收费 (库龄 ${ageDays}天, 费率 $${agedTier.fee}/ft³)`;
+                    }
+                }
+            }
+
+            // 6. Final Totals
+            const grandTotal = totalBaseFee + totalUtilFee + agedFeeTotal;
+
+            // --- Update UI ---
+            
+            // Format Currency
+            const fmt = (n) => '$' + n.toFixed(2);
+
+            document.getElementById('totalFeeDisplay').innerText = fmt(grandTotal);
+            document.getElementById('perUnitFee').innerText = fmt(grandTotal / qty);
+            document.getElementById('sizeTierDisplay').innerText = sizeTier === 'standard' ? '标准尺寸' : '大件商品';
+            document.getElementById('volumeDisplay').innerText = totalVolume.toFixed(2);
+            document.getElementById('seasonDisplay').innerText = season === 'peak' ? '旺季 (10-12月)' : '淡季 (1-9月)';
+            document.getElementById('policyYearDisplay').innerText = isPost2026 ? '适用 2026 新政' : '适用 2024/2025 政策';
+
+            document.getElementById('baseFeeDisplay').innerText = fmt(totalBaseFee);
+            document.getElementById('utilSurchargeDisplay').innerText = fmt(totalUtilFee);
+            document.getElementById('utilizationRateMsg').innerText = utilMsg;
+            document.getElementById('agedSurchargeDisplay').innerText = fmt(agedFeeTotal);
+            document.getElementById('agedFeeMsg').innerText = agedMsg;
+            document.getElementById('finalTotalDisplay').innerText = fmt(grandTotal);
+
+            // Update Logic Log
+            const logHtml = `
+                <p>1. 单件体积: ${cubicFeetPerUnit.toFixed(4)} ft³ (总: ${totalVolume.toFixed(2)} ft³)</p>
+                <p>2. 基础费率: $${baseRate}/ft³ (${season === 'peak' ? '旺季' : '淡季'})</p>
+                <p>3. 利用率附加费: ${utilSurchargeRate > 0 ? `+$${utilSurchargeRate}/ft³` : '无'}</p>
+                <p>4. 超龄判定: ${agedMsg}</p>
+            `;
+            document.getElementById('logicLog').innerHTML = logHtml;
+
+            // Update Chart
+            updateChart(totalBaseFee, totalUtilFee, agedFeeTotal);
+            
+            // Save to History
+            if (saveToHistory) {
+                addToHistory({
+                    date: new Date().toLocaleString(),
+                    inputs: {
+                        calcDate: dateStr,
+                        quantity: qty,
+                        length: l,
+                        width: w,
+                        height: h,
+                        weight: weight,
+                        category: category,
+                        ageDays: ageDays,
+                        utilizationWeeks: utilWeeks,
+                        isNewSeller: isExempt
+                    },
+                    results: {
+                        total: grandTotal,
+                        base: totalBaseFee,
+                        util: totalUtilFee,
+                        aged: agedFeeTotal,
+                        size: sizeTier
+                    }
+                });
+            }
+        }
+
+        function updateChart(base, util, aged) {
+            const ctx = document.getElementById('costChart').getContext('2d');
+            
+            if (myChart) {
+                myChart.destroy();
+            }
+
+            myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['基本仓储费', '利用率附加费', '超龄库存附加费'],
+                    datasets: [{
+                        data: [base, util, aged],
+                        backgroundColor: [
+                            '#3b82f6', // blue
+                            '#ef4444', // red
+                            '#b91c1c'  // dark red
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { boxWidth: 12, font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- History Functions ---
+        const HISTORY_KEY = 'fba_calc_history_v1';
+
+        function addToHistory(record) {
+            let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+            // Add to top
+            history.unshift(record);
+            // Limit to 20
+            if (history.length > 20) history = history.slice(0, 20);
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('historyList');
+            const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+            
+            if (history.length === 0) {
+                container.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">暂无历史记录</p>';
+                return;
+            }
+
+            let html = '<ul class="divide-y divide-gray-100">';
+            history.forEach((item, index) => {
+                const total = item.results.total.toFixed(2);
+                const size = item.results.size === 'standard' ? '标准' : '大件';
+                const date = item.date;
+                
+                html += `
+                    <li class="py-2 flex justify-between items-center hover:bg-gray-50 cursor-pointer p-2 rounded transition group">
+                        <div onclick="loadHistory(${index})" class="flex-1">
+                            <p class="text-xs font-bold text-gray-900">$${total}</p>
+                            <p class="text-xs text-gray-500">${date}</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="text-right" onclick="loadHistory(${index})">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                    ${size}
+                                </span>
+                                <p class="text-xs text-indigo-600 mt-1">点击回填</p>
+                            </div>
+                            <button onclick="deleteHistoryItem(event, ${index})" class="text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-red-50 transition" title="删除此记录">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </li>
+                `;
+            });
+            html += '</ul>';
+            container.innerHTML = html;
+        }
+
+        function loadHistory(index) {
+            const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+            const item = history[index];
+            if (!item) return;
+
+            const i = item.inputs;
+            document.getElementById('calcDate').value = i.calcDate;
+            document.getElementById('quantity').value = i.quantity;
+            document.getElementById('length').value = i.length;
+            document.getElementById('width').value = i.width;
+            document.getElementById('height').value = i.height;
+            document.getElementById('weight').value = i.weight;
+            document.getElementById('category').value = i.category;
+            document.getElementById('ageDays').value = i.ageDays;
+            document.getElementById('utilizationWeeks').value = i.utilizationWeeks;
+            document.getElementById('isNewSeller').checked = i.isNewSeller;
+
+            // Re-calculate to refresh UI (WITHOUT saving new history)
+            calculateFees(false);
+            
+            // Temporary highlight to show action
+            const card = document.querySelector('.card'); 
+            // alert('历史记录已回填');
+        }
+
+        function deleteHistoryItem(event, index) {
+            event.stopPropagation(); // Prevent triggering loadHistory
+            let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+            history.splice(index, 1);
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+            renderHistory();
+        }
+
+        function clearHistory() {
+            if(confirm('确定要清空所有历史记录吗？')) {
+                localStorage.removeItem(HISTORY_KEY);
+                renderHistory();
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default date to today
+            document.getElementById('calcDate').valueAsDate = new Date();
+            // Initial Calculation (WITHOUT saving to history)
+            calculateFees(false);
+            // Render History
+            renderHistory();
+        });
+    </script>
+</body>
+</html>
