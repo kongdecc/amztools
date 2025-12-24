@@ -119,6 +119,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
     'fba-label-editor': FileText,
     'pinyin-converter': Languages,
     'keyword-combiner': Shuffle,
+    'storage-fee-calc': Warehouse,
   }
 
   const colorOverride: Record<string, string> = {

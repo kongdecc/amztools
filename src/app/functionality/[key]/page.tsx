@@ -65,6 +65,7 @@ const DetailClient = () => {
     'fba-warehouses': Warehouse,
     'fba-label-editor': FileText,
     'amazon-promotion-stacking': Tags,
+    'storage-fee-calc': Warehouse,
   }
 
   const titleOverride: Record<string, string> = {

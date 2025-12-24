@@ -55,6 +55,7 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
     'natural-traffic-tool': BarChart3,
     'fba-label-editor': FileText,
     'fba-warehouses': Warehouse,
+    'storage-fee-calc': Warehouse,
     'pinyin-converter': Languages,
     'keyword-combiner': Shuffle,
   }

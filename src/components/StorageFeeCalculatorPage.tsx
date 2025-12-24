@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { Calculator, RotateCcw, Info, Package, TrendingUp, History, Trash2, ChevronRight, ChevronDown } from 'lucide-react'
+import { Warehouse, RotateCcw, Info, Package, TrendingUp, History, Trash2, ChevronRight, ChevronDown } from 'lucide-react'
 import { Card } from '@/components/SharedUI'
 
 const StorageFeeCalculatorPage = () => {
@@ -322,7 +322,9 @@ const StorageFeeCalculatorPage = () => {
       <div className="md:flex md:items-center md:justify-between">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
-            <Calculator className="h-6 w-6 text-blue-600" />
+            <div className="p-2 bg-blue-50 rounded-lg">
+              <Warehouse className="h-6 w-6 text-blue-600" />
+            </div>
             <h2 className="text-xl font-bold text-gray-800">亚马逊 FBA 全能仓储费计算器</h2>
           </div>
           <p className="mt-1 text-sm text-gray-500">
@@ -660,12 +662,291 @@ const StorageFeeCalculatorPage = () => {
                                       <td className="px-2 py-2 text-gray-400">-</td>
                                       <td className="px-2 py-2 bg-gray-50 font-bold">$0.56</td>
                                   </tr>
-                                  {/* Add more rows as needed, mirroring the HTML content */}
+                                  <tr>
+                                      <td className="px-2 py-2 text-left">22 ~ 28 周</td>
+                                      <td className="px-2 py-2 border-l text-gray-500">$0.78</td>
+                                      <td className="px-2 py-2 text-red-500">$0.44</td>
+                                      <td className="px-2 py-2 bg-gray-50 font-bold">$1.22</td>
+                                      <td className="px-2 py-2 border-l text-gray-500">$0.56</td>
+                                      <td className="px-2 py-2 text-red-500">$0.23</td>
+                                      <td className="px-2 py-2 bg-gray-50 font-bold">$0.79</td>
+                                  </tr>
+                                  <tr>
+                                      <td className="px-2 py-2 text-left">28 ~ 36 周</td>
+                                      <td className="px-2 py-2 border-l text-gray-500">$0.78</td>
+                                      <td className="px-2 py-2 text-red-500">$0.76</td>
+                                      <td className="px-2 py-2 bg-gray-50 font-bold">$1.54</td>
+                                      <td className="px-2 py-2 border-l text-gray-500">$0.56</td>
+                                      <td className="px-2 py-2 text-red-500">$0.46</td>
+                                      <td className="px-2 py-2 bg-gray-50 font-bold">$1.02</td>
+                                  </tr>
+                                  <tr>
+                                      <td className="px-2 py-2 text-left">36 ~ 44 周</td>
+                                      <td className="px-2 py-2 border-l text-gray-500">$0.78</td>
+                                      <td className="px-2 py-2 text-red-500">$1.16</td>
+                                      <td className="px-2 py-2 bg-gray-50 font-bold">$1.94</td>
+                                      <td className="px-2 py-2 border-l text-gray-500">$0.56</td>
+                                      <td className="px-2 py-2 text-red-500">$0.63</td>
+                                      <td className="px-2 py-2 bg-gray-50 font-bold">$1.19</td>
+                                  </tr>
+                                  <tr>
+                                      <td className="px-2 py-2 text-left">44 ~ 52 周</td>
+                                      <td className="px-2 py-2 border-l text-gray-500">$0.78</td>
+                                      <td className="px-2 py-2 text-red-500">$1.58</td>
+                                      <td className="px-2 py-2 bg-gray-50 font-bold">$2.36</td>
+                                      <td className="px-2 py-2 border-l text-gray-500">$0.56</td>
+                                      <td className="px-2 py-2 text-red-500">$0.76</td>
+                                      <td className="px-2 py-2 bg-gray-50 font-bold">$1.32</td>
+                                  </tr>
+                                  <tr>
+                                      <td className="px-2 py-2 text-left">超过 52 周</td>
+                                      <td className="px-2 py-2 border-l text-gray-500">$0.78</td>
+                                      <td className="px-2 py-2 text-red-500">$1.88</td>
+                                      <td className="px-2 py-2 bg-gray-50 font-bold">$2.66</td>
+                                      <td className="px-2 py-2 border-l text-gray-500">$0.56</td>
+                                      <td className="px-2 py-2 text-red-500">$1.26</td>
+                                      <td className="px-2 py-2 bg-gray-50 font-bold">$1.82</td>
+                                  </tr>
+                                  <tr className="bg-green-50">
+                                      <td className="px-2 py-2 text-left font-medium text-green-800">豁免卖家*</td>
+                                      <td className="px-2 py-2 border-l text-green-700">$0.78</td>
+                                      <td className="px-2 py-2 text-gray-400">不适用</td>
+                                      <td className="px-2 py-2 font-bold text-green-800">$0.78</td>
+                                      <td className="px-2 py-2 border-l text-green-700">$0.56</td>
+                                      <td className="px-2 py-2 text-gray-400">不适用</td>
+                                      <td className="px-2 py-2 font-bold text-green-800">$0.56</td>
+                                  </tr>
+                              </tbody>
+                              <tfoot className="bg-gray-50">
+                                  <tr>
+                                      <td colSpan={7} className="px-2 py-1 text-left text-xs text-gray-500 italic">
+                                          * 豁免卖家：新卖家(&lt;365天)、个人计划或日均体积≤25 ft³
+                                      </td>
+                                  </tr>
+                              </tfoot>
+                          </table>
+                      </div>
+                  </div>
+
+                  {/* Non-Dangerous, Peak */}
+                  <div>
+                      <h4 className="text-sm font-bold text-orange-700 mb-2">2. 非危险品 - 旺季 (10月 - 12月)</h4>
+                      <div className="overflow-x-auto">
+                          <table className="min-w-full divide-y divide-orange-200 text-xs text-center border border-orange-200">
+                              <thead className="bg-orange-50 font-medium text-orange-800">
+                                  <tr>
+                                      <th className="px-2 py-2 text-left" rowSpan={2}>仓储利用率</th>
+                                      <th className="px-2 py-2 border-l border-orange-200" colSpan={3}>标准尺寸</th>
+                                      <th className="px-2 py-2 border-l border-orange-200" colSpan={3}>大件商品</th>
+                                  </tr>
+                                  <tr>
+                                      <th className="px-2 py-1 border-l border-orange-200">基本费</th>
+                                      <th className="px-2 py-1">附加费</th>
+                                      <th className="px-2 py-1 bg-orange-100 font-bold">总计</th>
+                                      <th className="px-2 py-1 border-l border-orange-200">基本费</th>
+                                      <th className="px-2 py-1">附加费</th>
+                                      <th className="px-2 py-1 bg-orange-100 font-bold">总计</th>
+                                  </tr>
+                              </thead>
+                              <tbody className="divide-y divide-orange-200 bg-white">
+                                  <tr>
+                                      <td className="px-2 py-2 text-left">22 周以内 / 豁免</td>
+                                      <td className="px-2 py-2 border-l border-orange-200 text-gray-500">$2.40</td>
+                                      <td className="px-2 py-2 text-gray-400">-</td>
+                                      <td className="px-2 py-2 bg-orange-50 font-bold">$2.40</td>
+                                      <td className="px-2 py-2 border-l border-orange-200 text-gray-500">$1.40</td>
+                                      <td className="px-2 py-2 text-gray-400">-</td>
+                                      <td className="px-2 py-2 bg-orange-50 font-bold">$1.40</td>
+                                  </tr>
+                                  <tr>
+                                      <td className="px-2 py-2 text-left">22 ~ 28 周</td>
+                                      <td className="px-2 py-2 border-l border-orange-200 text-gray-500">$2.40</td>
+                                      <td className="px-2 py-2 text-red-500">$0.44</td>
+                                      <td className="px-2 py-2 bg-orange-50 font-bold">$2.84</td>
+                                      <td className="px-2 py-2 border-l border-orange-200 text-gray-500">$1.40</td>
+                                      <td className="px-2 py-2 text-red-500">$0.23</td>
+                                      <td className="px-2 py-2 bg-orange-50 font-bold">$1.63</td>
+                                  </tr>
+                                  <tr>
+                                      <td className="px-2 py-2 text-left">28 ~ 36 周</td>
+                                      <td className="px-2 py-2 border-l border-orange-200 text-gray-500">$2.40</td>
+                                      <td className="px-2 py-2 text-red-500">$0.76</td>
+                                      <td className="px-2 py-2 bg-orange-50 font-bold">$3.16</td>
+                                      <td className="px-2 py-2 border-l border-orange-200 text-gray-500">$1.40</td>
+                                      <td className="px-2 py-2 text-red-500">$0.46</td>
+                                      <td className="px-2 py-2 bg-orange-50 font-bold">$1.86</td>
+                                  </tr>
+                                  <tr>
+                                      <td className="px-2 py-2 text-left">36 ~ 44 周</td>
+                                      <td className="px-2 py-2 border-l border-orange-200 text-gray-500">$2.40</td>
+                                      <td className="px-2 py-2 text-red-500">$1.16</td>
+                                      <td className="px-2 py-2 bg-orange-50 font-bold">$3.56</td>
+                                      <td className="px-2 py-2 border-l border-orange-200 text-gray-500">$1.40</td>
+                                      <td className="px-2 py-2 text-red-500">$0.63</td>
+                                      <td className="px-2 py-2 bg-orange-50 font-bold">$2.03</td>
+                                  </tr>
+                                  <tr>
+                                      <td className="px-2 py-2 text-left">44 ~ 52 周</td>
+                                      <td className="px-2 py-2 border-l border-orange-200 text-gray-500">$2.40</td>
+                                      <td className="px-2 py-2 text-red-500">$1.58</td>
+                                      <td className="px-2 py-2 bg-orange-50 font-bold">$3.98</td>
+                                      <td className="px-2 py-2 border-l border-orange-200 text-gray-500">$1.40</td>
+                                      <td className="px-2 py-2 text-red-500">$0.76</td>
+                                      <td className="px-2 py-2 bg-orange-50 font-bold">$2.16</td>
+                                  </tr>
+                                  <tr>
+                                      <td className="px-2 py-2 text-left">超过 52 周</td>
+                                      <td className="px-2 py-2 border-l border-orange-200 text-gray-500">$2.40</td>
+                                      <td className="px-2 py-2 text-red-500">$1.88</td>
+                                      <td className="px-2 py-2 bg-orange-50 font-bold">$4.28</td>
+                                      <td className="px-2 py-2 border-l border-orange-200 text-gray-500">$1.40</td>
+                                      <td className="px-2 py-2 text-red-500">$1.26</td>
+                                      <td className="px-2 py-2 bg-orange-50 font-bold">$2.66</td>
+                                  </tr>
+                                  <tr className="bg-green-50">
+                                      <td className="px-2 py-2 text-left font-medium text-green-800">豁免卖家*</td>
+                                      <td className="px-2 py-2 border-l border-green-200 text-green-700">$2.40</td>
+                                      <td className="px-2 py-2 text-gray-400">不适用</td>
+                                      <td className="px-2 py-2 font-bold text-green-800">$2.40</td>
+                                      <td className="px-2 py-2 border-l border-green-200 text-green-700">$1.40</td>
+                                      <td className="px-2 py-2 text-gray-400">不适用</td>
+                                      <td className="px-2 py-2 font-bold text-green-800">$1.40</td>
+                                  </tr>
+                              </tbody>
+                              <tfoot className="bg-orange-50">
+                                  <tr>
+                                      <td colSpan={7} className="px-2 py-1 text-left text-xs text-orange-800 italic">
+                                          * 豁免卖家：新卖家(&lt;365天)、个人计划或日均体积≤25 ft³
+                                      </td>
+                                  </tr>
+                              </tfoot>
+                          </table>
+                      </div>
+                  </div>
+
+                  {/* Dangerous Goods */}
+                  <div>
+                      <h4 className="text-sm font-bold text-gray-700 mb-2">3. 危险品 (无利用率附加费)</h4>
+                      <div className="overflow-x-auto">
+                          <table className="min-w-full divide-y divide-gray-200 text-xs text-left">
+                              <thead className="bg-gray-50">
+                                  <tr>
+                                      <th className="px-3 py-2">月份</th>
+                                      <th className="px-3 py-2">标准尺寸 (每 ft³)</th>
+                                      <th className="px-3 py-2">大件商品 (每 ft³)</th>
+                                  </tr>
+                              </thead>
+                              <tbody className="divide-y divide-gray-200">
+                                  <tr>
+                                      <td className="px-3 py-2">1月 - 9月 (淡季)</td>
+                                      <td className="px-3 py-2">$0.99</td>
+                                      <td className="px-3 py-2">$0.78</td>
+                                  </tr>
+                                  <tr className="bg-orange-50">
+                                      <td className="px-3 py-2 text-orange-800">10月 - 12月 (旺季)</td>
+                                      <td className="px-3 py-2 text-orange-800">$3.63</td>
+                                      <td className="px-3 py-2 text-orange-800">$2.43</td>
+                                  </tr>
                               </tbody>
                           </table>
                       </div>
                   </div>
-                  {/* ... other tables ... */}
+              </div>
+          </details>
+
+          {/* 2. Aged Inventory Surcharge */}
+          <details className="bg-white overflow-hidden shadow rounded-lg group mt-4">
+              <summary className="p-4 font-medium cursor-pointer flex justify-between items-center bg-gray-50 hover:bg-gray-100 transition">
+                  <span className="flex items-center gap-2">
+                    <History className="h-5 w-5 text-gray-600" />
+                    <span>超龄库存附加费率 (每立方英尺)</span>
+                  </span>
+                  <span className="text-xs text-gray-500 group-open:hidden">点击查看详情</span>
+                  <ChevronDown className="h-5 w-5 text-gray-400 hidden group-open:block" />
+              </summary>
+              <div className="p-4 border-t space-y-6">
+                  
+                  {/* Pre 2026 */}
+                  <div>
+                      <h4 className="text-sm font-bold text-gray-700 mb-2">1. 2026年1月16日 之前</h4>
+                      <div className="overflow-x-auto">
+                          <table className="min-w-full divide-y divide-gray-200 text-xs text-center">
+                              <thead className="bg-gray-50 font-medium text-gray-500">
+                                  <tr>
+                                      <th className="px-2 py-2 text-left">库龄 (天)</th>
+                                      <th className="px-2 py-2">181-210</th>
+                                      <th className="px-2 py-2">211-240</th>
+                                      <th className="px-2 py-2">241-270</th>
+                                      <th className="px-2 py-2">271-300</th>
+                                      <th className="px-2 py-2">301-330</th>
+                                      <th className="px-2 py-2">331-365</th>
+                                      <th className="px-2 py-2 bg-red-50 text-red-700 font-bold">366+</th>
+                                  </tr>
+                              </thead>
+                              <tbody className="divide-y divide-gray-200">
+                                  <tr>
+                                      <td className="px-2 py-2 text-left font-medium">费率 ($/ft³)</td>
+                                      <td className="px-2 py-2">$0.50*</td>
+                                      <td className="px-2 py-2">$1.00*</td>
+                                      <td className="px-2 py-2">$1.50*</td>
+                                      <td className="px-2 py-2">$5.45</td>
+                                      <td className="px-2 py-2">$5.70</td>
+                                      <td className="px-2 py-2">$5.90</td>
+                                      <td className="px-2 py-2 bg-red-50 font-bold">$6.90</td>
+                                  </tr>
+                              </tbody>
+                              <tfoot className="bg-gray-50">
+                                  <tr>
+                                      <td colSpan={8} className="px-2 py-1 text-left text-gray-500 italic">
+                                          * 服装、鞋靴类商品豁免 181-270 天的超龄附加费
+                                      </td>
+                                  </tr>
+                              </tfoot>
+                          </table>
+                      </div>
+                  </div>
+
+                  {/* Post 2026 */}
+                  <div>
+                      <h4 className="text-sm font-bold text-red-700 mb-2">2. 2026年1月16日 之后 (新规)</h4>
+                      <div className="overflow-x-auto">
+                          <table className="min-w-full divide-y divide-red-200 text-xs text-center border border-red-200">
+                              <thead className="bg-red-50 font-medium text-red-800">
+                                  <tr>
+                                      <th className="px-2 py-2 text-left">库龄 (天)</th>
+                                      <th className="px-2 py-2">181-210</th>
+                                      <th className="px-2 py-2">211-240</th>
+                                      <th className="px-2 py-2">241-270</th>
+                                      <th className="px-2 py-2">271-300</th>
+                                      <th className="px-2 py-2">301-330</th>
+                                      <th className="px-2 py-2">331-365</th>
+                                      <th className="px-2 py-2 font-bold">366-455</th>
+                                      <th className="px-2 py-2 bg-red-100 font-bold">455+</th>
+                                  </tr>
+                              </thead>
+                              <tbody className="divide-y divide-red-200 bg-white">
+                                  <tr>
+                                      <td className="px-2 py-2 text-left font-medium">费率 ($/ft³)</td>
+                                      <td className="px-2 py-2">$0.50*</td>
+                                      <td className="px-2 py-2">$1.00*</td>
+                                      <td className="px-2 py-2">$1.50*</td>
+                                      <td className="px-2 py-2">$5.45</td>
+                                      <td className="px-2 py-2">$5.70</td>
+                                      <td className="px-2 py-2">$5.90</td>
+                                      <td className="px-2 py-2 font-bold">$6.90</td>
+                                      <td className="px-2 py-2 bg-red-100 font-bold">$10.00</td>
+                                  </tr>
+                              </tbody>
+                              <tfoot className="bg-red-50">
+                                  <tr>
+                                      <td colSpan={9} className="px-2 py-1 text-left text-red-800 italic">
+                                          * 新增 366-455 天分段 ($6.90)，455天以上涨至 $10.00
+                                      </td>
+                                  </tr>
+                              </tfoot>
+                          </table>
+                      </div>
+                  </div>
               </div>
           </details>
 
