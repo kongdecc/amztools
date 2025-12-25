@@ -1,0 +1,1002 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026年电商营销日历</title>
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            
+            /* Tag Colors */
+            --cat-statutory-bg: #fef2f2;
+            --cat-statutory-text: #ef4444;
+            --cat-statutory-border: #fca5a5;
+            
+            --cat-overseas-bg: #eff6ff;
+            --cat-overseas-text: #3b82f6;
+            --cat-overseas-border: #93c5fd;
+            
+            --cat-promotion-bg: #f3e8ff;
+            --cat-promotion-text: #a855f7;
+            --cat-promotion-border: #d8b4fe;
+            
+            --cat-other-bg: #f1f5f9;
+            --cat-other-text: #64748b;
+            --cat-other-border: #cbd5e1;
+
+            --cat-solar-bg: #f0fdf4;
+            --cat-solar-text: #16a34a;
+            --cat-solar-border: #bbf7d0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            flex: 1;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            color: #0f172a;
+            font-size: 2.5rem;
+            letter-spacing: -0.025em;
+        }
+        
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        .controls {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            position: sticky;
+            top: 76px;
+            z-index: 100;
+            border: 1px solid var(--border-color);
+        }
+
+        .search-box {
+            flex: 1 1 300px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px;
+            padding-left: 40px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.2s;
+            box-sizing: border-box;
+            background-color: #f8fafc;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            pointer-events: none;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary-color);
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        select {
+            padding: 10px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 14px;
+            background-color: #fff;
+            cursor: pointer;
+            color: var(--text-primary);
+            transition: all 0.2s;
+            min-width: 120px;
+        }
+        
+        select:hover {
+            border-color: #cbd5e1;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .quick-filters {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .filter-btn {
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .filter-btn:hover {
+            background-color: #f1f5f9;
+            color: var(--text-primary);
+        }
+        
+        .filter-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .month-section {
+            grid-column: 1 / -1;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            background: var(--bg-color);
+            position: sticky;
+            top: 186px; /* Below the main controls */
+            z-index: 90;
+            padding: 10px 0;
+        }
+        
+        .month-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
+            position: relative;
+            padding-left: 15px;
+        }
+        
+        .month-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 24px;
+            background-color: var(--primary-color);
+            border-radius: 3px;
+        }
+
+        .event-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            padding-top: 28px; /* Space for countdown */
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            height: 100%;
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .event-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .event-card:hover .card-actions {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .countdown-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 4px 12px;
+            border-bottom-left-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #fff;
+            background: #cbd5e1;
+            z-index: 1;
+            box-shadow: -1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .countdown-urgent { background: #ef4444; } /* < 7 days */
+        .countdown-soon { background: #f97316; } /* < 30 days */
+        .countdown-upcoming { background: #10b981; } /* < 60 days */
+
+        .card-actions {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            display: flex;
+            gap: 8px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.2s ease;
+            z-index: 2;
+            background: rgba(255,255,255,0.95);
+            padding-left: 10px;
+            border-radius: 8px;
+        }
+        
+        @media (hover: none) {
+            .card-actions {
+                opacity: 1;
+                transform: translateY(0);
+                background: transparent;
+            }
+        }
+
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: #fff;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .action-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Border top colors removed as per request */
+        /* .event-card.statutory { border-top: 4px solid var(--cat-statutory-text); }
+        .event-card.overseas { border-top: 4px solid var(--cat-overseas-text); }
+        .event-card.promotion { border-top: 4px solid var(--cat-promotion-text); }
+        .event-card.other { border-top: 4px solid var(--cat-other-text); } */
+
+        .event-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .event-date {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #0f172a;
+        }
+
+        .event-lunar {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: normal;
+        }
+
+        .event-content {
+            font-size: 1.05rem;
+            color: #334155;
+            line-height: 1.5;
+            flex-grow: 1;
+            font-weight: 500;
+        }
+
+        .event-footer {
+            margin-top: auto;
+        }
+
+        .event-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.025em;
+            text-transform: uppercase;
+        }
+
+        .tag-statutory { background-color: var(--cat-statutory-bg); color: var(--cat-statutory-text); border: 1px solid var(--cat-statutory-border); }
+        .tag-overseas { background-color: var(--cat-overseas-bg); color: var(--cat-overseas-text); border: 1px solid var(--cat-overseas-border); }
+        .tag-promotion { background-color: var(--cat-promotion-bg); color: var(--cat-promotion-text); border: 1px solid var(--cat-promotion-border); }
+        .tag-other { background-color: var(--cat-other-bg); color: var(--cat-other-text); border: 1px solid var(--cat-other-border); }
+        .tag-solar_term { background-color: var(--cat-solar-bg); color: var(--cat-solar-text); border: 1px solid var(--cat-solar-border); }
+
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--text-secondary);
+            background: #fff;
+            border-radius: 16px;
+            border: 2px dashed var(--border-color);
+        }
+        
+        .no-results-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 16px;
+            }
+            
+            .filter-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .quick-filters {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            .calendar-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+            }
+        }
+        
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: var(--primary-color);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 1000;
+            border: none;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-4px);
+        }
+        
+        .weekend-highlight {
+            color: #ef4444; /* Red color for weekends */
+        }
+        
+        /* Dynamic Header Styles */
+        .tb-header { height: 3.5rem; background-color: #5b5bd6; color: white; display: flex; align-items: center; padding: 0 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; font-family: system-ui, -apple-system, sans-serif; justify-content: space-between; }
+        @media (min-width: 768px) { .tb-header { padding: 0 2.5rem; justify-content: flex-start; } }
+        
+        .tb-logo-area { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; font-size: 1.125rem; min-width: 0; flex: 1; }
+        @media (min-width: 768px) { .tb-logo-area { flex: initial; margin-right: 1.5rem; } }
+        
+        .tb-logo-icon { background-color: rgba(255,255,255,0.2); padding: 0.25rem; border-radius: 0.25rem; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        
+        .tb-nav-desktop { display: none; margin-left: auto; align-items: center; gap: 1.5rem; flex-shrink: 0; }
+        @media (min-width: 768px) { .tb-nav-desktop { display: flex; } }
+        
+        .tb-nav-link { font-size: 0.875rem; color: rgba(255,255,255,0.9); text-decoration: none; display: flex; align-items: center; gap: 0.25rem; cursor: pointer; background: none; border: none; padding: 0; }
+        .tb-nav-link:hover { color: white; }
+        
+        .tb-mobile-toggle { display: flex; align-items: center; gap: 0.75rem; margin-left: auto; flex-shrink: 0; }
+        @media (min-width: 768px) { .tb-mobile-toggle { display: none; } }
+        
+        .tb-btn-icon { padding: 0.5rem; border-radius: 0.25rem; background: none; border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .tb-btn-icon:hover { background-color: rgba(255,255,255,0.1); }
+        
+        /* Dropdown */
+        .tb-dropdown { position: relative; height: 100%; display: flex; align-items: center; }
+        .tb-dropdown-menu { 
+            position: absolute; top: 100%; right: 0; margin-top: 0; width: 40rem; 
+            background: white; border-radius: 0.5rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); 
+            opacity: 0; visibility: hidden; transition: all 0.2s; 
+            color: #374151; padding: 1.5rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
+            cursor: default;
+        }
+        .tb-dropdown:hover .tb-dropdown-menu { opacity: 1; visibility: visible; }
+        
+        .tb-cat-section { display: flex; flex-direction: column; gap: 0.5rem; }
+        .tb-cat-title { font-size: 0.875rem; font-weight: 600; color: #111827; display: flex; align-items: center; gap: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid #e5e7eb; margin-bottom: 0.5rem; }
+        .tb-module-link { display: block; font-size: 0.875rem; color: #4b5563; text-decoration: none; padding: 0.25rem 0; transition: color 0.2s; }
+        .tb-module-link:hover { color: #5b5bd6; }
+
+        /* Mobile Menu */
+        .tb-mobile-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: none; }
+        .tb-mobile-overlay.open { display: block; }
+        .tb-mobile-menu { 
+            position: fixed; top: 0; right: 0; bottom: 0; width: 16rem; 
+            background: white; z-index: 2001; transform: translateX(100%); transition: transform 0.3s ease-in-out;
+            padding: 1.5rem; overflow-y: auto; color: #1f2937;
+        }
+        .tb-mobile-menu.open { transform: translateX(0); }
+        .tb-mobile-nav-item { display: block; padding: 0.75rem 0; font-size: 1rem; font-weight: 500; color: #374151; text-decoration: none; border-bottom: 1px solid #f3f4f6; }
+        .tb-mobile-sub-header { margin-top: 1rem; font-size: 0.75rem; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    </style>
+</head>
+<body>
+    <div id="site-header-container"></div>
+    <div class="container">
+        <header>
+            <h1>📅 2026年电商营销日历</h1>
+            <p>全览节日、促销节点与重要活动</p>
+        </header>
+
+        <div class="controls">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="搜索节日、活动或日期...">
+            </div>
+            <div class="filter-group">
+                <div class="quick-filters">
+                    <button class="filter-btn active" data-filter="all">全部</button>
+                    <button class="filter-btn" data-filter="us">🇺🇸 美国</button>
+                    <button class="filter-btn" data-filter="jp">🇯🇵 日本</button>
+                    <button id="todayBtn" class="filter-btn" style="color: var(--primary-color); border-color: var(--primary-color);">📅 本月</button>
+                </div>
+                <select id="monthFilter">
+                    <option value="all">所有月份</option>
+                    <option value="q1">Q1 第一季度</option>
+                    <option value="q2">Q2 第二季度</option>
+                    <option value="q3">Q3 第三季度</option>
+                    <option value="q4">Q4 第四季度</option>
+                    <option disabled>──────────</option>
+                    <option value="1">1月</option>
+                    <option value="2">2月</option>
+                    <option value="3">3月</option>
+                    <option value="4">4月</option>
+                    <option value="5">5月</option>
+                    <option value="6">6月</option>
+                    <option value="7">7月</option>
+                    <option value="8">8月</option>
+                    <option value="9">9月</option>
+                    <option value="10">10月</option>
+                    <option value="11">11月</option>
+                    <option value="12">12月</option>
+                </select>
+                <select id="categoryFilter">
+                    <option value="all">所有分类</option>
+                    <option value="statutory">🔴 法定节日</option>
+                    <option value="overseas">🔵 海外节日</option>
+                    <option value="promotion">🟣 活动及促销</option>
+                    <option value="solar_term">🌱 节气</option>
+                </select>
+                <button id="resetBtn" class="filter-btn" style="color: #64748b; border-color: #cbd5e1;">↺ 重置</button>
+                <div id="resultCount" style="color: var(--text-secondary); font-size: 0.9rem; font-weight: 500;"></div>
+            </div>
+        </div>
+
+        <div id="calendarContainer" class="calendar-grid">
+            <!-- Content will be injected by JS -->
+        </div>
+    </div>
+    
+    <footer style="text-align: center; padding: 1.5rem 0; font-size: 0.75rem; color: #9ca3af; background-color: #f8fafc; border-top: 1px solid #e2e8f0; margin-top: auto;">
+        © 2025 运营魔方 ToolBox. All rights reserved.
+        <span style="margin: 0 0.5rem;">|</span>
+        <a href="/privacy" style="color: inherit; text-decoration: none;">隐私说明</a>
+    </footer>
+
+    <button class="back-to-top" id="backToTop" title="回到顶部">↑</button>
+
+    <script>
+        // Header Logic
+        (async function() {
+            const headerContainer = document.getElementById('site-header-container');
+            
+            // Icons
+            const Icons = {
+                logo: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>',
+                chevronDown: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>',
+                menu: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>',
+                close: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>'
+            };
+
+            // Initial Render (Skeleton/Static)
+            headerContainer.innerHTML = `
+                <header class="tb-header">
+                    <div class="tb-logo-area">
+                        <div class="tb-logo-icon">${Icons.logo}</div>
+                        <span>运营魔方 ToolBox</span>
+                    </div>
+                    
+                    <nav class="tb-nav-desktop" id="desktopNav">
+                        <a href="/" class="tb-nav-link">首页</a>
+                        <!-- Dynamic items will be injected here -->
+                    </nav>
+
+                    <div class="tb-mobile-toggle">
+                        <button class="tb-btn-icon" id="mobileMenuBtn">${Icons.menu}</button>
+                    </div>
+                </header>
+                
+                <div class="tb-mobile-overlay" id="mobileOverlay"></div>
+                <div class="tb-mobile-menu" id="mobileMenu">
+                    <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+                        <button class="tb-btn-icon" id="mobileMenuClose" style="color: #374151;">${Icons.close}</button>
+                    </div>
+                    <nav id="mobileNavContent">
+                        <a href="/" class="tb-mobile-nav-item">首页</a>
+                    </nav>
+                </div>
+            `;
+
+            // Mobile Menu Logic
+            const mobileBtn = document.getElementById('mobileMenuBtn');
+            const mobileClose = document.getElementById('mobileMenuClose');
+            const mobileOverlay = document.getElementById('mobileOverlay');
+            const mobileMenu = document.getElementById('mobileMenu');
+
+            function toggleMobileMenu(open) {
+                if (open) {
+                    mobileOverlay.classList.add('open');
+                    mobileMenu.classList.add('open');
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    mobileOverlay.classList.remove('open');
+                    mobileMenu.classList.remove('open');
+                    document.body.style.overflow = '';
+                }
+            }
+
+            mobileBtn.addEventListener('click', () => toggleMobileMenu(true));
+            mobileClose.addEventListener('click', () => toggleMobileMenu(false));
+            mobileOverlay.addEventListener('click', () => toggleMobileMenu(false));
+
+            // Fetch Data
+            try {
+                const [navRes, catRes, modRes] = await Promise.all([
+                    fetch('/api/navigation'),
+                    fetch('/api/categories'),
+                    fetch('/api/modules')
+                ]);
+                
+                const navItems = await navRes.json();
+                const categories = await catRes.json();
+                const modules = await modRes.json();
+
+                // Build Functionality Dropdown Content
+                const activeModules = modules.filter(m => m.status !== '下架');
+                let dropdownHtml = '';
+                
+                categories.forEach(cat => {
+                    const catMods = activeModules.filter(m => m.category === cat.key || (!m.category && cat.key === 'image-text')); // mimicking HomeClient logic
+                    if (catMods.length > 0) {
+                        dropdownHtml += `
+                            <div class="tb-cat-section">
+                                <div class="tb-cat-title">${cat.label}</div>
+                                ${catMods.map(m => `<a href="${m.url || '#'}" class="tb-module-link">${m.name}</a>`).join('')}
+                            </div>
+                        `;
+                    }
+                });
+
+                // Update Desktop Nav
+                const desktopNav = document.getElementById('desktopNav');
+                let desktopHtml = '<a href="/" class="tb-nav-link">首页</a>';
+                
+                // Add Functionality Dropdown
+                desktopHtml += `
+                    <div class="tb-dropdown">
+                        <button class="tb-nav-link">功能分类 ${Icons.chevronDown}</button>
+                        <div class="tb-dropdown-menu">
+                            ${dropdownHtml}
+                        </div>
+                    </div>
+                `;
+                
+                // Add other dynamic nav items
+                if (Array.isArray(navItems)) {
+                    navItems.forEach(item => {
+                        if (item.id === 'functionality' || item.label.includes('功能')) return; // Skip if handled
+                        if (!item.active) return;
+                        desktopHtml += `<a href="${item.href}" class="tb-nav-link" ${item.isExternal ? 'target="_blank"' : ''}>${item.label}</a>`;
+                    });
+                }
+                desktopNav.innerHTML = desktopHtml;
+
+                // Update Mobile Nav
+                const mobileNavContent = document.getElementById('mobileNavContent');
+                let mobileHtml = '<a href="/" class="tb-mobile-nav-item">首页</a>';
+                
+                // Mobile Categories
+                categories.forEach(cat => {
+                    const catMods = activeModules.filter(m => m.category === cat.key || (!m.category && cat.key === 'image-text'));
+                    if (catMods.length > 0) {
+                        mobileHtml += `<div class="tb-mobile-sub-header">${cat.label}</div>`;
+                        catMods.forEach(m => {
+                            mobileHtml += `<a href="${m.url || '#'}" class="tb-mobile-nav-item" style="padding-left: 1rem; font-size: 0.9rem;">${m.name}</a>`;
+                        });
+                    }
+                });
+                
+                // Other items
+                if (Array.isArray(navItems)) {
+                    navItems.forEach(item => {
+                        if (item.id === 'functionality' || item.label.includes('功能')) return;
+                        if (!item.active) return;
+                        mobileHtml += `<a href="${item.href}" class="tb-mobile-nav-item" ${item.isExternal ? 'target="_blank"' : ''}>${item.label}</a>`;
+                    });
+                }
+                mobileNavContent.innerHTML = mobileHtml;
+
+            } catch (e) {
+                console.error('Failed to load nav data', e);
+            }
+        })();
+    </script>
+
+    <script>
+        const events = [{"month": 1, "date_str": "1月1日 周四", "lunar": "元旦", "content": "【法定】元旦假期", "category": "🔴 法定节日", "category_code": "statutory"}, {"month": 1, "date_str": "1月1日 周四", "lunar": "元旦", "content": "独立日 (苏丹)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 1, "date_str": "1月1日 周四", "lunar": "元旦", "content": "全国科幻日 (美)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 1, "date_str": "1月4日 周日", "lunar": "十六", "content": "世界盲文日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 1, "date_str": "1月4日 周日", "lunar": "十六", "content": "独立日 (缅)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 1, "date_str": "1月5日 周一", "lunar": "小寒", "content": "小寒", "category": "🌱 节气", "category_code": "solar_term"}, {"month": 1, "date_str": "1月6日 周二", "lunar": "十八", "content": "主显节 (基督教)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 1, "date_str": "1月6日 周二", "lunar": "十八", "content": "平安夜 (东正教)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 1, "date_str": "1月10日 周六", "lunar": "廿二", "content": "儿童节 (泰)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 1, "date_str": "1月12日 周一", "lunar": "廿四", "content": "成人之日 (日)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 1, "date_str": "1月13日 周二", "lunar": "廿五", "content": "贴纸日 (美)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 1, "date_str": "1月15日 周四", "lunar": "廿七", "content": "帽子日 (美)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 1, "date_str": "1月16日 周五", "lunar": "廿八", "content": "教师节 (泰)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 1, "date_str": "1月19日 周一", "lunar": "腊月", "content": "世界经济论坛", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 1, "date_str": "1月19日 周一", "lunar": "腊月", "content": "马丁·路德·金纪念日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 1, "date_str": "1月20日 周二", "lunar": "大寒", "content": "大寒", "category": "🌱 节气", "category_code": "solar_term"}, {"month": 1, "date_str": "1月21日 周三", "lunar": "初三", "content": "国际拥抱日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 1, "date_str": "1月23日 周五", "lunar": "初五", "content": "全国馅饼日 (美)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 1, "date_str": "1月23日 周五", "lunar": "初五", "content": "太妃糖布丁日 (英)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 1, "date_str": "1月24日 周六", "lunar": "初六", "content": "国际教育日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 1, "date_str": "1月26日 周一", "lunar": "腊八节", "content": "全国配偶节 (美)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 1, "date_str": "1月26日 周一", "lunar": "腊八节", "content": "共和国日 (印度)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 1, "date_str": "1月26日 周一", "lunar": "腊八节", "content": "国庆日 (澳)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 1, "date_str": "1月28日 周三", "lunar": "初十", "content": "国际数据保护日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 2, "date_str": "2月1日 周日", "lunar": "十四", "content": "格莱美奖 (美)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 2, "date_str": "2月2日 周一", "lunar": "十五", "content": "世界湿地日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 2, "date_str": "2月2日 周一", "lunar": "十五", "content": "土拔鼠日 (美/加)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 2, "date_str": "2月4日 周三", "lunar": "立春", "content": "国庆日 (斯里兰卡)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 2, "date_str": "2月4日 周三", "lunar": "立春", "content": "立春", "category": "🌱 节气", "category_code": "solar_term"}, {"month": 2, "date_str": "2月5日 周四", "lunar": "十八", "content": "RBS六国锦标赛", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 2, "date_str": "2月6日 周五", "lunar": "十九", "content": "全国红衣日 (美)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 2, "date_str": "2月6日 周五", "lunar": "十九", "content": "国庆日 (新西兰)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 2, "date_str": "2月6日 周五", "lunar": "十九", "content": "科尔蒂纳冬奥会 (米兰)", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 2, "date_str": "2月8日 周日", "lunar": "廿一", "content": "母亲节 (挪)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 2, "date_str": "2月8日 周日", "lunar": "廿一", "content": "超级碗 (美)", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 2, "date_str": "2月9日 周一", "lunar": "廿二", "content": "全国披萨日 (美)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 2, "date_str": "2月10日 周二", "lunar": "廿三", "content": "国际气象节", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 2, "date_str": "2月11日 周三", "lunar": "廿四", "content": "国庆日 (伊朗)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 2, "date_str": "2月12日 周四", "lunar": "廿五", "content": "柏林电影节开幕", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 2, "date_str": "2月14日 周六", "lunar": "廿七", "content": "情人节", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 2, "date_str": "2月15日 周日", "lunar": "廿八", "content": "【法定】春节假期", "category": "🔴 法定节日", "category_code": "statutory"}, {"month": 2, "date_str": "2月15日 周日", "lunar": "廿八", "content": "国庆日 (塞尔维亚)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 2, "date_str": "2月16日 周一", "lunar": "除夕", "content": "【法定】春节假期", "category": "🔴 法定节日", "category_code": "statutory"}, {"month": 2, "date_str": "2月16日 周一", "lunar": "除夕", "content": "华盛顿诞辰日 (美)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 2, "date_str": "2月17日 周二", "lunar": "春节", "content": "【法定】春节假期", "category": "🔴 法定节日", "category_code": "statutory"}, {"month": 2, "date_str": "2月18日 周三", "lunar": "雨水", "content": "【法定】春节假期", "category": "🔴 法定节日", "category_code": "statutory"}, {"month": 2, "date_str": "2月18日 周三", "lunar": "雨水", "content": "雨水", "category": "🌱 节气", "category_code": "solar_term"}, {"month": 2, "date_str": "2月19日 周四", "lunar": "初三", "content": "【法定】春节假期", "category": "🔴 法定节日", "category_code": "statutory"}, {"month": 2, "date_str": "2月20日 周五", "lunar": "初四", "content": "【法定】春节假期", "category": "🔴 法定节日", "category_code": "statutory"}, {"month": 2, "date_str": "2月20日 周五", "lunar": "初四", "content": "世界社会公正日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 2, "date_str": "2月21日 周六", "lunar": "初五", "content": "【法定】春节假期", "category": "🔴 法定节日", "category_code": "statutory"}, {"month": 2, "date_str": "2月21日 周六", "lunar": "初五", "content": "国际母语日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 2, "date_str": "2月22日 周日", "lunar": "初六", "content": "【法定】春节假期", "category": "🔴 法定节日", "category_code": "statutory"}, {"month": 2, "date_str": "2月23日 周一", "lunar": "初七", "content": "天皇诞生日 (日)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 2, "date_str": "2月23日 周一", "lunar": "初七", "content": "祖国保卫者日 (俄/白/乌)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 2, "date_str": "2月24日 周二", "lunar": "初八", "content": "世界胡萝卜日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 2, "date_str": "2月24日 周二", "lunar": "初八", "content": "独立日 (爱沙尼亚)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 2, "date_str": "2月26日 周四", "lunar": "初十", "content": "解放日 (科威特)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 2, "date_str": "2月27日 周五", "lunar": "十一", "content": "独立日 (多米尼加)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月2日 周一", "lunar": "十四", "content": "全美阅读日 (美)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月3日 周二", "lunar": "元宵节", "content": "33大促", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 3, "date_str": "3月3日 周二", "lunar": "元宵节", "content": "国庆节 (保加利亚)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月3日 周二", "lunar": "元宵节", "content": "女儿节 (日)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月3日 周二", "lunar": "元宵节", "content": "母亲节 (格鲁吉亚)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月5日 周四", "lunar": "惊蛰", "content": "惊蛰", "category": "🌱 节气", "category_code": "solar_term"}, {"month": 3, "date_str": "3月6日 周五", "lunar": "十八", "content": "独立日 (加纳)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月8日 周日", "lunar": "妇女节", "content": "国际妇女节", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月9日 周一", "lunar": "廿一", "content": "英联邦日 (英)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月12日 周四", "lunar": "植树节", "content": "国庆日 (毛里求斯)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月12日 周四", "lunar": "植树节", "content": "青年节 (赞比亚)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月14日 周六", "lunar": "廿六", "content": "酒红节 (印度)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月15日 周日", "lunar": "廿七", "content": "国际消费者权益日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月15日 周日", "lunar": "廿七", "content": "奥斯卡颁奖典礼", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 3, "date_str": "3月17日 周二", "lunar": "廿九", "content": "国际航海日/国庆日 (爱尔兰)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月17日 周二", "lunar": "廿九", "content": "圣帕特里克节 (爱尔兰)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月18日 周三", "lunar": "三十", "content": "NCAA篮球锦标赛", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 3, "date_str": "3月19日 周四", "lunar": "二月", "content": "圣约瑟夫节 (天主教)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月19日 周四", "lunar": "二月", "content": "父亲节 (圣约瑟日)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月20日 周五", "lunar": "春分/龙抬头", "content": "国际幸福日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月20日 周五", "lunar": "春分/龙抬头", "content": "开斋节 (伊斯兰教)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月20日 周五", "lunar": "春分/龙抬头", "content": "独立日 (突尼斯)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月20日 周五", "lunar": "春分", "content": "春分", "category": "🌱 节气", "category_code": "solar_term"}, {"month": 3, "date_str": "3月21日 周六", "lunar": "初三", "content": "世界诗歌日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月21日 周六", "lunar": "初三", "content": "国际诺鲁孜节", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月21日 周六", "lunar": "初三", "content": "清除种族歧视国际日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月22日 周日", "lunar": "初四", "content": "世界水资源日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月22日 周日", "lunar": "初四", "content": "母亲节 (英)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月22日 周日", "lunar": "初四", "content": "阿盟成立日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月23日 周一", "lunar": "初五", "content": "世界气象日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月23日 周一", "lunar": "初五", "content": "巴基斯坦日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月25日 周三", "lunar": "初七", "content": "华夫饼日 (瑞/丹/挪)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月25日 周三", "lunar": "初七", "content": "国庆日 (希腊)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月26日 周四", "lunar": "初八", "content": "独立日 (孟)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 3, "date_str": "3月27日 周五", "lunar": "初九", "content": "Lazada生日大促", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 3, "date_str": "3月28日 周六", "lunar": "初十", "content": "速卖通328大促", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 3, "date_str": "3月29日 周日", "lunar": "十一", "content": "越战老兵日 (美)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月1日 周三", "lunar": "十四", "content": "愚人节", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月2日 周四", "lunar": "十五", "content": "国际儿童图书日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月2日 周四", "lunar": "十五", "content": "濯足节 (基督教)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月3日 周五", "lunar": "十六", "content": "耶稣受难日 (基督教)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月4日 周六", "lunar": "十七", "content": "【法定】清明假期", "category": "🔴 法定节日", "category_code": "statutory"}, {"month": 4, "date_str": "4月4日 周六", "lunar": "十七", "content": "44大促", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 4, "date_str": "4月4日 周六", "lunar": "十七", "content": "国庆日 (塞内加尔)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月5日 周日", "lunar": "清明节", "content": "【法定】清明假期", "category": "🔴 法定节日", "category_code": "statutory"}, {"month": 4, "date_str": "4月5日 周日", "lunar": "清明节", "content": "复活节 (基督教)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月5日 周日", "lunar": "清明节", "content": "植树节 (韩)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月5日 周日", "lunar": "清明", "content": "清明", "category": "🌱 节气", "category_code": "solar_term"}, {"month": 4, "date_str": "4月6日 周一", "lunar": "十九", "content": "查库里王朝纪念日 (泰)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月6日 周一", "lunar": "十九", "content": "格纹日 (加/美)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月7日 周二", "lunar": "二十", "content": "世界卫生日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月9日 周四", "lunar": "廿二", "content": "巴丹日 (菲)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月10日 周五", "lunar": "廿三", "content": "兄弟姐妹日 (美)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月10日 周五", "lunar": "廿三", "content": "环境保护日 (非)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月10日 周五", "lunar": "廿三", "content": "科切拉音乐节", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 4, "date_str": "4月11日 周六", "lunar": "廿四", "content": "全国宠物日 (美)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月11日 周六", "lunar": "廿四", "content": "环境保护日 (非)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月12日 周日", "lunar": "廿五", "content": "国际载人航天日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月12日 周日", "lunar": "廿五", "content": "巴黎马拉松 (法)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月13日 周一", "lunar": "廿六", "content": "宋干节/泼水节 (东南亚)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月14日 周二", "lunar": "廿七", "content": "孟加拉新年", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月15日 周三", "lunar": "廿八", "content": "万佛节 (泰)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月18日 周六", "lunar": "初二", "content": "国际古迹遗址日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月18日 周六", "lunar": "初二", "content": "独立日 (津巴布韦)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月19日 周日", "lunar": "初三", "content": "独立宣言日 (委内瑞拉)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月20日 周一", "lunar": "谷雨", "content": "波士顿马拉松 (美)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月20日 周一", "lunar": "谷雨", "content": "谷雨", "category": "🌱 节气", "category_code": "solar_term"}, {"month": 4, "date_str": "4月22日 周三", "lunar": "初六", "content": "世界地球日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月23日 周四", "lunar": "初七", "content": "世界读书日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月23日 周四", "lunar": "初七", "content": "初夏节 (冰岛)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月25日 周六", "lunar": "初九", "content": "澳新军团日 (澳/新)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月25日 周六", "lunar": "初九", "content": "自由日 (葡)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月25日 周六", "lunar": "初九", "content": "解放日 (意)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月26日 周日", "lunar": "初十", "content": "世界知识产权日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月26日 周日", "lunar": "初十", "content": "联合日 (坦桑尼亚)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月26日 周日", "lunar": "初十", "content": "雄王节 (越)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月27日 周一", "lunar": "十一", "content": "国王节 (荷)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月27日 周一", "lunar": "十一", "content": "自由日 (南非)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月29日 周三", "lunar": "十三", "content": "国际舞蹈日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月30日 周四", "lunar": "十四", "content": "国际不打小孩日 (美)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 4, "date_str": "4月30日 周四", "lunar": "十四", "content": "国际爵士乐日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月1日 周五", "lunar": "劳动节", "content": "【法定】劳动节假期", "category": "🔴 法定节日", "category_code": "statutory"}, {"month": 5, "date_str": "5月3日 周日", "lunar": "十七", "content": "【法定】劳动节假期", "category": "🔴 法定节日", "category_code": "statutory"}, {"month": 5, "date_str": "5月3日 周日", "lunar": "十七", "content": "世界新闻自由日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月3日 周日", "lunar": "十七", "content": "五三宪法日 (波兰)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月4日 周一", "lunar": "青年节", "content": "恢复独立日 (拉脱维亚)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月4日 周一", "lunar": "青年节", "content": "绿之日 (日)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月5日 周二", "lunar": "立夏", "content": "55大促", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 5, "date_str": "5月5日 周二", "lunar": "立夏", "content": "儿童之日 (日)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月5日 周二", "lunar": "立夏", "content": "复活节 (东正教)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月5日 周二", "lunar": "立夏", "content": "立夏", "category": "🌱 节气", "category_code": "solar_term"}, {"month": 5, "date_str": "5月8日 周五", "lunar": "廿二", "content": "世界红十字和红新月日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月8日 周五", "lunar": "廿二", "content": "双亲节 (韩)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月9日 周六", "lunar": "廿三", "content": "欧洲日 (欧)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月9日 周六", "lunar": "廿三", "content": "胜利日 (塔吉克斯坦)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月10日 周日", "lunar": "廿四", "content": "母亲节", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月12日 周二", "lunar": "廿六", "content": "国际护士节", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月12日 周二", "lunar": "廿六", "content": "戛纳电影节首日", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 5, "date_str": "5月13日 周三", "lunar": "廿七", "content": "世界鸡尾酒日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月14日 周四", "lunar": "廿八", "content": "独立日 (以色列)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月15日 周五", "lunar": "廿九", "content": "家庭日 (南非)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月15日 周五", "lunar": "廿九", "content": "教师节 (墨)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月17日 周日", "lunar": "四月", "content": "宪法日 (挪威)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月18日 周一", "lunar": "初二", "content": "国际博物馆日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月18日 周一", "lunar": "初二", "content": "维多利亚日 (加)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月20日 周三", "lunar": "初四", "content": "世界蜜蜂日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月20日 周三", "lunar": "初四", "content": "国庆日 (喀麦隆)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月21日 周四", "lunar": "小满", "content": "小满", "category": "🌱 节气", "category_code": "solar_term"}, {"month": 5, "date_str": "5月22日 周五", "lunar": "初六", "content": "数麦束节 (犹太教)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月22日 周五", "lunar": "初六", "content": "生物多样性国际日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月25日 周一", "lunar": "初九", "content": "阵亡将士纪念日 (美)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月25日 周一", "lunar": "初九", "content": "五月革命纪念日 (阿根廷)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月25日 周一", "lunar": "初九", "content": "独立日 (约旦)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月25日 周一", "lunar": "初九", "content": "非洲日 (非)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月26日 周二", "lunar": "初十", "content": "独立日 (格鲁吉亚)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月28日 周四", "lunar": "十二", "content": "国庆日 (阿塞拜疆)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月28日 周四", "lunar": "十二", "content": "国际汉堡包日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 5, "date_str": "5月31日 周日", "lunar": "十五", "content": "世界无烟日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月1日 周一", "lunar": "十六", "content": "国际儿童节", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月2日 周二", "lunar": "十七", "content": "共和国日 (意)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月4日 周四", "lunar": "十九", "content": "全国奶酪日 (美)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月4日 周四", "lunar": "十九", "content": "圣体圣血节 (基督教)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月5日 周五", "lunar": "芒种", "content": "世界环境日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月5日 周五", "lunar": "芒种", "content": "全国甜甜圈日 (美)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月5日 周五", "lunar": "芒种", "content": "宪法日 (丹)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月5日 周五", "lunar": "芒种", "content": "芒种", "category": "🌱 节气", "category_code": "solar_term"}, {"month": 6, "date_str": "6月6日 周六", "lunar": "廿一", "content": "66大促", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 6, "date_str": "6月6日 周六", "lunar": "廿一", "content": "国庆日 (瑞典)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月9日 周二", "lunar": "廿四", "content": "国家英雄日 (乌干达)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月10日 周三", "lunar": "廿五", "content": "国庆日 (葡)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月11日 周四", "lunar": "廿六", "content": "世界杯开幕", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 6, "date_str": "6月12日 周五", "lunar": "廿七", "content": "国庆日 (俄罗斯)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月12日 周五", "lunar": "廿七", "content": "独立日 (菲律宾)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月14日 周日", "lunar": "廿九", "content": "世界献血日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月16日 周二", "lunar": "初二", "content": "新年 (伊斯兰教)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月16日 周二", "lunar": "初二", "content": "青年节 (南非)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月17日 周三", "lunar": "初三", "content": "国庆日 (冰岛)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月17日 周三", "lunar": "初三", "content": "父亲节 (萨尔瓦多)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月17日 周三", "lunar": "初三", "content": "防治沙漠化和干旱日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月18日 周四", "lunar": "初四", "content": "618大促", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 6, "date_str": "6月18日 周四", "lunar": "初四", "content": "国际寿司节", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月19日 周五", "lunar": "端午节", "content": "【法定】端午节假期", "category": "🔴 法定节日", "category_code": "statutory"}, {"month": 6, "date_str": "6月19日 周五", "lunar": "端午节", "content": "六月节 (美)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月19日 周五", "lunar": "端午节", "content": "北欧仲夏节", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月20日 周六", "lunar": "初六", "content": "世界难民日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月21日 周日", "lunar": "初七", "content": "【法定】端午节假期", "category": "🔴 法定节日", "category_code": "statutory"}, {"month": 6, "date_str": "6月21日 周日", "lunar": "初七", "content": "国际瑜伽日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月21日 周日", "lunar": "初七", "content": "父亲节", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月21日 周日", "lunar": "夏至", "content": "夏至", "category": "🌱 节气", "category_code": "solar_term"}, {"month": 6, "date_str": "6月23日 周二", "lunar": "初九", "content": "国庆日 (卢森堡)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月23日 周二", "lunar": "初九", "content": "国际奥林匹克日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月23日 周二", "lunar": "初九", "content": "联合国公务员日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月25日 周四", "lunar": "十一", "content": "国庆日 (斯洛文尼亚)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月25日 周四", "lunar": "十一", "content": "独立日 (莫桑比克)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月26日 周五", "lunar": "十二", "content": "国际禁毒日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月26日 周五", "lunar": "十二", "content": "独立日 (马达加斯加)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 6, "date_str": "6月28日 周日", "lunar": "十四", "content": "黑人娱乐电视奖 (美)", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 6, "date_str": "6月29日 周一", "lunar": "十五", "content": "温布尔登网球锦标赛", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 6, "date_str": "6月30日 周二", "lunar": "十六", "content": "独立日 (刚果共和国)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 7, "date_str": "7月1日 周三", "lunar": "建党节", "content": "国庆日 (加拿大)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 7, "date_str": "7月4日 周六", "lunar": "二十", "content": "环法自行车赛开赛", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 7, "date_str": "7月4日 周六", "lunar": "二十", "content": "独立日 (美)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 7, "date_str": "7月6日 周一", "lunar": "廿二", "content": "全国炸鸡日 (美)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 7, "date_str": "7月7日 周二", "lunar": "小暑", "content": "77大促", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 7, "date_str": "7月7日 周二", "lunar": "小暑", "content": "世界巧克力日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 7, "date_str": "7月7日 周二", "lunar": "小暑", "content": "萨巴节 (坦桑尼亚)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 7, "date_str": "7月7日 周二", "lunar": "小暑", "content": "小暑", "category": "🌱 节气", "category_code": "solar_term"}, {"month": 7, "date_str": "7月8日 周三", "lunar": "廿四", "content": "世界过敏性疾病日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 7, "date_str": "7月11日 周六", "lunar": "廿七", "content": "世界人口日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 7, "date_str": "7月13日 周一", "lunar": "廿九", "content": "国庆日 (黑山)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 7, "date_str": "7月13日 周一", "lunar": "廿九", "content": "国际薯条日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 7, "date_str": "7月14日 周二", "lunar": "六月", "content": "国庆日 (法)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 7, "date_str": "7月15日 周三", "lunar": "初二", "content": "世界青年技能日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 7, "date_str": "7月17日 周五", "lunar": "初四", "content": "世界Emoji日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 7, "date_str": "7月17日 周五", "lunar": "初四", "content": "制宪节 (韩)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 7, "date_str": "7月20日 周一", "lunar": "初七", "content": "世界国际象棋日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 7, "date_str": "7月20日 周一", "lunar": "初七", "content": "国际月球日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 7, "date_str": "7月21日 周二", "lunar": "初八", "content": "国庆日 (比利时)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 7, "date_str": "7月23日 周四", "lunar": "大暑", "content": "国庆日 (埃及)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 7, "date_str": "7月23日 周四", "lunar": "大暑", "content": "大暑", "category": "🌱 节气", "category_code": "solar_term"}, {"month": 7, "date_str": "7月26日 周日", "lunar": "十三", "content": "世界红树林日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 7, "date_str": "7月28日 周二", "lunar": "十五", "content": "独立日 (秘鲁)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 7, "date_str": "7月30日 周四", "lunar": "十七", "content": "国庆日 (摩洛哥)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 7, "date_str": "7月30日 周四", "lunar": "十七", "content": "国际友谊日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 7, "date_str": "7月30日 周四", "lunar": "十七", "content": "非洲妇女日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月1日 周六", "lunar": "建军节", "content": "双亲节 (刚果民主共和国)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月1日 周六", "lunar": "建军节", "content": "国庆节 (瑞士)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月1日 周六", "lunar": "建军节", "content": "女子环法自行车赛", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 8, "date_str": "8月3日 周一", "lunar": "廿一", "content": "独立日 (尼日尔)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月5日 周三", "lunar": "廿三", "content": "胜利日 (克罗地亚)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月6日 周四", "lunar": "廿四", "content": "独立日 (玻利维亚)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月7日 周五", "lunar": "立秋", "content": "立秋", "category": "🌱 节气", "category_code": "solar_term"}, {"month": 8, "date_str": "8月8日 周六", "lunar": "廿六", "content": "88大促", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 8, "date_str": "8月8日 周六", "lunar": "廿六", "content": "农民日 (坦桑尼亚)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月8日 周六", "lunar": "廿六", "content": "国际猫咪日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月9日 周日", "lunar": "廿七", "content": "世界土著人民国际日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月9日 周日", "lunar": "廿七", "content": "国庆节 (新加坡)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月10日 周一", "lunar": "廿八", "content": "国际懒惰日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月10日 周一", "lunar": "廿八", "content": "国际傲慢日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月11日 周二", "lunar": "廿九", "content": "山之日 (日)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月12日 周三", "lunar": "三十", "content": "国际青年日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月12日 周三", "lunar": "三十", "content": "母亲节 (泰国)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月13日 周四", "lunar": "七月", "content": "国际左撇子日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月14日 周五", "lunar": "初二", "content": "独立日 (巴基斯坦)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月15日 周六", "lunar": "初三", "content": "光复节 (韩)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月15日 周六", "lunar": "初三", "content": "独立日 (印度)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月17日 周一", "lunar": "初五", "content": "国庆日 (加蓬)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月17日 周一", "lunar": "初五", "content": "独立日 (印尼)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月19日 周三", "lunar": "七夕节", "content": "世界摄影日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月19日 周三", "lunar": "七夕节", "content": "国家航空日 (美)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月20日 周四", "lunar": "初八", "content": "国庆日 (匈牙利)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月21日 周五", "lunar": "初九", "content": "青年节 (摩洛哥)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月23日 周日", "lunar": "处暑", "content": "处暑", "category": "🌱 节气", "category_code": "solar_term"}, {"month": 8, "date_str": "8月24日 周一", "lunar": "十二", "content": "独立日 (乌克兰)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月25日 周二", "lunar": "十三", "content": "国庆日 (乌拉圭)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月26日 周三", "lunar": "十四", "content": "国际狗狗日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月26日 周三", "lunar": "十四", "content": "妇女平等日 (美)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月26日 周三", "lunar": "十四", "content": "科隆国际游戏展首日", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 8, "date_str": "8月28日 周五", "lunar": "十六", "content": "速卖通828大促", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 8, "date_str": "8月29日 周六", "lunar": "十七", "content": "民族起义日 (斯洛伐克)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月30日 周日", "lunar": "十八", "content": "宪法日 (哈萨克斯坦)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月31日 周一", "lunar": "十九", "content": "国家英雄日 (菲律宾)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月31日 周一", "lunar": "十九", "content": "国庆节 (马来西亚)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 8, "date_str": "8月31日 周一", "lunar": "十九", "content": "独立日 (吉尔吉斯斯坦)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月1日 周二", "lunar": "二十", "content": "宪法日 (斯洛伐克)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月1日 周二", "lunar": "二十", "content": "独立日 (乌兹别克斯坦)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月2日 周三", "lunar": "廿一", "content": "国庆节 (越南)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月4日 周五", "lunar": "廿三", "content": "IFA柏林消费电子展览会", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 9, "date_str": "9月6日 周日", "lunar": "廿五", "content": "IFA柏林消费电子展览会", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 9, "date_str": "9月6日 周日", "lunar": "廿五", "content": "统一日 (保加利亚)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月7日 周一", "lunar": "白露", "content": "劳动节 (美/加)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月7日 周一", "lunar": "白露", "content": "独立日 (巴西)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月7日 周一", "lunar": "白露", "content": "白露", "category": "🌱 节气", "category_code": "solar_term"}, {"month": 9, "date_str": "9月8日 周二", "lunar": "廿七", "content": "国际扫盲日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月8日 周二", "lunar": "廿七", "content": "国际新闻工作者日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月8日 周二", "lunar": "廿七", "content": "独立日 (北马其顿)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月9日 周三", "lunar": "廿八", "content": "99大促", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 9, "date_str": "9月9日 周三", "lunar": "廿八", "content": "独立日 (塔吉克斯坦)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月11日 周五", "lunar": "八月", "content": "爱国日 (美)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月12日 周六", "lunar": "初二", "content": "世界急救日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月14日 周一", "lunar": "初四", "content": "敬老日 (日)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月15日 周二", "lunar": "初五", "content": "国际民主日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月15日 周二", "lunar": "初五", "content": "独立日 (危地马拉)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月16日 周三", "lunar": "初六", "content": "独立日 (墨西哥)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月16日 周三", "lunar": "初六", "content": "马来西亚日 (马)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月18日 周五", "lunar": "初八", "content": "独立日 (智利)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月20日 周日", "lunar": "初十", "content": "世界清洁日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月20日 周日", "lunar": "初十", "content": "国际大学生体育运动日", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 9, "date_str": "9月21日 周一", "lunar": "十一", "content": "世界和平日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月21日 周一", "lunar": "十一", "content": "独立日 (亚美尼亚)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月21日 周一", "lunar": "十一", "content": "独立日 (马耳他)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月22日 周二", "lunar": "十二", "content": "世界无车日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月23日 周三", "lunar": "秋分", "content": "国庆日 (沙特阿拉伯)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月23日 周三", "lunar": "秋分", "content": "国际手语日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月23日 周三", "lunar": "秋分", "content": "秋分", "category": "🌱 节气", "category_code": "solar_term"}, {"month": 9, "date_str": "9月24日 周四", "lunar": "十四", "content": "独立日 (几内亚比索)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月25日 周五", "lunar": "中秋节", "content": "【法定】中秋节假期", "category": "🔴 法定节日", "category_code": "statutory"}, {"month": 9, "date_str": "9月27日 周日", "lunar": "十七", "content": "【法定】中秋节假期", "category": "🔴 法定节日", "category_code": "statutory"}, {"month": 9, "date_str": "9月27日 周日", "lunar": "十七", "content": "世界旅游日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月27日 周日", "lunar": "十七", "content": "国际聋人日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月29日 周二", "lunar": "十九", "content": "世界心脏日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月30日 周三", "lunar": "二十", "content": "国际翻译日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 9, "date_str": "9月30日 周三", "lunar": "二十", "content": "独立日 (博茨瓦纳)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 10, "date_str": "10月1日 周四", "lunar": "国庆节", "content": "【法定】国庆节假期", "category": "🔴 法定节日", "category_code": "statutory"}, {"month": 10, "date_str": "10月1日 周四", "lunar": "国庆节", "content": "国际咖啡日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 10, "date_str": "10月1日 周四", "lunar": "国庆节", "content": "国际老年人日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 10, "date_str": "10月3日 周六", "lunar": "廿三", "content": "统一日 (德)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 10, "date_str": "10月4日 周日", "lunar": "廿四", "content": "【法定】国庆节假期", "category": "🔴 法定节日", "category_code": "statutory"}, {"month": 10, "date_str": "10月4日 周日", "lunar": "廿四", "content": "世界动物日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 10, "date_str": "10月5日 周一", "lunar": "廿五", "content": "世界教师日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 10, "date_str": "10月8日 周四", "lunar": "寒露", "content": "世界视力日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 10, "date_str": "10月8日 周四", "lunar": "寒露", "content": "寒露", "category": "🌱 节气", "category_code": "solar_term"}, {"month": 10, "date_str": "10月9日 周五", "lunar": "廿九", "content": "世界邮政日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 10, "date_str": "10月9日 周五", "lunar": "廿九", "content": "世界鸡蛋日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 10, "date_str": "10月9日 周五", "lunar": "廿九", "content": "国际啤酒披萨日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 10, "date_str": "10月10日 周六", "lunar": "九月", "content": "1010大促", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 10, "date_str": "10月10日 周六", "lunar": "九月", "content": "世界精神卫生日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 10, "date_str": "10月12日 周一", "lunar": "初三", "content": "哥伦布日 (美)", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 10, "date_str": "10月12日 周一", "lunar": "初三", "content": "国庆日 (西班牙)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 10, "date_str": "10月12日 周一", "lunar": "初三", "content": "感恩节 (加拿大)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 10, "date_str": "10月14日 周三", "lunar": "初五", "content": "世界标准日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 10, "date_str": "10月16日 周五", "lunar": "初七", "content": "世界粮食日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 10, "date_str": "10月17日 周六", "lunar": "初八", "content": "国际清除贫困日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 10, "date_str": "10月19日 周一", "lunar": "初十", "content": "国际金汤力日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 10, "date_str": "10月20日 周二", "lunar": "十一", "content": "国际厨师日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 10, "date_str": "10月23日 周五", "lunar": "霜降", "content": "霜降", "category": "🌱 节气", "category_code": "solar_term"}, {"month": 10, "date_str": "10月24日 周六", "lunar": "十五", "content": "联合国日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 10, "date_str": "10月25日 周日", "lunar": "十六", "content": "世界面食日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 10, "date_str": "10月28日 周三", "lunar": "十九", "content": "国庆节 (捷克)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 10, "date_str": "10月29日 周四", "lunar": "二十", "content": "国庆节 (土耳其)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 10, "date_str": "10月31日 周六", "lunar": "廿二", "content": "万圣夜", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 11, "date_str": "11月1日 周日", "lunar": "廿三", "content": "万圣节", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 11, "date_str": "11月2日 周一", "lunar": "廿四", "content": "万灵节 (天主教)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 11, "date_str": "11月3日 周二", "lunar": "廿五", "content": "墨尔本赛马节", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 11, "date_str": "11月3日 周二", "lunar": "廿五", "content": "文化日 (日)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 11, "date_str": "11月6日 周五", "lunar": "廿八", "content": "绿色进军节 (摩洛哥)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 11, "date_str": "11月7日 周六", "lunar": "立冬", "content": "立冬", "category": "🌱 节气", "category_code": "solar_term"}, {"month": 11, "date_str": "11月9日 周一", "lunar": "寒衣节", "content": "国庆日 (柬埔寨)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 11, "date_str": "11月11日 周三", "lunar": "初三", "content": "军人纪念日 (加拿大)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 11, "date_str": "11月11日 周三", "lunar": "初三", "content": "双十一大促", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 11, "date_str": "11月11日 周三", "lunar": "初三", "content": "独立日 (波兰)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 11, "date_str": "11月11日 周三", "lunar": "初三", "content": "老兵节 (美)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 11, "date_str": "11月15日 周日", "lunar": "初七", "content": "七五三节 (日)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 11, "date_str": "11月17日 周二", "lunar": "初九", "content": "国际学生日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 11, "date_str": "11月18日 周三", "lunar": "初十", "content": "国庆日 (阿曼)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 11, "date_str": "11月18日 周三", "lunar": "初十", "content": "忏悔祈祷日 (德)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 11, "date_str": "11月18日 周三", "lunar": "初十", "content": "独立日 (摩洛哥)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 11, "date_str": "11月20日 周五", "lunar": "十二", "content": "国际儿童日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 11, "date_str": "11月21日 周六", "lunar": "十三", "content": "世界电视日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 11, "date_str": "11月22日 周日", "lunar": "小雪", "content": "小雪", "category": "🌱 节气", "category_code": "solar_term"}, {"month": 11, "date_str": "11月23日 周一", "lunar": "十五", "content": "勤劳感谢日 (日)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 11, "date_str": "11月26日 周四", "lunar": "十八", "content": "感恩节 (美)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 11, "date_str": "11月27日 周五", "lunar": "十九", "content": "黑色星期五", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 11, "date_str": "11月30日 周一", "lunar": "廿二", "content": "独立日 (也门)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 11, "date_str": "11月30日 周一", "lunar": "廿二", "content": "网络星期一", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 12, "date_str": "12月2日 周三", "lunar": "廿四", "content": "国家统一日 (罗马尼亚)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 12, "date_str": "12月3日 周四", "lunar": "廿五", "content": "国庆节 (阿联酋)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 12, "date_str": "12月4日 周五", "lunar": "廿六", "content": "世界残疾人日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 12, "date_str": "12月6日 周日", "lunar": "廿八", "content": "宪法日 (西班牙)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 12, "date_str": "12月7日 周一", "lunar": "大雪", "content": "国际民航日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 12, "date_str": "12月7日 周一", "lunar": "大雪", "content": "绿色星期一", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 12, "date_str": "12月7日 周一", "lunar": "大雪", "content": "大雪", "category": "🌱 节气", "category_code": "solar_term"}, {"month": 12, "date_str": "12月10日 周四", "lunar": "初二", "content": "胜利日 (伊拉克)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 12, "date_str": "12月12日 周六", "lunar": "初四", "content": "shopee生日大促", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 12, "date_str": "12月12日 周六", "lunar": "初四", "content": "双十二大促", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 12, "date_str": "12月12日 周六", "lunar": "初四", "content": "独立日 (肯尼亚)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 12, "date_str": "12月19日 周六", "lunar": "十一", "content": "超级星期六", "category": "🟣 活动及促销", "category_code": "promotion"}, {"month": 12, "date_str": "12月21日 周一", "lunar": "十三", "content": "国际篮球日", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 12, "date_str": "12月22日 周二", "lunar": "冬至", "content": "冬至", "category": "🌱 节气", "category_code": "solar_term"}, {"month": 12, "date_str": "12月24日 周四", "lunar": "十六", "content": "平安夜", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 12, "date_str": "12月25日 周五", "lunar": "十七", "content": "圣诞节", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 12, "date_str": "12月26日 周六", "lunar": "十八", "content": "宽扎节 (美)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 12, "date_str": "12月26日 周六", "lunar": "十八", "content": "节礼日 (英)", "category": "🔵 海外节日", "category_code": "overseas"}, {"month": 12, "date_str": "12月31日 周四", "lunar": "廿三", "content": "新年前夜", "category": "🔵 海外节日", "category_code": "overseas"}];
+
+        const searchInput = document.getElementById('searchInput');
+        const monthFilter = document.getElementById('monthFilter');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const quickFilterBtns = document.querySelectorAll('.filter-btn:not(#resetBtn):not(#todayBtn)');
+        const resetBtn = document.getElementById('resetBtn');
+        const todayBtn = document.getElementById('todayBtn');
+        const container = document.getElementById('calendarContainer');
+        
+        let currentQuickFilter = 'all';
+
+        // Today Button Logic
+        todayBtn.addEventListener('click', () => {
+            const currentMonth = new Date().getMonth() + 1; // 1-12
+            monthFilter.value = currentMonth.toString();
+            renderEvents();
+            // Scroll to top of results
+            window.scrollTo({ top: 100, behavior: 'smooth' });
+        });
+
+        // Reset Button Logic
+        resetBtn.addEventListener('click', () => {
+            // Reset all inputs
+            searchInput.value = '';
+            monthFilter.value = 'all';
+            categoryFilter.value = 'all';
+            currentQuickFilter = 'all';
+            
+            // Reset quick filter buttons UI
+            quickFilterBtns.forEach(b => {
+                if (b.dataset.filter === 'all') {
+                    b.classList.add('active');
+                } else {
+                    b.classList.remove('active');
+                }
+            });
+            
+            // Re-render
+            renderEvents();
+        });
+
+        // Quick Filter Click Handlers
+        quickFilterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                quickFilterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentQuickFilter = btn.dataset.filter;
+                renderEvents();
+            });
+        });
+
+        const solarTerms = ["立春", "雨水", "惊蛰", "春分", "清明", "谷雨", "立夏", "小满", "芒种", "夏至", "小暑", "大暑", "立秋", "处暑", "白露", "秋分", "寒露", "霜降", "立冬", "小雪", "大雪", "冬至", "小寒", "大寒"];
+        
+        // Whitelist of holidays that are relevant to US market even if they are 'International'
+        const usCommonHolidays = [
+            '元旦', 'New Year',
+            '情人', 'Valentine',
+            '复活', 'Easter',
+            '母亲', 'Mother',
+            '父亲', 'Father',
+            '万圣', 'Halloween',
+            '感恩', 'Thanksgiving',
+            '圣诞', 'Christmas',
+            '黑五', 'Black Friday',
+            '黑色星期五',
+            '网一', 'Cyber Monday',
+            '网络星期一',
+            '超级碗', 'Super Bowl',
+            '亚马逊', 'Prime',
+            '返校', 'School',
+            '马丁·路德·金',
+            '总统日',
+            '独立日'
+        ];
+
+        function calculateDaysLeft(dateStr) {
+            // Extract month and day: "1月1日" -> 1, 1
+            const match = dateStr.match(/(\d+)月(\d+)日/);
+            if (!match) return null;
+            
+            const month = parseInt(match[1]);
+            const day = parseInt(match[2]);
+            
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            
+            // Create date object for this year
+            let targetDate = new Date(currentYear, month - 1, day);
+            
+            // Reset time to midnight for accurate day calculation
+            now.setHours(0, 0, 0, 0);
+            targetDate.setHours(0, 0, 0, 0);
+            
+            // If the date has passed this year, assume it's next year
+            // Note: Since the calendar might be for a specific year (2026), 
+            // strictly speaking we should check the year of the calendar.
+            // But "Next Occurrence" is generally what users want.
+            if (targetDate < now) {
+                targetDate.setFullYear(currentYear + 1);
+            }
+            
+            const diffTime = targetDate - now;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+            
+            return diffDays;
+        }
+
+        window.copyEvent = function(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Visual feedback could be added here
+                // For now, relies on user knowing it worked
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        };
+
+        function renderEvents() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedMonth = monthFilter.value;
+            const selectedCategory = categoryFilter.value;
+
+            container.innerHTML = '';
+
+            // Filter events
+            const filteredEvents = events.filter(event => {
+                const matchesSearch = event.content.toLowerCase().includes(searchTerm) || 
+                                      event.date_str.toLowerCase().includes(searchTerm) ||
+                                      event.lunar.toLowerCase().includes(searchTerm);
+                
+                let matchesMonth = false;
+                if (selectedMonth === 'all') {
+                    matchesMonth = true;
+                } else if (selectedMonth.startsWith('q')) {
+                    const quarter = parseInt(selectedMonth.substring(1));
+                    const startMonth = (quarter - 1) * 3 + 1;
+                    const endMonth = startMonth + 2;
+                    matchesMonth = event.month >= startMonth && event.month <= endMonth;
+                } else {
+                    matchesMonth = event.month == selectedMonth;
+                }
+                
+                let matchesCategory = false;
+                if (selectedCategory === 'all') {
+                    matchesCategory = true;
+                } else if (selectedCategory === 'solar_term') {
+                    matchesCategory = event.category_code === 'solar_term';
+                } else {
+                    matchesCategory = event.category_code === selectedCategory;
+                }
+                
+                let matchesQuickFilter = true;
+                if (currentQuickFilter === 'us') {
+                    const isExplicitUS = event.content.includes('美') || event.content.includes('USA');
+                    
+                    // Check if event matches common holiday list
+                    let isCommonHoliday = usCommonHolidays.some(keyword => event.content.includes(keyword));
+                    
+                    // If it matches a common holiday, double check it's not explicitly for another country
+                    // e.g. "Independent Day (Myanmar)" should be excluded
+                    if (isCommonHoliday) {
+                        const otherCountryIndicators = [
+                            '(', '（'  // Check for brackets which usually indicate country
+                        ];
+                        
+                        // If it has brackets, we need to be careful
+                        if (otherCountryIndicators.some(indicator => event.content.includes(indicator))) {
+                            // But allow if the bracket content is US related
+                            const isUSInBracket = event.content.includes('(美)') || event.content.includes('（美）') || 
+                                                event.content.includes('(USA)') || event.content.includes('（USA）');
+                            
+                            if (!isUSInBracket) {
+                                // It has brackets but not for US -> likely another country -> exclude
+                                // EXCEPT for known safe patterns like "Valentine's Day (Western)" if any, 
+                                // but based on your feedback "Independent Day (Myanmar)" is the issue.
+                                // So we strictly exclude if bracket is present and NOT US.
+                                isCommonHoliday = false;
+                            }
+                        }
+                    }
+
+                    matchesQuickFilter = isExplicitUS || isCommonHoliday;
+                } else if (currentQuickFilter === 'jp') {
+                    matchesQuickFilter = event.content.includes('日本') || event.content.includes('(日)');
+                }
+
+                return matchesSearch && matchesMonth && matchesCategory && matchesQuickFilter;
+            });
+
+            // Update result count
+            const countElement = document.getElementById('resultCount');
+            countElement.textContent = `共 ${filteredEvents.length} 条记录`;
+
+            if (filteredEvents.length === 0) {
+                container.innerHTML = '<div class="no-results">没有找到匹配的日历事件 🍃</div>';
+                return;
+            }
+
+            // Group by month for display
+            const eventsByMonth = {};
+            filteredEvents.forEach(event => {
+                if (!eventsByMonth[event.month]) {
+                    eventsByMonth[event.month] = [];
+                }
+                eventsByMonth[event.month].push(event);
+            });
+
+            // Sort month keys
+            const sortedMonths = Object.keys(eventsByMonth).sort((a, b) => parseInt(a) - parseInt(b));
+
+            sortedMonths.forEach(month => {
+                // Add Month Header
+                const monthSection = document.createElement('div');
+                monthSection.className = 'month-section';
+                monthSection.innerHTML = `<div class="month-title">${month}月</div>`;
+                container.appendChild(monthSection);
+
+                // Add Event Cards
+                eventsByMonth[month].forEach(event => {
+                    const card = document.createElement('div');
+                    card.className = `event-card ${event.category_code}`;
+                    
+                    let tagClass = `tag-${event.category_code}`;
+                    
+                    // Highlight weekends
+                    let dateHtml = event.date_str;
+                    if (event.date_str.includes('周六') || event.date_str.includes('周日')) {
+                        dateHtml = dateHtml.replace(/(周[六日])/, '<span class="weekend-highlight">$1</span>');
+                    }
+                    
+                    // Countdown Logic
+                    const daysLeft = calculateDaysLeft(event.date_str);
+                    let countdownHtml = '';
+                    if (daysLeft !== null && daysLeft >= 0 && daysLeft <= 60) {
+                        let badgeClass = 'countdown-upcoming';
+                        let text = `${daysLeft}天后`;
+                        
+                        if (daysLeft === 0) {
+                            badgeClass = 'countdown-urgent';
+                            text = '今天';
+                        } else if (daysLeft <= 7) {
+                            badgeClass = 'countdown-urgent';
+                            text = `${daysLeft}天后`;
+                        } else if (daysLeft <= 30) {
+                            badgeClass = 'countdown-soon';
+                        }
+                        
+                        countdownHtml = `<div class="countdown-badge ${badgeClass}">${text}</div>`;
+                    }
+                    
+                    card.innerHTML = `
+                        ${countdownHtml}
+                        <div class="event-header">
+                            <div class="event-date">${dateHtml}</div>
+                            <div class="event-lunar">${event.lunar}</div>
+                        </div>
+                        <div class="event-content">${event.content}</div>
+                        <div class="event-footer">
+                            <div class="event-tag ${tagClass}">${event.category}</div>
+                        </div>
+                        <div class="card-actions">
+                             <button class="action-btn" onclick="copyEvent('${event.content} ${event.date_str}')" title="复制内容">📋</button>
+                             <button class="action-btn" onclick="window.open('https://www.google.com/search?q=${encodeURIComponent(event.content + ' 营销')}', '_blank')" title="Google搜索">🔍</button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            });
+        }
+
+        // Event Listeners
+        searchInput.addEventListener('input', renderEvents);
+        monthFilter.addEventListener('change', renderEvents);
+        categoryFilter.addEventListener('change', renderEvents);
+
+        // Back to Top Button Logic
+        const backToTopBtn = document.getElementById('backToTop');
+        
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.add('visible');
+            } else {
+                backToTopBtn.classList.remove('visible');
+            }
+        });
+        
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // Initial Render
+        renderEvents();
+    </script>
+</body>
+</html>
+    
