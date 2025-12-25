@@ -225,10 +225,6 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
             <input type="text" placeholder="搜索工具，例如：竞价、大小写..." className="w-full pl-10 pr-4 py-3 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm" value={keyword} onChange={(e) => setKeyword(e.target.value)} />
             <div className="text-center mt-3 text-sm text-gray-500 font-medium flex items-center justify-center gap-4">
             <span>已经累计上传：<span className="text-indigo-600 font-bold">{modules.filter((m: any) => m.status !== '下架').length}</span> 个工具</span>
-            <Link href="/marketing-calendar.html" className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors">
-              <span>📅</span>
-              <span className="underline decoration-indigo-300 underline-offset-4 hover:decoration-indigo-600">2026年电商营销日历</span>
-            </Link>
           </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
