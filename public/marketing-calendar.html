@@ -496,11 +496,32 @@
                 <div class="tb-logo-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-dashboard"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
                 </div>
-                <span>ToolBox</span>
+                <span>运营魔方 AmzToolBox</span>
             </div>
             <nav class="tb-nav-desktop">
                 <a href="/" class="tb-nav-link">首页</a>
+                <a href="/about" class="tb-nav-link">关于</a>
+                <a href="/blog" class="tb-nav-link">博客</a>
+                <a href="/suggest" class="tb-nav-link">提需求</a>
             </nav>
+            <div class="tb-mobile-toggle">
+                <button id="mobileMenuBtn" class="tb-btn-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+                </button>
+            </div>
+        </div>
+        <div class="tb-mobile-overlay" id="mobileOverlay"></div>
+        <div class="tb-mobile-menu" id="mobileMenu">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <span style="font-weight: 700; font-size: 1.25rem;">运营魔方 AmzToolBox</span>
+                <button id="closeMobileBtn" style="background: none; border: none; padding: 0.5rem; cursor: pointer;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+            </div>
+            <a href="/" class="tb-mobile-nav-item">首页</a>
+            <a href="/about" class="tb-mobile-nav-item">关于</a>
+            <a href="/blog" class="tb-mobile-nav-item">博客</a>
+            <a href="/suggest" class="tb-mobile-nav-item">提需求</a>
         </div>
     </div>
     <div class="container">
@@ -559,7 +580,7 @@
     </div>
     
     <footer style="text-align: center; padding: 1.5rem 0; font-size: 0.75rem; color: #9ca3af; background-color: #f8fafc; border-top: 1px solid #e2e8f0; margin-top: auto;">
-        © 2025 运营魔方 ToolBox. All rights reserved.
+        © 2025 运营魔方 AmzToolBox. All rights reserved.
         <span style="margin: 0 0.5rem;">|</span>
         <a href="/privacy" style="color: inherit; text-decoration: none;">隐私说明</a>
     </footer>
@@ -861,6 +882,29 @@
                 behavior: 'smooth'
             });
         });
+
+        // Mobile Menu Logic
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const closeMobileBtn = document.getElementById('closeMobileBtn');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        function toggleMobileMenu() {
+            const isOpen = mobileMenu.classList.contains('open');
+            if (isOpen) {
+                mobileMenu.classList.remove('open');
+                mobileOverlay.classList.remove('open');
+                document.body.style.overflow = '';
+            } else {
+                mobileMenu.classList.add('open');
+                mobileOverlay.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+        if (closeMobileBtn) closeMobileBtn.addEventListener('click', toggleMobileMenu);
+        if (mobileOverlay) mobileOverlay.addEventListener('click', toggleMobileMenu);
 
         // Initial Render
         renderEvents();
