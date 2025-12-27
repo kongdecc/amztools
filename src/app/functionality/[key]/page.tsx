@@ -28,6 +28,7 @@ import CartonCalculatorAdvanced from '@/components/CartonCalculatorAdvanced'
 import NaturalTrafficTool from '@/components/NaturalTrafficTool'
 import AmazonPromotionStackingCalculator from '@/components/AmazonPromotionStackingCalculator'
 import StorageFeeCalculatorPage from '@/components/StorageFeeCalculatorPage'
+import { DEFAULT_NAV_ITEMS, DEFAULT_TOOLS, DEFAULT_CATEGORIES } from '@/lib/constants'
 
 const DetailClient = () => {
   const { key } = useParams<{ key: string }>()
@@ -78,14 +79,50 @@ const DetailClient = () => {
         const r = await fetch('/api/categories', { cache: 'no-store' })
         const d = await r.json()
         if (Array.isArray(d) && d.length > 0) setCategories(d)
-        else setCategories([{ key: 'operation', label: '运营工具' }, { key: 'advertising', label: '广告工具' }, { key: 'image-text', label: '图片文本' }])
+        else setCategories(DEFAULT_CATEGORIES)
       } catch {
-        setCategories([{ key: 'operation', label: '运营工具' }, { key: 'advertising', label: '广告工具' }, { key: 'image-text', label: '图片文本' }])
+        setCategories(DEFAULT_CATEGORIES)
       }
     })()
   }, [])
-  React.useEffect(() => { (async () => { try { const r = await fetch('/api/modules', { cache: 'no-store' }); const d = await r.json(); const arr = Array.isArray(d) ? d : []; setModules(arr.filter((m:any)=>m.status !== '下架')) } catch {} })() }, [])
-  React.useEffect(() => { try { const raw = (settings as any).navigation; const arr = raw ? JSON.parse(String(raw)) : []; setNavItems(Array.isArray(arr) ? arr : []) } catch {} }, [settings])
+  React.useEffect(() => { 
+    (async () => { 
+      try { 
+        const r = await fetch('/api/modules', { cache: 'no-store' }); 
+        const d = await r.json(); 
+        const arr = Array.isArray(d) ? d : []; 
+        let merged = arr.filter((m:any)=>m.status !== '下架')
+        // Merge with defaults
+        if (merged.length === 0) {
+          merged = DEFAULT_TOOLS
+        } else {
+          const keys = new Set(merged.map((x: any) => x.key))
+          for (const t of DEFAULT_TOOLS) {
+            if (!keys.has(t.key)) merged.push(t)
+          }
+        }
+        // Force override status for 'word-count' if it is '维护'
+        merged = merged.map((m: any) => {
+          if (m.key === 'word-count' && m.status === '维护') {
+            return { ...m, status: '启用' }
+          }
+          return m
+        })
+        setModules(merged) 
+      } catch {
+        setModules(DEFAULT_TOOLS)
+      } 
+    })() 
+  }, [])
+  React.useEffect(() => { 
+    try { 
+      const raw = (settings as any).navigation; 
+      const arr = raw ? JSON.parse(String(raw)) : []; 
+      setNavItems(Array.isArray(arr) && arr.length > 0 ? arr : DEFAULT_NAV_ITEMS) 
+    } catch {
+      setNavItems(DEFAULT_NAV_ITEMS)
+    } 
+  }, [settings])
 
   
 

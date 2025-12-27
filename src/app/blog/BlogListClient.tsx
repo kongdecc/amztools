@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useSettings } from '@/components/SettingsProvider'
 import { LayoutDashboard, ChevronDown, MoreHorizontal } from 'lucide-react'
+import { DEFAULT_CATEGORIES, DEFAULT_TOOLS } from '@/lib/constants'
 
 type Post = { id: string; title: string; slug: string; content: string; status: string; order?: number; createdAt?: string; coverUrl?: string }
 
@@ -23,9 +24,9 @@ export default function BlogListClient({ initialList, initialTotal, initialNavIt
         const r = await fetch('/api/categories', { cache: 'no-store' })
         const d = await r.json()
         if (Array.isArray(d) && d.length > 0) setCategories(d.filter((c: any) => c.enabled !== false))
-        else setCategories([{ key: 'operation', label: '运营工具' }, { key: 'advertising', label: '广告工具' }, { key: 'image-text', label: '图片文本' }])
+        else setCategories(DEFAULT_CATEGORIES)
       } catch {
-        setCategories([{ key: 'operation', label: '运营工具' }, { key: 'advertising', label: '广告工具' }, { key: 'image-text', label: '图片文本' }])
+        setCategories(DEFAULT_CATEGORIES)
       }
     })()
   }, [])
@@ -46,7 +47,7 @@ export default function BlogListClient({ initialList, initialTotal, initialNavIt
     })()
   }, [page])
   useEffect(() => {
-    (async () => { try { const r = await fetch('/api/modules', { cache: 'no-store' }); const d = await r.json(); const arr = Array.isArray(d) ? d : []; setModules(arr.filter((m:any)=>m.status !== '下架')) } catch {} })()
+    (async () => { try { const r = await fetch('/api/modules', { cache: 'no-store' }); const d = await r.json(); const arr = Array.isArray(d) ? d : []; setModules(arr.filter((m:any)=>m.status !== '下架')) } catch { setModules(DEFAULT_TOOLS) } })()
   }, [])
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">

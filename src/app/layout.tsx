@@ -5,23 +5,25 @@ import { Metadata } from 'next'
 import fs from 'fs'
 import path from 'path'
 
+import { DEFAULT_SITE_SETTINGS } from '@/lib/constants'
+
 export async function generateMetadata(): Promise<Metadata> {
   let logoUrl = ''
   let faviconUrl = ''
-  let siteName = '运营魔方 ToolBox'
-  let siteDescription = ''
+  let siteName = DEFAULT_SITE_SETTINGS.siteName
+  let siteDescription = DEFAULT_SITE_SETTINGS.siteDescription
   let siteKeywords = ''
   let googleVerification = ''
   let baiduVerification = ''
 
   try {
-    const rows = await (db as any).siteSettings.findMany()
+    const rows = await (db as any).siteSettings.findMany().catch(() => [])
     const settings: any = {}
     for (const r of rows as any) settings[String((r as any).key)] = String((r as any).value ?? '')
     logoUrl = settings.logoUrl || ''
     faviconUrl = settings.faviconUrl || ''
     siteName = settings.siteName || siteName
-    siteDescription = settings.seoDescription || settings.siteDescription || ''
+    siteDescription = settings.seoDescription || settings.siteDescription || siteDescription
     siteKeywords = settings.siteKeywords || ''
     googleVerification = settings.googleVerification || ''
     baiduVerification = settings.baiduVerification || ''
@@ -87,20 +89,20 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   let analyticsHeadHtml = ''
   let analyticsBodyHtml = ''
   let enableStructuredData = false
-  let siteName = ''
-  let siteDescription = ''
+  let siteName = DEFAULT_SITE_SETTINGS.siteName
+  let siteDescription = DEFAULT_SITE_SETTINGS.siteDescription
   let logoUrl = ''
   let siteUrl = ''
 
   try {
-    const rows = await (db as any).siteSettings.findMany()
+    const rows = await (db as any).siteSettings.findMany().catch(() => [])
     const settings: any = {}
     for (const r of rows as any) settings[String((r as any).key)] = String((r as any).value ?? '')
     analyticsHeadHtml = settings.analyticsHeadHtml || ''
     analyticsBodyHtml = settings.analyticsBodyHtml || ''
     enableStructuredData = String(settings.enableStructuredData || 'true') === 'true'
-    siteName = settings.siteName || '运营魔方 ToolBox'
-    siteDescription = settings.siteDescription || ''
+    siteName = settings.siteName || siteName
+    siteDescription = settings.siteDescription || siteDescription
     logoUrl = settings.logoUrl || ''
   } catch {}
 

@@ -2,6 +2,8 @@ import { SettingsProvider } from '@/components/SettingsProvider'
 import { db } from '@/lib/db'
 import { marked } from 'marked'
 import AboutClient from '@/app/about/AboutClient'
+import { DEFAULT_NAV_ITEMS, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
+
 export const revalidate = 0
 
 export default async function Page() {
@@ -17,20 +19,12 @@ export default async function Page() {
     if (Array.isArray(arr) && arr.length > 0) {
       navItems = arr
     } else {
-      navItems = [
-        { id: 'about', label: '关于', href: '/about', order: 1, isExternal: false, active: true },
-        { id: 'blog', label: '博客', href: '/blog', order: 2, isExternal: false, active: true },
-        { id: 'suggest', label: '提需求', href: '/suggest', order: 3, isExternal: false, active: true }
-      ]
+      navItems = DEFAULT_NAV_ITEMS
     }
   } catch {
-    navItems = [
-      { id: 'about', label: '关于', href: '/about', order: 1, isExternal: false, active: true },
-      { id: 'blog', label: '博客', href: '/blog', order: 2, isExternal: false, active: true },
-      { id: 'suggest', label: '提需求', href: '/suggest', order: 3, isExternal: false, active: true }
-    ]
+    navItems = DEFAULT_NAV_ITEMS
   }
-  const aboutContent = String(initialSettings['aboutContent'] || '')
+  const aboutContent = String(initialSettings['aboutContent'] || DEFAULT_SITE_SETTINGS.siteDescription)
   let initialHtml = ''
   try { initialHtml = String(marked.parse(aboutContent)) } catch { initialHtml = '' }
   return (

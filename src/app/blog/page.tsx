@@ -2,6 +2,7 @@ import { SettingsProvider } from '@/components/SettingsProvider'
 import BlogListClient from './BlogListClient'
 import { db } from '@/lib/db'
 import { Metadata } from 'next'
+import { DEFAULT_NAV_ITEMS, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 
 function getSiteBase(): URL | null {
   const raw = String(process.env.NEXT_PUBLIC_SITE_URL || '').trim()
@@ -15,7 +16,7 @@ function getSiteBase(): URL | null {
 
 export async function generateMetadata(): Promise<Metadata> {
   const base = getSiteBase()
-  let siteName = '运营魔方 ToolBox'
+  let siteName = DEFAULT_SITE_SETTINGS.siteName
   let siteDescription = ''
   let siteKeywords = ''
   try {
@@ -70,22 +71,14 @@ export default async function Page() {
     if (Array.isArray(arr) && arr.length > 0) {
       navItems = arr
     } else {
-      navItems = [
-        { id: 'about', label: '关于', href: '/about', order: 1, isExternal: false, active: true },
-        { id: 'blog', label: '博客', href: '/blog', order: 2, isExternal: false, active: true },
-        { id: 'suggest', label: '提需求', href: '/suggest', order: 3, isExternal: false, active: true }
-      ]
+      navItems = DEFAULT_NAV_ITEMS
     }
   } catch {
-    navItems = [
-      { id: 'about', label: '关于', href: '/about', order: 1, isExternal: false, active: true },
-      { id: 'blog', label: '博客', href: '/blog', order: 2, isExternal: false, active: true },
-      { id: 'suggest', label: '提需求', href: '/suggest', order: 3, isExternal: false, active: true }
-    ]
+    navItems = DEFAULT_NAV_ITEMS
   }
   const base = getSiteBase()
   const origin = base ? String(base).replace(/\/$/, '') : ''
-  const seoSiteName = String(initialSettings['siteName'] || '运营魔方 ToolBox')
+  const seoSiteName = String(initialSettings['siteName'] || DEFAULT_SITE_SETTINGS.siteName)
   const logoUrl = String(initialSettings['logoUrl'] || '')
   const blogUrl = origin ? `${origin}/blog` : undefined
   const toAbs = (u: string) => {

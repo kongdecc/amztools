@@ -2,6 +2,8 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 
+import { DEFAULT_SITE_SETTINGS } from '@/lib/constants'
+
 type SiteSettings = {
   siteName: string
   logoUrl: string
@@ -40,14 +42,14 @@ type Ctx = {
 }
 
 const defaults: SiteSettings = {
-  siteName: '运营魔方 ToolBox',
+  siteName: DEFAULT_SITE_SETTINGS.siteName,
   logoUrl: '',
   faviconUrl: '',
-  siteDescription: '为跨境运营人员打造的免费在线工具箱',
+  siteDescription: DEFAULT_SITE_SETTINGS.siteDescription,
   siteKeywords: '工具箱, 广告计算, 文本处理',
   analyticsHeadHtml: '',
   analyticsBodyHtml: '',
-  copyrightText: '© 2025 运营魔方 ToolBox. All rights reserved.',
+  copyrightText: DEFAULT_SITE_SETTINGS.copyrightText,
   homeHeroTitle: '一站式图像与运营处理工具',
   homeHeroSubtitle: '轻松处理您的数据，提升工作效率',
   hideHomeHeroIfEmpty: 'false',

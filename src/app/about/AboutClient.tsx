@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react'
 import { LayoutDashboard, ChevronDown, MoreHorizontal } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 import { marked } from 'marked'
+import { DEFAULT_CATEGORIES, DEFAULT_TOOLS } from '@/lib/constants'
 
 export default function AboutClient({ initialNavItems, initialHtml }: { initialNavItems: any[]; initialHtml?: string }) {
   const { settings } = useSettings()
@@ -26,7 +27,7 @@ export default function AboutClient({ initialNavItems, initialHtml }: { initialN
         if (Array.isArray(d) && d.length > 0) setCategories(d.filter((c: any) => c.enabled !== false))
         else setCategories([{ key: 'operation', label: '运营工具' }, { key: 'advertising', label: '广告工具' }, { key: 'image-text', label: '图片文本' }])
       } catch {
-        setCategories([{ key: 'operation', label: '运营工具' }, { key: 'advertising', label: '广告工具' }, { key: 'image-text', label: '图片文本' }])
+        setCategories(DEFAULT_CATEGORIES)
       }
     })()
   }, [])
@@ -43,7 +44,7 @@ export default function AboutClient({ initialNavItems, initialHtml }: { initialN
   useEffect(() => { try { setOrigin(window.location.origin) } catch {} }, [])
   useEffect(() => {
     (async () => {
-      try { const r = await fetch('/api/modules', { cache: 'no-store' }); const d = await r.json(); const arr = Array.isArray(d) ? d : []; setModules(arr.filter((m:any)=>m.status !== '下架')) } catch {}
+      try { const r = await fetch('/api/modules', { cache: 'no-store' }); const d = await r.json(); const arr = Array.isArray(d) ? d : []; setModules(arr.filter((m:any)=>m.status !== '下架')) } catch { setModules(DEFAULT_TOOLS) }
     })()
   }, [])
   return (

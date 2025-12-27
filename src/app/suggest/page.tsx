@@ -2,10 +2,12 @@ import { SettingsProvider } from '@/components/SettingsProvider'
 import SuggestClient from './SuggestClient'
 import { db } from '@/lib/db'
 import { Metadata } from 'next'
+import { DEFAULT_NAV_ITEMS, DEFAULT_TOOLS, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
+
 export const revalidate = 0
 
 export async function generateMetadata(): Promise<Metadata> {
-  let siteName = '运营魔方 ToolBox'
+  let siteName = DEFAULT_SITE_SETTINGS.siteName
   let siteDescription = ''
   let siteKeywords = ''
   try {
@@ -35,22 +37,36 @@ export default async function Page() {
     
     const row = await (db as any).siteSettings.findUnique({ where: { key: 'navigation' } })
     const arr = row && (row as any).value ? JSON.parse(String((row as any).value)) : []
-    navItems = Array.isArray(arr) ? arr : []
+    navItems = Array.isArray(arr) && arr.length > 0 ? arr : DEFAULT_NAV_ITEMS
 
     const mods = await (db as any).toolModule.findMany({ orderBy: { order: 'asc' } })
     modules = Array.isArray(mods) ? mods.filter((m:any) => m.status !== '下架') : []
+    
+    // Merge logic
+    const ensure = (arr: any[]) => {
+      const keys = new Set(arr.map((x: any) => x.key))
+      const merged = arr.slice()
+      for (const d of DEFAULT_TOOLS) if (!keys.has(d.key)) merged.push(d)
+      return merged
+    }
+    modules = ensure(modules)
+
+    // Force override status for 'word-count' if it is '维护'
+    modules = modules.map((m: any) => {
+      if (m.key === 'word-count' && m.status === '维护') {
+        return { ...m, status: '启用' }
+      }
+      return m
+    })
+
   } catch { 
-    navItems = []
-    modules = []
+    navItems = DEFAULT_NAV_ITEMS
+    modules = DEFAULT_TOOLS
   }
 
   // Fallback nav items if empty (optional, but good for robustness)
   if (navItems.length === 0) {
-    navItems = [
-      { id: 'about', label: '关于', href: '/about', order: 1, isExternal: false, active: true },
-      { id: 'blog', label: '博客', href: '/blog', order: 2, isExternal: false, active: true },
-      { id: 'suggest', label: '提需求', href: '/suggest', order: 3, isExternal: false, active: true }
-    ]
+    navItems = DEFAULT_NAV_ITEMS
   }
 
   const jsonLd = {

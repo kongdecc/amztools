@@ -2,9 +2,10 @@
 
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
-import { LayoutDashboard, MoreHorizontal } from 'lucide-react'
+import { LayoutDashboard, ChevronDown, MoreHorizontal } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 import { marked } from 'marked'
+import { DEFAULT_CATEGORIES, DEFAULT_TOOLS } from '@/lib/constants'
 
 type Post = { id: string; title: string; slug: string; content: string; status: string; order?: number; views?: number; createdAt?: string; updatedAt?: string; coverUrl?: string }
 
@@ -14,9 +15,30 @@ export default function BlogDetailClient({ item, initialNavItems, initialHtml }:
   const [html, setHtml] = useState(initialHtml || '')
   const [views, setViews] = useState<number>(Number(item?.views || 0))
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [categories, setCategories] = useState<any[]>([])
+  const [modules, setModules] = useState<any[]>([])
 
   const title = String(item?.title || '')
   const slug = String(item?.slug || '')
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch('/api/categories', { cache: 'no-store' })
+        const d = await r.json()
+        if (Array.isArray(d) && d.length > 0) setCategories(d.filter((c: any) => c.enabled !== false))
+        else setCategories(DEFAULT_CATEGORIES)
+      } catch {
+        setCategories(DEFAULT_CATEGORIES)
+      }
+    })()
+  }, [])
+
+  useEffect(() => {
+    (async () => {
+      try { const r = await fetch('/api/modules', { cache: 'no-store' }); const d = await r.json(); const arr = Array.isArray(d) ? d : []; setModules(arr.filter((m:any)=>m.status !== '下架')) } catch { setModules(DEFAULT_TOOLS) }
+    })()
+  }, [])
 
   useEffect(() => {
     (async () => {
@@ -74,8 +96,35 @@ export default function BlogDetailClient({ item, initialNavItems, initialHtml }:
           {navItems
             .slice()
             .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
-            .map((item: any) => (
-              item.isExternal ? (
+            .map((item: any) => {
+              const isFuncMenu = String(item.label || '').includes('功能分类') || String(item.id || '') === 'functionality'
+              if (isFuncMenu) {
+                return (
+                  <div key={item.id || 'function-menu'} className="relative group">
+                    <button onClick={()=>{ try { (window as any).location.href = '/functionality' } catch {} }} className="text-sm text-white/90 hover:text-white flex items-center gap-1 cursor-pointer">
+                      {item.label || '功能分类'}
+                      <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
+                    </button>
+                    <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 max-h-[80vh] overflow-y-auto">
+                      <div className="p-2 space-y-2">
+                        {categories.map(cat => {
+                          const catModules = modules.filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'image-text')))
+                          if (catModules.length === 0) return null
+                          return (
+                            <div key={cat.key}>
+                              <div className="px-3 py-1 text-xs font-semibold text-gray-400 uppercase">{cat.label}</div>
+                              {catModules.map((m:any)=>(
+                                <Link key={m.key} href={`/?tab=${m.key}`} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer">{m.title}</Link>
+                              ))}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )
+              }
+              return item.isExternal ? (
                 <a key={item.id} href={item.href || '#'} target="_blank" rel="noopener noreferrer" className="text-sm text-white/90 hover:text-white">
                   {item.label}
                 </a>
@@ -84,7 +133,7 @@ export default function BlogDetailClient({ item, initialNavItems, initialHtml }:
                   {item.label}
                 </Link>
               )
-            ))}
+            })}
         </nav>
         <div className="md:hidden flex items-center gap-3 shrink-0 ml-2">
           <div className="relative">
@@ -99,8 +148,12 @@ export default function BlogDetailClient({ item, initialNavItems, initialHtml }:
                   {navItems
                     .slice()
                     .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
-                    .map((item: any) => (
-                      item.isExternal ? (
+                    .map((item: any) => {
+                      const isFuncMenu = String(item.label || '').includes('功能分类') || String(item.id || '') === 'functionality'
+                      if (isFuncMenu) {
+                        return <Link key={item.id} href="/functionality" className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50">{item.label || '功能分类'}</Link>
+                      }
+                      return item.isExternal ? (
                         <a key={item.id} href={item.href || '#'} target="_blank" rel="noopener noreferrer" className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50">
                           {item.label}
                         </a>
@@ -109,7 +162,7 @@ export default function BlogDetailClient({ item, initialNavItems, initialHtml }:
                           {item.label}
                         </Link>
                       )
-                    ))}
+                    })}
                 </div>
               </>
             )}

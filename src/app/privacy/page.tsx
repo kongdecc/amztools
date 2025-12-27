@@ -1,6 +1,8 @@
 import { SettingsProvider } from '@/components/SettingsProvider'
 import { db } from '@/lib/db'
 import PrivacyClient from '@/app/privacy/PrivacyClient'
+import { DEFAULT_NAV_ITEMS } from '@/lib/constants'
+
 export const dynamic = 'force-dynamic'
 
 export default async function Page() {
@@ -13,11 +15,7 @@ export default async function Page() {
   try {
     const row = await (db as any).siteSettings.findUnique({ where: { key: 'navigation' } })
     const arr = row && (row as any).value ? JSON.parse(String((row as any).value)) : []
-    const defaults = [
-      { id: 'about', label: '关于', href: '/about', order: 1, isExternal: false, active: true },
-      { id: 'blog', label: '博客', href: '/blog', order: 2, isExternal: false, active: true },
-      { id: 'suggest', label: '提需求', href: '/suggest', order: 3, isExternal: false, active: true }
-    ]
+    const defaults = DEFAULT_NAV_ITEMS
     const list = Array.isArray(arr) ? arr : []
     const byId: Record<string, any> = {}
     for (const it of list) { if (it && typeof it.id === 'string') byId[it.id] = it }
@@ -34,11 +32,7 @@ export default async function Page() {
     }
     navItems = Object.values(byId)
   } catch {
-    navItems = [
-      { id: 'about', label: '关于', href: '/about', order: 1, isExternal: false, active: true },
-      { id: 'blog', label: '博客', href: '/blog', order: 2, isExternal: false, active: true },
-      { id: 'suggest', label: '提需求', href: '/suggest', order: 3, isExternal: false, active: true }
-    ]
+    navItems = DEFAULT_NAV_ITEMS
   }
   return (
     <SettingsProvider initial={initialSettings}>

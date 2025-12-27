@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSettings } from '@/components/SettingsProvider'
 import { LayoutDashboard, Send, ChevronDown, MoreHorizontal } from 'lucide-react'
+import { DEFAULT_CATEGORIES, DEFAULT_TOOLS } from '@/lib/constants'
 
 interface SuggestClientProps {
   initialNavItems: any[]
@@ -22,9 +23,9 @@ export default function SuggestClient({ initialNavItems, modules }: SuggestClien
         const r = await fetch('/api/categories', { cache: 'no-store' })
         const d = await r.json()
         if (Array.isArray(d) && d.length > 0) setCategories(d)
-        else setCategories([{ key: 'operation', label: '运营工具' }, { key: 'advertising', label: '广告工具' }, { key: 'image-text', label: '图片文本' }])
+        else setCategories(DEFAULT_CATEGORIES)
       } catch {
-        setCategories([{ key: 'operation', label: '运营工具' }, { key: 'advertising', label: '广告工具' }, { key: 'image-text', label: '图片文本' }])
+        setCategories(DEFAULT_CATEGORIES)
       }
     })()
   }, [])

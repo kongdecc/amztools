@@ -3,6 +3,8 @@ import { Metadata } from 'next'
 import { LayoutDashboard, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import RewardImage from '@/components/RewardImage'
+import { DEFAULT_NAV_ITEMS, DEFAULT_TOOLS, DEFAULT_CATEGORIES, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
+
 export const revalidate = 0
 
 export const metadata: Metadata = {
@@ -25,17 +27,9 @@ async function getSettings() {
     try {
       const navRow = await (db as any).siteSettings.findUnique({ where: { key: 'navigation' } })
       const arr = navRow && (navRow as any).value ? JSON.parse(String((navRow as any).value)) : []
-      navItems = Array.isArray(arr) && arr.length > 0 ? arr : [
-        { id: 'about', label: '关于', href: '/about', order: 1, isExternal: false, active: true },
-        { id: 'blog', label: '博客', href: '/blog', order: 2, isExternal: false, active: true },
-        { id: 'suggest', label: '提需求', href: '/suggest', order: 3, isExternal: false, active: true }
-      ]
+      navItems = Array.isArray(arr) && arr.length > 0 ? arr : DEFAULT_NAV_ITEMS
     } catch {
-      navItems = [
-        { id: 'about', label: '关于', href: '/about', order: 1, isExternal: false, active: true },
-        { id: 'blog', label: '博客', href: '/blog', order: 2, isExternal: false, active: true },
-        { id: 'suggest', label: '提需求', href: '/suggest', order: 3, isExternal: false, active: true }
-      ]
+      navItems = DEFAULT_NAV_ITEMS
     }
     
     // Ensure "Functionality" menu item exists
@@ -50,24 +44,35 @@ async function getSettings() {
       modules = await (db as any).toolModule.findMany({ orderBy: { order: 'asc' } })
       categories = await (db as any).toolCategory.findMany({ orderBy: { order: 'asc' } })
       if (categories.length === 0) {
-        categories = [
-          { key: 'operation', label: '运营工具' },
-          { key: 'advertising', label: '广告工具' },
-          { key: 'image-text', label: '图片文本' }
-        ]
+        categories = DEFAULT_CATEGORIES
       }
+      
+      // Merge logic for modules
+      const ensure = (arr: any[]) => {
+        const keys = new Set(arr.map((x: any) => x.key))
+        const merged = arr.slice()
+        for (const d of DEFAULT_TOOLS) if (!keys.has(d.key)) merged.push(d)
+        return merged
+      }
+      modules = ensure(Array.isArray(modules) ? modules : [])
+      
+      // Force override status for 'word-count' if it is '维护'
+      modules = modules.map((m: any) => {
+        if (m.key === 'word-count' && m.status === '维护') {
+          return { ...m, status: '启用' }
+        }
+        return m
+      })
+
     } catch (e) {
       console.error('Error fetching modules/categories:', e)
-      categories = [
-        { key: 'operation', label: '运营工具' },
-        { key: 'advertising', label: '广告工具' },
-        { key: 'image-text', label: '图片文本' }
-      ]
+      categories = DEFAULT_CATEGORIES
+      modules = DEFAULT_TOOLS
     }
 
     return {
-      siteName: settings.siteName || '运营魔方 ToolBox',
-      copyrightText: settings.copyrightText || '© 2025 运营魔方 ToolBox. All rights reserved.',
+      siteName: settings.siteName || DEFAULT_SITE_SETTINGS.siteName,
+      copyrightText: settings.copyrightText || DEFAULT_SITE_SETTINGS.copyrightText,
       friendLinks: settings.friendLinks || '[]',
       showFriendLinksLabel: String(settings.showFriendLinksLabel || 'false') === 'true',
       rewardDescription: settings.rewardDescription || '如果您觉得本工具箱对您有帮助，欢迎打赏支持我们继续维护和开发！',
@@ -78,14 +83,14 @@ async function getSettings() {
   } catch (e) {
     console.error('Critical error in getSettings:', e)
     return {
-      siteName: '运营魔方 ToolBox',
-      copyrightText: '© 2025 运营魔方 ToolBox. All rights reserved.',
+      siteName: DEFAULT_SITE_SETTINGS.siteName,
+      copyrightText: DEFAULT_SITE_SETTINGS.copyrightText,
       friendLinks: '[]',
       showFriendLinksLabel: false,
       rewardDescription: '如果您觉得本工具箱对您有帮助，欢迎打赏支持我们继续维护和开发！',
-      navItems: [],
-      modules: [],
-      categories: []
+      navItems: DEFAULT_NAV_ITEMS,
+      modules: DEFAULT_TOOLS,
+      categories: DEFAULT_CATEGORIES
     }
   }
 }

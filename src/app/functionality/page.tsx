@@ -2,10 +2,12 @@ import { SettingsProvider } from '@/components/SettingsProvider'
 import FunctionalityClient from './FunctionalityClient'
 import { db } from '@/lib/db'
 import { Metadata } from 'next'
+import { DEFAULT_TOOLS, DEFAULT_CATEGORIES, DEFAULT_NAV_ITEMS, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
+
 export const revalidate = 0
 
 export async function generateMetadata(): Promise<Metadata> {
-  let siteName = '运营魔方 ToolBox'
+  let siteName = DEFAULT_SITE_SETTINGS.siteName
   let functionalityTitle = '功能中心'
   let functionalitySubtitle = ''
   
@@ -44,23 +46,37 @@ export default async function FunctionalityPage() {
 
   let initialCategories: any[] = categoriesRows
   if (!Array.isArray(initialCategories) || initialCategories.length === 0) {
-    initialCategories = [
-      { key: 'operation', label: '运营工具', order: 1 },
-      { key: 'advertising', label: '广告工具', order: 2 },
-      { key: 'image-text', label: '图片文本', order: 3 }
-    ]
+    initialCategories = DEFAULT_CATEGORIES
   }
 
   let initialModules: any[] = []
   try {
     initialModules = Array.isArray(modulesRows) ? modulesRows.filter((m:any)=>m.status !== '下架') : []
-  } catch { initialModules = [] }
+    // Merge logic to ensure consistency with homepage
+    const ensure = (arr: any[]) => {
+      const keys = new Set(arr.map((x: any) => x.key))
+      const merged = arr.slice()
+      for (const d of DEFAULT_TOOLS) if (!keys.has(d.key)) merged.push(d)
+      return merged
+    }
+    initialModules = ensure(initialModules)
+    
+    // Force override status for 'word-count' if it is '维护'
+    initialModules = initialModules.map((m: any) => {
+      if (m.key === 'word-count' && m.status === '维护') {
+        return { ...m, status: '启用' }
+      }
+      return m
+    })
+  } catch { 
+    initialModules = DEFAULT_TOOLS
+  }
 
   let navItems: any[] = []
   try {
     const arr = navRow && (navRow as any).value ? JSON.parse(String((navRow as any).value)) : []
-    navItems = Array.isArray(arr) ? arr : []
-  } catch { navItems = [] }
+    navItems = Array.isArray(arr) && arr.length > 0 ? arr : DEFAULT_NAV_ITEMS
+  } catch { navItems = DEFAULT_NAV_ITEMS }
 
   const safeOrigin = process.env.NEXT_PUBLIC_SITE_URL || ''
   const jsonLd = {
