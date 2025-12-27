@@ -1,73 +1,54 @@
-import { SettingsProvider } from '@/components/SettingsProvider'
-import HomeLayoutClient from './HomeClient'
-import { db } from '@/lib/db'
-import { Suspense } from 'react'
-export const revalidate = 0
+import { PrismaClient } from '@prisma/client'
+import * as crypto from 'crypto'
 
-export default async function Page({ searchParams }: { searchParams?: Record<string, string> }) {
-  const settingsPromise = (db as any).siteSettings.findMany().catch(() => [])
-  const navPromise = (db as any).siteSettings.findUnique({ where: { key: 'navigation' } }).catch(() => null)
-  const modulesPromise = (db as any).toolModule.findMany({ orderBy: { order: 'asc' } }).catch(() => [])
-  const categoriesPromise = (db as any).toolCategory.findMany({ where: { enabled: true }, orderBy: { order: 'asc' } }).catch(() => [])
+const db = new PrismaClient()
 
-  const [settingsRows, navRow, modulesRows, categoriesRows] = await Promise.all([
-    settingsPromise,
-    navPromise,
-    modulesPromise,
-    categoriesPromise
-  ])
+function hash(password: string, salt: string) {
+  return crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex')
+}
 
-  // Auto-seed for image-compression if missing
-  if (Array.isArray(modulesRows) && !modulesRows.some((m: any) => m.key === 'image-compression')) {
-    try {
-      const existing = await (db as any).toolModule.findUnique({ where: { key: 'image-compression' } })
-      if (!existing) {
-        await (db as any).toolModule.create({
-          data: {
-            key: 'image-compression',
-            title: '图片压缩与格式转换',
-            desc: '批量压缩、格式转换，本地处理不上传服务器',
-            status: '启用',
-            views: 0,
-            color: 'blue',
-            order: 14,
-            category: 'image-text'
-          }
-        })
+function hashPassword(password: string) {
+  const salt = crypto.randomBytes(16).toString('hex')
+  const h = hash(password, salt)
+  return { hash: h, salt }
+}
+
+async function main() {
+  console.log('Start seeding...')
+
+  // 1. Admin User
+  const existingAdmin = await db.adminUser.findFirst()
+  if (!existingAdmin) {
+    console.log('Creating default admin user...')
+    const { hash, salt } = hashPassword('dage168')
+    await db.adminUser.create({
+      data: {
+        username: 'dage666',
+        passwordHash: hash,
+        passwordSalt: salt
       }
-      const existingCat = await (db as any).toolCategory.findUnique({ where: { key: 'image-text' } })
-      if (!existingCat) {
-        await (db as any).toolCategory.create({
-          data: { key: 'image-text', label: '图片文本', order: 3, enabled: true }
-        })
-      }
-    } catch (e) {
-      console.error('Auto-seed failed:', e)
-    }
+    })
   }
 
-  let initialSettings: Record<string, any> = {}
-  try {
-    for (const r of settingsRows as any) initialSettings[String((r as any).key)] = String((r as any).value ?? '')
-  } catch {}
+  // 2. Categories
+  const categories = [
+    { key: 'operation', label: '运营工具', order: 1, enabled: true },
+    { key: 'advertising', label: '广告工具', order: 2, enabled: true },
+    { key: 'image-text', label: '图片文本', order: 3, enabled: true },
+    { key: 'other', label: '其他工具', order: 4, enabled: true }
+  ]
 
-  let navItems: any[] = []
-  try {
-    const arr = navRow && (navRow as any).value ? JSON.parse(String((navRow as any).value)) : []
-    navItems = Array.isArray(arr) && arr.length > 0 ? arr : [
-      { id: 'about', label: '关于', href: '/about', order: 1, isExternal: false, active: true },
-      { id: 'blog', label: '博客', href: '/blog', order: 2, isExternal: false, active: true },
-      { id: 'suggest', label: '提需求', href: '/suggest', order: 3, isExternal: false, active: true }
-    ]
-  } catch {
-    navItems = [
-      { id: 'about', label: '关于', href: '/about', order: 1, isExternal: false, active: true },
-      { id: 'blog', label: '博客', href: '/blog', order: 2, isExternal: false, active: true },
-      { id: 'suggest', label: '提需求', href: '/suggest', order: 3, isExternal: false, active: true }
-    ]
+  for (const cat of categories) {
+    await db.toolCategory.upsert({
+      where: { key: cat.key },
+      update: cat,
+      create: cat
+    })
   }
 
-  const defaultTools = [
+  // 3. Tools
+  const tools = [
+    // Advertising
     { key: 'ad-calc', title: '广告竞价计算', desc: '亚马逊广告策略实时出价计算，支持Fixed/Dynamic策略', status: '启用', color: 'blue', order: 1, category: 'advertising' },
     { key: 'cpc-compass', title: 'CPC利润测算', desc: '集成FBA费率、佣金计算，精准推导盈亏平衡CPC及ACOS', status: '启用', color: 'blue', order: 2, category: 'advertising' },
     { key: 'amazon-promotion-stacking', title: '亚马逊促销叠加计算器', desc: '自动计算促销叠加或互斥，基于2025版《各类促销叠加情况》矩阵表逻辑', status: '启用', color: 'blue', order: 3, category: 'advertising' },
@@ -75,6 +56,8 @@ export default async function Page({ searchParams }: { searchParams?: Record<str
     { key: 'keyword-strategy', title: '关键词策略工具', desc: '分析关键词分布，制定Listing埋词策略', status: '启用', color: 'blue', order: 5, category: 'advertising' },
     { key: 'search-term-volatility', title: '搜索词波动分析', desc: '分析搜索词排名波动，监控市场趋势', status: '启用', color: 'blue', order: 6, category: 'advertising' },
     { key: 'natural-traffic-tool', title: '自然流量分析工具', desc: '分析自然流量与广告流量占比，优化流量结构', status: '启用', color: 'blue', order: 7, category: 'advertising' },
+
+    // Operation
     { key: 'storage-fee-calc', title: '亚马逊 FBA 全能仓储费计算器', desc: '集成月度仓储费、利用率附加费及超龄库存附加费（含2026新规）', status: '启用', color: 'blue', order: 10, category: 'operation' },
     { key: 'delivery', title: '美国站配送费计算', desc: '按2025/2026规则计算配送费用', status: '启用', color: 'orange', order: 11, category: 'operation' },
     { key: 'returns-v2', title: '退货报告分析V2', desc: '上传退货报告，原因/趋势/仓库/评论多维分析', status: '启用', color: 'blue', order: 12, category: 'operation' },
@@ -88,6 +71,8 @@ export default async function Page({ searchParams }: { searchParams?: Record<str
     { key: 'max-reserve-fee', title: '入库配置费计算器', desc: '计算亚马逊入库配置费，优化发货成本', status: '启用', color: 'blue', order: 21, category: 'operation' },
     { key: 'partner-equity-calculator', title: '合伙人权益计算器', desc: '亚马逊合伙创业股权分配与利润分红计算', status: '启用', color: 'purple', order: 22, category: 'operation' },
     { key: 'fba-warehouses', title: 'FBA仓库查询', desc: '查询全球FBA仓库地址、代码及详细信息', status: '启用', color: 'orange', order: 23, category: 'operation' },
+
+    // Image & Text
     { key: 'editor', title: '可视化编辑器', desc: '所见即所得的HTML编辑器，支持一键复制源码', status: '启用', color: 'indigo', order: 30, category: 'image-text' },
     { key: 'case', title: '大小写转换', desc: '文本大小写一键转换，支持首字母大写', status: '启用', color: 'violet', order: 31, category: 'image-text' },
     { key: 'word-count', title: '词频统计', desc: '分析英文文本，统计单词出现频率和字符数', status: '维护', color: 'sky', order: 32, category: 'image-text' },
@@ -98,47 +83,27 @@ export default async function Page({ searchParams }: { searchParams?: Record<str
     { key: 'image-resizer', title: '图片尺寸修改工具', desc: '批量修改图片尺寸、格式转换和压缩，支持JPEG/PNG/GIF', status: '启用', color: 'indigo', order: 37, category: 'image-text' },
     { key: 'image-compression', title: '图片压缩与格式转换', desc: '批量压缩、格式转换，本地处理不上传服务器', status: '启用', color: 'blue', order: 38, category: 'image-text' },
     { key: 'pinyin-converter', title: '汉字转拼音', desc: '汉字转拼音工具，支持多音字、声调标记', status: '启用', color: 'green', order: 39, category: 'image-text' },
+
+    // Other
     { key: 'unit', title: '单位换算', desc: '长度、重量、体积等多维度单位快速换算', status: '启用', color: 'cyan', order: 50, category: 'other' }
   ]
 
-  let modules: any[] = modulesRows
-  try {
-    const ensure = (arr: any[]) => {
-      const keys = new Set(arr.map((x: any) => x.key))
-      const merged = arr.slice()
-      for (const d of defaultTools) if (!keys.has(d.key)) merged.push(d)
-      return merged
-    }
-    modules = ensure(Array.isArray(modules) ? modules : [])
-    if (!Array.isArray(modules) || modules.length === 0) {
-      modules = defaultTools
-    }
-  } catch {
-    modules = defaultTools
+  for (const tool of tools) {
+    await db.toolModule.upsert({
+      where: { key: tool.key },
+      update: tool,
+      create: tool
+    })
   }
 
-  let categories = categoriesRows
-  if (!categories || categories.length === 0) {
-    categories = [
-      { key: 'operation', label: '运营工具', enabled: true },
-      { key: 'advertising', label: '广告工具', enabled: true },
-      { key: 'image-text', label: '图片文本', enabled: true }
-    ]
-  }
-
-  // Ensure "Functionality" menu item exists
-  const hasFuncMenu = navItems.some((item: any) => String(item.label || '').includes('功能分类') || String(item.id || '') === 'functionality')
-  if (!hasFuncMenu) {
-    navItems.splice(0, 0, { id: 'functionality', label: '功能分类', order: 0, children: [] })
-  }
-
-  const initialActiveTab = String(searchParams?.tab || '')
-  const initialFull = String(searchParams?.full || '') === '1'
-  return (
-    <SettingsProvider initial={initialSettings}>
-      <Suspense fallback={null}>
-        <HomeLayoutClient initialModules={modules} initialNavItems={navItems} initialActiveTab={initialActiveTab} initialFull={initialFull} initialCategories={categories} />
-      </Suspense>
-    </SettingsProvider>
-  )
+  console.log(`Seeding finished. Processed ${tools.length} tools.`)
 }
+
+main()
+  .catch((e) => {
+    console.error(e)
+    process.exit(1)
+  })
+  .finally(async () => {
+    await db.$disconnect()
+  })
