@@ -6,12 +6,12 @@ import React, { useEffect, useState } from 'react'
 import { LayoutDashboard, ChevronDown, MoreHorizontal } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 import { marked } from 'marked'
-import { DEFAULT_CATEGORIES, DEFAULT_TOOLS } from '@/lib/constants'
+import { DEFAULT_CATEGORIES, DEFAULT_TOOLS, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 
 export default function AboutClient({ initialNavItems, initialHtml }: { initialNavItems: any[]; initialHtml?: string }) {
   const { settings } = useSettings()
   const title = String(settings.aboutTitle || '关于我们')
-  const content = String(settings.aboutContent || '欢迎使用本工具箱。这里将介绍项目背景、目标与联系方式。')
+  const content = String(settings.aboutContent || DEFAULT_SITE_SETTINGS.aboutContent || '本站不需要注册，所有工具免费使用。')
   const [html, setHtml] = useState(initialHtml || '')
   const [navItems] = useState<Array<any>>(initialNavItems || [])
   const [modules, setModules] = useState<any[]>([])

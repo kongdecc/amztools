@@ -2,6 +2,7 @@
 export const DEFAULT_SITE_SETTINGS = {
   siteName: '跨境工具魔方 AmzToolBox',
   siteDescription: '本站不需要注册，所有工具免费使用。',
+  aboutContent: '本站不需要注册，所有工具免费使用。',
   copyrightText: '© 2025 跨境工具魔方 AmzToolBox. All rights reserved.',
   privacyPolicy: `特别说明
 本站内容无需登录即可访问与使用，我们不主动收集任何可识别个人信息。
@@ -65,7 +66,7 @@ export const DEFAULT_TOOLS = [
   { key: 'pinyin-converter', title: '汉字转拼音', desc: '汉字转拼音工具，支持多音字、声调标记', status: '启用', color: 'green', order: 39, category: 'image-text' },
 
   // Other (Moved carton and partner here)
-  { key: 'unit', title: '单位换算', desc: '长度、重量、体积等多维度单位快速换算', status: '启用', color: 'cyan', order: 50, category: 'other' },
+  { key: 'unit', title: '单位换算', desc: '长度、重量、体积等多维度单位快速换算', status: '启用', color: 'cyan', order: 25, category: 'operation' },
   { key: 'carton-calc-advanced', title: '外箱装箱计算器', desc: '智能计算装箱方案，优化空间利用率', status: '启用', color: 'indigo', order: 51, category: 'other' },
   { key: 'partner-equity-calculator', title: '合伙人权益计算器', desc: '亚马逊合伙创业股权分配与利润分红计算', status: '启用', color: 'purple', order: 52, category: 'other' }
 ]

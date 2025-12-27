@@ -5,11 +5,11 @@ import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import { LayoutDashboard, ChevronDown, MoreHorizontal } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
-import { DEFAULT_CATEGORIES, DEFAULT_TOOLS } from '@/lib/constants'
+import { DEFAULT_CATEGORIES, DEFAULT_TOOLS, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 
 export default function PrivacyClient({ initialNavItems }: { initialNavItems: any[] }) {
   const { settings } = useSettings()
-  const content = String(settings.privacyPolicy || '')
+  const content = String(settings.privacyPolicy || DEFAULT_SITE_SETTINGS.privacyPolicy || '')
   const paragraphs = content.split('\n').filter(p => p.trim().length)
   const [navItems] = useState<Array<any>>(initialNavItems || [])
   const [origin, setOrigin] = useState('')
