@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { LayoutDashboard, ChevronDown, Search, MoreHorizontal, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Trash2, AlertCircle, CheckCircle, Filter, Image as ImageIcon, Receipt, Crosshair, Globe, Star, Hammer, ArrowLeftRight, Activity, Users, Box, Warehouse, FileText, Languages, Shuffle } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
+import { DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 
 const Card = ({ children, className = '', onClick, ...props }: any) => (
   <div onClick={onClick} className={`bg-white rounded-xl border border-gray-100 shadow-sm ${className}`} {...props}>{children}</div>

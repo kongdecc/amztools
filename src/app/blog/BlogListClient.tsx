@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useSettings } from '@/components/SettingsProvider'
 import { LayoutDashboard, ChevronDown, MoreHorizontal } from 'lucide-react'
-import { DEFAULT_CATEGORIES, DEFAULT_TOOLS } from '@/lib/constants'
+import { DEFAULT_CATEGORIES, DEFAULT_TOOLS, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 
 type Post = { id: string; title: string; slug: string; content: string; status: string; order?: number; createdAt?: string; coverUrl?: string }
 
