@@ -28,7 +28,7 @@ import CartonCalculatorAdvanced from '@/components/CartonCalculatorAdvanced'
 import NaturalTrafficTool from '@/components/NaturalTrafficTool'
 import AmazonPromotionStackingCalculator from '@/components/AmazonPromotionStackingCalculator'
 import StorageFeeCalculatorPage from '@/components/StorageFeeCalculatorPage'
-import { DEFAULT_NAV_ITEMS, DEFAULT_TOOLS, DEFAULT_CATEGORIES } from '@/lib/constants'
+import { DEFAULT_NAV_ITEMS, DEFAULT_TOOLS, DEFAULT_CATEGORIES, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 
 const DetailClient = () => {
   const { key } = useParams<{ key: string }>()
@@ -243,7 +243,7 @@ const DetailClient = () => {
       </main>
       <div className="mt-auto text-center py-6">
         <footer className="text-xs text-gray-400">
-          {settings.copyrightText || '© 2025 运营魔方 ToolBox. All rights reserved.'}
+          {settings.copyrightText || DEFAULT_SITE_SETTINGS.copyrightText}
           <span className="mx-2">|</span>
           <a href="/privacy" className="hover:text-blue-600">隐私说明</a>
         </footer>

@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react'
 import { LayoutDashboard, ChevronDown, MoreHorizontal } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 import { marked } from 'marked'
-import { DEFAULT_CATEGORIES, DEFAULT_TOOLS } from '@/lib/constants'
+import { DEFAULT_CATEGORIES, DEFAULT_TOOLS, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 
 type Post = { id: string; title: string; slug: string; content: string; status: string; order?: number; views?: number; createdAt?: string; updatedAt?: string; coverUrl?: string }
 
@@ -208,7 +208,7 @@ export default function BlogDetailClient({ item, initialNavItems, initialHtml }:
       </div>
       <div className="px-6 pb-10 text-center">
         <footer className="text-xs text-gray-400">
-          {settings.copyrightText || '© 2025 运营魔方 ToolBox. All rights reserved.'}
+          {settings.copyrightText || DEFAULT_SITE_SETTINGS.copyrightText}
           <span className="mx-2">|</span>
           <a href="/privacy" className="hover:text-blue-600">隐私说明</a>
         </footer>

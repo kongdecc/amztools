@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSettings } from '@/components/SettingsProvider'
 import { LayoutDashboard, Send, ChevronDown, MoreHorizontal } from 'lucide-react'
-import { DEFAULT_CATEGORIES, DEFAULT_TOOLS } from '@/lib/constants'
+import { DEFAULT_CATEGORIES, DEFAULT_TOOLS, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 
 interface SuggestClientProps {
   initialNavItems: any[]

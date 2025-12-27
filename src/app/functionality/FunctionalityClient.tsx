@@ -265,7 +265,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
       </div>
       <div className="mt-auto text-center py-6">
         <footer className="text-xs text-gray-400">
-          {settings.copyrightText || '© 2025 运营魔方 ToolBox. All rights reserved.'}
+          {settings.copyrightText || DEFAULT_SITE_SETTINGS.copyrightText}
           <span className="mx-2">|</span>
           <a href="/privacy" className="hover:text-blue-600">隐私说明</a>
         </footer>

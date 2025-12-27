@@ -3,26 +3,27 @@ import { db } from '@/lib/db'
 import { SESSION_COOKIE, getSessionByToken } from '@/lib/auth'
 import fs from 'fs'
 import path from 'path'
+import { DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 export const dynamic = 'force-dynamic'
 
 const defaults = {
-  siteName: '运营魔方 ToolBox',
+  siteName: DEFAULT_SITE_SETTINGS.siteName,
   logoUrl: '',
   faviconUrl: '',
-  siteDescription: '为跨境运营人员打造的免费在线工具箱',
+  siteDescription: DEFAULT_SITE_SETTINGS.siteDescription,
   siteKeywords: '工具箱, 广告计算, 文本处理',
   analyticsHeadHtml: '',
   analyticsBodyHtml: '',
   showAnalytics: 'false',
-  copyrightText: '© 2025 运营魔方 ToolBox. All rights reserved.',
+  copyrightText: DEFAULT_SITE_SETTINGS.copyrightText,
   homeHeroTitle: '一站式图像与运营处理工具',
   homeHeroSubtitle: '轻松处理您的数据，提升工作效率',
   hideHomeHeroIfEmpty: 'false',
   friendLinks: '[]',
-  privacyPolicy: '我们重视您的隐私。此页面说明我们收集哪些数据、如何使用以及您的权利。我们仅收集提供服务所需的基础信息，不出售个人数据，并提供访问、更正或删除数据的途径。',
+  privacyPolicy: DEFAULT_SITE_SETTINGS.privacyPolicy,
   showFriendLinksLabel: 'false',
   aboutTitle: '关于我们',
-  aboutContent: '欢迎使用本工具箱。这里将介绍项目背景、目标与联系方式。',
+  aboutContent: DEFAULT_SITE_SETTINGS.aboutContent,
   seoDescription: '',
   sitemapEnabled: 'true',
   sitemapFrequency: 'daily',
@@ -65,10 +66,29 @@ export async function GET() {
     rows.forEach(r => { dbObj[r.key] = r.value })
     const fileObj = readFileSettings()
     const merged = { ...defaults, ...fileObj, ...memSettings, ...dbObj }
+    
+    // Fix: Ensure persistent site name and copyright if they match the old default
+    if (merged.siteName === '运营魔方 ToolBox') {
+      merged.siteName = DEFAULT_SITE_SETTINGS.siteName
+    }
+    if (merged.copyrightText && merged.copyrightText.includes('运营魔方 ToolBox')) {
+      merged.copyrightText = DEFAULT_SITE_SETTINGS.copyrightText
+    }
+
     return NextResponse.json(merged, { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } })
   } catch {
     const fileObj = readFileSettings()
-    return NextResponse.json({ ...defaults, ...fileObj, ...memSettings }, { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } })
+    const merged = { ...defaults, ...fileObj, ...memSettings }
+    
+    // Fix: Ensure persistent site name and copyright if they match the old default
+    if (merged.siteName === '运营魔方 ToolBox') {
+      merged.siteName = DEFAULT_SITE_SETTINGS.siteName
+    }
+    if (merged.copyrightText && merged.copyrightText.includes('运营魔方 ToolBox')) {
+      merged.copyrightText = DEFAULT_SITE_SETTINGS.copyrightText
+    }
+
+    return NextResponse.json(merged, { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } })
   }
 }
 

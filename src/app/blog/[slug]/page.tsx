@@ -1,4 +1,5 @@
 import { SettingsProvider } from '@/components/SettingsProvider'
+import { DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 import { db } from '@/lib/db'
 import BlogDetailClient from '../BlogDetailClient'
 import fs from 'fs'
@@ -70,7 +71,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params
   const base = getSiteBase()
   const settings = await getSettingsMap()
-  const siteName = settings.siteName || '运营魔方 ToolBox'
+  const siteName = settings.siteName || DEFAULT_SITE_SETTINGS.siteName
   const siteDescription = settings.seoDescription || settings.siteDescription || ''
   const siteKeywords = settings.siteKeywords || ''
   const item = await getPostBySlug(slug)

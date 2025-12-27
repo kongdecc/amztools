@@ -6,6 +6,7 @@ import { useSettings } from '@/components/SettingsProvider'
 import Head from 'next/head'
 import Link from 'next/link'
 import ToolContainer from '@/components/ToolContainer'
+import { DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 
 import { useRef } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
@@ -703,7 +704,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
       </div>
       <div className="mt-auto text-center py-6">
         <footer className="text-xs text-gray-400">
-          {settings.copyrightText || '© 2025 运营魔方 ToolBox. All rights reserved.'}
+          {settings.copyrightText || DEFAULT_SITE_SETTINGS.copyrightText}
           <span className="mx-2">|</span>
           <a href="/privacy" className="hover:text-blue-600">隐私说明</a>
         </footer>
