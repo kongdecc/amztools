@@ -176,6 +176,19 @@ function StatusBadge({ status }: any) {
           <div className="px-5 py-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between text-sm">
             <div className="text-gray-600">已选 {Object.values(selected).filter(Boolean).length} 项</div>
             <div className="flex items-center gap-2">
+              <select 
+                className="px-3 py-1.5 rounded border text-gray-700 hover:bg-gray-100 bg-white text-sm focus:outline-none focus:border-blue-500"
+                onChange={(e) => {
+                  if (!e.target.value) return
+                  const newCat = e.target.value
+                  const keys = Object.keys(selected).filter(k => selected[k])
+                  setList((prev) => prev.map((x) => keys.includes(uidOf(x)) ? { ...x, category: newCat } : x))
+                  e.target.value = '' // Reset
+                }}
+              >
+                <option value="">批量修改分类...</option>
+                {categories.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
+              </select>
               <button onClick={() => {
                 const keys = Object.keys(selected).filter(k => selected[k])
                 setList((prev) => prev.map((x) => keys.includes(uidOf(x)) ? { ...x, status: '下架' } : x))
