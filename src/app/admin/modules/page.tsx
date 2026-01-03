@@ -25,11 +25,19 @@ export default function AdminModules() {
       setCategories(Array.isArray(cd) ? cd : [])
     } catch {}
   })() }, [])
+  const [filterCategory, setFilterCategory] = useState<string>('')
   const filtered = useMemo(() => {
-    if (!keyword.trim()) return list
-    const k = keyword.trim().toLowerCase()
-    return list.filter((x) => [x.title, x.key, x.desc].some((t: string) => String(t || '').toLowerCase().includes(k)))
-  }, [list, keyword])
+    let res = list
+    if (filterCategory) {
+      res = res.filter(x => x.category === filterCategory)
+    }
+    if (keyword.trim()) {
+      const k = keyword.trim().toLowerCase()
+      res = res.filter((x) => [x.title, x.key, x.desc].some((t: string) => String(t || '').toLowerCase().includes(k)))
+    }
+    return res
+  }, [list, keyword, filterCategory])
+  const [draggedItem, setDraggedItem] = useState<any>(null)
   const uidOf = (x: any) => x?.id ?? x?.key
   const isDirty = useMemo(() => {
     const norm = (arr: Array<any>) => arr.map((x: any) => ({ key: x.key, title: x.title, desc: x.desc, status: x.status, views: Number(x.views || 0), color: x.color || 'blue', order: Number(x.order || 0), category: x.category || 'other' })).sort((a: any, b: any) => a.key.localeCompare(b.key))
@@ -96,6 +104,16 @@ function StatusBadge({ status }: any) {
             <p className="text-xs text-gray-400 mt-1">管理前台展示的工具模块、排序及状态</p>
           </div>
           <div className="flex gap-3">
+            <select 
+              value={filterCategory} 
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="px-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:border-blue-500 bg-white"
+            >
+              <option value="">所有分类</option>
+              {categories.map(c => (
+                <option key={c.key} value={c.key}>{c.label}</option>
+              ))}
+            </select>
             <div className="relative">
               <input value={keyword} onChange={(e) => setKeyword(e.target.value)} type="text" placeholder="搜索工具..." className="pl-8 pr-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:border-blue-500 w-48" />
               <Search className="absolute left-2.5 top-2.5 text-gray-400" size={14} />
@@ -179,6 +197,7 @@ function StatusBadge({ status }: any) {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[#f8f9fb] text-gray-500 text-xs font-semibold uppercase tracking-wider border-y border-gray-100">
+                <th className="p-4 w-10"></th>
                 <th className="p-4 w-10"><input type="checkbox" className="rounded border-gray-300" onChange={(e) => {
                   const v = e.target.checked
                   const next: Record<string, boolean> = { ...selected }
@@ -198,13 +217,55 @@ function StatusBadge({ status }: any) {
             </thead>
             <tbody className="text-sm text-gray-600 divide-y divide-gray-50">
               {filtered.map((row: any, idx: number) => (
-                <tr key={row.id || row.key} className="hover:bg-blue-50/40 transition-colors group">
+                <tr 
+                  key={row.id || row.key} 
+                  className={`hover:bg-blue-50/40 transition-colors group ${draggedItem && draggedItem.key === row.key ? 'opacity-50' : ''}`}
+                  draggable={!filterCategory && !keyword}
+                  onDragStart={(e) => {
+                    if (filterCategory || keyword) {
+                      e.preventDefault()
+                      return
+                    }
+                    setDraggedItem(row)
+                    e.dataTransfer.effectAllowed = 'move'
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault()
+                    e.dataTransfer.dropEffect = 'move'
+                  }}
+                  onDrop={async (e) => {
+                    e.preventDefault()
+                    if (!draggedItem || draggedItem.key === row.key) return
+                    
+                    const copy = [...list]
+                    const fromIndex = copy.findIndex(x => x.key === draggedItem.key)
+                    const toIndex = copy.findIndex(x => x.key === row.key)
+                    
+                    if (fromIndex === -1 || toIndex === -1) return
+                    
+                    // Move item
+                    const [removed] = copy.splice(fromIndex, 1)
+                    copy.splice(toIndex, 0, removed)
+                    
+                    // Reassign orders
+                    const mapped = copy.map((x, i) => ({ ...x, order: i + 1 }))
+                    
+                    setList(mapped)
+                    setDraggedItem(null)
+                    
+                    // Auto save or let user save? User asked for drag sort, typically expects auto save or easy save.
+                    // Let's rely on the existing "Save" button highlighting dirty state.
+                  }}
+                >
+                  <td className="p-4 text-center cursor-move text-gray-400 hover:text-gray-600" title={filterCategory || keyword ? "筛选状态下不可拖拽" : "拖拽排序"}>
+                    <div className={filterCategory || keyword ? "opacity-30 cursor-not-allowed" : ""}>⋮⋮</div>
+                  </td>
                   <td className="p-4"><input type="checkbox" className="rounded border-gray-300" checked={!!selected[uidOf(row)]} onChange={(e) => {
                     const id = uidOf(row)
                     const v = e.target.checked
                     setSelected((prev) => ({ ...prev, [id]: v }))
                   }} /></td>
-                  <td className="p-4 font-mono text-gray-400">{idx + 1}</td>
+                  <td className="p-4 font-mono text-gray-400">{row.order}</td>
                   <td className="p-4">
                     {editingId === uidOf(row) ? (
                       <input value={row.title} onChange={(e) => setList((prev) => prev.map((x) => (x.id ?? x.key) === (row.id ?? row.key) ? { ...x, title: e.target.value } : x))} className="w-40 border rounded px-2 py-1 text-sm" />
