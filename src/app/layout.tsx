@@ -88,6 +88,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({ children }: { children: ReactNode }) {
   let analyticsHeadHtml = ''
   let analyticsBodyHtml = ''
+  let showAnalytics = false
   let enableStructuredData = false
   let siteName = DEFAULT_SITE_SETTINGS.siteName
   let siteDescription = DEFAULT_SITE_SETTINGS.siteDescription
@@ -100,6 +101,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     for (const r of rows as any) settings[String((r as any).key)] = String((r as any).value ?? '')
     analyticsHeadHtml = settings.analyticsHeadHtml || ''
     analyticsBodyHtml = settings.analyticsBodyHtml || ''
+    showAnalytics = String(settings.showAnalytics || 'false') === 'true'
     enableStructuredData = String(settings.enableStructuredData || 'true') === 'true'
     siteName = settings.siteName || siteName
     siteDescription = settings.siteDescription || siteDescription
@@ -129,9 +131,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
           />
         )}
-        {analyticsHeadHtml && <div dangerouslySetInnerHTML={{ __html: analyticsHeadHtml }} style={{ display: 'none' }} />}
+        {showAnalytics && analyticsHeadHtml && <div dangerouslySetInnerHTML={{ __html: analyticsHeadHtml }} style={{ display: 'none' }} />}
         {children}
-        {analyticsBodyHtml && <div dangerouslySetInnerHTML={{ __html: analyticsBodyHtml }} />}
+        {showAnalytics && analyticsBodyHtml && <div dangerouslySetInnerHTML={{ __html: analyticsBodyHtml }} />}
       </body>
     </html>
   )

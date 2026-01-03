@@ -153,7 +153,7 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
           />
           <div className="text-center mt-3 text-sm text-gray-500 font-medium flex items-center justify-center gap-4">
             <span>已经累计上传：<span className="text-indigo-600 font-bold">{modules.filter((m: any) => m.status !== '下架').length}</span> 个工具</span>
-            <Link href="/marketing-calendar.html" target="_blank" className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors">
+            <Link href="/marketing-calendar.html" target="_blank" prefetch={false} className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors">
               <span>📅</span>
               <span className="underline decoration-indigo-300 underline-offset-4 hover:decoration-indigo-600">2026年电商营销日历</span>
             </Link>
@@ -201,6 +201,7 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
         <div className="text-center mt-8">
           <Link 
             href="/functionality"
+            prefetch={false}
             className="inline-flex bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-lg font-medium hover:shadow-lg transform hover:-translate-y-1 transition-all items-center gap-2 mx-auto"
           >
             查看更多工具
