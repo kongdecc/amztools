@@ -386,6 +386,11 @@
                 flex-direction: column;
                 align-items: stretch;
                 padding: 16px;
+                position: static;
+            }
+
+            .month-section {
+                position: static;
             }
             
             .filter-group {
@@ -765,7 +770,10 @@
                             const isUSInBracket = event.content.includes('(美)') || event.content.includes('（美）') || 
                                                 event.content.includes('(USA)') || event.content.includes('（USA）');
                             
-                            if (!isUSInBracket) {
+                            // Allow religious qualifiers for common holidays (like Easter)
+                            const isReligious = event.content.includes('基督教') || event.content.includes('东正教');
+
+                            if (!isUSInBracket && !isReligious) {
                                 // It has brackets but not for US -> likely another country -> exclude
                                 // EXCEPT for known safe patterns like "Valentine's Day (Western)" if any, 
                                 // but based on your feedback "Independent Day (Myanmar)" is the issue.
