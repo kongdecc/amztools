@@ -24,11 +24,12 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
   const router = useRouter()
   const safeOrigin = (typeof window !== 'undefined' && (window as any).location) ? (window as any).location.origin : ''
   const defaultCategories = [
-    { key: 'operation', label: '运营工具' },
-    { key: 'advertising', label: '广告工具' },
-    { key: 'image-text', label: '图片文本' }
+    { key: 'advertising', label: '广告工具', order: 1 },
+    { key: 'operation', label: '运营工具', order: 2 },
+    { key: 'image-text', label: '图片文本', order: 3 },
+    { key: 'other', label: '其他工具', order: 4 }
   ]
-  const activeCategories = categories.length > 0 ? categories : defaultCategories
+  const activeCategories = (categories.length > 0 ? categories : defaultCategories).slice().sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
 
   const iconMap: Record<string, any> = {
     'ad-calc': Calculator,
@@ -61,7 +62,7 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
     'keyword-combiner': Shuffle,
   }
   const titleOverride: Record<string, string> = {
-    'rating-sales-reverse': '好评及销量反推计算器'
+    'rating-sales-reverse': '亚马逊评分销量反推'
   }
   const descOverride: Record<string, string> = {
     'fba-label-editor': '在线编辑FBA标签PDF，支持添加文字（如批量添加Made in China)、手动拖拽调整位置和大小，自动应用到所有页面'
@@ -324,10 +325,17 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
 
   const menuItems = useMemo(() => [
     { id: 'home', label: '首页', icon: LayoutDashboard },
-    ...categories.map(cat => ({
+    ...categories
+      .slice()
+      .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
+      .map(cat => ({
       id: cat.key,
       label: cat.label,
-      children: modules.filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'image-text'))).map((m: any) => ({
+      children: modules
+        .filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'image-text')))
+        .slice()
+        .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
+        .map((m: any) => ({
         id: m.key,
         label: m.status === '维护' ? `${m.title}（维护）` : m.title,
         icon: iconMap[m.key] || Hammer
@@ -427,8 +435,14 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                     </button>
                     <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 max-h-[80vh] overflow-y-auto">
                       <div className="p-2 space-y-2">
-                        {categories.map(cat => {
-                          const catModules = modules.filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'image-text')))
+                        {categories
+                          .slice()
+                          .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
+                          .map(cat => {
+                          const catModules = modules
+                            .filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'image-text')))
+                            .slice()
+                            .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
                           if (catModules.length === 0) return null
                           return (
                             <div key={cat.key}>
@@ -740,5 +754,5 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
 
 
   const titleOverride: Record<string, string> = {
-    'rating-sales-reverse': '好评及销量反推计算器'
+    'rating-sales-reverse': '亚马逊评分销量反推'
   }

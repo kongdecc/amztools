@@ -32,7 +32,7 @@ export default async function Page({ searchParams }: { searchParams?: Record<str
             status: '启用',
             views: 0,
             color: 'blue',
-            order: 14,
+            order: 21,
             category: 'image-text'
           }
         })

@@ -89,8 +89,14 @@ export default function SuggestClient({ initialNavItems, modules }: SuggestClien
                   </button>
                   <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 max-h-[80vh] overflow-y-auto">
                     <div className="p-2 space-y-2">
-                      {categories.map(cat => {
-                        const catModules = modules.filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'image-text')))
+                      {categories
+                        .slice()
+                        .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
+                        .map(cat => {
+                        const catModules = modules
+                          .filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'image-text')))
+                          .slice()
+                          .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
                         if (catModules.length === 0) return null
                         return (
                           <div key={cat.key}>
