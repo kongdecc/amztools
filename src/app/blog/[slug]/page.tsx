@@ -193,7 +193,19 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
     image: image ? [image] : undefined,
     url: origin ? `${origin}/blog/${slug}` : undefined,
     description: desc || undefined,
-    mainEntityOfPage: origin ? `${origin}/blog/${slug}` : undefined
+    mainEntityOfPage: origin ? `${origin}/blog/${slug}` : undefined,
+    author: {
+      "@type": "Person",
+      name: initialSettings.siteName || "Admin"
+    },
+    publisher: {
+      "@type": "Organization",
+      name: initialSettings.siteName || DEFAULT_SITE_SETTINGS.siteName,
+      logo: {
+        "@type": "ImageObject",
+        url: initialSettings.logoUrl || (origin ? `${origin}/logo.png` : undefined)
+      }
+    }
   }
   return (
     <>

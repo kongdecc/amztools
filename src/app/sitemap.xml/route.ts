@@ -30,6 +30,15 @@ async function getNav(origin: string) {
   } catch { return [] }
 }
 
+async function getModules(origin: string) {
+  try {
+    const r = await fetch(`${origin}/api/modules`, { cache: 'no-store' })
+    const d = await r.json()
+    const arr = Array.isArray(d) ? d : []
+    return arr.filter((m: any) => m.status !== '下架')
+  } catch { return [] }
+}
+
 async function getNavLastMod(): Promise<string> {
   try {
     const row = await (db as any).siteSettings.findUnique({ where: { key: 'navigation' }, select: { updatedAt: true } })
@@ -55,6 +64,7 @@ export async function GET(request: Request) {
   const changefreq = allowedFreq.has(frequency) ? frequency : ''
   const posts = await getPosts(origin)
   const nav = await getNav(origin)
+  const modules = await getModules(origin)
   const urls: string[] = []
   const seen = new Set<string>()
   const buildUrl = (loc: string, opts?: { lastmod?: string; priority?: string }) => {
@@ -87,6 +97,14 @@ export async function GET(request: Request) {
         seen.add(url)
       }
     })
+  modules.forEach((m: any) => {
+    const loc = `${origin}/functionality/${m.key}`
+    const lastmod = m.updatedAt || nowIso
+    if (!seen.has(loc)) {
+      urls.push(buildUrl(loc, { lastmod: new Date(lastmod).toISOString(), priority: '0.8' }))
+      seen.add(loc)
+    }
+  })
   posts.forEach((p: any) => {
     const loc = `${origin}/blog/${p.slug}`
     const lastmod = p.updatedAt || p.createdAt || ''
