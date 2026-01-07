@@ -402,6 +402,7 @@
                     <button class="filter-btn active" data-filter="all">全部</button>
                     <button class="filter-btn" data-filter="us">🇺🇸 美国</button>
                     <button class="filter-btn" data-filter="jp">🇯🇵 日本</button>
+                    <button class="filter-btn" data-filter="eu">🇪🇺 欧洲</button>
                 </div>
                 <select id="monthFilter">
                     <option value="all">所有月份</option>
@@ -573,7 +574,7 @@
             // 1. Column Visibility (Country Filter)
             const showUS = currentQuickFilter === 'all' || currentQuickFilter === 'us';
             const showJP = currentQuickFilter === 'all' || currentQuickFilter === 'jp';
-            const showEU = currentQuickFilter === 'all'; 
+            const showEU = currentQuickFilter === 'all' || currentQuickFilter === 'eu'; 
 
             document.querySelectorAll('.col-us').forEach(el => el.style.display = showUS ? '' : 'none');
             document.querySelectorAll('.col-eu').forEach(el => el.style.display = showEU ? '' : 'none');
