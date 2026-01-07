@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026年亚马逊全球营销日历汇总表</title>
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            padding-top: 3.5rem;
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            flex: 1;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            color: #0f172a;
+            font-size: 2.5rem;
+            letter-spacing: -0.025em;
+        }
+        
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        .controls {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            position: sticky;
+            top: 76px;
+            z-index: 100;
+            border: 1px solid var(--border-color);
+        }
+
+        .search-box {
+            flex: 1 1 300px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px;
+            padding-left: 40px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.2s;
+            box-sizing: border-box;
+            background-color: #f8fafc;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            pointer-events: none;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary-color);
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        select {
+            padding: 10px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 14px;
+            background-color: #fff;
+            cursor: pointer;
+            color: var(--text-primary);
+            transition: all 0.2s;
+            min-width: 120px;
+        }
+        
+        select:hover {
+            border-color: #cbd5e1;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .quick-filters {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .filter-btn {
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .filter-btn:hover {
+            background-color: #f1f5f9;
+            color: var(--text-primary);
+        }
+        
+        .filter-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Dynamic Header Styles */
+        .tb-header { height: 3.5rem; background-color: #5b5bd6; color: white; display: flex; align-items: center; padding: 0 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); position: fixed; top: 0; left: 0; right: 0; z-index: 1000; font-family: system-ui, -apple-system, sans-serif; justify-content: space-between; }
+        @media (min-width: 768px) { .tb-header { padding: 0 2.5rem; justify-content: flex-start; } }
+        
+        .tb-logo-area { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; font-size: 1.125rem; min-width: 0; flex: 1; }
+        @media (min-width: 768px) { .tb-logo-area { flex: initial; margin-right: 1.5rem; } }
+        
+        .tb-logo-icon { background-color: rgba(255,255,255,0.2); padding: 0.25rem; border-radius: 0.25rem; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        
+        .tb-nav-desktop { display: none; margin-left: auto; align-items: center; gap: 1.5rem; flex-shrink: 0; }
+        @media (min-width: 768px) { .tb-nav-desktop { display: flex; } }
+        
+        .tb-nav-link { font-size: 0.875rem; color: rgba(255,255,255,0.9); text-decoration: none; display: flex; align-items: center; gap: 0.25rem; cursor: pointer; background: none; border: none; padding: 0; }
+        .tb-nav-link:hover { color: white; }
+        
+        .tb-mobile-toggle { display: flex; align-items: center; gap: 0.75rem; margin-left: auto; flex-shrink: 0; }
+        @media (min-width: 768px) { .tb-mobile-toggle { display: none; } }
+        
+        .tb-btn-icon { padding: 0.5rem; border-radius: 0.25rem; background: none; border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .tb-btn-icon:hover { background-color: rgba(255,255,255,0.1); }
+        
+        /* Mobile Menu */
+        .tb-mobile-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: none; }
+        .tb-mobile-overlay.open { display: block; }
+        .tb-mobile-menu { 
+            position: fixed; top: 0; right: 0; bottom: 0; width: 16rem; 
+            background: white; z-index: 2001; transform: translateX(100%); transition: transform 0.3s ease-in-out;
+            padding: 1.5rem; overflow-y: auto; color: #1f2937;
+        }
+        .tb-mobile-menu.open { transform: translateX(0); }
+        .tb-mobile-nav-item { display: block; padding: 0.75rem 0; font-size: 1rem; font-weight: 500; color: #374151; text-decoration: none; border-bottom: 1px solid #f3f4f6; }
+
+        /* Summary Table Styles */
+        .summary-table-container {
+            margin: 40px 0;
+            overflow-x: auto;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            background: #fff;
+        }
+        
+        .summary-table-header {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .summary-table-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+        
+        .summary-table th, .summary-table td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid #fed7aa;
+            vertical-align: top;
+        }
+        
+        .summary-table th {
+            background-color: #ffedd5;
+            color: #9a3412;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border-bottom: 2px solid #fdba74;
+        }
+        
+        .summary-table td:first-child {
+            background-color: #fff7ed;
+            font-weight: 700;
+            color: #c2410c;
+            text-align: center;
+            width: 60px;
+            font-size: 1.2rem;
+        }
+        
+        .summary-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .summary-table tr:hover td {
+            background-color: #fffaf0;
+        }
+        
+        .summary-table tr:hover td:first-child {
+            background-color: #ffedd5;
+        }
+
+        .summary-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .summary-list li {
+            margin-bottom: 8px;
+            position: relative;
+            padding-left: 14px;
+            line-height: 1.4;
+            font-size: 0.95rem;
+        }
+        
+        .summary-list li::before {
+            content: '•';
+            color: #f97316;
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+        
+        .highlight-date {
+            color: #c2410c;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 16px;
+                position: static;
+            }
+
+            .search-box {
+                flex: none;
+                width: 100%;
+            }
+            
+            .filter-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .quick-filters {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+        }
+        
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: var(--primary-color);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 1000;
+            border: none;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-4px);
+        }
+    </style>
+</head>
+<body>
+    <div id="site-header-container">
+        <div class="tb-header">
+            <div class="tb-logo-area">
+                <div class="tb-logo-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-dashboard"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+                </div>
+                <span>跨境工具魔方 AmzToolBox</span>
+            </div>
+            <nav class="tb-nav-desktop">
+                <a href="/" class="tb-nav-link">首页</a>
+                <a href="/functionality" class="tb-nav-link">功能分类</a>
+                <a href="/about" class="tb-nav-link">关于</a>
+                <a href="/blog" class="tb-nav-link">博客</a>
+                <a href="/suggest" class="tb-nav-link">提需求</a>
+                <a href="/reward" class="tb-nav-link">打赏支持</a>
+            </nav>
+            <div class="tb-mobile-toggle">
+                <button id="mobileMenuBtn" class="tb-btn-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+                </button>
+            </div>
+        </div>
+        <div class="tb-mobile-overlay" id="mobileOverlay"></div>
+        <div class="tb-mobile-menu" id="mobileMenu">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <span style="font-weight: 700; font-size: 1.25rem;">跨境工具魔方 AmzToolBox</span>
+                <button id="closeMobileBtn" style="background: none; border: none; padding: 0.5rem; cursor: pointer;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+            </div>
+            <a href="/" class="tb-mobile-nav-item">首页</a>
+            <a href="/functionality" class="tb-mobile-nav-item">功能分类</a>
+            <a href="/about" class="tb-mobile-nav-item">关于</a>
+            <a href="/blog" class="tb-mobile-nav-item">博客</a>
+            <a href="/suggest" class="tb-mobile-nav-item">提需求</a>
+            <a href="/reward" class="tb-mobile-nav-item">打赏支持</a>
+        </div>
+    </div>
+    <div class="container">
+        <header>
+            <h1>📊 2026年亚马逊全球营销日历汇总表</h1>
+            <p>全览节日、促销节点与重要活动</p>
+        </header>
+
+        <div class="controls">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="搜索节日、活动或日期...">
+            </div>
+            <div class="filter-group">
+                <div class="quick-filters">
+                    <button class="filter-btn active" data-filter="all">全部</button>
+                    <button class="filter-btn" data-filter="us">🇺🇸 美国</button>
+                    <button class="filter-btn" data-filter="jp">🇯🇵 日本</button>
+                </div>
+                <select id="monthFilter">
+                    <option value="all">所有月份</option>
+                    <option value="q1">Q1 第一季度</option>
+                    <option value="q2">Q2 第二季度</option>
+                    <option value="q3">Q3 第三季度</option>
+                    <option value="q4">Q4 第四季度</option>
+                    <option disabled>──────────</option>
+                    <option value="1">1月</option>
+                    <option value="2">2月</option>
+                    <option value="3">3月</option>
+                    <option value="4">4月</option>
+                    <option value="5">5月</option>
+                    <option value="6">6月</option>
+                    <option value="7">7月</option>
+                    <option value="8">8月</option>
+                    <option value="9">9月</option>
+                    <option value="10">10月</option>
+                    <option value="11">11月</option>
+                    <option value="12">12月</option>
+                </select>
+                <button id="resetBtn" class="filter-btn" style="color: #64748b; border-color: #cbd5e1;">↺ 重置</button>
+                <a href="/marketing-calendar.html" class="filter-btn" style="color: var(--primary-color); border-color: var(--primary-color);">📅 返回日历视图</a>
+            </div>
+        </div>
+
+        <div class="summary-table-container">
+            <div class="summary-table-header">
+                <h2>汇总详情</h2>
+            </div>
+            <div id="summaryTableContent">
+                <table class="summary-table">
+                    <thead>
+                        <tr>
+                            <th width="80">月份</th>
+                            <th class="col-us">🇺🇸 美国站 (US)</th>
+                            <th class="col-eu">🇪🇺 欧洲站 (EU)</th>
+                            <th class="col-jp">🇯🇵 日本站 (JP)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr data-month="1">
+                            <td>1月</td>
+                            <td class="col-us"><ul class="summary-list"><li>元旦 <span class="highlight-date">(1.1)</span></li><li>新年焕新季 <span class="highlight-date">(12.15-1.31)</span></li><li>情人节预热 <span class="highlight-date">(1.9-2.14)</span></li><li>气候承诺友好周 <span class="highlight-date">(1.29-2.4)</span></li></ul></td>
+                            <td class="col-eu"><ul class="summary-list"><li>元旦 <span class="highlight-date">(1.1)</span></li><li>新年焕新季 <span class="highlight-date">(12.15-1.31)</span></li><li>冬季清仓促销 <span class="highlight-date">(1.2-2.28)</span></li><li>气候承诺友好周 <span class="highlight-date">(1.29-2.4)</span></li><li>冬季促销 <span class="highlight-date">(1.29-2.5)</span></li></ul></td>
+                            <td class="col-jp"><ul class="summary-list"><li>新年 <span class="highlight-date">(1.1)</span></li><li>新年焕新季 <span class="highlight-date">(1月全月)</span></li><li>新年特惠 <span class="highlight-date">(1.9-2.4)</span></li></ul></td>
+                        </tr>
+                        <tr data-month="2">
+                            <td>2月</td>
+                            <td class="col-us"><ul class="summary-list"><li>情人节 <span class="highlight-date">(1.9-2.14)</span></li><li>超级碗 <span class="highlight-date">(2.8)</span></li><li>复活节预热 <span class="highlight-date">(2.2-4.5)</span></li></ul></td>
+                            <td class="col-eu"><ul class="summary-list"><li>情人节 <span class="highlight-date">(2.9)</span></li><li>冬季清仓促销 <span class="highlight-date">(持续)</span></li><li>冬季促销 <span class="highlight-date">(持续)</span></li></ul></td>
+                            <td class="col-jp"><ul class="summary-list"><li>人形玩偶促销 <span class="highlight-date">(2月)</span></li></ul></td>
+                        </tr>
+                        <tr data-month="3">
+                            <td>3月</td>
+                            <td class="col-us"><ul class="summary-list"><li>复活节 <span class="highlight-date">(2.2-4.5)</span></li><li>母亲节预热 <span class="highlight-date">(3.12-5.10)</span></li><li>圣帕特里克节 <span class="highlight-date">(3.17)</span></li></ul></td>
+                            <td class="col-eu"><ul class="summary-list"><li>消费者周 <span class="highlight-date">(3.3-3.15)</span></li><li>妇女节 <span class="highlight-date">(3.8)</span></li><li>春夏季中促销 <span class="highlight-date">(3.16-4.26)</span></li><li>圣帕特里克节 <span class="highlight-date">(3.17)</span></li><li>复活节 <span class="highlight-date">(4.5)</span></li></ul></td>
+                            <td class="col-jp"><ul class="summary-list"><li>女生节 <span class="highlight-date">(3.3)</span></li><li>白色情人节 <span class="highlight-date">(3.14)</span></li><li>赏樱季 <span class="highlight-date">(3月)</span></li><li>新生活特惠 <span class="highlight-date">(3-4月)</span></li><li>新学年 <span class="highlight-date">(3-4月)</span></li><li>开学季 <span class="highlight-date">(3月底)</span></li></ul></td>
+                        </tr>
+                        <tr data-month="4">
+                            <td>4月</td>
+                            <td class="col-us"><ul class="summary-list"><li>复活节 <span class="highlight-date">(持续)</span></li><li>父亲节预热 <span class="highlight-date">(4.6-6.21)</span></li><li>学期末促销 <span class="highlight-date">(4.7-5.16)</span></li></ul></td>
+                            <td class="col-eu"><ul class="summary-list"><li>复活节 <span class="highlight-date">(4.5)</span></li><li>春夏季中促销 <span class="highlight-date">(持续)</span></li><li>父亲节预热 <span class="highlight-date">(4.6-6.21)</span></li></ul></td>
+                            <td class="col-jp"><ul class="summary-list"><li>新生活特惠 <span class="highlight-date">(持续)</span></li><li>新学年 <span class="highlight-date">(持续)</span></li><li>黄金周预热 <span class="highlight-date">(4.29-5.5)</span></li></ul></td>
+                        </tr>
+                        <tr data-month="5">
+                            <td>5月</td>
+                            <td class="col-us"><ul class="summary-list"><li>母亲节 <span class="highlight-date">(3.12-5.10)</span></li><li>毕业季 <span class="highlight-date">(5.1-6.22)</span></li><li>返校季 <span class="highlight-date">(5.15-9.15)</span></li></ul></td>
+                            <td class="col-eu"><ul class="summary-list"><li>劳动节 <span class="highlight-date">(5.1)</span></li><li>母亲节 <span class="highlight-date">(5.10)</span></li><li>科技周 <span class="highlight-date">(5.6-5.12)</span></li><li>高端品牌周 <span class="highlight-date">(5.13-5.19)</span></li><li>家居园艺周 <span class="highlight-date">(5.20-5.26)</span></li><li>日常必需品周 <span class="highlight-date">(5.27-6.2)</span></li></ul></td>
+                            <td class="col-jp"><ul class="summary-list"><li>黄金周 <span class="highlight-date">(4.29-5.5)</span></li><li>男孩节 <span class="highlight-date">(5.5)</span></li><li>母亲节 <span class="highlight-date">(5.10)</span></li></ul></td>
+                        </tr>
+                        <tr data-month="6">
+                            <td>6月</td>
+                            <td class="col-us"><ul class="summary-list"><li>父亲节 <span class="highlight-date">(6.21)</span></li><li>毕业季 <span class="highlight-date">(持续)</span></li><li>返校季 <span class="highlight-date">(持续)</span></li><li>暑假 <span class="highlight-date">(6-9月)</span></li></ul></td>
+                            <td class="col-eu"><ul class="summary-list"><li>儿童节 <span class="highlight-date">(6.1)</span></li><li>父亲节 <span class="highlight-date">(6.21)</span></li><li>夏季促销 <span class="highlight-date">(6.22-7.26)</span></li></ul></td>
+                            <td class="col-jp"><ul class="summary-list"><li>父亲节 <span class="highlight-date">(6.21)</span></li><li>雨季/返校季 <span class="highlight-date">(6月)</span></li><li>暑假 <span class="highlight-date">(7-9月)</span></li></ul></td>
+                        </tr>
+                        <tr data-month="7">
+                            <td>7月</td>
+                            <td class="col-us"><ul class="summary-list"><li>独立日 <span class="highlight-date">(7.4)</span></li><li>企业购返校季 <span class="highlight-date">(7.7-10.3)</span></li><li>万圣节预热 <span class="highlight-date">(7.27-10.31)</span></li></ul></td>
+                            <td class="col-eu"><ul class="summary-list"><li>夏末促销/返校季 <span class="highlight-date">(7.1-9.30)</span></li><li>企业购返校季 <span class="highlight-date">(各国不同)</span></li><li>夏季促销 <span class="highlight-date">(持续)</span></li></ul></td>
+                            <td class="col-jp"><ul class="summary-list"><li>海洋节 <span class="highlight-date">(7.17)</span></li><li>暑假 <span class="highlight-date">(7月)</span></li><li>孟兰盆节 <span class="highlight-date">(8月)</span></li></ul></td>
+                        </tr>
+                        <tr data-month="8">
+                            <td>8月</td>
+                            <td class="col-us"><ul class="summary-list"><li>企业购返校季 <span class="highlight-date">(持续)</span></li><li>万圣节预热 <span class="highlight-date">(持续)</span></li></ul></td>
+                            <td class="col-eu"><ul class="summary-list"><li>夏季清仓促销 <span class="highlight-date">(8.17-9.20)</span></li><li>游戏周 <span class="highlight-date">(8月)</span></li><li>日常必需品周 <span class="highlight-date">(8月)</span></li><li>开学季 <span class="highlight-date">(8月)</span></li></ul></td>
+                            <td class="col-jp"><ul class="summary-list"><li>孟兰盆节 <span class="highlight-date">(8月)</span></li><li>山之日 <span class="highlight-date">(8月)</span></li><li>敬老日 <span class="highlight-date">(8月)</span></li></ul></td>
+                        </tr>
+                        <tr data-month="9">
+                            <td>9月</td>
+                            <td class="col-us"><ul class="summary-list"><li>劳动节 <span class="highlight-date">(9.7)</span></li><li>企业购返校季 <span class="highlight-date">(持续)</span></li></ul></td>
+                            <td class="col-eu"><ul class="summary-list"><li>劳动节 <span class="highlight-date">(9.7)</span></li><li>秋季促销 <span class="highlight-date">(9月)</span></li><li>企业购中小企业专题 <span class="highlight-date">(9月)</span></li></ul></td>
+                            <td class="col-jp"><ul class="summary-list"><li>校园运动会季 <span class="highlight-date">(9-10月)</span></li><li>敬老日 <span class="highlight-date">(持续)</span></li></ul></td>
+                        </tr>
+                        <tr data-month="10">
+                            <td>10月</td>
+                            <td class="col-us"><ul class="summary-list"><li>企业假日礼品季 <span class="highlight-date">(10.9-12.23)</span></li><li>万圣节 <span class="highlight-date">(持续)</span></li></ul></td>
+                            <td class="col-eu"><ul class="summary-list"><li>企业假日礼品季 <span class="highlight-date">(10.9-12.23)</span></li><li>秋冬季中促销 <span class="highlight-date">(10.12-11.18)</span></li><li>万圣节 <span class="highlight-date">(持续)</span></li></ul></td>
+                            <td class="col-jp"><ul class="summary-list"><li>赏枫季 <span class="highlight-date">(10月)</span></li></ul></td>
+                        </tr>
+                        <tr data-month="11">
+                            <td>11月</td>
+                            <td class="col-us"><ul class="summary-list"><li>感恩节 <span class="highlight-date">(11.26)</span></li><li>黑五 <span class="highlight-date">(11月)</span></li><li>万圣节后清仓</li></ul></td>
+                            <td class="col-eu"><ul class="summary-list"><li>黑五 <span class="highlight-date">(11月)</span></li><li>感恩节 <span class="highlight-date">(11.26)</span></li><li>万圣节&亡灵节</li></ul></td>
+                            <td class="col-jp"><ul class="summary-list"><li>七五三节 <span class="highlight-date">(11.15)</span></li><li>黑五 <span class="highlight-date">(11月)</span></li></ul></td>
+                        </tr>
+                        <tr data-month="12">
+                            <td>12月</td>
+                            <td class="col-us"><ul class="summary-list"><li>网购星期一</li><li>圣诞节</li><li>企业假日礼品季 <span class="highlight-date">(持续)</span></li><li>假日季</li></ul></td>
+                            <td class="col-eu"><ul class="summary-list"><li>网购星期一</li><li>圣诞节</li><li>Boxing Day</li><li>冬季/滑雪季 <span class="highlight-date">(12-3月)</span></li></ul></td>
+                            <td class="col-jp"><ul class="summary-list"><li>圣诞节</li><li>新年前夜 <span class="highlight-date">(12.31)</span></li><li>冬季/滑雪季 <span class="highlight-date">(12-3月)</span></li></ul></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <footer style="text-align: center; padding: 1.5rem 0; font-size: 0.75rem; color: #9ca3af; background-color: #f8fafc; border-top: 1px solid #e2e8f0; margin-top: auto;">
+        © 2025 跨境工具魔方 AmzToolBox. All rights reserved.
+        <span style="margin: 0 0.5rem;">|</span>
+        <a href="/privacy" style="color: inherit; text-decoration: none;">隐私说明</a>
+    </footer>
+
+    <button class="back-to-top" id="backToTop" title="回到顶部">↑</button>
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const monthFilter = document.getElementById('monthFilter');
+        const quickFilterBtns = document.querySelectorAll('.filter-btn:not(#resetBtn):not(a)');
+        const resetBtn = document.getElementById('resetBtn');
+        
+        let currentQuickFilter = 'all';
+
+        // Reset Button Logic
+        resetBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            monthFilter.value = 'all';
+            currentQuickFilter = 'all';
+            
+            quickFilterBtns.forEach(b => {
+                if (b.dataset.filter === 'all') {
+                    b.classList.add('active');
+                } else {
+                    b.classList.remove('active');
+                }
+            });
+            
+            filterTable();
+        });
+
+        // Quick Filter Click Handlers
+        quickFilterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                quickFilterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentQuickFilter = btn.dataset.filter;
+                filterTable();
+            });
+        });
+
+        function filterTable() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedMonth = monthFilter.value;
+
+            const summaryRows = document.querySelectorAll('.summary-table tbody tr');
+            
+            // 1. Column Visibility (Country Filter)
+            const showUS = currentQuickFilter === 'all' || currentQuickFilter === 'us';
+            const showJP = currentQuickFilter === 'all' || currentQuickFilter === 'jp';
+            const showEU = currentQuickFilter === 'all'; 
+
+            document.querySelectorAll('.col-us').forEach(el => el.style.display = showUS ? '' : 'none');
+            document.querySelectorAll('.col-eu').forEach(el => el.style.display = showEU ? '' : 'none');
+            document.querySelectorAll('.col-jp').forEach(el => el.style.display = showJP ? '' : 'none');
+            
+            // 2. Row Visibility (Month & Search)
+            summaryRows.forEach(row => {
+                const rowMonth = parseInt(row.getAttribute('data-month'));
+                const rowText = row.textContent.toLowerCase();
+                
+                // Month Check
+                let matchesMonth = false;
+                if (selectedMonth === 'all') {
+                    matchesMonth = true;
+                } else if (selectedMonth.startsWith('q')) {
+                    const quarter = parseInt(selectedMonth.substring(1));
+                    const startMonth = (quarter - 1) * 3 + 1;
+                    const endMonth = startMonth + 2;
+                    matchesMonth = rowMonth >= startMonth && rowMonth <= endMonth;
+                } else {
+                    matchesMonth = rowMonth == parseInt(selectedMonth);
+                }
+
+                // Search Check
+                const matchesSearch = searchTerm === '' || rowText.includes(searchTerm);
+                
+                if (matchesMonth && matchesSearch) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Event Listeners
+        searchInput.addEventListener('input', filterTable);
+        monthFilter.addEventListener('change', filterTable);
+
+        // Back to Top Button Logic
+        const backToTopBtn = document.getElementById('backToTop');
+        
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.add('visible');
+            } else {
+                backToTopBtn.classList.remove('visible');
+            }
+        });
+        
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // Mobile Menu Logic
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const closeMobileBtn = document.getElementById('closeMobileBtn');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        function toggleMobileMenu() {
+            const isOpen = mobileMenu.classList.contains('open');
+            if (isOpen) {
+                mobileMenu.classList.remove('open');
+                mobileOverlay.classList.remove('open');
+                document.body.style.overflow = '';
+            } else {
+                mobileMenu.classList.add('open');
+                mobileOverlay.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+        if (closeMobileBtn) closeMobileBtn.addEventListener('click', toggleMobileMenu);
+        if (mobileOverlay) mobileOverlay.addEventListener('click', toggleMobileMenu);
+
+        // Initial Filter
+        filterTable();
+    </script>
+</body>
+</html>

@@ -238,6 +238,11 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
               <span>📅</span>
               <span className="underline decoration-indigo-300 underline-offset-4 hover:decoration-indigo-600">2026年电商营销日历</span>
             </Link>
+            <span className="text-gray-300">|</span>
+            <Link href="/marketing-calendar-summary.html" target="_blank" className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors">
+              <span>📊</span>
+              <span className="underline decoration-indigo-300 underline-offset-4 hover:decoration-indigo-600">查看汇总表</span>
+            </Link>
           </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
