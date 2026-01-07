@@ -160,7 +160,7 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
             <span className="text-gray-300">|</span>
             <Link href="/marketing-calendar-summary.html" target="_blank" prefetch={false} className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors">
               <span>📊</span>
-              <span className="underline decoration-indigo-300 underline-offset-4 hover:decoration-indigo-600">2026年亚马逊全球营销日历汇总表</span>
+              <span className="underline decoration-indigo-300 underline-offset-4 hover:decoration-indigo-600">2026年亚马逊全球营销日历</span>
             </Link>
           </div>
         </div>
