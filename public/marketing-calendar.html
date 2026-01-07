@@ -497,6 +497,116 @@
         .tb-mobile-menu.open { transform: translateX(0); }
         .tb-mobile-nav-item { display: block; padding: 0.75rem 0; font-size: 1rem; font-weight: 500; color: #374151; text-decoration: none; border-bottom: 1px solid #f3f4f6; }
         .tb-mobile-sub-header { margin-top: 1rem; font-size: 0.75rem; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+
+        /* Summary Table Styles */
+        .summary-table-container {
+            margin: 40px 0;
+            overflow-x: auto;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            background: #fff;
+        }
+        
+        .summary-table-header {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .summary-table-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .toggle-table-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.4);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .toggle-table-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+        
+        .summary-table th, .summary-table td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid #fed7aa;
+            vertical-align: top;
+        }
+        
+        .summary-table th {
+            background-color: #ffedd5;
+            color: #9a3412;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border-bottom: 2px solid #fdba74;
+        }
+        
+        .summary-table td:first-child {
+            background-color: #fff7ed;
+            font-weight: 700;
+            color: #c2410c;
+            text-align: center;
+            width: 60px;
+            font-size: 1.2rem;
+        }
+        
+        .summary-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .summary-table tr:hover td {
+            background-color: #fffaf0;
+        }
+        
+        .summary-table tr:hover td:first-child {
+            background-color: #ffedd5;
+        }
+
+        .summary-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .summary-list li {
+            margin-bottom: 8px;
+            position: relative;
+            padding-left: 14px;
+            line-height: 1.4;
+            font-size: 0.95rem;
+        }
+        
+        .summary-list li::before {
+            content: '•';
+            color: #f97316;
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+        
+        .highlight-date {
+            color: #c2410c;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <body>
@@ -585,6 +695,99 @@
                 </select>
                 <button id="resetBtn" class="filter-btn" style="color: #64748b; border-color: #cbd5e1;">↺ 重置</button>
                 <div id="resultCount" style="color: var(--text-secondary); font-size: 0.9rem; font-weight: 500;"></div>
+            </div>
+        </div>
+
+        <div class="summary-table-container">
+            <div class="summary-table-header">
+                <h2>📊 2026年亚马逊全球营销日历汇总表</h2>
+                <button class="toggle-table-btn" onclick="toggleSummaryTable()">收起表格</button>
+            </div>
+            <div id="summaryTableContent">
+                <table class="summary-table">
+                    <thead>
+                        <tr>
+                            <th width="80">月份</th>
+                            <th>🇺🇸 美国站 (US)</th>
+                            <th>🇪🇺 欧洲站 (EU)</th>
+                            <th>🇯🇵 日本站 (JP)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1月</td>
+                            <td><ul class="summary-list"><li>元旦 <span class="highlight-date">(1.1)</span></li><li>新年焕新季 <span class="highlight-date">(12.15-1.31)</span></li><li>情人节预热 <span class="highlight-date">(1.9-2.14)</span></li><li>气候承诺友好周 <span class="highlight-date">(1.29-2.4)</span></li></ul></td>
+                            <td><ul class="summary-list"><li>元旦 <span class="highlight-date">(1.1)</span></li><li>新年焕新季 <span class="highlight-date">(12.15-1.31)</span></li><li>冬季清仓促销 <span class="highlight-date">(1.2-2.28)</span></li><li>气候承诺友好周 <span class="highlight-date">(1.29-2.4)</span></li><li>冬季促销 <span class="highlight-date">(1.29-2.5)</span></li></ul></td>
+                            <td><ul class="summary-list"><li>新年 <span class="highlight-date">(1.1)</span></li><li>新年焕新季 <span class="highlight-date">(1月全月)</span></li><li>新年特惠 <span class="highlight-date">(1.9-2.4)</span></li></ul></td>
+                        </tr>
+                        <tr>
+                            <td>2月</td>
+                            <td><ul class="summary-list"><li>情人节 <span class="highlight-date">(1.9-2.14)</span></li><li>超级碗 <span class="highlight-date">(2.8)</span></li><li>复活节预热 <span class="highlight-date">(2.2-4.5)</span></li></ul></td>
+                            <td><ul class="summary-list"><li>情人节 <span class="highlight-date">(2.9)</span></li><li>冬季清仓促销 <span class="highlight-date">(持续)</span></li><li>冬季促销 <span class="highlight-date">(持续)</span></li></ul></td>
+                            <td><ul class="summary-list"><li>人形玩偶促销 <span class="highlight-date">(2月)</span></li></ul></td>
+                        </tr>
+                        <tr>
+                            <td>3月</td>
+                            <td><ul class="summary-list"><li>复活节 <span class="highlight-date">(2.2-4.5)</span></li><li>母亲节预热 <span class="highlight-date">(3.12-5.10)</span></li><li>圣帕特里克节 <span class="highlight-date">(3.17)</span></li></ul></td>
+                            <td><ul class="summary-list"><li>消费者周 <span class="highlight-date">(3.3-3.15)</span></li><li>妇女节 <span class="highlight-date">(3.8)</span></li><li>春夏季中促销 <span class="highlight-date">(3.16-4.26)</span></li><li>圣帕特里克节 <span class="highlight-date">(3.17)</span></li><li>复活节 <span class="highlight-date">(4.5)</span></li></ul></td>
+                            <td><ul class="summary-list"><li>女生节 <span class="highlight-date">(3.3)</span></li><li>白色情人节 <span class="highlight-date">(3.14)</span></li><li>赏樱季 <span class="highlight-date">(3月)</span></li><li>新生活特惠 <span class="highlight-date">(3-4月)</span></li><li>新学年 <span class="highlight-date">(3-4月)</span></li><li>开学季 <span class="highlight-date">(3月底)</span></li></ul></td>
+                        </tr>
+                        <tr>
+                            <td>4月</td>
+                            <td><ul class="summary-list"><li>复活节 <span class="highlight-date">(持续)</span></li><li>父亲节预热 <span class="highlight-date">(4.6-6.21)</span></li><li>学期末促销 <span class="highlight-date">(4.7-5.16)</span></li></ul></td>
+                            <td><ul class="summary-list"><li>复活节 <span class="highlight-date">(4.5)</span></li><li>春夏季中促销 <span class="highlight-date">(持续)</span></li><li>父亲节预热 <span class="highlight-date">(4.6-6.21)</span></li></ul></td>
+                            <td><ul class="summary-list"><li>新生活特惠 <span class="highlight-date">(持续)</span></li><li>新学年 <span class="highlight-date">(持续)</span></li><li>黄金周预热 <span class="highlight-date">(4.29-5.5)</span></li></ul></td>
+                        </tr>
+                        <tr>
+                            <td>5月</td>
+                            <td><ul class="summary-list"><li>母亲节 <span class="highlight-date">(3.12-5.10)</span></li><li>毕业季 <span class="highlight-date">(5.1-6.22)</span></li><li>返校季 <span class="highlight-date">(5.15-9.15)</span></li></ul></td>
+                            <td><ul class="summary-list"><li>劳动节 <span class="highlight-date">(5.1)</span></li><li>母亲节 <span class="highlight-date">(5.10)</span></li><li>科技周 <span class="highlight-date">(5.6-5.12)</span></li><li>高端品牌周 <span class="highlight-date">(5.13-5.19)</span></li><li>家居园艺周 <span class="highlight-date">(5.20-5.26)</span></li><li>日常必需品周 <span class="highlight-date">(5.27-6.2)</span></li></ul></td>
+                            <td><ul class="summary-list"><li>黄金周 <span class="highlight-date">(4.29-5.5)</span></li><li>男孩节 <span class="highlight-date">(5.5)</span></li><li>母亲节 <span class="highlight-date">(5.10)</span></li></ul></td>
+                        </tr>
+                        <tr>
+                            <td>6月</td>
+                            <td><ul class="summary-list"><li>父亲节 <span class="highlight-date">(6.21)</span></li><li>毕业季 <span class="highlight-date">(持续)</span></li><li>返校季 <span class="highlight-date">(持续)</span></li><li>暑假 <span class="highlight-date">(6-9月)</span></li></ul></td>
+                            <td><ul class="summary-list"><li>儿童节 <span class="highlight-date">(6.1)</span></li><li>父亲节 <span class="highlight-date">(6.21)</span></li><li>夏季促销 <span class="highlight-date">(6.22-7.26)</span></li></ul></td>
+                            <td><ul class="summary-list"><li>父亲节 <span class="highlight-date">(6.21)</span></li><li>雨季/返校季 <span class="highlight-date">(6月)</span></li><li>暑假 <span class="highlight-date">(7-9月)</span></li></ul></td>
+                        </tr>
+                        <tr>
+                            <td>7月</td>
+                            <td><ul class="summary-list"><li>独立日 <span class="highlight-date">(7.4)</span></li><li>企业购返校季 <span class="highlight-date">(7.7-10.3)</span></li><li>万圣节预热 <span class="highlight-date">(7.27-10.31)</span></li></ul></td>
+                            <td><ul class="summary-list"><li>夏末促销/返校季 <span class="highlight-date">(7.1-9.30)</span></li><li>企业购返校季 <span class="highlight-date">(各国不同)</span></li><li>夏季促销 <span class="highlight-date">(持续)</span></li></ul></td>
+                            <td><ul class="summary-list"><li>海洋节 <span class="highlight-date">(7.17)</span></li><li>暑假 <span class="highlight-date">(7月)</span></li><li>孟兰盆节 <span class="highlight-date">(8月)</span></li></ul></td>
+                        </tr>
+                        <tr>
+                            <td>8月</td>
+                            <td><ul class="summary-list"><li>企业购返校季 <span class="highlight-date">(持续)</span></li><li>万圣节预热 <span class="highlight-date">(持续)</span></li></ul></td>
+                            <td><ul class="summary-list"><li>夏季清仓促销 <span class="highlight-date">(8.17-9.20)</span></li><li>游戏周 <span class="highlight-date">(8月)</span></li><li>日常必需品周 <span class="highlight-date">(8月)</span></li><li>开学季 <span class="highlight-date">(8月)</span></li></ul></td>
+                            <td><ul class="summary-list"><li>孟兰盆节 <span class="highlight-date">(8月)</span></li><li>山之日 <span class="highlight-date">(8月)</span></li><li>敬老日 <span class="highlight-date">(8月)</span></li></ul></td>
+                        </tr>
+                        <tr>
+                            <td>9月</td>
+                            <td><ul class="summary-list"><li>劳动节 <span class="highlight-date">(9.7)</span></li><li>企业购返校季 <span class="highlight-date">(持续)</span></li></ul></td>
+                            <td><ul class="summary-list"><li>劳动节 <span class="highlight-date">(9.7)</span></li><li>秋季促销 <span class="highlight-date">(9月)</span></li><li>企业购中小企业专题 <span class="highlight-date">(9月)</span></li></ul></td>
+                            <td><ul class="summary-list"><li>校园运动会季 <span class="highlight-date">(9-10月)</span></li><li>敬老日 <span class="highlight-date">(持续)</span></li></ul></td>
+                        </tr>
+                        <tr>
+                            <td>10月</td>
+                            <td><ul class="summary-list"><li>企业假日礼品季 <span class="highlight-date">(10.9-12.23)</span></li><li>万圣节 <span class="highlight-date">(持续)</span></li></ul></td>
+                            <td><ul class="summary-list"><li>企业假日礼品季 <span class="highlight-date">(10.9-12.23)</span></li><li>秋冬季中促销 <span class="highlight-date">(10.12-11.18)</span></li><li>万圣节 <span class="highlight-date">(持续)</span></li></ul></td>
+                            <td><ul class="summary-list"><li>赏枫季 <span class="highlight-date">(10月)</span></li></ul></td>
+                        </tr>
+                        <tr>
+                            <td>11月</td>
+                            <td><ul class="summary-list"><li>感恩节 <span class="highlight-date">(11.26)</span></li><li>黑五 <span class="highlight-date">(11月)</span></li><li>万圣节后清仓</li></ul></td>
+                            <td><ul class="summary-list"><li>黑五 <span class="highlight-date">(11月)</span></li><li>感恩节 <span class="highlight-date">(11.26)</span></li><li>万圣节&亡灵节</li></ul></td>
+                            <td><ul class="summary-list"><li>七五三节 <span class="highlight-date">(11.15)</span></li><li>黑五 <span class="highlight-date">(11月)</span></li></ul></td>
+                        </tr>
+                        <tr>
+                            <td>12月</td>
+                            <td><ul class="summary-list"><li>网购星期一</li><li>圣诞节</li><li>企业假日礼品季 <span class="highlight-date">(持续)</span></li><li>假日季</li></ul></td>
+                            <td><ul class="summary-list"><li>网购星期一</li><li>圣诞节</li><li>Boxing Day</li><li>冬季/滑雪季 <span class="highlight-date">(12-3月)</span></li></ul></td>
+                            <td><ul class="summary-list"><li>圣诞节</li><li>新年前夜 <span class="highlight-date">(12.31)</span></li><li>冬季/滑雪季 <span class="highlight-date">(12-3月)</span></li></ul></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -922,6 +1125,18 @@
         if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleMobileMenu);
         if (closeMobileBtn) closeMobileBtn.addEventListener('click', toggleMobileMenu);
         if (mobileOverlay) mobileOverlay.addEventListener('click', toggleMobileMenu);
+
+        function toggleSummaryTable() {
+            const content = document.getElementById('summaryTableContent');
+            const btn = document.querySelector('.toggle-table-btn');
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                btn.textContent = '收起表格';
+            } else {
+                content.style.display = 'none';
+                btn.textContent = '展开表格';
+            }
+        }
 
         // Initial Render
         renderEvents();
