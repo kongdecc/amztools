@@ -77,10 +77,6 @@ export default function ClientPage({
     'storage-fee-calc': Warehouse,
   }
 
-  const titleOverride: Record<string, string> = {
-    'rating-sales-reverse': '亚马逊评分销量反推'
-  }
-
   React.useEffect(() => {
     const currentTool = modules.find((m: any) => m.key === key)
     if (currentTool) {
