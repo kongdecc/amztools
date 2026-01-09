@@ -252,7 +252,7 @@ export default function ClientPage({
                             <div className="px-3 py-1 text-xs font-semibold text-gray-400 uppercase">{cat.label}</div>
                             {catModules.map((m: any) => {
                               const I = iconMap[m.key] || Hammer
-                              const label = titleOverride[m.key] || m.title
+                              const label = m.title
                               return (
                                 <Link key={m.key} href={`/?tab=${m.key}`} className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer">
                                   <I className="h-4 w-4" />
