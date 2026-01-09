@@ -85,7 +85,21 @@ export default function ClientPage({
     const currentTool = modules.find((m: any) => m.key === key)
     if (currentTool) {
       const siteName = settings?.siteName || DEFAULT_SITE_SETTINGS.siteName
-      document.title = `${currentTool.title} - ${siteName}`
+      const newTitle = `${currentTool.title} - ${siteName}`
+      
+      // Immediate update
+      if (document.title !== newTitle) {
+        document.title = newTitle
+      }
+
+      // Delayed update to handle Next.js router transitions
+      const timer = setTimeout(() => {
+        if (document.title !== newTitle) {
+          document.title = newTitle
+        }
+      }, 100)
+      
+      return () => clearTimeout(timer)
     }
   }, [key, modules, settings])
 
