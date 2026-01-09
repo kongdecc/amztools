@@ -82,6 +82,14 @@ export default function ClientPage({
   }
 
   React.useEffect(() => {
+    const currentTool = modules.find((m: any) => m.key === key)
+    if (currentTool) {
+      const siteName = settings?.siteName || DEFAULT_SITE_SETTINGS.siteName
+      document.title = `${currentTool.title} - ${siteName}`
+    }
+  }, [key, modules, settings])
+
+  React.useEffect(() => {
     if (initialCategories.length === 0) {
       (async () => {
         try {
