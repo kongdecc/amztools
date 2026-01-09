@@ -6,28 +6,7 @@ import { useParams } from 'next/navigation'
 import { LayoutDashboard, Calculator, Crosshair, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Trash2, AlertCircle, CheckCircle, Filter, Image as ImageIcon, Receipt, Globe, Star, Hammer, Search, Activity, Users, Box, Warehouse, FileText, Tags } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 import { ChevronDown } from 'lucide-react'
-import EditorPage from '@/components/EditorPage'
-import FBACalculatorPage from '@/components/FBACalculator'
-import FBAWarehouses from '@/components/FBAWarehouses'
-import FBALabelEditor from '@/components/FBALabelEditor'
-import ForbiddenWordsChecker from '@/components/ForbiddenWordsChecker'
-import TextComparator from '@/components/TextComparator'
-import DuplicateRemover from '@/components/DuplicateRemover'
-import ContentFilter from '@/components/ContentFilter'
-import ImageResizer from '@/components/ImageResizer'
-import ImageCompressionPage from '@/components/ImageCompressionPage'
-import InvoiceGenerator from '@/components/InvoiceGenerator'
-import CpcCalculator from '@/components/CpcCalculator'
-import AmazonGlobalTool from '@/components/AmazonGlobalTool'
-import AmazonRatingSalesReverse from '@/components/AmazonRatingSalesReverse'
-import MaxReserveFeeCalculator from '@/components/MaxReserveFeeCalculator'
-import KeywordStrategyTool from '@/components/KeywordStrategyTool'
-import SearchTermVolatilityTool from '@/components/SearchTermVolatilityTool'
-import PartnerEquityCalculator from '@/components/PartnerEquityCalculator'
-import CartonCalculatorAdvanced from '@/components/CartonCalculatorAdvanced'
-import NaturalTrafficTool from '@/components/NaturalTrafficTool'
-import AmazonPromotionStackingCalculator from '@/components/AmazonPromotionStackingCalculator'
-import StorageFeeCalculatorPage from '@/components/StorageFeeCalculatorPage'
+import ToolContainer from '@/components/ToolContainer'
 import { DEFAULT_NAV_ITEMS, DEFAULT_TOOLS, DEFAULT_CATEGORIES, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 
 export default function ClientPage({ 
@@ -161,61 +140,8 @@ export default function ClientPage({
   }, [settings, initialNavItems])
 
   const renderTool = () => {
-    switch (key) {
-      case 'delivery':
-        return <FBACalculatorPage />
-      case 'editor':
-        return <EditorPage />
-      case 'forbidden-words':
-        return <ForbiddenWordsChecker />
-      case 'text-compare':
-        return <TextComparator />
-      case 'duplicate-remover':
-        return <DuplicateRemover />
-      case 'content-filter':
-        return <ContentFilter />
-      case 'image-resizer':
-        return <ImageResizer />
-      case 'image-compression':
-        return <ImageCompressionPage />
-      case 'invoice-generator':
-        return <InvoiceGenerator />
-      case 'cpc-compass':
-        return <CpcCalculator />
-      case 'amazon-global':
-        return <AmazonGlobalTool />
-      case 'rating-sales-reverse':
-        return <AmazonRatingSalesReverse />
-      case 'max-reserve-fee':
-        return <MaxReserveFeeCalculator />
-      case 'keyword-strategy':
-        return <KeywordStrategyTool />
-      case 'search-term-volatility':
-        return <SearchTermVolatilityTool />
-      case 'partner-equity-calculator':
-        return <PartnerEquityCalculator />
-      case 'carton-calc-advanced':
-        return <CartonCalculatorAdvanced />
-      case 'natural-traffic-tool':
-        return <NaturalTrafficTool />
-      case 'fba-warehouses':
-      return <FBAWarehouses />
-    case 'fba-label-editor':
-      return <FBALabelEditor />
-    case 'amazon-promotion-stacking':
-      return <AmazonPromotionStackingCalculator />
-    case 'storage-fee-calc':
-      return <StorageFeeCalculatorPage />
-    default:
-        return (
-          <div className="bg-white p-6 rounded-xl border">
-            <p className="text-gray-600">该功能的独立详情页暂未提供，请从首页进入。</p>
-            <div className="mt-3 text-sm">
-              <Link href={`/?tab=${key}`} className="text-blue-600 hover:underline">从首页打开该功能</Link>
-            </div>
-          </div>
-        )
-    }
+    const safeKey = typeof key === 'string' ? key : Array.isArray(key) ? key[0] : ''
+    return <ToolContainer activeTab={safeKey} />
   }
 
   return (
@@ -254,7 +180,7 @@ export default function ClientPage({
                               const I = iconMap[m.key] || Hammer
                               const label = m.title
                               return (
-                                <Link key={m.key} href={`/?tab=${m.key}`} className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer">
+                                <Link key={m.key} href={`/functionality/${m.key}`} className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer">
                                   <I className="h-4 w-4" />
                                   <span>{label}</span>
                                 </Link>

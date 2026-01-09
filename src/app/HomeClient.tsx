@@ -380,11 +380,18 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
           }, [activeTab])
           const { settings } = useSettings()
           const safeOrigin = (typeof window !== 'undefined' && (window as any).location) ? (window as any).location.origin : ''
+          const computedTitle = useMemo(() => {
+            const siteName = String((settings as any)?.siteName || DEFAULT_SITE_SETTINGS.siteName)
+            if (!activeTab || activeTab === 'home') return siteName
+            const tool = (Array.isArray(modules) ? modules : []).find((m: any) => String(m?.key) === String(activeTab))
+            const toolTitle = String(tool?.title || activeTab)
+            return `${toolTitle} - ${siteName}`
+          }, [activeTab, modules, settings])
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Head>
-        <title>{settings.siteName}</title>
+        <title>{computedTitle}</title>
         <meta name="keywords" content={settings.siteKeywords} />
         <meta name="description" content={settings.siteDescription} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({

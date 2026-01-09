@@ -159,7 +159,7 @@ export default function BlogListClient({ initialList, initialTotal, initialNavIt
                       <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded border border-amber-200 bg-amber-50 text-amber-700 text-xs">置顶</span>
                     )}
                   </h2>
-                  <p className="text-xs text-gray-400 mt-1">{new Date(item.createdAt || Date.now()).toLocaleString()}</p>
+                  <p className="text-xs text-gray-400 mt-1">{item.createdAt ? new Date(item.createdAt).toLocaleString() : ''}</p>
                   <p className="text-sm text-gray-600 mt-2">{String(item.content || '').replace(/<[^>]+>/g,'').slice(0,120)}{String(item.content || '').length>120?'...':''}</p>
                   <div className="mt-3">
                     <Link href={`/blog/${item.slug}`} className="text-sm text-blue-600 hover:text-blue-800">阅读全文</Link>

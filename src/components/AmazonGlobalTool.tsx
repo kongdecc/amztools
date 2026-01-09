@@ -81,7 +81,7 @@ const AmazonGlobalTool = () => {
     }
   };
 
-  const useHistoryItem = (item: string) => {
+  const appendHistoryItem = (item: string) => {
     setKeywords(prev => {
       const cleanPrev = prev.trim();
       if (!cleanPrev) return item;
@@ -246,7 +246,7 @@ const AmazonGlobalTool = () => {
                     {searchHistory.map((item, idx) => (
                       <button
                         key={idx}
-                        onClick={() => useHistoryItem(item)}
+                        onClick={() => appendHistoryItem(item)}
                         className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-1 rounded border border-slate-200 transition-colors"
                       >
                         {item}

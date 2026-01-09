@@ -149,7 +149,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
           <span className="truncate md:text-lg text-base">{settings.siteName}</span>
         </div>
         <nav className="hidden md:flex ml-auto mr-6 items-center gap-6 shrink-0">
-          <a href="/" className="text-sm text-white/90 hover:text-white">首页</a>
+          <Link href="/" className="text-sm text-white/90 hover:text-white">首页</Link>
           {navItems.map((item:any) => {
             const isFuncMenu = String(item.label || '').includes('功能分类') || String(item.id || '') === 'functionality'
             if (isFuncMenu) {
@@ -206,7 +206,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
               <>
                 <div className="fixed inset-0 z-40 bg-black/20" onClick={() => setMobileMenuOpen(false)}></div>
                 <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 z-50 text-gray-800 animate-in fade-in zoom-in-95 duration-200 max-h-[80vh] overflow-y-auto">
-                  <a href="/" className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 font-medium text-blue-600">首页</a>
+                  <Link href="/" className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 font-medium text-blue-600">首页</Link>
                   {navItems.map((item:any) => {
                     const isFuncMenu = String(item.label || '').includes('功能分类') || String(item.id || '') === 'functionality'
                     if (isFuncMenu) {
