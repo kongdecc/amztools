@@ -139,7 +139,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
     'rating-sales-reverse': 'indigo',
   }
 
-  const handleNavigate = (key: string) => { router.push(`/?tab=${key}&full=1`) }
+  const handleNavigate = (key: string) => { router.push(`/functionality/${key}`) }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -247,7 +247,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((module) => (
-              <Link key={module.key} href={`/?tab=${module.key}&full=1`} className="block group" prefetch={false}>
+              <Link key={module.key} href={`/functionality/${module.key}`} className="block group" prefetch={false}>
                 <Card className="h-full relative p-6 hover:shadow-xl transition-all duration-300 cursor-pointer border-transparent hover:border-gray-100 bg-white overflow-hidden">
                   <div className="flex items-start gap-4 mb-4">
                     <div className={`w-12 h-12 rounded-xl ${colorSolidMap[colorOverride[module.key] || module.color] || 'bg-blue-600'} flex items-center justify-center shadow-md shrink-0 group-hover:scale-105 transition-transform duration-300`}>
