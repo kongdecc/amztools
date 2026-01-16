@@ -16,6 +16,7 @@ const AmazonCalculatorPage = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [result, setResult] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [quarter, setQuarter] = useState('all');
   const salesInputRef = useRef<HTMLInputElement>(null);
   const rateInputRef = useRef<HTMLInputElement>(null);
 
@@ -70,6 +71,11 @@ const AmazonCalculatorPage = () => {
 
     try {
       addLog('开始处理...', 'info');
+      if (quarter !== 'all') {
+          addLog(`已启用季度筛选: 第 ${quarter} 季度`, 'info');
+      } else {
+          addLog(`季度筛选: 全部 (不筛选)`, 'info');
+      }
 
       // 1. 获取汇率数据
       let rateData = PRESET_RATES;
@@ -93,13 +99,10 @@ const AmazonCalculatorPage = () => {
           if (row['日期'] instanceof Date) {
             dateStr = formatDate(row['日期']);
           } else {
-            // Handle string date if necessary, assuming Date object from XLSX with cellDates: true
-            // If it's a string, try to parse it
             const parsed = new Date(row['日期']);
             if (!isNaN(parsed.getTime())) {
                 dateStr = formatDate(parsed);
             } else {
-                // Try direct string usage if it looks like YYYY-MM-DD
                 dateStr = String(row['日期']).trim();
             }
           }
@@ -121,6 +124,7 @@ const AmazonCalculatorPage = () => {
       let totalRMB = 0;
       let totalProcessedCount = 0;
       let totalSkippedCount = 0;
+      let totalFilteredCount = 0;
       let totalMissingRateCount = 0;
 
       const fieldsToSum = [
@@ -156,6 +160,33 @@ const AmazonCalculatorPage = () => {
           if (!deliveryDateRaw) {
               totalSkippedCount++;
               continue; 
+          }
+
+          // 解析配送日期并进行季度筛选
+          let deliveryDate: Date;
+          if (deliveryDateRaw instanceof Date) {
+              deliveryDate = deliveryDateRaw;
+          } else {
+              deliveryDate = new Date(deliveryDateRaw);
+          }
+
+          if (isNaN(deliveryDate.getTime())) {
+              totalSkippedCount++;
+              continue;
+          }
+
+          if (quarter !== 'all') {
+              const month = deliveryDate.getMonth() + 1; // 1-12
+              let q = 0;
+              if (month >= 1 && month <= 3) q = 1;
+              else if (month >= 4 && month <= 6) q = 2;
+              else if (month >= 7 && month <= 9) q = 3;
+              else if (month >= 10 && month <= 12) q = 4;
+              
+              if (String(q) !== quarter) {
+                  totalFilteredCount++;
+                  continue;
+              }
           }
 
           // 获取预计配送日期用于汇率匹配
@@ -257,7 +288,8 @@ const AmazonCalculatorPage = () => {
       addLog('------------------------------------------------', 'info');
       addLog(`所有文件计算完成!`, 'success');
       addLog(`总有效订单数: ${totalProcessedCount}`, 'info');
-      addLog(`总跳过/无效订单数: ${totalSkippedCount}`, 'info');
+      addLog(`因季度筛选跳过: ${totalFilteredCount}`, 'info');
+      addLog(`无效/数据缺失跳过: ${totalSkippedCount}`, 'info');
       if (totalMissingRateCount > 0) {
         addLog(`总缺失汇率行数: ${totalMissingRateCount} (请检查汇率表日期范围)`, 'warn');
       }
@@ -275,6 +307,20 @@ const AmazonCalculatorPage = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+        {/* Safety Declaration */}
+        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-md">
+            <div className="flex">
+                <div className="flex-shrink-0">
+                    <Info className="h-5 w-5 text-blue-400" aria-hidden="true" />
+                </div>
+                <div className="ml-3">
+                    <p className="text-sm text-blue-700">
+                        <strong>🔒 安全声明：</strong> 本工具所有数据处理和计算均在您的浏览器<strong>本地进行</strong>（Client-side processing）。您的文件<strong>不会</strong>上传到任何服务器，也不会保存到任何外部数据库，请放心使用。
+                    </p>
+                </div>
+            </div>
+        </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Input Section */}
         <Card className="p-6 space-y-6">
@@ -286,20 +332,23 @@ const AmazonCalculatorPage = () => {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                上传销售报表 (支持多文件)
+                上传销售报表 (支持多选)
               </label>
+              <div className="text-xs text-gray-500 mb-1">
+                 下载路径：首页-报告-配送-销量-亚马逊配送货件 (.csv)
+              </div>
               <div className="relative">
                 <Input
                   type="file"
                   multiple
                   ref={salesInputRef}
-                  accept=".xlsx,.xls,.csv"
+                  accept=".csv,.xlsx,.xls"
                   className="pl-10 py-2 h-auto file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                 />
                 <FileText className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
               <p className="mt-1 text-xs text-gray-500">
-                支持 .xlsx, .xls, .csv 格式。必须包含"配送日期"、"预计配送日期"、"货币"及金额列。
+                按住 Ctrl 或 Shift 键可选择多个CSV文件。必须包含"配送日期"、"预计配送日期"、"货币"及金额列。
               </p>
             </div>
 
@@ -307,6 +356,9 @@ const AmazonCalculatorPage = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 上传自定义汇率表 (可选)
               </label>
+              <div className="text-xs text-gray-500 mb-1">
+                 默认使用内置数据：从2025年6月25日-2026年1月16日
+              </div>
               <div className="relative">
                 <Input
                   type="file"
@@ -317,9 +369,43 @@ const AmazonCalculatorPage = () => {
                 <Upload className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
               <p className="mt-1 text-xs text-gray-500">
-                如果不上传，将使用系统内置汇率表 (包含至 2026-01-16)。
+                请上传包含"日期"和汇率字段(如 USD/CNY)的Excel文件。
               </p>
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                季度筛选 (基于配送日期)
+              </label>
+              <select 
+                value={quarter}
+                onChange={(e) => setQuarter(e.target.value)}
+                className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md border"
+              >
+                <option value="all">全部 (不筛选)</option>
+                <option value="1">第一季度 (1月 - 3月)</option>
+                <option value="2">第二季度 (4月 - 6月)</option>
+                <option value="3">第三季度 (7月 - 9月)</option>
+                <option value="4">第四季度 (10月 - 12月)</option>
+              </select>
+              <p className="mt-1 text-xs text-gray-500">
+                如果配送日期不在所选季度范围内，该订单将被忽略。
+              </p>
+            </div>
+            
+            <details className="text-xs text-gray-600 border border-dashed border-gray-300 p-2 rounded bg-gray-50">
+                <summary className="cursor-pointer font-semibold text-indigo-600">❓ 支持哪些货币自动换算？如何换算？</summary>
+                <div className="mt-2 space-y-2">
+                    <p>本工具会自动识别销售表格中的 <strong>“货币”</strong> 列，并根据汇率表自动换算为人民币 (CNY)。</p>
+                    <p><strong>支持的货币逻辑：</strong></p>
+                    <ul className="list-disc pl-5 space-y-1">
+                        <li><strong>直接汇率 (乘以汇率):</strong> 如 USD (美元), EUR (欧元), GBP (英镑), CAD (加元), AUD (澳元) 等。 <br/><em>算法：金额 × (USD/CNY)</em></li>
+                        <li><strong>百单位汇率 (乘以汇率 ÷ 100):</strong> 如 JPY (日元)。 <br/><em>算法：金额 × (100JPY/CNY) ÷ 100</em></li>
+                        <li><strong>间接汇率 (除以汇率):</strong> 如 MXN (墨西哥比索), THB (泰铢) 等，汇率表中通常体现为 "CNY/MXN"。 <br/><em>算法：金额 ÷ (CNY/MXN)</em></li>
+                    </ul>
+                    <p>如果您的表格包含其他货币，请确保汇率表中有对应的 "XXX/CNY" 或 "CNY/XXX" 列。</p>
+                </div>
+            </details>
 
             <button
               onClick={handleCalculate}
@@ -384,6 +470,7 @@ const AmazonCalculatorPage = () => {
           ))}
         </div>
       </Card>
+      
     </div>
   );
 };
