@@ -348,7 +348,7 @@ const AmazonCalculatorPage = () => {
                 <FileText className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
               <p className="mt-1 text-xs text-gray-500">
-                按住 Ctrl 或 Shift 键可选择多个CSV文件。必须包含"配送日期"、"预计配送日期"、"货币"及金额列。
+                按住 Ctrl 或 Shift 键可选择多个CSV文件。必须包含以下列："配送日期"、"预计配送日期"、"货币"；以及金额列："商品价格"、"商品税"、"运费"、"运费税"、"礼品包装价格"、"礼品包装税费"。
               </p>
             </div>
 
