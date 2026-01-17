@@ -16,7 +16,8 @@ const AmazonCalculatorPage = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [result, setResult] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [quarter, setQuarter] = useState('all');
+  // Removed quarter state as per request
+  // const [quarter, setQuarter] = useState('all'); 
   const salesInputRef = useRef<HTMLInputElement>(null);
   const rateInputRef = useRef<HTMLInputElement>(null);
 
@@ -71,11 +72,13 @@ const AmazonCalculatorPage = () => {
 
     try {
       addLog('开始处理...', 'info');
-      if (quarter !== 'all') {
-          addLog(`已启用季度筛选: 第 ${quarter} 季度`, 'info');
-      } else {
-          addLog(`季度筛选: 全部 (不筛选)`, 'info');
-      }
+      
+      // Removed quarter logging logic
+      // if (quarter !== 'all') {
+      //     addLog(`已启用季度筛选: 第 ${quarter} 季度`, 'info');
+      // } else {
+      //     addLog(`季度筛选: 全部 (不筛选)`, 'info');
+      // }
 
       // 1. 获取汇率数据
       let rateData = PRESET_RATES;
@@ -124,16 +127,21 @@ const AmazonCalculatorPage = () => {
       let totalRMB = 0;
       let totalProcessedCount = 0;
       let totalSkippedCount = 0;
-      let totalFilteredCount = 0;
+      // let totalFilteredCount = 0; // Removed filter logic
       let totalMissingRateCount = 0;
 
-      const fieldsToSum = [
+      const fieldsToAdd = [
         '商品价格', 
         '商品税', 
         '运费', 
         '运费税', 
         '礼品包装价格', 
         '礼品包装税费'
+      ];
+
+      const fieldsToSubtract = [
+        '商品促销折扣',
+        '货件促销折扣'
       ];
 
       addLog(`开始处理 ${salesFiles.length} 个销售文件...`, 'info');
@@ -162,7 +170,7 @@ const AmazonCalculatorPage = () => {
               continue; 
           }
 
-          // 解析配送日期并进行季度筛选
+          // 解析配送日期 (removed quarterly filter logic)
           let deliveryDate: Date;
           if (deliveryDateRaw instanceof Date) {
               deliveryDate = deliveryDateRaw;
@@ -175,19 +183,20 @@ const AmazonCalculatorPage = () => {
               continue;
           }
 
-          if (quarter !== 'all') {
-              const month = deliveryDate.getMonth() + 1; // 1-12
-              let q = 0;
-              if (month >= 1 && month <= 3) q = 1;
-              else if (month >= 4 && month <= 6) q = 2;
-              else if (month >= 7 && month <= 9) q = 3;
-              else if (month >= 10 && month <= 12) q = 4;
-              
-              if (String(q) !== quarter) {
-                  totalFilteredCount++;
-                  continue;
-              }
-          }
+          // Removed quarterly filter logic
+          // if (quarter !== 'all') {
+          //     const month = deliveryDate.getMonth() + 1; // 1-12
+          //     let q = 0;
+          //     if (month >= 1 && month <= 3) q = 1;
+          //     else if (month >= 4 && month <= 6) q = 2;
+          //     else if (month >= 7 && month <= 9) q = 3;
+          //     else if (month >= 10 && month <= 12) q = 4;
+          //     
+          //     if (String(q) !== quarter) {
+          //         totalFilteredCount++;
+          //         continue;
+          //     }
+          // }
 
           // 获取预计配送日期用于汇率匹配
           const estimatedDateRaw = row['预计配送日期'];
@@ -268,10 +277,20 @@ const AmazonCalculatorPage = () => {
 
           // 计算该行总金额
           let rowSumOriginal = 0;
-          fieldsToSum.forEach(field => {
+          
+          // 加项
+          fieldsToAdd.forEach(field => {
               const val = parseFloat(row[field]);
               if (!isNaN(val)) {
                   rowSumOriginal += val;
+              }
+          });
+
+          // 减项 (取绝对值后相减)
+          fieldsToSubtract.forEach(field => {
+              const val = parseFloat(row[field]);
+              if (!isNaN(val)) {
+                  rowSumOriginal -= Math.abs(val);
               }
           });
 
@@ -288,7 +307,7 @@ const AmazonCalculatorPage = () => {
       addLog('------------------------------------------------', 'info');
       addLog(`所有文件计算完成!`, 'success');
       addLog(`总有效订单数: ${totalProcessedCount}`, 'info');
-      addLog(`因季度筛选跳过: ${totalFilteredCount}`, 'info');
+      // addLog(`因季度筛选跳过: ${totalFilteredCount}`, 'info'); // Removed log
       addLog(`无效/数据缺失跳过: ${totalSkippedCount}`, 'info');
       if (totalMissingRateCount > 0) {
         addLog(`总缺失汇率行数: ${totalMissingRateCount} (请检查汇率表日期范围)`, 'warn');
@@ -348,7 +367,7 @@ const AmazonCalculatorPage = () => {
                 <FileText className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
               <p className="mt-1 text-xs text-gray-500">
-                按住 Ctrl 或 Shift 键可选择多个CSV文件。必须包含以下列："配送日期"、"预计配送日期"、"货币"；以及金额列："商品价格"、"商品税"、"运费"、"运费税"、"礼品包装价格"、"礼品包装税费"。
+                按住 Ctrl 或 Shift 键可选择多个CSV文件。必须包含以下列："配送日期"、"预计配送日期"、"货币"；以及金额列："商品价格"、"商品税"、"运费"、"运费税"、"礼品包装价格"、"礼品包装税费"、"商品促销折扣"、"货件促销折扣"。
               </p>
             </div>
 
@@ -373,25 +392,7 @@ const AmazonCalculatorPage = () => {
               </p>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                季度筛选 (基于配送日期)
-              </label>
-              <select 
-                value={quarter}
-                onChange={(e) => setQuarter(e.target.value)}
-                className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md border"
-              >
-                <option value="all">全部 (不筛选)</option>
-                <option value="1">第一季度 (1月 - 3月)</option>
-                <option value="2">第二季度 (4月 - 6月)</option>
-                <option value="3">第三季度 (7月 - 9月)</option>
-                <option value="4">第四季度 (10月 - 12月)</option>
-              </select>
-              <p className="mt-1 text-xs text-gray-500">
-                如果配送日期不在所选季度范围内，该订单将被忽略。
-              </p>
-            </div>
+            {/* Quarter Selection Removed */}
             
             <details className="text-xs text-gray-600 border border-dashed border-gray-300 p-2 rounded bg-gray-50">
                 <summary className="cursor-pointer font-semibold text-indigo-600">❓ 支持哪些货币自动换算？如何换算？</summary>
