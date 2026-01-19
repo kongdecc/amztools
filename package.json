@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "cd amazon-ads-analyzer && npm install && npm run build && cd .. && prisma generate && npx tsx prisma/seed.ts && next build",
+    "build": "cd amazon-ads-analyzer && npm install --production=false && npm run build && cd .. && prisma generate && npx tsx prisma/seed.ts && next build",
     "start": "next start",
-    "vercel-build": "cd amazon-ads-analyzer && npm install && npm run build && cd .. && prisma generate && npx tsx prisma/seed.ts && next build",
+    "vercel-build": "cd amazon-ads-analyzer && npm install --production=false && npm run build && cd .. && prisma generate && npx tsx prisma/seed.ts && next build",
     "postinstall": "prisma generate"
   },
   "dependencies": {
