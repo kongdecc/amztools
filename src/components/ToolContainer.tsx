@@ -59,42 +59,61 @@ const PlaceholderPage = ({ title, icon: Icon }: { title: string; icon: any }) =>
 )
 
 const ToolContainer = memo(({ activeTab }: { activeTab: string }) => {
-  switch (activeTab) {
-    case 'ad-calc': return <AdCalculatorPage />
-    case 'cpc-compass': return <CpcCalculator />
-    case 'unit': return <UnitConverterPage />
-    case 'editor': return <EditorPage />
-    case 'case': return <CaseConverterPage />
-    case 'word-count': return <WordCountPage />
-    case 'char-count': return <CharCountPage />
-    case 'delivery': return <FBACalculatorPage />
-    case 'returns-v2': return <ReturnsV2Page />
-    case 'listing-check': return <ListingCheckerPage />
-    case 'forbidden-words': return <ForbiddenWordsChecker />
-    case 'text-compare': return <TextComparator />
-    case 'duplicate-remover': return <DuplicateRemover />
-    case 'content-filter': return <ContentFilter />
-    case 'image-resizer': return <ImageResizer />
-    case 'invoice-generator': return <InvoiceGenerator />
-    case 'amazon-global': return <AmazonGlobalTool />
-    case 'rating-sales-reverse': return <AmazonRatingSalesReverse />
-    case 'max-reserve-fee': return <MaxReserveFeeCalculator />
-    case 'keyword-strategy': return <KeywordStrategyTool />
-    case 'search-term-volatility': return <SearchTermVolatilityTool />
-    case 'partner-equity-calculator': return <PartnerEquityCalculator />
-    case 'carton-calc-advanced': return <CartonCalculatorAdvanced />
-    case 'pinyin-converter': return <PinyinConverter />
-    case 'natural-traffic-tool': return <NaturalTrafficTool />
-    case 'keyword-combiner': return <KeywordCombiner />
-    case 'fba-warehouses': return <FBAWarehouses />
-    case 'fba-label-editor': return <FBALabelEditor />
-    case 'image-compression': return <ImageCompressionPage />
-    case 'amazon-promotion-stacking': return <AmazonPromotionStackingCalculator />
-    case 'storage-fee-calc': return <StorageFeeCalculatorPage />
-    case 'sales-calc': return <AmazonCalculatorPage />
-    case 'amazon-ads-analyzer': return <AmazonAdsAnalyzer />
-    default: return <PlaceholderPage title="功能开发中" icon={Hammer} />
+  const isFullWidth = activeTab === 'amazon-ads-analyzer'
+  
+  const content = (() => {
+    switch (activeTab) {
+      case 'ad-calc': return <AdCalculatorPage />
+      case 'cpc-compass': return <CpcCalculator />
+      case 'unit': return <UnitConverterPage />
+      case 'editor': return <EditorPage />
+      case 'case': return <CaseConverterPage />
+      case 'word-count': return <WordCountPage />
+      case 'char-count': return <CharCountPage />
+      case 'delivery': return <FBACalculatorPage />
+      case 'returns-v2': return <ReturnsV2Page />
+      case 'listing-check': return <ListingCheckerPage />
+      case 'forbidden-words': return <ForbiddenWordsChecker />
+      case 'text-compare': return <TextComparator />
+      case 'duplicate-remover': return <DuplicateRemover />
+      case 'content-filter': return <ContentFilter />
+      case 'image-resizer': return <ImageResizer />
+      case 'invoice-generator': return <InvoiceGenerator />
+      case 'amazon-global': return <AmazonGlobalTool />
+      case 'rating-sales-reverse': return <AmazonRatingSalesReverse />
+      case 'max-reserve-fee': return <MaxReserveFeeCalculator />
+      case 'keyword-strategy': return <KeywordStrategyTool />
+      case 'search-term-volatility': return <SearchTermVolatilityTool />
+      case 'partner-equity-calculator': return <PartnerEquityCalculator />
+      case 'carton-calc-advanced': return <CartonCalculatorAdvanced />
+      case 'pinyin-converter': return <PinyinConverter />
+      case 'natural-traffic-tool': return <NaturalTrafficTool />
+      case 'keyword-combiner': return <KeywordCombiner />
+      case 'fba-warehouses': return <FBAWarehouses />
+      case 'fba-label-editor': return <FBALabelEditor />
+      case 'image-compression': return <ImageCompressionPage />
+      case 'amazon-promotion-stacking': return <AmazonPromotionStackingCalculator />
+      case 'storage-fee-calc': return <StorageFeeCalculatorPage />
+      case 'sales-calc': return <AmazonCalculatorPage />
+      case 'amazon-ads-analyzer': return <AmazonAdsAnalyzer />
+      default: return <PlaceholderPage title="功能开发中" icon={Hammer} />
+    }
+  })()
+
+  // For iframe based tools like AmazonAdsAnalyzer, we might want to skip the container padding
+  if (isFullWidth) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm min-h-[600px] overflow-hidden">
+        {content}
+      </div>
+    )
   }
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm min-h-[600px] p-6">
+      {content}
+    </div>
+  )
 })
 
 ToolContainer.displayName = 'ToolContainer'

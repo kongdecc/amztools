@@ -204,7 +204,7 @@ export default function ClientPage({
         </nav>
       </header>
       <main className="flex-1 p-8">
-        <div className="max-w-7xl mx-auto">
+        <div className={key === 'amazon-ads-analyzer' ? "w-full" : "max-w-7xl mx-auto"}>
           {renderTool()}
         </div>
       </main>
