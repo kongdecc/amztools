@@ -40,6 +40,7 @@ const FBALabelEditor = dynamic(() => import('@/components/FBALabelEditor'), { lo
 const ImageCompressionPage = dynamic(() => import('@/components/ImageCompressionPage'), { loading: LoadingTool })
 const StorageFeeCalculatorPage = dynamic(() => import('@/components/StorageFeeCalculatorPage'), { loading: LoadingTool })
 const AmazonCalculatorPage = dynamic(() => import('@/components/AmazonCalculatorPage'), { loading: LoadingTool })
+const AmazonAdsAnalyzer = dynamic(() => import('@/components/AmazonAdsAnalyzer'), { loading: LoadingTool })
 
 const PlaceholderPage = ({ title, icon: Icon }: { title: string; icon: any }) => (
   <div className="space-y-6">
