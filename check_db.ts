@@ -4,14 +4,15 @@ const db = new PrismaClient()
 
 async function main() {
   try {
-    const tools = await db.toolModule.findMany();
-    const disabled = tools.filter(t => t.status === '下架');
-    console.log('Disabled tools in DB:', disabled.map(t => t.key));
-    console.log('Total tools in DB:', tools.length);
+    const tool = await db.toolModule.findUnique({
+      where: { key: 'amazon-ads-analyzer' }
+    });
+    console.log('Amazon Ads Analyzer in DB:', tool);
     
-    // Check if any default tool is missing from DB or has different status
-    // We can't easily import DEFAULT_TOOLS here because of relative paths and potentially other imports in constants.ts
-    // But we can check the disabled ones against our known list.
+    const allTools = await db.toolModule.findMany();
+    console.log('Total tools count:', allTools.length);
+    console.log('Tool keys:', allTools.map(t => t.key));
+
   } catch (e) {
     console.error(e);
   } finally {

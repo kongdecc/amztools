@@ -33,6 +33,7 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
 
   const iconMap: Record<string, any> = {
     'ad-calc': Calculator,
+    'amazon-ads-analyzer': BarChart3,
     'cpc-compass': Crosshair,
     'editor': Type,
     'unit': Scale,
@@ -169,6 +170,7 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
         {displayedTools.map((tool: any) => {
                     const colorOverride: Record<string, string> = {
                       'ad-calc': 'blue',
+                      'amazon-ads-analyzer': 'blue',
                       'cpc-compass': 'blue',
                       'editor': 'fuchsia',
                       'unit': 'emerald',
