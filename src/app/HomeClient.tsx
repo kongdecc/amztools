@@ -297,6 +297,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
   
   const iconMap: Record<string, any> = useMemo(() => ({
     'ad-calc': Calculator,
+    'amazon-ads-analyzer': BarChart3,
     'cpc-compass': Crosshair,
     'editor': Type,
     'unit': Scale,
