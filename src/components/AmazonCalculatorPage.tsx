@@ -309,6 +309,114 @@ const AmazonCalculatorPage = () => {
         addLog(`  - 文件处理完成，有效订单: ${fileProcessed}`, 'info');
       }
 
+      // ===========================
+      // 3. 处理退款文件 (Refunds)
+      // ===========================
+      let totalRefundRMB = 0;
+      if (refundFiles && refundFiles.length > 0) {
+        addLog(`>>> 开始处理退款文件...`, 'info');
+        const refundFile = refundFiles[0];
+        const refundData = await readExcelFile(refundFile);
+        addLog(`  - 读取退款文件成功，共 ${refundData.length} 行。`, 'success');
+        
+        // 尝试检测货币
+        let refundCurrency = 'USD';
+        if (refundData.length > 0) {
+          const headers = Object.keys(refundData[0]);
+          const totalHeader = headers.find(h => h.startsWith('总计 ('));
+          if (totalHeader) {
+            const match = totalHeader.match(/总计 \((.+)\)/);
+            if (match && match[1]) {
+              refundCurrency = match[1];
+              addLog(`  - 检测到退款货币为: ${refundCurrency}`, 'info');
+            }
+          }
+        }
+
+        let refundProcessed = 0;
+        let refundSkipped = 0;
+
+        for (let i = 0; i < refundData.length; i++) {
+          const row: any = refundData[i];
+          
+          // 检查日期
+          const dateRaw = row['日期'];
+          if (!dateRaw) { refundSkipped++; continue; }
+          
+          // 格式化日期
+          let dateStr: string | null = null;
+          if (dateRaw instanceof Date) {
+              dateStr = formatDate(dateRaw);
+          } else {
+              const parsed = new Date(dateRaw);
+              if (!isNaN(parsed.getTime())) {
+                  dateStr = formatDate(parsed);
+              } else {
+                  dateStr = null;
+              }
+          }
+
+          if (!dateStr) { refundSkipped++; continue; }
+
+          // 获取金额 "商品价格总额"
+          const amountRaw = row['商品价格总额'];
+          const amount = parseFloat(amountRaw);
+          if (isNaN(amount)) { refundSkipped++; continue; }
+
+          // 匹配汇率
+          let finalRate: number | null = null;
+          let checkDate = new Date(dateStr);
+          let foundRateRow = null;
+          let foundDateStr = null;
+          
+          for (let d = 0; d < 10; d++) {
+              const checkStr = formatDate(checkDate);
+              if (rateMap.has(checkStr)) {
+                  foundRateRow = rateMap.get(checkStr);
+                  foundDateStr = checkStr;
+                  break;
+              }
+              checkDate.setDate(checkDate.getDate() - 1);
+          }
+
+          if (foundRateRow) {
+               // 根据货币类型匹配汇率列
+              if (refundCurrency === 'CNY') {
+                  finalRate = 1;
+              } else {
+                  const directKey = `${refundCurrency}/CNY`;
+                  const hundredKey = `100${refundCurrency}/CNY`;
+                  const indirectKey = `CNY/${refundCurrency}`;
+
+                  if (foundRateRow[directKey] !== undefined) {
+                      finalRate = parseFloat(foundRateRow[directKey]);
+                  } else if (foundRateRow[hundredKey] !== undefined) {
+                      finalRate = parseFloat(foundRateRow[hundredKey]) / 100;
+                  } else if (foundRateRow[indirectKey] !== undefined) {
+                      const val = parseFloat(foundRateRow[indirectKey]);
+                      if (val !== 0) finalRate = 1 / val;
+                  }
+              }
+          }
+
+          if (finalRate === null || isNaN(finalRate)) {
+            // 找不到汇率跳过或记录
+            refundSkipped++;
+            continue;
+          }
+
+          // 转换为人民币 (金额通常为负数，累加即可)
+          const rowRMB = amount * finalRate;
+          totalRefundRMB += rowRMB;
+          refundProcessed++;
+        }
+        addLog(`  - 退款文件处理完成，有效记录: ${refundProcessed} 条`, 'success');
+      }
+
+      // 4. 显示结果
+      const displayRefundRMB = Math.abs(totalRefundRMB);
+      const netRMB = totalRMB - displayRefundRMB;
+
       // 完成
       addLog('------------------------------------------------', 'info');
       addLog(`所有文件计算完成!`, 'success');
@@ -319,12 +427,15 @@ const AmazonCalculatorPage = () => {
         addLog(`总缺失汇率行数: ${totalMissingRateCount} (请检查汇率表日期范围)`, 'warn');
       }
       
-      setResult(totalRMB.toLocaleString('zh-CN', { style: 'currency', currency: 'CNY' }));
+      setTotalSalesResult(totalRMB.toLocaleString('zh-CN', { style: 'currency', currency: 'CNY' }));
+      setTotalRefundResult(displayRefundRMB.toLocaleString('zh-CN', { style: 'currency', currency: 'CNY' }));
+      setNetSalesResult(netRMB.toLocaleString('zh-CN', { style: 'currency', currency: 'CNY' }));
+
+      addLog('所有计算完成！', 'success');
 
     } catch (e: any) {
-      console.error(e);
       addLog(`发生未知错误: ${e.message}`, 'error');
-      setResult('错误');
+      console.error(e);
     } finally {
       setIsProcessing(false);
     }
@@ -477,6 +588,7 @@ const AmazonCalculatorPage = () => {
             <Card className="p-6 flex flex-col justify-center items-center space-y-2 bg-blue-50 border-blue-100 border-l-4 border-l-blue-500 relative">
                 <h3 className="text-sm font-medium text-blue-900 flex items-center gap-1">
                     净销售额 (RMB) 
+                    <span className="text-xs font-normal text-blue-600 ml-1">(税务局申报是这个数据)</span>
                 </h3>
                 <div className="text-3xl font-bold text-blue-700 tracking-tight">
                     {netSalesResult || '¥0.00'}
