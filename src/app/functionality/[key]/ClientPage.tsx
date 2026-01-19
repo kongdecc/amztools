@@ -26,6 +26,7 @@ export default function ClientPage({
 
   const iconMap: Record<string, any> = {
     'ad-calc': Calculator,
+    'amazon-ads-analyzer': BarChart3,
     'cpc-compass': Crosshair,
     'editor': Type,
     'unit': Scale,

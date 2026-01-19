@@ -24,3 +24,6 @@ pnpm-debug.log*
 .DS_Store
 coverage/
 tmp/
+
+# Build artifacts
+public/amazon-ads-analyzer/

@@ -91,6 +91,7 @@ const ToolContainer = memo(({ activeTab }: { activeTab: string }) => {
     case 'amazon-promotion-stacking': return <AmazonPromotionStackingCalculator />
     case 'storage-fee-calc': return <StorageFeeCalculatorPage />
     case 'sales-calc': return <AmazonCalculatorPage />
+    case 'amazon-ads-analyzer': return <AmazonAdsAnalyzer />
     default: return <PlaceholderPage title="功能开发中" icon={Hammer} />
   }
 })
