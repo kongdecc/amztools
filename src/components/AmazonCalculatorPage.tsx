@@ -598,6 +598,7 @@ const AmazonCalculatorPage = () => {
                 </div>
             </Card>
         </div>
+      </div>
 
       {/* Log Console */}
       <Card className="p-4 bg-gray-900 text-gray-100 font-mono text-sm h-64 overflow-y-auto rounded-lg shadow-inner">
