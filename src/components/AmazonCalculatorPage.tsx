@@ -457,7 +457,7 @@ const AmazonCalculatorPage = () => {
             </div>
         </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="space-y-6">
         {/* Input Section */}
         <Card className="p-6 space-y-6">
           <div className="flex items-center space-x-2 text-lg font-semibold text-gray-900">
@@ -569,8 +569,8 @@ const AmazonCalculatorPage = () => {
           </div>
         </Card>
 
-        {/* Result Section */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Result Section */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card className="p-6 flex flex-col justify-center items-center space-y-2 bg-indigo-50 border-indigo-100">
                 <h3 className="text-sm font-medium text-indigo-900">销售总额 (RMB)</h3>
                 <div className="text-2xl font-bold text-indigo-600 tracking-tight">
@@ -598,7 +598,6 @@ const AmazonCalculatorPage = () => {
                 </div>
             </Card>
         </div>
-      </div>
 
       {/* Log Console */}
       <Card className="p-4 bg-gray-900 text-gray-100 font-mono text-sm h-64 overflow-y-auto rounded-lg shadow-inner">
