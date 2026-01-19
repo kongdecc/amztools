@@ -55,6 +55,11 @@ async function getData() {
   return { settings, categories, modules, navItems }
 }
 
+export async function generateStaticParams() {
+  const { modules } = await getData()
+  return modules.map((m: any) => ({ key: m.key }))
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ key: string }> }): Promise<Metadata> {
   const { key } = await params
   const { settings, modules } = await getData()
