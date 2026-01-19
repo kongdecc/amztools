@@ -634,21 +634,3 @@ const AmazonCalculatorPage = () => {
 };
 
 export default AmazonCalculatorPage;
-            }`}>
-              <span className="text-gray-600 text-xs mt-0.5">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
-              <span>
-                {log.type === 'error' && '❌ '}
-                {log.type === 'warn' && '⚠️ '}
-                {log.type === 'success' && '✅ '}
-                {log.message}
-              </span>
-            </div>
-          ))}
-        </div>
-      </Card>
-      
-    </div>
-  );
-};
-
-export default AmazonCalculatorPage;
