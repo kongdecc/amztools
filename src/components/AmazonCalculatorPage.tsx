@@ -14,11 +14,14 @@ interface LogEntry {
 
 const AmazonCalculatorPage = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [result, setResult] = useState<string | null>(null);
+  const [totalSalesResult, setTotalSalesResult] = useState<string | null>(null);
+  const [totalRefundResult, setTotalRefundResult] = useState<string | null>(null);
+  const [netSalesResult, setNetSalesResult] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   // Removed quarter state as per request
   // const [quarter, setQuarter] = useState('all'); 
   const salesInputRef = useRef<HTMLInputElement>(null);
+  const refundInputRef = useRef<HTMLInputElement>(null);
   const rateInputRef = useRef<HTMLInputElement>(null);
 
   // Helper: Add Log
@@ -57,15 +60,18 @@ const AmazonCalculatorPage = () => {
 
   const handleCalculate = async () => {
     setLogs([]);
-    setResult('计算中...');
+    setTotalSalesResult('计算中...');
+    setTotalRefundResult('...');
+    setNetSalesResult('...');
     setIsProcessing(true);
 
     const salesFiles = salesInputRef.current?.files;
+    const refundFiles = refundInputRef.current?.files;
     const rateFiles = rateInputRef.current?.files;
 
     if (!salesFiles || salesFiles.length === 0) {
       addLog('错误: 请确保已上传销售报表。', 'error');
-      setResult('错误');
+      setTotalSalesResult('错误');
       setIsProcessing(false);
       return;
     }
@@ -373,6 +379,27 @@ const AmazonCalculatorPage = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
+                上传亚马逊退款明细 (可选)
+              </label>
+              <div className="text-xs text-gray-500 mb-1">
+                 用于计算退款总额并得出净销售额
+              </div>
+              <div className="relative">
+                <Input
+                  type="file"
+                  ref={refundInputRef}
+                  accept=".csv,.xlsx,.xls"
+                  className="pl-10 py-2 h-auto file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100"
+                />
+                <FileText className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+              <p className="mt-1 text-xs text-gray-500">
+                文件应包含"日期"和"商品价格总额"列。
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 上传自定义汇率表 (可选)
               </label>
               <div className="text-xs text-gray-500 mb-1">
@@ -432,15 +459,33 @@ const AmazonCalculatorPage = () => {
         </Card>
 
         {/* Result Section */}
-        <Card className="p-6 flex flex-col justify-center items-center space-y-4 bg-indigo-50 border-indigo-100">
-          <h3 className="text-lg font-medium text-indigo-900">总金额 (RMB)</h3>
-          <div className="text-4xl font-bold text-indigo-600 tracking-tight">
-            {result || '¥0.00'}
-          </div>
-          <p className="text-sm text-indigo-500 text-center max-w-xs">
-            {result ? '计算完成' : '请上传文件并点击开始计算'}
-          </p>
-        </Card>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card className="p-6 flex flex-col justify-center items-center space-y-2 bg-indigo-50 border-indigo-100">
+                <h3 className="text-sm font-medium text-indigo-900">销售总额 (RMB)</h3>
+                <div className="text-2xl font-bold text-indigo-600 tracking-tight">
+                    {totalSalesResult || '¥0.00'}
+                </div>
+            </Card>
+
+            <Card className="p-6 flex flex-col justify-center items-center space-y-2 bg-red-50 border-red-100">
+                <h3 className="text-sm font-medium text-red-900">退款总额 (RMB)</h3>
+                <div className="text-2xl font-bold text-red-600 tracking-tight">
+                    {totalRefundResult || '¥0.00'}
+                </div>
+            </Card>
+
+            <Card className="p-6 flex flex-col justify-center items-center space-y-2 bg-blue-50 border-blue-100 border-l-4 border-l-blue-500 relative">
+                <h3 className="text-sm font-medium text-blue-900 flex items-center gap-1">
+                    净销售额 (RMB) 
+                </h3>
+                <div className="text-3xl font-bold text-blue-700 tracking-tight">
+                    {netSalesResult || '¥0.00'}
+                </div>
+                <div className="text-xs text-red-500 font-semibold mt-1">
+                    (税务局申报是这个数据)
+                </div>
+            </Card>
+        </div>
       </div>
 
       {/* Log Console */}
@@ -459,6 +504,24 @@ const AmazonCalculatorPage = () => {
               log.type === 'warn' ? 'text-yellow-400' :
               log.type === 'success' ? 'text-green-400' :
               'text-gray-300'
+            }`}>
+              <span className="text-gray-600 text-xs mt-0.5">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
+              <span>
+                {log.type === 'error' && '❌ '}
+                {log.type === 'warn' && '⚠️ '}
+                {log.type === 'success' && '✅ '}
+                {log.message}
+              </span>
+            </div>
+          ))}
+        </div>
+      </Card>
+      
+    </div>
+  );
+};
+
+export default AmazonCalculatorPage;
             }`}>
               <span className="text-gray-600 text-xs mt-0.5">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
               <span>
