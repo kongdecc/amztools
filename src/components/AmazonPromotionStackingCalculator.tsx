@@ -473,6 +473,15 @@ const AmazonPromotionStackingCalculator = () => {
                           如果对其中任一项您选择了 <strong>“否，不允许叠加使用”</strong>，促销将不会叠加使用，这意味着买家结账时，系统只会应用两个促销中优惠程度更高的促销。
                       </p>
                   </div>
+
+                  <div className="mt-6 border-t border-slate-200 pt-4">
+                      <p className="font-bold text-slate-800 mb-2 text-sm">🧮 本工具计算逻辑说明</p>
+                      <ul className="list-disc pl-4 space-y-1 mb-3">
+                          <li><strong>优先扣减价格折扣</strong>：首先应用“价格折扣 (Price Discount)”以确定基础折扣价格。</li>
+                          <li><strong>优惠券/促销叠加</strong>：随后的优惠券和促销活动将基于上一步的折后价格进行计算。多张优惠券/促销直接叠加百分比（例如 10% + 20% = 30% 总折扣）。</li>
+                      </ul>
+                      <p className="text-slate-400 italic bg-slate-100 p-2 rounded">⚠️ 注：计算结果仅供参考，实际金额请以亚马逊后台最终结算为准。</p>
+                  </div>
               </div>
           </div>
       </Card>
