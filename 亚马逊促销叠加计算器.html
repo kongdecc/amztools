@@ -348,8 +348,21 @@
             });
 
             // 4. Calculate Final
-            let totalPercent = 0;
-            let totalAmount = 0;
+            let currentPrice = basePrice;
+            let totalDeduction = 0;
+            
+            const priceDiscountIndex = promoTypes.findIndex(p => p.id === 'price_discount');
+            const couponIndex = promoTypes.findIndex(p => p.id === 'coupon');
+            
+            // First pass: Check/Apply Price Discount
+            if (selectedIndices.includes(priceDiscountIndex) && !disabledIndices.has(priceDiscountIndex)) {
+                 const unit = document.getElementById(`unit-${priceDiscountIndex}`).value;
+                 const val = parseFloat(document.getElementById(`val-${priceDiscountIndex}`).value) || 0;
+                 const deduction = unit === '%' ? (basePrice * val) / 100 : val;
+                 
+                 totalDeduction += deduction;
+                 currentPrice -= deduction;
+            }
 
             selectedIndices.forEach(idx => {
                 const elBox = document.getElementById(`input-area-${idx}`).parentElement;
@@ -361,19 +374,20 @@
                     statusEl.innerHTML = '<span class="text-slate-400">已失效 (被更优覆盖)</span>';
                 } else {
                     statusEl.innerHTML = '<span class="text-green-600 font-bold">✓ 生效中</span>';
+                    
+                    if (idx === priceDiscountIndex) return; // Already handled
+
                     const unit = document.getElementById(`unit-${idx}`).value;
                     const val = parseFloat(document.getElementById(`val-${idx}`).value) || 0;
-                    if (unit === '%') totalPercent += val;
-                    else totalAmount += val;
+                    
+                    // Apply on currentPrice (discounted by Price Discount if applicable)
+                    const deduction = unit === '%' ? (currentPrice * val) / 100 : val;
+                    totalDeduction += deduction;
                 }
             });
 
-            if (totalPercent > 100) totalPercent = 100;
-            const priceAfterPercent = basePrice * (1 - totalPercent / 100);
-            let finalPrice = priceAfterPercent - totalAmount;
-            if (finalPrice < 0) finalPrice = 0;
-
-            updateFinal(basePrice, basePrice - finalPrice);
+            if (totalDeduction > basePrice) totalDeduction = basePrice;
+            updateFinal(basePrice, totalDeduction);
         }
 
         function updateFinal(base, ded) {

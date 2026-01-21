@@ -175,30 +175,57 @@ const AmazonPromotionStackingCalculator = () => {
       return true;
     };
 
+    // Helper to calculate deduction for a specific set of promos based on rules
+    const calculateSetDeduction = (indices: number[]) => {
+      let currentPrice = basePrice;
+      let totalDeduction = 0;
+      
+      const priceDiscountIndex = promoTypes.findIndex(p => p.id === 'price_discount');
+      const couponIndex = promoTypes.findIndex(p => p.id === 'coupon');
+      
+      // 1. Apply Price Discount first if present
+      if (indices.includes(priceDiscountIndex)) {
+         const config = promoValues[priceDiscountIndex];
+         const val = parseFloat(config.val as any) || 0;
+         const deduction = config.unit === '%' ? (basePrice * val) / 100 : val;
+         totalDeduction += deduction;
+         currentPrice -= deduction;
+      }
+
+      // 2. Apply others
+      indices.forEach(idx => {
+         if (idx === priceDiscountIndex) return; // Already handled
+
+         const config = promoValues[idx];
+         const val = parseFloat(config.val as any) || 0;
+         
+         // All other promos (Coupons, Promo Codes, etc.) apply on the currentPrice (which is the Price after Price Discount)
+         // They stack additively with each other relative to this currentPrice.
+         const deduction = config.unit === '%' ? (currentPrice * val) / 100 : val;
+         totalDeduction += deduction;
+      });
+
+      return totalDeduction;
+    };
+
     // Iterate all combinations of selected promos
-    // This is a bit heavy if user selects ALL, but practical usage is low count.
-    const combine = (start: number, currentSet: number[], currentSum: number) => {
-      if (currentSum > maxDeduction) {
-        maxDeduction = currentSum;
+    const combine = (start: number, currentSet: number[]) => {
+      const currentDeduction = calculateSetDeduction(currentSet);
+      if (currentDeduction > maxDeduction) {
+        maxDeduction = currentDeduction;
       }
 
       for (let i = start; i < discounts.length; i++) {
         const nextPromo = discounts[i];
-        // Check compatibility with currentSet
         const newSet = [...currentSet, nextPromo.idx];
         if (isCompatible(newSet)) {
-          combine(i + 1, newSet, currentSum + nextPromo.value);
+          combine(i + 1, newSet);
         }
       }
     };
 
     if (discounts.length > 0) {
-       // Also check single items (base case)
-       discounts.forEach(d => {
-         if (d.value > maxDeduction) maxDeduction = d.value;
-       });
-       // Try combinations
-       combine(0, [], 0);
+       combine(0, []);
     }
 
     const deduction = Math.min(maxDeduction, basePrice); // Can't go below 0
