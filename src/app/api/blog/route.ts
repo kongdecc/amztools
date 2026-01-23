@@ -4,6 +4,8 @@ import { SESSION_COOKIE, getSessionByToken } from '@/lib/auth'
 import fs from 'fs'
 import path from 'path'
 
+export const dynamic = 'force-dynamic'
+
 type BlogPost = {
   id: string
   title: string

@@ -4,6 +4,8 @@ import { db } from '@/lib/db'
 import { Metadata } from 'next'
 import { DEFAULT_NAV_ITEMS, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 
+export const dynamic = 'force-dynamic'
+
 function getSiteBase(): URL | null {
   const raw = String(process.env.NEXT_PUBLIC_SITE_URL || '').trim()
   if (!raw) return null
