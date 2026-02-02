@@ -312,11 +312,13 @@ const InvoiceGenerator = () => {
 
       // 1. Check for logo
       const logoPlaceholder = element.querySelector(`.${styles.logoPlaceholder}`) as HTMLElement
+      const companyLogo = element.querySelector(`.${styles.companyLogo}`) as HTMLElement
       const hasLogo = logo && logo.length > 0
       
       // If no logo, add noLogo class to hide placeholder border
-      if (!hasLogo && logoPlaceholder) {
-        logoPlaceholder.classList.add(styles.noLogo)
+      if (!hasLogo) {
+        if (companyLogo) companyLogo.classList.add(styles.noLogo)
+        if (logoPlaceholder) logoPlaceholder.classList.add(styles.noLogo)
       }
 
       // 2. Hide controls and buttons
@@ -353,8 +355,9 @@ const InvoiceGenerator = () => {
       lastHeaders.forEach(el => el.style.display = '')
       lastCells.forEach(el => el.style.display = '')
       
-      if (!hasLogo && logoPlaceholder) {
-        logoPlaceholder.classList.remove(styles.noLogo)
+      if (!hasLogo) {
+        if (companyLogo) companyLogo.classList.remove(styles.noLogo)
+        if (logoPlaceholder) logoPlaceholder.classList.remove(styles.noLogo)
       }
       
       document.title = originalTitle

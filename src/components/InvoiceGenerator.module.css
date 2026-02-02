@@ -238,7 +238,7 @@
 
 .invoiceContainer {
   background: white;
-  padding: 40px;
+  padding: 40px !important;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   min-height: 800px;
@@ -254,10 +254,11 @@
 }
 
 .invoiceTitle h1 {
-  font-size: 48px;
-  font-weight: bold;
+  font-size: 48px !important;
+  font-weight: bold !important;
   color: #333;
   margin: 0;
+  line-height: 1.2;
 }
 
 .invoiceInfo {
