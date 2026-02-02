@@ -17,6 +17,7 @@ const CURRENCY_SYMBOLS: { [key: string]: string } = {
 interface Product {
   id: string
   name: string
+  sku?: string
   qty: number
   price: number
 }
@@ -36,8 +37,9 @@ const InvoiceGenerator = () => {
   const [orderNo, setOrderNo] = useState('')
   const [itemNo, setItemNo] = useState('')
   const [currency, setCurrency] = useState('USD')
+  const [notes, setNotes] = useState('')
   const [products, setProducts] = useState<Product[]>([
-    { id: '1', name: '', qty: 1, price: 0 }
+    { id: '1', name: '', sku: '', qty: 1, price: 0 }
   ])
   const [logo, setLogo] = useState<string | null>(null)
   const [previewVisible, setPreviewVisible] = useState(false)
@@ -233,7 +235,8 @@ const InvoiceGenerator = () => {
         setOrderNo('')
         setItemNo('')
         setCurrency('USD')
-        setProducts([{ id: Date.now().toString(), name: '', qty: 1, price: 0 }])
+        setNotes('')
+        setProducts([{ id: Date.now().toString(), name: '', sku: '', qty: 1, price: 0 }])
         setLogo(null)
     }
   }
@@ -318,7 +321,11 @@ const InvoiceGenerator = () => {
             </div>
             <div className={styles.helpItem}>
               <h4>🛍️ 产品管理</h4>
-              <p>• 添加产品、运费、税费、折扣<br/>• 自动计算金额和总计<br/>• 可删除不需要的行</p>
+              <p>• 添加产品、运费、税费、折扣<br/>• 填写SKU/ASIN<br/>• 自动计算金额和总计<br/>• 可删除不需要的行</p>
+            </div>
+            <div className={styles.helpItem}>
+              <h4>📝 备注与签名</h4>
+              <p>• 添加底部备注和条款<br/>• 自动生成签名栏<br/>• 适合添加银行账号等信息</p>
             </div>
             <div className={styles.helpItem}>
               <h4>💾 模板功能</h4>
@@ -467,6 +474,7 @@ const InvoiceGenerator = () => {
             <thead>
               <tr>
                 <th>Description</th>
+                <th style={{ width: '150px' }}>SKU/ASIN</th>
                 <th>QTY</th>
                 <th>Unit Price</th>
                 <th>Amount</th>
@@ -477,6 +485,7 @@ const InvoiceGenerator = () => {
               {products.map(product => (
                 <tr key={product.id}>
                   <td><input type="text" value={product.name} onChange={e => handleProductChange(product.id, 'name', e.target.value)} placeholder="product name" /></td>
+                  <td><input type="text" value={product.sku || ''} onChange={e => handleProductChange(product.id, 'sku', e.target.value)} placeholder="SKU / ASIN" /></td>
                   <td><input type="number" value={product.qty} onChange={e => handleProductChange(product.id, 'qty', Number(e.target.value))} min="1" /></td>
                   <td><input type="number" value={product.price} onChange={e => handleProductChange(product.id, 'price', Number(e.target.value))} step="0.01" /></td>
                   <td className={styles.productAmount}>{formatCurrency(product.qty * product.price)}</td>
@@ -490,6 +499,22 @@ const InvoiceGenerator = () => {
             <div className={styles.totalRow}>
               <span className={styles.totalLabel}>Total</span>
               <span className={styles.totalAmount}>{formatCurrency(calculateTotal())}</span>
+            </div>
+          </div>
+
+          <div className={styles.notesSection}>
+            <label>Notes / Terms:</label>
+            <textarea
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              placeholder="Enter notes, terms, or bank details here..."
+            />
+          </div>
+
+          <div className={styles.signatureSection}>
+            <div className={styles.signatureBox}>
+              <div className={styles.signatureLine}></div>
+              <span className={styles.signatureLabel}>Authorized Signature</span>
             </div>
           </div>
         </div>
