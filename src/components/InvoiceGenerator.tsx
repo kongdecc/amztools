@@ -553,11 +553,6 @@ const InvoiceGenerator = () => {
         </div>
       </div>
 
-      {/* Author Info */}
-      <div className={styles.authorInfo}>
-        <p>版权归 跨境乐趣园所有 ｜ 官网： <a href="https://amzlink.top/" target="_blank" rel="noopener noreferrer">https://amzlink.top/</a> ｜ 作者：<strong>達哥</strong></p>
-      </div>
-
       {/* Preview Modal */}
       <div className={`${styles.modal} ${previewVisible ? styles.show : ''}`}>
         <div className={styles.modalContent}>
