@@ -280,10 +280,11 @@
 
 .infoGroup input, .infoGroup select {
   padding: 8px;
-  border: 1px solid #999;
+  border: 1px solid #666;
   border-radius: 4px;
   font-size: 14px;
   min-width: 200px;
+  background-color: white;
 }
 
 .companySection {
@@ -312,10 +313,11 @@
   width: 100%;
   height: 120px;
   padding: 10px;
-  border: 1px solid #999;
+  border: 1px solid #666;
   border-radius: 4px;
   resize: vertical;
   font-family: inherit;
+  background-color: white;
 }
 
 .templateControls {
@@ -386,10 +388,11 @@
   width: 100%;
   height: 120px;
   padding: 10px;
-  border: 1px solid #999;
+  border: 1px solid #666;
   border-radius: 4px;
   resize: vertical;
   font-family: inherit;
+  background-color: white;
 }
 
 .orderInfo {
@@ -444,9 +447,10 @@
 .productsTable input {
   width: 100%;
   padding: 6px;
-  border: 1px solid #ddd;
+  border: 1px solid #666;
   border-radius: 3px;
   font-size: 14px;
+  background-color: white;
 }
 
 .productsTable .productAmount {
@@ -594,9 +598,9 @@
   }
   
   .container input, .container textarea, .container select {
-      border: none !important;
-      background: transparent !important;
-      padding: 0 !important;
+      border: 1px solid #666 !important;
+      background: white !important;
+      padding: 4px !important;
       margin: 0 !important;
       font-size: inherit !important;
       line-height: inherit !important;
