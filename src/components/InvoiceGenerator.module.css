@@ -304,7 +304,7 @@
 
 .infoGroup input, .infoGroup select {
   padding: 8px;
-  border: 1px solid #999;
+  border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 14px;
   min-width: 200px;
@@ -336,7 +336,7 @@
   width: 100%;
   height: 120px;
   padding: 10px;
-  border: 1px solid #999;
+  border: 1px solid #ddd;
   border-radius: 4px;
   resize: vertical;
   font-family: inherit;
@@ -352,7 +352,7 @@
 .templateControls select {
   flex: 1;
   padding: 4px;
-  border: 1px solid #999;
+  border: 1px solid #ddd;
   border-radius: 3px;
 }
 
@@ -468,7 +468,7 @@
 .productsTable input {
   width: 100%;
   padding: 6px;
-  border: 1px solid #999;
+  border: 1px solid #ddd;
   border-radius: 3px;
   font-size: 14px;
 }
@@ -506,53 +506,6 @@
 /* Logo隐藏样式 - 通用 */
 .noLogo {
   display: none !important;
-}
-
-/* 备注和签名样式 */
-.notesSection {
-  margin-top: 20px;
-  border-top: 1px solid #eee;
-  padding-top: 20px;
-}
-
-.notesSection label {
-  display: block;
-  font-weight: bold;
-  margin-bottom: 8px;
-  color: #666;
-}
-
-.notesSection textarea {
-  width: 100%;
-  height: 80px;
-  padding: 10px;
-  border: 1px solid #999;
-  border-radius: 4px;
-  resize: vertical;
-  font-family: inherit;
-}
-
-.signatureSection {
-  margin-top: 50px;
-  display: flex;
-  justify-content: flex-end;
-  padding-right: 20px;
-}
-
-.signatureBox {
-  width: 250px;
-  text-align: center;
-}
-
-.signatureLine {
-  border-bottom: 1px solid #333;
-  margin-bottom: 8px;
-  height: 30px;
-}
-
-.signatureLabel {
-  font-weight: bold;
-  color: #333;
 }
 
 /* 响应式设计 */

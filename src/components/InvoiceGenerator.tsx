@@ -17,7 +17,6 @@ const CURRENCY_SYMBOLS: { [key: string]: string } = {
 interface Product {
   id: string
   name: string
-  sku?: string
   qty: number
   price: number
 }
@@ -37,9 +36,8 @@ const InvoiceGenerator = () => {
   const [orderNo, setOrderNo] = useState('')
   const [itemNo, setItemNo] = useState('')
   const [currency, setCurrency] = useState('USD')
-  const [notes, setNotes] = useState('')
   const [products, setProducts] = useState<Product[]>([
-    { id: '1', name: '', sku: '', qty: 1, price: 0 }
+    { id: '1', name: '', qty: 1, price: 0 }
   ])
   const [logo, setLogo] = useState<string | null>(null)
   const [previewVisible, setPreviewVisible] = useState(false)
@@ -62,17 +60,27 @@ const InvoiceGenerator = () => {
     setHelpVisible(true)
     const timer = setTimeout(() => {
         setHelpVisible(false)
-    }, 1000) // Reduced time for better UX in React
+    }, 1000)
     
     return () => clearTimeout(timer)
   }, [])
 
   const loadSavedData = () => {
     try {
-      const companies = JSON.parse(localStorage.getItem('invoice_companies') || '[]')
-      const buyers = JSON.parse(localStorage.getItem('invoice_buyers') || '[]')
-      setSavedCompanies(companies)
-      setSavedBuyers(buyers)
+      // Use the keys from the HTML file logic to match potential existing data if any, 
+      // but the HTML file uses 'savedCompanies' object structure, here we use array for Select options.
+      // Let's stick to the React implementation logic but keep the keys consistent if possible.
+      // The HTML file uses: savedCompanies (object), savedBuyers (object), invoiceTemplates (object)
+      // We will adapt to array for React state.
+      
+      const companiesObj = JSON.parse(localStorage.getItem('savedCompanies') || '{}')
+      const buyersObj = JSON.parse(localStorage.getItem('savedBuyers') || '{}')
+      
+      const companiesArr = Object.keys(companiesObj).map(key => ({ name: key, content: companiesObj[key] }))
+      const buyersArr = Object.keys(buyersObj).map(key => ({ name: key, content: buyersObj[key] }))
+      
+      setSavedCompanies(companiesArr)
+      setSavedBuyers(buyersArr)
     } catch (e) {
       console.error('Error loading saved data', e)
     }
@@ -92,7 +100,7 @@ const InvoiceGenerator = () => {
   }
 
   const handleAddShipping = () => {
-    setProducts([...products, { id: Date.now().toString(), name: 'Shipping', qty: 1, price: 0 }])
+    setProducts([...products, { id: Date.now().toString(), name: 'Shipping Fee', qty: 1, price: 0 }])
   }
 
   const handleAddTax = () => {
@@ -100,12 +108,16 @@ const InvoiceGenerator = () => {
   }
 
   const handleAddDiscount = () => {
-    setProducts([...products, { id: Date.now().toString(), name: 'Discount', qty: 1, price: 0 }]) // Usually negative, but user inputs positive and maybe we handle it? The original code didn't specify negative logic, just add row. User can input negative price.
+    setProducts([...products, { id: Date.now().toString(), name: 'Discount', qty: 1, price: 0 }])
   }
 
   const handleRemoveProduct = (id: string) => {
     if (products.length > 1) {
-      setProducts(products.filter(p => p.id !== id))
+      if (confirm('确定要删除这个产品行吗？\n\n点击"确定"继续，点击"取消"放弃操作。')) {
+        setProducts(products.filter(p => p.id !== id))
+      }
+    } else {
+      alert('至少需要保留一个产品行')
     }
   }
 
@@ -134,60 +146,91 @@ const InvoiceGenerator = () => {
   }
 
   const saveCompany = () => {
-    const name = prompt('Enter a name for this company info:')
+    if (!companyInfo.trim()) {
+      alert('请输入公司信息')
+      return
+    }
+    const name = prompt('请输入模板名称:')
     if (name) {
-      const newSaved = [...savedCompanies, { name, content: companyInfo }]
-      setSavedCompanies(newSaved)
-      localStorage.setItem('invoice_companies', JSON.stringify(newSaved))
+      const companiesObj = JSON.parse(localStorage.getItem('savedCompanies') || '{}')
+      companiesObj[name] = companyInfo
+      localStorage.setItem('savedCompanies', JSON.stringify(companiesObj))
+      loadSavedData() // Reload to update state
+      alert('公司信息已保存')
     }
   }
 
   const deleteCompany = () => {
     const select = document.getElementById('savedCompanies') as HTMLSelectElement
-    const index = select.selectedIndex - 1 // -1 because of default option
-    if (index >= 0) {
-      const newSaved = savedCompanies.filter((_, i) => i !== index)
-      setSavedCompanies(newSaved)
-      localStorage.setItem('invoice_companies', JSON.stringify(newSaved))
+    const name = select.value
+    if (name) {
+      if (confirm(`确定要删除模板 "${name}" 吗？\n\n点击"确定"继续，点击"取消"放弃操作。`)) {
+        const companiesObj = JSON.parse(localStorage.getItem('savedCompanies') || '{}')
+        delete companiesObj[name]
+        localStorage.setItem('savedCompanies', JSON.stringify(companiesObj))
+        loadSavedData()
+        alert('模板已删除')
+      }
+    } else {
+      alert('请选择要删除的模板')
     }
   }
 
   const loadCompany = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const idx = parseInt(e.target.value)
-    if (!isNaN(idx) && savedCompanies[idx]) {
-      setCompanyInfo(savedCompanies[idx].content)
+    const name = e.target.value
+    if (name) {
+      const companiesObj = JSON.parse(localStorage.getItem('savedCompanies') || '{}')
+      if (companiesObj[name]) {
+        setCompanyInfo(companiesObj[name])
+      }
     }
   }
 
   const saveBuyer = () => {
-    const name = prompt('Enter a name for this buyer info:')
+    if (!buyerInfo.trim()) {
+      alert('请输入买家信息')
+      return
+    }
+    const name = prompt('请输入模板名称:')
     if (name) {
-      const newSaved = [...savedBuyers, { name, content: buyerInfo }]
-      setSavedBuyers(newSaved)
-      localStorage.setItem('invoice_buyers', JSON.stringify(newSaved))
+      const buyersObj = JSON.parse(localStorage.getItem('savedBuyers') || '{}')
+      buyersObj[name] = buyerInfo
+      localStorage.setItem('savedBuyers', JSON.stringify(buyersObj))
+      loadSavedData()
+      alert('买家信息已保存')
     }
   }
 
   const deleteBuyer = () => {
     const select = document.getElementById('savedBuyers') as HTMLSelectElement
-    const index = select.selectedIndex - 1
-    if (index >= 0) {
-      const newSaved = savedBuyers.filter((_, i) => i !== index)
-      setSavedBuyers(newSaved)
-      localStorage.setItem('invoice_buyers', JSON.stringify(newSaved))
+    const name = select.value
+    if (name) {
+      if (confirm(`确定要删除模板 "${name}" 吗？\n\n点击"确定"继续，点击"取消"放弃操作。`)) {
+        const buyersObj = JSON.parse(localStorage.getItem('savedBuyers') || '{}')
+        delete buyersObj[name]
+        localStorage.setItem('savedBuyers', JSON.stringify(buyersObj))
+        loadSavedData()
+        alert('模板已删除')
+      }
+    } else {
+      alert('请选择要删除的模板')
     }
   }
 
   const loadBuyer = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const idx = parseInt(e.target.value)
-    if (!isNaN(idx) && savedBuyers[idx]) {
-      setBuyerInfo(savedBuyers[idx].content)
+    const name = e.target.value
+    if (name) {
+      const buyersObj = JSON.parse(localStorage.getItem('savedBuyers') || '{}')
+      if (buyersObj[name]) {
+        setBuyerInfo(buyersObj[name])
+      }
     }
   }
 
   const saveTemplate = () => {
     const data = {
       invoiceNo,
+      invoiceDate,
       companyInfo,
       buyerInfo,
       orderFrom,
@@ -195,18 +238,32 @@ const InvoiceGenerator = () => {
       itemNo,
       currency,
       products,
-      logo
+      logoSrc: logo
     }
-    localStorage.setItem('invoice_template', JSON.stringify(data))
-    alert('Template saved successfully!')
+    const name = prompt('请输入模板名称:')
+    if (name) {
+      const savedTemplates = JSON.parse(localStorage.getItem('invoiceTemplates') || '{}')
+      savedTemplates[name] = data
+      localStorage.setItem('invoiceTemplates', JSON.stringify(savedTemplates))
+      alert('模板已保存')
+    }
   }
 
   const loadTemplate = () => {
     try {
-      const saved = localStorage.getItem('invoice_template')
-      if (saved) {
-        const data = JSON.parse(saved)
+      const savedTemplates = JSON.parse(localStorage.getItem('invoiceTemplates') || '{}')
+      const names = Object.keys(savedTemplates)
+      
+      if (names.length === 0) {
+        alert('没有保存的模板')
+        return
+      }
+      
+      const name = prompt(`请选择模板:\n${names.map((n, i) => `${i + 1}. ${n}`).join('\n')}\n\n请输入模板名称:`)
+      if (name && savedTemplates[name]) {
+        const data = savedTemplates[name]
         if (data.invoiceNo) setInvoiceNo(data.invoiceNo)
+        if (data.invoiceDate) setInvoiceDate(data.invoiceDate)
         if (data.companyInfo) setCompanyInfo(data.companyInfo)
         if (data.buyerInfo) setBuyerInfo(data.buyerInfo)
         if (data.orderFrom) setOrderFrom(data.orderFrom)
@@ -214,10 +271,10 @@ const InvoiceGenerator = () => {
         if (data.itemNo) setItemNo(data.itemNo)
         if (data.currency) setCurrency(data.currency)
         if (data.products) setProducts(data.products)
-        if (data.logo) setLogo(data.logo)
-        alert('Template loaded successfully!')
-      } else {
-        alert('No saved template found.')
+        if (data.logoSrc) setLogo(data.logoSrc)
+        alert('模板已加载')
+      } else if (name) {
+        alert('模板不存在')
       }
     } catch (e) {
       console.error('Error loading template', e)
@@ -226,17 +283,17 @@ const InvoiceGenerator = () => {
   }
 
   const newInvoice = () => {
-    if (confirm('Are you sure you want to create a new invoice? Unsaved changes will be lost.')) {
-        setInvoiceNo('INV-0001')
+    if (confirm('确定要创建新发票吗？当前数据将被清空。\n\n点击"确定"继续，点击"取消"放弃操作。')) {
+        const newInvoiceNo = 'INV-' + String(Date.now()).slice(-4)
+        setInvoiceNo(newInvoiceNo)
         setInvoiceDate(new Date().toISOString().split('T')[0])
-        setCompanyInfo("Company Name\nAddress Line 1\nAddress Line 2\nCity, State ZIP")
-        setBuyerInfo("Buyer's Name\nAddress Line 1\nAddress Line 2\nCity, State ZIP")
+        setCompanyInfo("")
+        setBuyerInfo("")
         setOrderFrom('Amazon')
         setOrderNo('')
         setItemNo('')
         setCurrency('USD')
-        setNotes('')
-        setProducts([{ id: Date.now().toString(), name: '', sku: '', qty: 1, price: 0 }])
+        setProducts([{ id: Date.now().toString(), name: '', qty: 1, price: 0 }])
         setLogo(null)
     }
   }
@@ -248,46 +305,49 @@ const InvoiceGenerator = () => {
   const handleExportPDF = async () => {
     if (!invoiceRef.current) return
     
-    const element = invoiceRef.current
-    
-    // Temporarily hide non-printable elements if needed (handled by CSS media print, but for html2canvas we might need manual handling)
-    // Actually html2canvas captures what is visible. We should probably clone it or style it.
-    // The original code used html2canvas on the container.
-    
-    // For better PDF quality with html2canvas:
-    const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false
-    })
-    
-    const imgData = canvas.toDataURL('image/png')
-    const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
-    })
-    
-    const imgWidth = 210
-    const imgHeight = (canvas.height * imgWidth) / canvas.width
-    
-    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight)
-    pdf.save(`invoice_${invoiceNo}.pdf`)
+    try {
+      const element = invoiceRef.current
+      
+      // Use html2canvas
+      const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true
+      })
+      
+      const imgData = canvas.toDataURL('image/png')
+      const pdf = new jsPDF('p', 'mm', 'a4')
+      const imgWidth = 210
+      const pageHeight = 295
+      const imgHeight = (canvas.height * imgWidth) / canvas.width
+      let heightLeft = imgHeight
+      let position = 0
+      
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
+      heightLeft -= pageHeight
+      
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight
+        pdf.addPage()
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
+        heightLeft -= pageHeight
+      }
+      
+      pdf.save(`${invoiceNo || 'invoice'}.pdf`)
+    } catch (error) {
+      console.error('PDF导出失败:', error)
+      alert('PDF导出失败，请检查浏览器是否支持或尝试使用打印功能')
+    }
   }
 
   const handlePreview = async () => {
     if (!invoiceRef.current) return
     setPreviewVisible(true)
-    // In React we can just render the invoice in the modal, but reusing the same component might be tricky if it has inputs.
-    // The original code cloned the node or something.
-    // For simplicity, we can just generate the image and show it in the modal, or rely on the fact that the modal covers the screen and we can show a read-only version.
-    // However, the original code's preview allowed printing/exporting from there.
-    // Let's implement a simple preview that just generates an image for now, or better, use a read-only view of the invoice.
-    // Actually, let's just use the html2canvas to show a snapshot.
     
+    // Simple preview generation
     const element = invoiceRef.current
     const canvas = await html2canvas(element, {
-        scale: 1, // Preview doesn't need high res
+        scale: 1, 
         useCORS: true
     })
     const imgData = canvas.toDataURL('image/png')
@@ -299,11 +359,6 @@ const InvoiceGenerator = () => {
 
   return (
     <div className={styles.container}>
-      <div className={`flex items-center gap-2 mb-6 ${styles.pageHeader}`}>
-        <Receipt className="h-6 w-6 text-cyan-600" />
-        <h2 className="text-xl font-bold text-gray-800">发票生成工具</h2>
-      </div>
-
       {/* Help Section */}
       <div className={styles.helpSection}>
         <div className={styles.helpHeader} onClick={() => setHelpVisible(!helpVisible)}>
@@ -321,11 +376,7 @@ const InvoiceGenerator = () => {
             </div>
             <div className={styles.helpItem}>
               <h4>🛍️ 产品管理</h4>
-              <p>• 添加产品、运费、税费、折扣<br/>• 填写SKU/ASIN<br/>• 自动计算金额和总计<br/>• 可删除不需要的行</p>
-            </div>
-            <div className={styles.helpItem}>
-              <h4>📝 备注与签名</h4>
-              <p>• 添加底部备注和条款<br/>• 自动生成签名栏<br/>• 适合添加银行账号等信息</p>
+              <p>• 添加产品、运费、税费、折扣<br/>• 自动计算金额和总计<br/>• 可删除不需要的行</p>
             </div>
             <div className={styles.helpItem}>
               <h4>💾 模板功能</h4>
@@ -382,7 +433,7 @@ const InvoiceGenerator = () => {
                 <select id="savedCompanies" onChange={loadCompany}>
                   <option value="">-- Select Saved --</option>
                   {savedCompanies.map((c, i) => (
-                    <option key={i} value={i}>{c.name}</option>
+                    <option key={i} value={c.name}>{c.name}</option>
                   ))}
                 </select>
                 <button onClick={saveCompany} className={styles.btnSmall}>保存</button>
@@ -390,7 +441,7 @@ const InvoiceGenerator = () => {
               </div>
             </div>
             <div className={styles.companyLogo}>
-              <div className={styles.logoPlaceholder} style={{ border: logo ? 'none' : '' }}>
+              <div className={`${styles.logoPlaceholder} ${logo ? styles.hasLogo : ''}`} style={{ border: logo ? 'none' : '' }}>
                 {!logo && <span>Company Logo</span>}
                 <input 
                   type="file" 
@@ -426,7 +477,7 @@ const InvoiceGenerator = () => {
                 <select id="savedBuyers" onChange={loadBuyer}>
                   <option value="">-- Select Saved --</option>
                   {savedBuyers.map((c, i) => (
-                    <option key={i} value={i}>{c.name}</option>
+                    <option key={i} value={c.name}>{c.name}</option>
                   ))}
                 </select>
                 <button onClick={saveBuyer} className={styles.btnSmall}>保存</button>
@@ -474,7 +525,6 @@ const InvoiceGenerator = () => {
             <thead>
               <tr>
                 <th>Description</th>
-                <th style={{ width: '150px' }}>SKU/ASIN</th>
                 <th>QTY</th>
                 <th>Unit Price</th>
                 <th>Amount</th>
@@ -485,7 +535,6 @@ const InvoiceGenerator = () => {
               {products.map(product => (
                 <tr key={product.id}>
                   <td><input type="text" value={product.name} onChange={e => handleProductChange(product.id, 'name', e.target.value)} placeholder="product name" /></td>
-                  <td><input type="text" value={product.sku || ''} onChange={e => handleProductChange(product.id, 'sku', e.target.value)} placeholder="SKU / ASIN" /></td>
                   <td><input type="number" value={product.qty} onChange={e => handleProductChange(product.id, 'qty', Number(e.target.value))} min="1" /></td>
                   <td><input type="number" value={product.price} onChange={e => handleProductChange(product.id, 'price', Number(e.target.value))} step="0.01" /></td>
                   <td className={styles.productAmount}>{formatCurrency(product.qty * product.price)}</td>
@@ -501,23 +550,12 @@ const InvoiceGenerator = () => {
               <span className={styles.totalAmount}>{formatCurrency(calculateTotal())}</span>
             </div>
           </div>
-
-          <div className={styles.notesSection}>
-            <label>Notes / Terms:</label>
-            <textarea
-              value={notes}
-              onChange={e => setNotes(e.target.value)}
-              placeholder="Enter notes, terms, or bank details here..."
-            />
-          </div>
-
-          <div className={styles.signatureSection}>
-            <div className={styles.signatureBox}>
-              <div className={styles.signatureLine}></div>
-              <span className={styles.signatureLabel}>Authorized Signature</span>
-            </div>
-          </div>
         </div>
+      </div>
+
+      {/* Author Info */}
+      <div className={styles.authorInfo}>
+        <p>版权归 跨境乐趣园所有 ｜ 官网： <a href="https://amzlink.top/" target="_blank" rel="noopener noreferrer">https://amzlink.top/</a> ｜ 作者：<strong>達哥</strong></p>
       </div>
 
       {/* Preview Modal */}
@@ -532,8 +570,8 @@ const InvoiceGenerator = () => {
           </div>
           <div className={styles.modalFooter}>
             <button onClick={() => setPreviewVisible(false)} className={`${styles.btn} ${styles.btnSecondary}`}>关闭</button>
-            <button onClick={() => { setPreviewVisible(false); setTimeout(handlePrint, 100); }} className={`${styles.btn} ${styles.btnSuccess}`}>打印</button>
-            <button onClick={() => { setPreviewVisible(false); setTimeout(handleExportPDF, 100); }} className={`${styles.btn} ${styles.btnInfo}`}>导出PDF</button>
+            <button onClick={() => { setPreviewVisible(false); handlePrint(); }} className={`${styles.btn} ${styles.btnSuccess}`}>打印</button>
+            <button onClick={() => { setPreviewVisible(false); handleExportPDF(); }} className={`${styles.btn} ${styles.btnInfo}`}>导出PDF</button>
           </div>
         </div>
       </div>
