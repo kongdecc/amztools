@@ -221,8 +221,8 @@
   bottom: 5px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(0,123,255,0.9);
-  color: white;
+  background: rgba(0,123,255,0.9) !important;
+  color: white !important;
   border: none;
   padding: 4px 8px;
   border-radius: 3px;

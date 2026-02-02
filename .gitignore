@@ -27,3 +27,6 @@ tmp/
 
 # Build artifacts
 public/amazon-ads-analyzer/
+
+# Generated files
+*.pdf
