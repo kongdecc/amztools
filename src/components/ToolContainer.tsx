@@ -15,7 +15,6 @@ const TextComparator = dynamic(() => import('./TextComparator'), { loading: Load
 const DuplicateRemover = dynamic(() => import('./DuplicateRemover'), { loading: LoadingTool })
 const ContentFilter = dynamic(() => import('./ContentFilter'), { loading: LoadingTool })
 const ImageResizer = dynamic(() => import('@/components/ImageResizer'), { loading: LoadingTool })
-const InvoiceGenerator = dynamic(() => import('@/components/InvoiceGenerator'), { loading: LoadingTool })
 const CpcCalculator = dynamic(() => import('@/components/CpcCalculator'), { loading: LoadingTool })
 const AmazonGlobalTool = dynamic(() => import('@/components/AmazonGlobalTool'), { loading: LoadingTool })
 const AmazonRatingSalesReverse = dynamic(() => import('@/components/AmazonRatingSalesReverse'), { loading: LoadingTool })
@@ -78,7 +77,6 @@ const ToolContainer = memo(({ activeTab }: { activeTab: string }) => {
       case 'duplicate-remover': return <DuplicateRemover />
       case 'content-filter': return <ContentFilter />
       case 'image-resizer': return <ImageResizer />
-      case 'invoice-generator': return <InvoiceGenerator />
       case 'amazon-global': return <AmazonGlobalTool />
       case 'rating-sales-reverse': return <AmazonRatingSalesReverse />
       case 'max-reserve-fee': return <MaxReserveFeeCalculator />

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState, useMemo, useCallback, Suspense } from 'react'
-import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download, AlertCircle, CheckCircle, Filter, LayoutGrid, Maximize2, Minimize2, Image as ImageIcon, MoreHorizontal, Receipt, Crosshair, Globe, Star, Activity, Users, FileText, Warehouse, Languages, Shuffle } from 'lucide-react'
+import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download, AlertCircle, CheckCircle, Filter, LayoutGrid, Maximize2, Minimize2, Image as ImageIcon, MoreHorizontal, Crosshair, Globe, Star, Activity, Users, FileText, Warehouse, Languages, Shuffle } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 import Head from 'next/head'
 import Link from 'next/link'
@@ -48,7 +48,6 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
     'duplicate-remover': CheckCircle,
     'content-filter': Filter,
     'image-resizer': ImageIcon,
-    'invoice-generator': Receipt,
     'amazon-global': Globe,
     'rating-sales-reverse': Star,
     'max-reserve-fee': Calculator,
@@ -312,7 +311,6 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
     'duplicate-remover': CheckCircle,
     'content-filter': Filter,
     'image-resizer': ImageIcon,
-    'invoice-generator': Receipt,
     'amazon-global': Globe,
     'rating-sales-reverse': Star,
     'max-reserve-fee': Calculator,
@@ -667,7 +665,6 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                       'delivery': 'orange',
                       'returns-v2': 'red',
                       'listing-check': 'teal',
-                      'invoice-generator': 'cyan',
                       'amazon-global': 'orange',
                     }
                     const colorKey = colorOverride[m.key] || m.color

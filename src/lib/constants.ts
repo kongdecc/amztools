@@ -45,7 +45,6 @@ export const DEFAULT_TOOLS = [
   { key: 'amazon-global', title: '亚马逊批量查询', desc: '关键词排名监控与ASIN全球跟卖侦查，支持多站点一键打开', status: '启用', views: 0, color: 'orange', order: 14, category: 'operation' },
   { key: 'keyword-strategy', title: '关键词策略工具', desc: '分析关键词分布，制定Listing埋词策略', status: '启用', views: 0, color: 'indigo', order: 15, category: 'operation' },
   { key: 'search-term-volatility', title: '搜索词波动分析', desc: '对比分析多份CSV报告，快速识别ABA排名、点击份额和转化份额波动较大的搜索词', status: '启用', views: 0, color: 'purple', order: 16, category: 'operation' },
-  { key: 'invoice-generator', title: '发票生成工具', desc: '在线生成和打印发票，支持多币种、自定义Logo，可导出PDF', status: '启用', views: 0, color: 'cyan', order: 17, category: 'operation' },
   { key: 'rating-sales-reverse', title: '亚马逊评分销量反推', desc: 'Listing 补单计算 + 销量反推 (支持自定义留评率)', status: '启用', views: 0, color: 'indigo', order: 18, category: 'operation' },
   { key: 'max-reserve-fee', title: '白嫖库容的最高预留费计算工具', desc: '根据销售额预估和库容申请计划，计算出不亏本的最高预留费单价', status: '启用', views: 0, color: 'emerald', order: 19, category: 'operation' },
 

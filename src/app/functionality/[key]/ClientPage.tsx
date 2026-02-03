@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { LayoutDashboard, Calculator, Crosshair, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Trash2, AlertCircle, CheckCircle, Filter, Image as ImageIcon, Receipt, Globe, Star, Hammer, Search, Activity, Users, Box, Warehouse, FileText, Tags } from 'lucide-react'
+import { LayoutDashboard, Calculator, Crosshair, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Trash2, AlertCircle, CheckCircle, Filter, Image as ImageIcon, Globe, Star, Hammer, Search, Activity, Users, Box, Warehouse, FileText, Tags } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 import { ChevronDown } from 'lucide-react'
 import ToolContainer from '@/components/ToolContainer'
@@ -42,7 +42,6 @@ export default function ClientPage({
     'content-filter': Filter,
     'image-resizer': ImageIcon,
     'image-compression': ImageIcon,
-    'invoice-generator': Receipt,
     'amazon-global': Globe,
     'rating-sales-reverse': Star,
     'max-reserve-fee': Calculator,

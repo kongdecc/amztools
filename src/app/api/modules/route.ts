@@ -5,6 +5,7 @@ import fs from 'fs'
 import path from 'path'
 
 const DATA_FILE = path.join(process.cwd(), 'data', 'modules.json')
+const blockedKeys = new Set(['invoice-generator'])
 
 const defaults = (DEFAULT_TOOLS as any[]).map((t: any) => ({
   ...t,
@@ -35,6 +36,11 @@ function saveLocalData(data: Array<any>) {
 export async function GET() {
   try {
     let rows = await (db as any).toolModule.findMany({ orderBy: { order: 'asc' } })
+    const blocked = rows.filter((r: any) => blockedKeys.has(r.key)).map((r: any) => r.key)
+    if (blocked.length) {
+      await (db as any).toolModule.deleteMany({ where: { key: { in: blocked } } })
+      rows = rows.filter((r: any) => !blockedKeys.has(r.key))
+    }
     const existing = new Set(rows.map((r: any) => r.key))
     const missing = defaults.filter(d => !existing.has(d.key))
     if (missing.length) {
@@ -45,10 +51,10 @@ export async function GET() {
       })))
       rows = await (db as any).toolModule.findMany({ orderBy: { order: 'asc' } })
     }
-    return NextResponse.json(rows)
+    return NextResponse.json(rows.filter((r: any) => !blockedKeys.has(r.key)))
   } catch {
     const local = getLocalData()
-    const data = (local || defaults).slice().sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
+    const data = (local || defaults).slice().filter((r: any) => !blockedKeys.has(r.key)).sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
     return NextResponse.json(data)
   }
 }
@@ -63,6 +69,7 @@ export async function PUT(request: Request) {
   } catch {
     return NextResponse.json({ error: 'bad_request' }, { status: 400 })
   }
+  list = Array.isArray(list) ? list.filter(item => !blockedKeys.has(item?.key)) : []
   try {
     const existing = await (db as any).toolModule.findMany({ select: { key: true } })
     const keepKeys = new Set(list.map(item => item.key))
@@ -88,6 +95,7 @@ export async function POST(request: Request) {
     const body = await request.json()
     const key = body?.key
     if (!key) return NextResponse.json({ error: 'bad_request' }, { status: 400 })
+    if (blockedKeys.has(key)) return NextResponse.json({ error: 'not_found' }, { status: 404 })
     try {
       const row = await (db as any).toolModule.update({ where: { key }, data: { views: { increment: 1 } } })
       return NextResponse.json({ ok: true, views: row.views })
@@ -110,6 +118,7 @@ export async function PATCH(request: Request) {
   try { item = await request.json() } catch { return NextResponse.json({ error: 'bad_request' }, { status: 400 }) }
   const key = item?.key
   if (!key) return NextResponse.json({ error: 'bad_request' }, { status: 400 })
+  if (blockedKeys.has(key)) return NextResponse.json({ error: 'not_found' }, { status: 404 })
   try {
     await (db as any).toolModule.upsert({
       where: { key },
