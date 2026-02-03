@@ -416,6 +416,22 @@
   margin-bottom: 0;
 }
 
+.pdfExport .billToSection {
+  margin-bottom: 40px;
+}
+
+.pdfExport .orderDetails {
+  position: relative;
+  z-index: 0;
+  box-shadow: none;
+}
+
+.pdfExport .productsSection {
+  margin-top: 50px;
+  position: relative;
+  z-index: 1;
+}
+
 .productsSection {
   margin-top: 30px;
 }

@@ -305,62 +305,38 @@ const InvoiceGenerator = () => {
   const handleExportPDF = async () => {
     if (!invoiceRef.current) return
     
+    const element = invoiceRef.current
+    const logoPlaceholder = element.querySelector(`.${styles.logoPlaceholder}`) as HTMLElement
+    const companyLogo = element.querySelector(`.${styles.companyLogo}`) as HTMLElement
+    const hasLogo = logo && logo.length > 0
+    const elementsToHide = [
+      ...Array.from(element.querySelectorAll(`.${styles.templateControls}`)),
+      ...Array.from(element.querySelectorAll(`.${styles.productControls}`)),
+      ...Array.from(element.querySelectorAll(`.${styles.btnRemove}`)),
+      ...Array.from(element.querySelectorAll(`.${styles.btnChangeLogo}`))
+    ] as HTMLElement[]
+    const lastHeaders = Array.from(element.querySelectorAll(`.${styles.productsTable} th:last-child`)) as HTMLElement[]
+    const lastCells = Array.from(element.querySelectorAll(`.${styles.productsTable} td:last-child`)) as HTMLElement[]
+    const originalTitle = document.title
+
     try {
-      const element = invoiceRef.current
-      const originalTitle = document.title
       document.title = invoiceNo || 'invoice'
 
-      // 1. Check for logo
-      const logoPlaceholder = element.querySelector(`.${styles.logoPlaceholder}`) as HTMLElement
-      const companyLogo = element.querySelector(`.${styles.companyLogo}`) as HTMLElement
-      const hasLogo = logo && logo.length > 0
-      
-      // If no logo, add noLogo class to hide placeholder border
       if (!hasLogo) {
         if (companyLogo) companyLogo.classList.add(styles.noLogo)
         if (logoPlaceholder) logoPlaceholder.classList.add(styles.noLogo)
       }
 
-      // 2. Hide controls and buttons
-      // We use class names from the styles object to find elements
-      const elementsToHide = [
-        ...Array.from(element.querySelectorAll(`.${styles.templateControls}`)),
-        ...Array.from(element.querySelectorAll(`.${styles.productControls}`)),
-        ...Array.from(element.querySelectorAll(`.${styles.btnRemove}`)),
-        ...Array.from(element.querySelectorAll(`.${styles.btnChangeLogo}`)),
-        // Note: toolbar is outside invoiceRef, so we don't need to hide it if we only capture invoiceRef
-        // But if invoiceRef includes toolbar, we should hide it. 
-        // Based on JSX structure, toolbar is OUTSIDE invoiceContainer (invoiceRef).
-        // So we only focus on what's inside invoiceRef.
-      ] as HTMLElement[]
-
-      // 3. Hide last column of table (Action column)
-      const lastHeaders = Array.from(element.querySelectorAll(`.${styles.productsTable} th:last-child`)) as HTMLElement[]
-      const lastCells = Array.from(element.querySelectorAll(`.${styles.productsTable} td:last-child`)) as HTMLElement[]
-
-      // Apply hiding
+      element.classList.add(styles.pdfExport)
       elementsToHide.forEach(el => el.style.display = 'none')
       lastHeaders.forEach(el => el.style.display = 'none')
       lastCells.forEach(el => el.style.display = 'none')
       
-      // Use html2canvas
       const canvas = await html2canvas(element, {
           scale: 2,
           useCORS: true,
           allowTaint: true
       })
-      
-      // Restore visibility
-      elementsToHide.forEach(el => el.style.display = '')
-      lastHeaders.forEach(el => el.style.display = '')
-      lastCells.forEach(el => el.style.display = '')
-      
-      if (!hasLogo) {
-        if (companyLogo) companyLogo.classList.remove(styles.noLogo)
-        if (logoPlaceholder) logoPlaceholder.classList.remove(styles.noLogo)
-      }
-      
-      document.title = originalTitle
 
       const imgData = canvas.toDataURL('image/png')
       const pdf = new jsPDF('p', 'mm', 'a4')
@@ -384,6 +360,16 @@ const InvoiceGenerator = () => {
     } catch (error) {
       console.error('PDF导出失败:', error)
       alert('PDF导出失败，请检查浏览器是否支持或尝试使用打印功能')
+    } finally {
+      elementsToHide.forEach(el => el.style.display = '')
+      lastHeaders.forEach(el => el.style.display = '')
+      lastCells.forEach(el => el.style.display = '')
+      element.classList.remove(styles.pdfExport)
+      if (!hasLogo) {
+        if (companyLogo) companyLogo.classList.remove(styles.noLogo)
+        if (logoPlaceholder) logoPlaceholder.classList.remove(styles.noLogo)
+      }
+      document.title = originalTitle
     }
   }
 
