@@ -2,7 +2,7 @@ import { SettingsProvider } from '@/components/SettingsProvider'
 import HomeLayoutClient from './HomeClient'
 import { db } from '@/lib/db'
 import { Suspense } from 'react'
-import { DEFAULT_TOOLS, DEFAULT_CATEGORIES, DEFAULT_NAV_ITEMS } from '@/lib/constants'
+import { BLOCKED_TOOL_KEYS, DEFAULT_TOOLS, DEFAULT_CATEGORIES, DEFAULT_NAV_ITEMS } from '@/lib/constants'
 
 export const revalidate = 0
 
@@ -61,11 +61,12 @@ export default async function Page({ searchParams }: { searchParams?: Record<str
     navItems = DEFAULT_NAV_ITEMS
   }
 
+  const blockedKeys = new Set(BLOCKED_TOOL_KEYS)
   let modules: any[] = modulesRows
   try {
     // Filter disabled modules to match functionality page logic
     if (Array.isArray(modules)) {
-      modules = modules.filter((m: any) => m.status !== '下架')
+      modules = modules.filter((m: any) => m.status !== '下架' && !blockedKeys.has(m.key))
     }
 
     const ensure = (arr: any[]) => {
@@ -74,7 +75,7 @@ export default async function Page({ searchParams }: { searchParams?: Record<str
       for (const d of DEFAULT_TOOLS) if (!keys.has(d.key)) merged.push(d)
       return merged
     }
-    modules = ensure(Array.isArray(modules) ? modules : [])
+    modules = ensure(Array.isArray(modules) ? modules : []).filter((m: any) => !blockedKeys.has(m.key))
     
     // Force override status for 'word-count' if it is '维护' to remove the label
     modules = modules.map((m: any) => {
@@ -85,10 +86,10 @@ export default async function Page({ searchParams }: { searchParams?: Record<str
     })
 
     if (!Array.isArray(modules) || modules.length === 0) {
-      modules = DEFAULT_TOOLS
+      modules = DEFAULT_TOOLS.filter((m: any) => !blockedKeys.has(m.key))
     }
   } catch {
-    modules = DEFAULT_TOOLS
+    modules = DEFAULT_TOOLS.filter((m: any) => !blockedKeys.has(m.key))
   }
 
   let categories = categoriesRows

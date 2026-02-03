@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import { db } from '@/lib/db'
-import { DEFAULT_TOOLS, DEFAULT_CATEGORIES, DEFAULT_NAV_ITEMS, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
+import { BLOCKED_TOOL_KEYS, DEFAULT_TOOLS, DEFAULT_CATEGORIES, DEFAULT_NAV_ITEMS, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 import ClientPage from './ClientPage'
 import { SettingsProvider } from '@/components/SettingsProvider'
 
@@ -27,16 +27,18 @@ async function getData() {
   // Process Categories
   let categories = Array.isArray(categoriesRows) && categoriesRows.length > 0 ? categoriesRows : DEFAULT_CATEGORIES
 
+  const blockedKeys = new Set(BLOCKED_TOOL_KEYS)
   // Process Modules
-  let modules = Array.isArray(modulesRows) ? modulesRows.filter((m:any)=>m.status !== '下架') : []
+  let modules = Array.isArray(modulesRows) ? modulesRows.filter((m:any)=>m.status !== '下架' && !blockedKeys.has(m.key)) : []
   if (modules.length === 0) {
-    modules = DEFAULT_TOOLS
+    modules = DEFAULT_TOOLS.filter((m: any) => !blockedKeys.has(m.key))
   } else {
     const keys = new Set(modules.map((x: any) => x.key))
     for (const t of DEFAULT_TOOLS) {
       if (!keys.has(t.key)) modules.push(t)
     }
   }
+  modules = modules.filter((m: any) => !blockedKeys.has(m.key))
   // Force override logic
    modules = modules.map((m: any) => {
       if (m.key === 'word-count' && m.status === '维护') {

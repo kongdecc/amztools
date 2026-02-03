@@ -3,7 +3,7 @@ import { Metadata } from 'next'
 import { LayoutDashboard, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import RewardImage from '@/components/RewardImage'
-import { DEFAULT_NAV_ITEMS, DEFAULT_TOOLS, DEFAULT_CATEGORIES, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
+import { BLOCKED_TOOL_KEYS, DEFAULT_NAV_ITEMS, DEFAULT_TOOLS, DEFAULT_CATEGORIES, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 
 export const revalidate = 0
 
@@ -13,6 +13,7 @@ export const metadata: Metadata = {
 }
 
 async function getSettings() {
+  const blockedKeys = new Set(BLOCKED_TOOL_KEYS)
   try {
     let settings: any = {}
     try {
@@ -54,7 +55,7 @@ async function getSettings() {
         for (const d of DEFAULT_TOOLS) if (!keys.has(d.key)) merged.push(d)
         return merged
       }
-      modules = ensure(Array.isArray(modules) ? modules : [])
+      modules = ensure(Array.isArray(modules) ? modules : []).filter((m: any) => !blockedKeys.has(m.key))
       
       // Force override status for 'word-count' if it is '维护'
       modules = modules.map((m: any) => {
@@ -67,7 +68,7 @@ async function getSettings() {
     } catch (e) {
       console.error('Error fetching modules/categories:', e)
       categories = DEFAULT_CATEGORIES
-      modules = DEFAULT_TOOLS
+      modules = DEFAULT_TOOLS.filter((m: any) => !blockedKeys.has(m.key))
     }
 
     return {
@@ -89,7 +90,7 @@ async function getSettings() {
       showFriendLinksLabel: false,
       rewardDescription: '如果您觉得本工具箱对您有帮助，欢迎打赏支持我们继续维护和开发！',
       navItems: DEFAULT_NAV_ITEMS,
-      modules: DEFAULT_TOOLS,
+      modules: DEFAULT_TOOLS.filter((m: any) => !blockedKeys.has(m.key)),
       categories: DEFAULT_CATEGORIES
     }
   }

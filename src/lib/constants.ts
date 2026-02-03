@@ -26,6 +26,8 @@ export const DEFAULT_CATEGORIES = [
   { key: 'other', label: '其他工具', enabled: true, order: 4 }
 ]
 
+export const BLOCKED_TOOL_KEYS = ['invoice-generator']
+
 export const DEFAULT_TOOLS = [
   { key: 'ad-calc', title: '广告竞价计算', desc: '亚马逊广告策略实时出价计算，支持Fixed/Dynamic策略', status: '启用', views: 0, color: 'blue', order: 1, category: 'advertising' },
   { key: 'cpc-compass', title: 'CPC利润测算', desc: '集成FBA费率、佣金计算，精准推导盈亏平衡CPC及ACOS', status: '启用', views: 0, color: 'blue', order: 2, category: 'advertising' },

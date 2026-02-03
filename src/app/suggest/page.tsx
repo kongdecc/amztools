@@ -2,7 +2,7 @@ import { SettingsProvider } from '@/components/SettingsProvider'
 import SuggestClient from './SuggestClient'
 import { db } from '@/lib/db'
 import { Metadata } from 'next'
-import { DEFAULT_NAV_ITEMS, DEFAULT_TOOLS, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
+import { BLOCKED_TOOL_KEYS, DEFAULT_NAV_ITEMS, DEFAULT_TOOLS, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 
 export const revalidate = 0
 
@@ -29,6 +29,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Page() {
   let initialSettings: Record<string, any> = {}
   let navItems: any[] = []
+  const blockedKeys = new Set(BLOCKED_TOOL_KEYS)
   let modules: any[] = []
 
   try {
@@ -40,7 +41,7 @@ export default async function Page() {
     navItems = Array.isArray(arr) && arr.length > 0 ? arr : DEFAULT_NAV_ITEMS
 
     const mods = await (db as any).toolModule.findMany({ orderBy: { order: 'asc' } })
-    modules = Array.isArray(mods) ? mods.filter((m:any) => m.status !== '下架') : []
+    modules = Array.isArray(mods) ? mods.filter((m:any) => m.status !== '下架' && !blockedKeys.has(m.key)) : []
     
     // Merge logic
     const ensure = (arr: any[]) => {
@@ -49,7 +50,7 @@ export default async function Page() {
       for (const d of DEFAULT_TOOLS) if (!keys.has(d.key)) merged.push(d)
       return merged
     }
-    modules = ensure(modules)
+    modules = ensure(modules).filter((m: any) => !blockedKeys.has(m.key))
 
     // Force override status for 'word-count' if it is '维护'
     modules = modules.map((m: any) => {
@@ -61,7 +62,7 @@ export default async function Page() {
 
   } catch { 
     navItems = DEFAULT_NAV_ITEMS
-    modules = DEFAULT_TOOLS
+    modules = DEFAULT_TOOLS.filter((m: any) => !blockedKeys.has(m.key))
   }
 
   // Fallback nav items if empty (optional, but good for robustness)

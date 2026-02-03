@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { DEFAULT_TOOLS } from '@/lib/constants'
+import { BLOCKED_TOOL_KEYS, DEFAULT_TOOLS } from '@/lib/constants'
 import fs from 'fs'
 import path from 'path'
 
 const DATA_FILE = path.join(process.cwd(), 'data', 'modules.json')
-const blockedKeys = new Set(['invoice-generator'])
+const blockedKeys = new Set(BLOCKED_TOOL_KEYS)
 
 const defaults = (DEFAULT_TOOLS as any[]).map((t: any) => ({
   ...t,
