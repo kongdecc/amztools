@@ -327,7 +327,6 @@ const InvoiceGenerator = () => {
         if (logoPlaceholder) logoPlaceholder.classList.add(styles.noLogo)
       }
 
-      element.classList.add(styles.pdfExport)
       elementsToHide.forEach(el => el.style.display = 'none')
       lastHeaders.forEach(el => el.style.display = 'none')
       lastCells.forEach(el => el.style.display = 'none')
@@ -364,7 +363,6 @@ const InvoiceGenerator = () => {
       elementsToHide.forEach(el => el.style.display = '')
       lastHeaders.forEach(el => el.style.display = '')
       lastCells.forEach(el => el.style.display = '')
-      element.classList.remove(styles.pdfExport)
       if (!hasLogo) {
         if (companyLogo) companyLogo.classList.remove(styles.noLogo)
         if (logoPlaceholder) logoPlaceholder.classList.remove(styles.noLogo)
