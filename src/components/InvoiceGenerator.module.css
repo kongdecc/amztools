@@ -289,10 +289,7 @@
 }
 
 .companySection {
-  margin-bottom: 50px;
-  padding-bottom: 20px;
-  position: relative;
-  z-index: 5;
+  margin-bottom: 30px;
 }
 
 .companyInfo {
@@ -420,7 +417,7 @@
 }
 
 .productsSection {
-  margin-top: 50px;
+  margin-top: 30px;
 }
 
 .productControls {
