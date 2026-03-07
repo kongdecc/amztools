@@ -1441,34 +1441,37 @@ export default function FBACalculatorPage() {
                         </div>
                         
                         {inputs.shippingMode === 'advanced' && (
-                            <div className="bg-gray-100 p-4 rounded text-xs space-y-4 border border-gray-200">
-                                <div className="text-sm font-bold text-gray-700">高级头程运费计算器</div>
+                            <div className="bg-white p-4 rounded-lg text-xs space-y-4 border border-gray-200 shadow-sm">
+                                <div className="text-sm font-bold text-gray-800">高级头程运费计算器</div>
                                 <div className="space-y-3">
                                     <h4 className="font-bold text-gray-700 text-sm border-l-4 border-blue-500 pl-2">1. 装箱规格 (单箱)</h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <label className="text-xs text-gray-500 font-medium">外箱尺寸 (长x宽x高)</label>
-                                            <div className="flex gap-2">
+                                            <div className="grid grid-cols-4 gap-2">
                                                 <Input 
                                                     type="number" 
                                                     value={shippingPlan.cartonLength} 
                                                     onChange={(e:any) => setShippingPlan(p => ({...p, cartonLength: e.target.value}))}
                                                     placeholder="长"
+                                                    className="h-8"
                                                 />
                                                 <Input 
                                                     type="number" 
                                                     value={shippingPlan.cartonWidth} 
                                                     onChange={(e:any) => setShippingPlan(p => ({...p, cartonWidth: e.target.value}))}
                                                     placeholder="宽"
+                                                    className="h-8"
                                                 />
                                                 <Input 
                                                     type="number" 
                                                     value={shippingPlan.cartonHeight} 
                                                     onChange={(e:any) => setShippingPlan(p => ({...p, cartonHeight: e.target.value}))}
                                                     placeholder="高"
+                                                    className="h-8"
                                                 />
                                                 <select 
-                                                    className="border rounded px-2 bg-gray-50 text-sm"
+                                                    className="border rounded px-2 bg-gray-50 text-sm h-8"
                                                     value={shippingPlan.cartonUnit}
                                                     onChange={(e:any) => setShippingPlan(p => ({...p, cartonUnit: e.target.value}))}
                                                 >
@@ -1479,17 +1482,17 @@ export default function FBACalculatorPage() {
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-xs text-gray-500 font-medium">单箱毛重 & 装箱数</label>
-                                            <div className="flex gap-2">
-                                                <div className="flex-1 flex">
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <div className="flex">
                                                     <Input 
                                                         type="number" 
                                                         value={shippingPlan.cartonWeight} 
                                                         onChange={(e:any) => setShippingPlan(p => ({...p, cartonWeight: e.target.value}))}
-                                                        className="rounded-r-none border-r-0"
+                                                        className="rounded-r-none border-r-0 h-8"
                                                         placeholder="重量"
                                                     />
                                                     <select 
-                                                        className="border border-l-0 rounded-r px-2 bg-gray-50 text-sm focus:outline-none"
+                                                        className="border border-l-0 rounded-r px-2 bg-gray-50 text-sm focus:outline-none h-8"
                                                         value={shippingPlan.weightUnit}
                                                         onChange={(e:any) => setShippingPlan(p => ({...p, weightUnit: e.target.value}))}
                                                     >
@@ -1497,43 +1500,43 @@ export default function FBACalculatorPage() {
                                                         <option value="lb">lb</option>
                                                     </select>
                                                 </div>
-                                                <div className="flex-1">
+                                                <div>
                                                     <Input 
                                                         type="number" 
                                                         value={shippingPlan.unitsPerCarton} 
                                                         onChange={(e:any) => setShippingPlan(p => ({...p, unitsPerCarton: e.target.value}))}
                                                         placeholder="每箱数量"
+                                                        className="h-8"
                                                     />
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-4 bg-blue-50 p-3 rounded-lg text-sm text-blue-800">
-                                         <div className="flex items-center gap-2">
-                                            <span>抛重系数:</span>
-                                            <select 
-                                                value={shippingPlan.divisor} 
-                                                onChange={(e:any) => setShippingPlan(p => ({...p, divisor: e.target.value}))}
-                                                className="border rounded px-2 py-0.5 bg-white text-sm"
-                                            >
-                                                <option value="5000">5000 (空运/快递)</option>
-                                                <option value="6000">6000 (海运)</option>
-                                            </select>
-                                         </div>
-                                         {(() => {
-                                             const calc = calculateAdvancedShipping();
-                                             return (
-                                                 <div className="flex gap-4 ml-auto font-medium">
-                                                     <span title={`体积重: ${calc.volWeightKg.toFixed(2)}kg`}>体积重: {calc.volWeightKg.toFixed(2)}kg</span>
-                                                     <span title={`实重: ${calc.actualWeightKg.toFixed(2)}kg`}>实重: {calc.actualWeightKg.toFixed(2)}kg</span>
-                                                     <span className={calc.isVolumetric ? "text-orange-600 font-bold" : "text-green-600"}>
-                                                        计费重: {calc.chargeWeightKg.toFixed(2)}kg 
-                                                        {calc.isVolumetric && <span className="ml-1 text-xs bg-orange-100 px-1 rounded text-orange-600">抛货</span>}
-                                                     </span>
-                                                 </div>
-                                             )
-                                         })()}
-                                    </div>
+                                    {(() => {
+                                         const calc = calculateAdvancedShipping();
+                                         return (
+                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-blue-50 p-3 rounded-lg text-sm text-blue-800">
+                                                <div className="flex items-center gap-2">
+                                                    <span>抛重系数</span>
+                                                    <select 
+                                                        value={shippingPlan.divisor} 
+                                                        onChange={(e:any) => setShippingPlan(p => ({...p, divisor: e.target.value}))}
+                                                        className="border rounded px-2 py-0.5 bg-white text-sm h-7"
+                                                    >
+                                                        <option value="5000">5000 (空运/快递)</option>
+                                                        <option value="6000">6000 (海运)</option>
+                                                    </select>
+                                                </div>
+                                                <div className="grid grid-cols-3 gap-2 text-xs font-medium">
+                                                    <div>体积重 {calc.volWeightKg.toFixed(2)}kg</div>
+                                                    <div>实重 {calc.actualWeightKg.toFixed(2)}kg</div>
+                                                    <div className={calc.isVolumetric ? "text-orange-600 font-bold" : "text-green-600"}>
+                                                        计费重 {calc.chargeWeightKg.toFixed(2)}kg
+                                                    </div>
+                                                </div>
+                                             </div>
+                                         )
+                                    })()}
                                 </div>
 
                                 <div className="space-y-3">
@@ -1549,8 +1552,8 @@ export default function FBACalculatorPage() {
                                             + 添加目的地
                                         </button>
                                     </div>
-                                    <div className="border rounded-lg overflow-hidden">
-                                        <table className="w-full text-sm text-left">
+                                    <div className="border rounded-lg overflow-x-auto">
+                                        <table className="min-w-[520px] w-full text-sm text-left">
                                             <thead className="bg-gray-50 text-gray-500 font-medium">
                                                 <tr>
                                                     <th className="p-2 w-10">启用</th>
@@ -1594,7 +1597,7 @@ export default function FBACalculatorPage() {
                                                                     newDest[idx].cartons = e.target.value;
                                                                     setShippingPlan(p => ({...p, destinations: newDest}));
                                                                 }}
-                                                                className="h-7"
+                                                                className="h-8"
                                                             />
                                                         </td>
                                                         <td className="p-2">
@@ -1606,7 +1609,7 @@ export default function FBACalculatorPage() {
                                                                     newDest[idx].price = e.target.value;
                                                                     setShippingPlan(p => ({...p, destinations: newDest}));
                                                                 }}
-                                                                className="h-7"
+                                                                className="h-8"
                                                             />
                                                         </td>
                                                         <td className="p-2 text-center">
@@ -1635,37 +1638,51 @@ export default function FBACalculatorPage() {
                                             type="number" 
                                             value={shippingPlan.fixedFee} 
                                             onChange={(e:any) => setShippingPlan(p => ({...p, fixedFee: e.target.value}))}
-                                            className="w-32"
+                                            className="w-32 h-8"
                                         />
                                         <span className="text-xs text-gray-400">(报关费、文件费等总和)</span>
                                     </div>
                                 </div>
 
-                                <div className="bg-gray-100 p-4 rounded-lg space-y-2 border border-gray-200">
-                                    {(() => {
-                                         const calc = calculateAdvancedShipping();
-                                         return (
-                                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                                                 <div>
-                                                     <div className="text-xs text-gray-500">总箱数</div>
-                                                     <div className="font-bold text-lg">{calc.totalCartons}</div>
-                                                 </div>
-                                                 <div>
-                                                     <div className="text-xs text-gray-500">总发货量</div>
-                                                     <div className="font-bold text-lg">{calc.totalUnits} <span className="text-xs font-normal text-gray-400">pcs</span></div>
-                                                 </div>
-                                                 <div>
-                                                     <div className="text-xs text-gray-500">总运费 (￥)</div>
-                                                     <div className="font-bold text-lg text-blue-600">¥{calc.totalCost.toFixed(2)}</div>
-                                                 </div>
-                                                 <div className="bg-white rounded border p-1 shadow-sm">
-                                                     <div className="text-xs text-gray-500">单个产品头程</div>
-                                                     <div className="font-bold text-xl text-green-600">¥{calc.perUnitCost.toFixed(2)}</div>
-                                                 </div>
-                                             </div>
-                                         );
-                                    })()}
-                                </div>
+                                {(() => {
+                                    const calc = calculateAdvancedShipping();
+                                    return (
+                                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3">
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+                                                <div className="bg-white rounded border p-2">
+                                                    <div className="text-xs text-gray-500">总箱数</div>
+                                                    <div className="font-bold text-base">{calc.totalCartons}</div>
+                                                </div>
+                                                <div className="bg-white rounded border p-2">
+                                                    <div className="text-xs text-gray-500">总发货量</div>
+                                                    <div className="font-bold text-base">{calc.totalUnits} <span className="text-xs font-normal text-gray-400">pcs</span></div>
+                                                </div>
+                                                <div className="bg-white rounded border p-2">
+                                                    <div className="text-xs text-gray-500">总运费 (￥)</div>
+                                                    <div className="font-bold text-base text-blue-600">¥{calc.totalCost.toFixed(2)}</div>
+                                                </div>
+                                                <div className="bg-white rounded border p-2">
+                                                    <div className="text-xs text-gray-500">单个产品头程</div>
+                                                    <div className="font-bold text-base text-green-600">¥{calc.perUnitCost.toFixed(2)}</div>
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-gray-600">
+                                                <div className="flex justify-between bg-white rounded border p-2">
+                                                    <span>体积重</span><span>{calc.volWeightKg.toFixed(2)}kg</span>
+                                                </div>
+                                                <div className="flex justify-between bg-white rounded border p-2">
+                                                    <span>实重</span><span>{calc.actualWeightKg.toFixed(2)}kg</span>
+                                                </div>
+                                                <div className="flex justify-between bg-white rounded border p-2">
+                                                    <span>计费重</span><span>{calc.chargeWeightKg.toFixed(2)}kg</span>
+                                                </div>
+                                                <div className="flex justify-between bg-white rounded border p-2">
+                                                    <span>是否抛货</span><span className={calc.isVolumetric ? "text-orange-600 font-medium" : "text-green-700 font-medium"}>{calc.isVolumetric ? "是" : "否"}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
                                 <div className="flex justify-end gap-3">
                                     <Button variant="secondary" onClick={() => updateInput('shippingMode', 'direct')}>收起</Button>
                                     <Button variant="primary" onClick={applyAdvancedShipping}>应用结果</Button>
