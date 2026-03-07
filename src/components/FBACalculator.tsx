@@ -257,6 +257,18 @@ const FeeTable = ({ initialSeason, initialVersion }: any) => {
     return rows;
   };
 
+  const toCm = (val: number, unit: string) => {
+    if (unit === 'cm') return val;
+    return val * 2.54;
+  };
+
+  const toKg = (val: number, unit: string) => {
+    if (unit === 'g') return val / 1000;
+    if (unit === 'lb') return val * 0.453592;
+    if (unit === 'oz') return val * 0.0283495;
+    return val; // assume kg if unknown
+  };
+
   const handleDownload = () => {
     // Simple CSV export implementation
     let csv = '\uFEFF';
@@ -843,6 +855,77 @@ export default function FBACalculatorPage() {
     returnRateSlider: 5,
     acosSlider: 10
   });
+
+  const [shippingPlan, setShippingPlan] = useState({
+    isOpen: false,
+    cartonLength: 50, cartonWidth: 40, cartonHeight: 30, cartonUnit: 'cm',
+    cartonWeight: 15, weightUnit: 'kg',
+    unitsPerCarton: 50,
+    divisor: 6000,
+    fixedFee: 0,
+    destinations: [
+      { id: 1, name: '美西', cartons: 10, price: 5, enabled: true },
+      { id: 2, name: '美中', cartons: 0, price: 6, enabled: false },
+      { id: 3, name: '美东', cartons: 0, price: 7, enabled: false },
+    ]
+  });
+
+  const toggleAdvancedModal = () => {
+      setShippingPlan(prev => ({ ...prev, isOpen: !prev.isOpen }));
+  };
+
+  const calculateAdvancedShipping = () => {
+    // 1. Single Carton Volume Weight
+    const { cartonLength, cartonWidth, cartonHeight, cartonUnit, divisor, cartonWeight, weightUnit, destinations, fixedFee, unitsPerCarton } = shippingPlan;
+    
+    const l_cm = toCm(parseFloat(cartonLength as any) || 0, cartonUnit);
+    const w_cm = toCm(parseFloat(cartonWidth as any) || 0, cartonUnit);
+    const h_cm = toCm(parseFloat(cartonHeight as any) || 0, cartonUnit);
+    
+    const div = parseFloat(divisor as any) || 6000;
+    const volWeightKg = (l_cm * w_cm * h_cm) / div;
+    const actualWeightKg = toKg(parseFloat(cartonWeight as any) || 0, weightUnit);
+    const chargeWeightKg = Math.max(volWeightKg, actualWeightKg);
+    
+    // 2. Total Freight Cost
+    let totalFreight = 0;
+    let totalCartons = 0;
+    
+    destinations.forEach(d => {
+        if (d.enabled) {
+            const cartons = parseFloat(d.cartons as any) || 0;
+            const price = parseFloat(d.price as any) || 0;
+            totalFreight += cartons * chargeWeightKg * price;
+            totalCartons += cartons;
+        }
+    });
+    
+    const totalCost = totalFreight + (parseFloat(fixedFee as any) || 0);
+    const totalUnits = totalCartons * (parseInt(unitsPerCarton as any) || 1);
+    
+    const perUnitCost = totalUnits > 0 ? totalCost / totalUnits : 0;
+    
+    return {
+        volWeightKg,
+        actualWeightKg,
+        chargeWeightKg,
+        isVolumetric: volWeightKg > actualWeightKg,
+        totalCost,
+        totalUnits,
+        perUnitCost,
+        totalCartons
+    };
+  };
+
+  const applyAdvancedShipping = () => {
+    const res = calculateAdvancedShipping();
+    setInputs((prev: any) => ({
+        ...prev,
+        shippingCostCNY: res.perUnitCost.toFixed(2),
+        shippingMode: 'direct' // Switch back to direct to show the result value
+    }));
+    setShippingPlan(prev => ({ ...prev, isOpen: false }));
+  };
 
   const [results, setResults] = useState<any>({
     tier: '',
