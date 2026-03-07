@@ -495,6 +495,10 @@ export default function FBACalculatorPage() {
     exchangeRate: 7.2,
     productCostCNY: 0,
     shippingCostCNY: 0,
+    shippingMode: 'direct',
+    scUnitPrice: 35,
+    scFixedFee: 0,
+    scDivisor: 6000,
     categorySelect: 'custom',
     manualReferralFee: null,
     manualFBAFee: null,
@@ -557,6 +561,10 @@ export default function FBACalculatorPage() {
       exchangeRate: 7.2,
       productCostCNY: 0,
       shippingCostCNY: 0,
+      shippingMode: 'direct',
+      scUnitPrice: 35,
+      scFixedFee: 0,
+      scDivisor: 6000,
       categorySelect: 'custom',
       manualReferralFee: null,
       manualFBAFee: null,
@@ -652,6 +660,88 @@ export default function FBACalculatorPage() {
     if (k === 'netProfit') return '毛利润 - 总运营成本';
     if (k === 'breakEvenACoS') return '毛利润 ÷ 售价';
     return '';
+  };
+
+  const toCm = (val: number, unit: string) => {
+    if (unit === 'cm') return val;
+    return val * 2.54;
+  };
+
+  const toKg = (val: number, unit: string) => {
+    if (unit === 'g') return val / 1000;
+    if (unit === 'lb') return val * 0.453592;
+    if (unit === 'oz') return val * 0.0283495;
+    return val; // assume kg if unknown, though we don't have kg option yet
+  };
+
+  const calculateShippingCost = (currentInputs: any) => {
+    if (currentInputs.shippingMode !== 'calculate') return;
+
+    const l = parseFloat(currentInputs.length) || 0;
+    const w = parseFloat(currentInputs.width) || 0;
+    const h = parseFloat(currentInputs.height) || 0;
+    const l_cm = toCm(l, currentInputs.lengthUnit);
+    const w_cm = toCm(w, currentInputs.widthUnit);
+    const h_cm = toCm(h, currentInputs.heightUnit);
+
+    const weight = parseFloat(currentInputs.actualWeight) || 0;
+    const weight_kg = toKg(weight, currentInputs.weightUnit);
+
+    const divisor = parseFloat(currentInputs.scDivisor) || 6000;
+    const vol_weight_kg = (l_cm * w_cm * h_cm) / divisor;
+
+    const chargeable_weight = Math.max(weight_kg, vol_weight_kg);
+    
+    const unitPrice = parseFloat(currentInputs.scUnitPrice) || 0;
+    const fixedFee = parseFloat(currentInputs.scFixedFee) || 0;
+    const qty = parseInt(currentInputs.shipmentQty) || 1;
+
+    const freightCost = chargeable_weight * unitPrice;
+    const fixedCostPerUnit = qty > 0 ? fixedFee / qty : 0;
+    
+    const total = freightCost + fixedCostPerUnit;
+    
+    // Avoid infinite loop: only update if value changed significantly
+    if (Math.abs(total - currentInputs.shippingCostCNY) > 0.01) {
+        setInputs((prev: any) => ({ ...prev, shippingCostCNY: total.toFixed(2) }));
+    }
+  };
+
+  // Effect to auto-calculate shipping cost when relevant inputs change
+  useEffect(() => {
+    if (inputs.shippingMode === 'calculate') {
+        calculateShippingCost(inputs);
+    }
+  }, [
+    inputs.length, inputs.width, inputs.height, inputs.lengthUnit, inputs.widthUnit, inputs.heightUnit,
+    inputs.actualWeight, inputs.weightUnit,
+    inputs.scDivisor, inputs.scUnitPrice, inputs.scFixedFee, inputs.shipmentQty,
+    inputs.shippingMode
+  ]);
+
+  const toggleUnits = () => {
+    setInputs((prev: any) => {
+      const targetUnit = prev.lengthUnit === 'in' ? 'cm' : 'in';
+      
+      const convert = (val: any, from: string, to: string) => {
+         if (from === to) return val;
+         const num = parseFloat(val);
+         if (isNaN(num)) return val;
+         if (from === 'in' && to === 'cm') return (num * 2.54).toFixed(2);
+         if (from === 'cm' && to === 'in') return (num / 2.54).toFixed(2);
+         return val;
+      };
+
+      return {
+        ...prev,
+        lengthUnit: targetUnit,
+        widthUnit: targetUnit,
+        heightUnit: targetUnit,
+        length: convert(prev.length, prev.lengthUnit, targetUnit),
+        width: convert(prev.width, prev.widthUnit, targetUnit),
+        height: convert(prev.height, prev.heightUnit, targetUnit),
+      };
+    });
   };
 
   const calculateAll = () => {
@@ -1136,7 +1226,12 @@ export default function FBACalculatorPage() {
 
              {/* Dimensions */}
              <div className="bg-gray-50 p-4 rounded-lg space-y-3">
-               <h4 className="text-xs font-bold text-gray-500 uppercase">商品尺寸</h4>
+               <div className="flex justify-between items-center">
+                 <h4 className="text-xs font-bold text-gray-500 uppercase">商品尺寸</h4>
+                 <button onClick={toggleUnits} className="text-xs text-blue-600 hover:text-blue-800 hover:underline">
+                   {inputs.lengthUnit === 'in' ? '切换为 cm' : '切换为 in'}
+                 </button>
+               </div>
                <div className="grid grid-cols-3 gap-4">
                  <div>
                    <label className="text-xs text-gray-500 mb-1 block">长</label>
@@ -1285,7 +1380,81 @@ export default function FBACalculatorPage() {
                   </div>
                   <div>
                     <label className="text-xs text-gray-500 mb-1 block">头程运费(￥)</label>
-                    <Input type="number" value={inputs.shippingCostCNY} onChange={(e:any) => updateInput('shippingCostCNY', e.target.value)} className="bg-yellow-50 border-yellow-200" />
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                            <div className="flex-1 mr-2">
+                                {inputs.shippingMode === 'direct' ? (
+                                    <Input type="number" value={inputs.shippingCostCNY} onChange={(e:any) => updateInput('shippingCostCNY', e.target.value)} className="bg-yellow-50 border-yellow-200" />
+                                ) : (
+                                    <div className="bg-blue-50 px-3 py-1.5 rounded text-sm font-bold text-blue-700 border border-blue-200">
+                                        ≈ ¥{inputs.shippingCostCNY}
+                                    </div>
+                                )}
+                            </div>
+                            <button 
+                                onClick={() => updateInput('shippingMode', inputs.shippingMode === 'direct' ? 'calculate' : 'direct')}
+                                className="text-xs text-blue-600 hover:text-blue-800 underline whitespace-nowrap"
+                            >
+                                {inputs.shippingMode === 'direct' ? '计算器' : '直接输入'}
+                            </button>
+                        </div>
+                        
+                        {inputs.shippingMode === 'calculate' && (
+                            <div className="bg-gray-100 p-3 rounded text-xs space-y-3 border border-gray-200">
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label className="text-gray-500 block mb-1">运费单价 (￥/kg)</label>
+                                        <Input type="number" value={inputs.scUnitPrice} onChange={(e:any) => updateInput('scUnitPrice', e.target.value)} className="h-7 bg-white" />
+                                    </div>
+                                    <div>
+                                        <label className="text-gray-500 block mb-1">抛重系数</label>
+                                        <select 
+                                            value={inputs.scDivisor} 
+                                            onChange={(e:any) => updateInput('scDivisor', e.target.value)}
+                                            className="w-full h-7 rounded-md border border-gray-300 bg-white px-2 text-xs"
+                                        >
+                                            <option value="5000">5000 (常见)</option>
+                                            <option value="6000">6000</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-gray-500 block mb-1">每票固定费用 (￥)</label>
+                                    <div className="flex gap-2">
+                                        <Input type="number" value={inputs.scFixedFee} onChange={(e:any) => updateInput('scFixedFee', e.target.value)} className="h-7 bg-white flex-1" placeholder="总固定费" />
+                                        <div className="flex items-center text-gray-400 whitespace-nowrap">
+                                            ÷ {inputs.shipmentQty} 个
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="pt-2 border-t border-gray-200 text-gray-600 space-y-1">
+                                    {(() => {
+                                        const l = parseFloat(inputs.length) || 0;
+                                        const w = parseFloat(inputs.width) || 0;
+                                        const h = parseFloat(inputs.height) || 0;
+                                        const l_cm = toCm(l, inputs.lengthUnit);
+                                        const w_cm = toCm(w, inputs.widthUnit);
+                                        const h_cm = toCm(h, inputs.heightUnit);
+                                        const div = parseFloat(inputs.scDivisor) || 6000;
+                                        const volKg = (l_cm * w_cm * h_cm) / div;
+                                        
+                                        const actKg = toKg(parseFloat(inputs.actualWeight)||0, inputs.weightUnit);
+                                        const chgKg = Math.max(actKg, volKg);
+                                        const unitFixed = (parseFloat(inputs.scFixedFee)||0) / (parseInt(inputs.shipmentQty)||1);
+                                        
+                                        return (
+                                            <>
+                                                <div className="flex justify-between"><span>体积重:</span> <span>{volKg.toFixed(3)} kg</span></div>
+                                                <div className="flex justify-between"><span>实重:</span> <span>{actKg.toFixed(3)} kg</span></div>
+                                                <div className="flex justify-between font-medium text-blue-600"><span>计费重:</span> <span>{chgKg.toFixed(3)} kg</span></div>
+                                                <div className="flex justify-between text-gray-400 text-[10px]"><span>固定费均摊:</span> <span>¥{unitFixed.toFixed(2)}/个</span></div>
+                                            </>
+                                        );
+                                    })()}
+                                </div>
+                            </div>
+                        )}
+                    </div>
                   </div>
                </div>
             </div>
