@@ -1259,14 +1259,14 @@ export default function FBACalculatorPage() {
       </div>
       {advancedOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[92vh] overflow-y-auto">
             <div className="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
               <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
                 <Truck className="w-5 h-5 text-blue-600"/> 高级头程运费计算器
               </h3>
               <button onClick={() => setAdvancedOpen(false)} className="text-gray-500 hover:text-gray-700 p-1">✕</button>
             </div>
-            <div className="p-6 space-y-6">
+            <div className="p-6 space-y-8">
               {(() => {
                 const calc = calculateAdvancedShipping();
                 const enabledDests = shippingPlan.destinations.filter((d: any) => d.enabled);
@@ -1288,21 +1288,21 @@ export default function FBACalculatorPage() {
                         {shippingPlan.cartons.map((c: any, idx: number) => {
                           const spec = calc.perSpec.find((p: any) => p.id === c.id);
                           return (
-                            <div key={c.id} className="border rounded-lg p-4 bg-gray-50 space-y-3">
+                            <div key={c.id} className="border rounded-lg p-5 bg-gray-50 space-y-4">
                               <div className="flex items-center justify-between">
                                 <div className="text-sm font-medium text-gray-700">规格 {idx + 1}</div>
                                 {shippingPlan.cartons.length > 1 && (
                                   <button onClick={() => setShippingPlan(p => ({ ...p, cartons: p.cartons.filter((x: any) => x.id !== c.id) }))} className="text-xs text-red-500 hover:text-red-700">移除</button>
                                 )}
                               </div>
-                              <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                              <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
                                 <div className="space-y-2">
                                   <label className="text-xs text-gray-500 font-medium">外箱尺寸</label>
-                                  <div className="grid grid-cols-4 gap-2">
-                                    <Input type="number" value={c.cartonLength} onChange={(e:any) => setShippingPlan(p => ({...p, cartons: p.cartons.map((x:any) => x.id === c.id ? { ...x, cartonLength: e.target.value } : x)}))} placeholder="长" className="h-8" />
-                                    <Input type="number" value={c.cartonWidth} onChange={(e:any) => setShippingPlan(p => ({...p, cartons: p.cartons.map((x:any) => x.id === c.id ? { ...x, cartonWidth: e.target.value } : x)}))} placeholder="宽" className="h-8" />
-                                    <Input type="number" value={c.cartonHeight} onChange={(e:any) => setShippingPlan(p => ({...p, cartons: p.cartons.map((x:any) => x.id === c.id ? { ...x, cartonHeight: e.target.value } : x)}))} placeholder="高" className="h-8" />
-                                    <select className="border rounded px-2 bg-gray-50 text-sm h-8" value={c.cartonUnit} onChange={(e:any) => setShippingPlan(p => ({...p, cartons: p.cartons.map((x:any) => x.id === c.id ? { ...x, cartonUnit: e.target.value } : x)}))}>
+                                  <div className="grid grid-cols-4 gap-3">
+                                    <Input type="number" value={c.cartonLength} onChange={(e:any) => setShippingPlan(p => ({...p, cartons: p.cartons.map((x:any) => x.id === c.id ? { ...x, cartonLength: e.target.value } : x)}))} placeholder="长" className="h-10 text-sm" />
+                                    <Input type="number" value={c.cartonWidth} onChange={(e:any) => setShippingPlan(p => ({...p, cartons: p.cartons.map((x:any) => x.id === c.id ? { ...x, cartonWidth: e.target.value } : x)}))} placeholder="宽" className="h-10 text-sm" />
+                                    <Input type="number" value={c.cartonHeight} onChange={(e:any) => setShippingPlan(p => ({...p, cartons: p.cartons.map((x:any) => x.id === c.id ? { ...x, cartonHeight: e.target.value } : x)}))} placeholder="高" className="h-10 text-sm" />
+                                    <select className="border rounded px-2 bg-gray-50 text-sm h-10" value={c.cartonUnit} onChange={(e:any) => setShippingPlan(p => ({...p, cartons: p.cartons.map((x:any) => x.id === c.id ? { ...x, cartonUnit: e.target.value } : x)}))}>
                                       <option value="cm">cm</option>
                                       <option value="in">in</option>
                                     </select>
@@ -1310,20 +1310,20 @@ export default function FBACalculatorPage() {
                                 </div>
                                 <div className="space-y-2">
                                   <label className="text-xs text-gray-500 font-medium">单箱毛重</label>
-                                  <div className="grid grid-cols-2 gap-2">
+                                  <div className="grid grid-cols-2 gap-3">
                                     <div className="flex">
-                                      <Input type="number" value={c.cartonWeight} onChange={(e:any) => setShippingPlan(p => ({...p, cartons: p.cartons.map((x:any) => x.id === c.id ? { ...x, cartonWeight: e.target.value } : x)}))} className="rounded-r-none border-r-0 h-8" placeholder="重量" />
-                                      <select className="border border-l-0 rounded-r px-2 bg-gray-50 text-sm focus:outline-none h-8" value={c.weightUnit} onChange={(e:any) => setShippingPlan(p => ({...p, cartons: p.cartons.map((x:any) => x.id === c.id ? { ...x, weightUnit: e.target.value } : x)}))}>
+                                      <Input type="number" value={c.cartonWeight} onChange={(e:any) => setShippingPlan(p => ({...p, cartons: p.cartons.map((x:any) => x.id === c.id ? { ...x, cartonWeight: e.target.value } : x)}))} className="rounded-r-none border-r-0 h-10 text-sm" placeholder="重量" />
+                                      <select className="border border-l-0 rounded-r px-2 bg-gray-50 text-sm focus:outline-none h-10" value={c.weightUnit} onChange={(e:any) => setShippingPlan(p => ({...p, cartons: p.cartons.map((x:any) => x.id === c.id ? { ...x, weightUnit: e.target.value } : x)}))}>
                                         <option value="kg">kg</option>
                                         <option value="lb">lb</option>
                                       </select>
                                     </div>
-                                    <Input type="number" value={c.unitsPerCarton} onChange={(e:any) => setShippingPlan(p => ({...p, cartons: p.cartons.map((x:any) => x.id === c.id ? { ...x, unitsPerCarton: e.target.value } : x)}))} placeholder="每箱数量" className="h-8" />
+                                    <Input type="number" value={c.unitsPerCarton} onChange={(e:any) => setShippingPlan(p => ({...p, cartons: p.cartons.map((x:any) => x.id === c.id ? { ...x, unitsPerCarton: e.target.value } : x)}))} placeholder="每箱数量" className="h-10 text-sm" />
                                   </div>
                                 </div>
                                 <div className="space-y-2">
                                   <label className="text-xs text-gray-500 font-medium">抛重系数</label>
-                                  <select value={c.divisor} onChange={(e:any) => setShippingPlan(p => ({...p, cartons: p.cartons.map((x:any) => x.id === c.id ? { ...x, divisor: e.target.value } : x)}))} className="border rounded px-2 bg-white text-sm h-8 w-full">
+                                  <select value={c.divisor} onChange={(e:any) => setShippingPlan(p => ({...p, cartons: p.cartons.map((x:any) => x.id === c.id ? { ...x, divisor: e.target.value } : x)}))} className="border rounded px-2 bg-white text-sm h-10 w-full">
                                     <option value="5000">5000 (空运/快递)</option>
                                     <option value="6000">6000 (海运)</option>
                                   </select>
@@ -1352,12 +1352,12 @@ export default function FBACalculatorPage() {
                         })} className="text-xs text-blue-600 hover:underline">+ 添加目的地</button>
                       </div>
                       <div className="border rounded-lg overflow-x-auto">
-                        <table className="min-w-[520px] w-full text-sm text-left">
+                        <table className="min-w-[640px] w-full text-sm text-left">
                           <thead className="bg-gray-50 text-gray-500 font-medium">
                             <tr>
                               <th className="p-2 w-10">启用</th>
                               <th className="p-2">目的地</th>
-                              <th className="p-2 w-32">单价 (￥/kg)</th>
+                                <th className="p-2 w-40">单价 (￥/kg)</th>
                               <th className="p-2 w-10"></th>
                             </tr>
                           </thead>
@@ -1383,7 +1383,7 @@ export default function FBACalculatorPage() {
                                     const newDest = [...shippingPlan.destinations];
                                     newDest[idx].price = e.target.value;
                                     setShippingPlan(p => ({...p, destinations: newDest}));
-                                  }} className="h-8" />
+                                  }} className="h-10 text-sm" />
                                 </td>
                                 <td className="p-2 text-center">
                                   <button onClick={() => {
@@ -1411,14 +1411,14 @@ export default function FBACalculatorPage() {
                         <div className="text-xs text-gray-500">请先启用目的地</div>
                       ) : (
                         <div className="border rounded-lg overflow-x-auto">
-                          <table className="min-w-[640px] w-full text-sm text-left">
+                          <table className="min-w-[760px] w-full text-sm text-left">
                             <thead className="bg-gray-50 text-gray-500 font-medium">
                               <tr>
                                 <th className="p-2">装箱规格</th>
                                 {enabledDests.map((d: any) => (
-                                  <th key={d.id} className="p-2 w-24">{d.name}</th>
+                                  <th key={d.id} className="p-2 w-28">{d.name}</th>
                                 ))}
-                                <th className="p-2 w-20">合计</th>
+                                <th className="p-2 w-24">合计</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
@@ -1435,7 +1435,7 @@ export default function FBACalculatorPage() {
                                             ...p,
                                             cartons: p.cartons.map((x: any) => x.id === c.id ? { ...x, allocations: { ...x.allocations, [d.id]: value } } : x)
                                           }));
-                                        }} className="h-8" />
+                                        }} className="h-10 text-sm" />
                                       </td>
                                     ))}
                                     <td className="p-2 text-gray-600">{total}</td>
