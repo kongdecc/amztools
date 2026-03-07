@@ -272,6 +272,18 @@ const FeeTable = ({ initialSeason, initialVersion }: any) => {
     alert("下载功能在此React版本中暂未完全实现 (需重写CSV生成逻辑)");
   };
 
+  const toCm = (val: number, unit: string) => {
+    if (unit === 'cm') return val;
+    return val * 2.54;
+  };
+
+  const toKg = (val: number, unit: string) => {
+    if (unit === 'g') return val / 1000;
+    if (unit === 'lb') return val * 0.453592;
+    if (unit === 'oz') return val * 0.0283495;
+    return val; // assume kg if unknown
+  };
+
   const [shippingPlan, setShippingPlan] = useState({
     isOpen: false,
     cartonLength: 50, cartonWidth: 40, cartonHeight: 30, cartonUnit: 'cm',
@@ -992,18 +1004,6 @@ export default function FBACalculatorPage() {
     if (k === 'netProfit') return '毛利润 - 总运营成本';
     if (k === 'breakEvenACoS') return '毛利润 ÷ 售价';
     return '';
-  };
-
-  const toCm = (val: number, unit: string) => {
-    if (unit === 'cm') return val;
-    return val * 2.54;
-  };
-
-  const toKg = (val: number, unit: string) => {
-    if (unit === 'g') return val / 1000;
-    if (unit === 'lb') return val * 0.453592;
-    if (unit === 'oz') return val * 0.0283495;
-    return val; // assume kg if unknown
   };
 
   const calculateShippingCost = (currentInputs: any) => {
