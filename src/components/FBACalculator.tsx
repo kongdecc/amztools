@@ -539,7 +539,6 @@ export default function FBACalculatorPage() {
   });
 
   const [shippingPlan, setShippingPlan] = useState({
-    isOpen: false,
     cartonLength: 50, cartonWidth: 40, cartonHeight: 30, cartonUnit: 'cm',
     cartonWeight: 15, weightUnit: 'kg',
     unitsPerCarton: 50,
@@ -551,10 +550,6 @@ export default function FBACalculatorPage() {
       { id: 3, name: '美东', cartons: 0, price: 7, enabled: false },
     ]
   });
-
-  const toggleAdvancedModal = () => {
-      setShippingPlan(prev => ({ ...prev, isOpen: !prev.isOpen }));
-  };
 
   const calculateAdvancedShipping = () => {
     // 1. Single Carton Volume Weight
@@ -603,10 +598,8 @@ export default function FBACalculatorPage() {
     const res = calculateAdvancedShipping();
     setInputs((prev: any) => ({
         ...prev,
-        shippingCostCNY: res.perUnitCost.toFixed(2),
-        shippingMode: 'direct' // Switch back to direct to show the result value
+        shippingCostCNY: res.perUnitCost.toFixed(2)
     }));
-    setShippingPlan(prev => ({ ...prev, isOpen: false }));
   };
 
   const [results, setResults] = useState<any>({
@@ -757,50 +750,15 @@ export default function FBACalculatorPage() {
     return '';
   };
 
-  const calculateShippingCost = (currentInputs: any) => {
-    if (currentInputs.shippingMode !== 'calculate') return;
-
-    const l = parseFloat(currentInputs.length) || 0;
-    const w = parseFloat(currentInputs.width) || 0;
-    const h = parseFloat(currentInputs.height) || 0;
-    const l_cm = toCm(l, currentInputs.lengthUnit);
-    const w_cm = toCm(w, currentInputs.widthUnit);
-    const h_cm = toCm(h, currentInputs.heightUnit);
-
-    const weight = parseFloat(currentInputs.actualWeight) || 0;
-    const weight_kg = toKg(weight, currentInputs.weightUnit);
-
-    const divisor = parseFloat(currentInputs.scDivisor) || 6000;
-    const vol_weight_kg = (l_cm * w_cm * h_cm) / divisor;
-
-    const chargeable_weight = Math.max(weight_kg, vol_weight_kg);
-    
-    const unitPrice = parseFloat(currentInputs.scUnitPrice) || 0;
-    const fixedFee = parseFloat(currentInputs.scFixedFee) || 0;
-    const qty = parseInt(currentInputs.shipmentQty) || 1;
-
-    const freightCost = chargeable_weight * unitPrice;
-    const fixedCostPerUnit = qty > 0 ? fixedFee / qty : 0;
-    
-    const total = freightCost + fixedCostPerUnit;
-    
-    // Avoid infinite loop: only update if value changed significantly
-    if (Math.abs(total - currentInputs.shippingCostCNY) > 0.01) {
-        setInputs((prev: any) => ({ ...prev, shippingCostCNY: total.toFixed(2) }));
-    }
-  };
-
-  // Effect to auto-calculate shipping cost when relevant inputs change
   useEffect(() => {
-    if (inputs.shippingMode === 'calculate') {
-        calculateShippingCost(inputs);
+    if (inputs.shippingMode !== 'advanced') return;
+    const res = calculateAdvancedShipping();
+    const next = parseFloat(res.perUnitCost.toFixed(2));
+    const current = parseFloat(inputs.shippingCostCNY) || 0;
+    if (Math.abs(next - current) > 0.01) {
+        setInputs((prev: any) => ({ ...prev, shippingCostCNY: next.toFixed(2) }));
     }
-  }, [
-    inputs.length, inputs.width, inputs.height, inputs.lengthUnit, inputs.widthUnit, inputs.heightUnit,
-    inputs.actualWeight, inputs.weightUnit,
-    inputs.scDivisor, inputs.scUnitPrice, inputs.scFixedFee, inputs.shipmentQty,
-    inputs.shippingMode
-  ]);
+  }, [inputs.shippingMode, shippingPlan]);
 
   const toggleUnits = () => {
     setInputs((prev: any) => {
@@ -1276,249 +1234,6 @@ export default function FBACalculatorPage() {
 
   return (
     <div className="space-y-6">
-      {shippingPlan.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                <div className="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
-                    <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
-                        <Truck className="w-5 h-5 text-blue-600"/> 高级头程运费计算器
-                    </h3>
-                    <button onClick={toggleAdvancedModal} className="text-gray-500 hover:text-gray-700 p-1">
-                        ✕
-                    </button>
-                </div>
-                <div className="p-6 space-y-6">
-                    <div className="space-y-3">
-                        <h4 className="font-bold text-gray-700 text-sm border-l-4 border-blue-500 pl-2">1. 装箱规格 (单箱)</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label className="text-xs text-gray-500 font-medium">外箱尺寸 (长x宽x高)</label>
-                                <div className="flex gap-2">
-                                    <Input 
-                                        type="number" 
-                                        value={shippingPlan.cartonLength} 
-                                        onChange={(e:any) => setShippingPlan(p => ({...p, cartonLength: e.target.value}))}
-                                        placeholder="长"
-                                    />
-                                    <Input 
-                                        type="number" 
-                                        value={shippingPlan.cartonWidth} 
-                                        onChange={(e:any) => setShippingPlan(p => ({...p, cartonWidth: e.target.value}))}
-                                        placeholder="宽"
-                                    />
-                                    <Input 
-                                        type="number" 
-                                        value={shippingPlan.cartonHeight} 
-                                        onChange={(e:any) => setShippingPlan(p => ({...p, cartonHeight: e.target.value}))}
-                                        placeholder="高"
-                                    />
-                                    <select 
-                                        className="border rounded px-2 bg-gray-50 text-sm"
-                                        value={shippingPlan.cartonUnit}
-                                        onChange={(e:any) => setShippingPlan(p => ({...p, cartonUnit: e.target.value}))}
-                                    >
-                                        <option value="cm">cm</option>
-                                        <option value="in">in</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-xs text-gray-500 font-medium">单箱毛重 & 装箱数</label>
-                                <div className="flex gap-2">
-                                    <div className="flex-1 flex">
-                                        <Input 
-                                            type="number" 
-                                            value={shippingPlan.cartonWeight} 
-                                            onChange={(e:any) => setShippingPlan(p => ({...p, cartonWeight: e.target.value}))}
-                                            className="rounded-r-none border-r-0"
-                                            placeholder="重量"
-                                        />
-                                        <select 
-                                            className="border border-l-0 rounded-r px-2 bg-gray-50 text-sm focus:outline-none"
-                                            value={shippingPlan.weightUnit}
-                                            onChange={(e:any) => setShippingPlan(p => ({...p, weightUnit: e.target.value}))}
-                                        >
-                                            <option value="kg">kg</option>
-                                            <option value="lb">lb</option>
-                                        </select>
-                                    </div>
-                                    <div className="flex-1">
-                                        <Input 
-                                            type="number" 
-                                            value={shippingPlan.unitsPerCarton} 
-                                            onChange={(e:any) => setShippingPlan(p => ({...p, unitsPerCarton: e.target.value}))}
-                                            placeholder="每箱数量"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-4 bg-blue-50 p-3 rounded-lg text-sm text-blue-800">
-                             <div className="flex items-center gap-2">
-                                <span>抛重系数:</span>
-                                <select 
-                                    value={shippingPlan.divisor} 
-                                    onChange={(e:any) => setShippingPlan(p => ({...p, divisor: e.target.value}))}
-                                    className="border rounded px-2 py-0.5 bg-white text-sm"
-                                >
-                                    <option value="5000">5000 (空运/快递)</option>
-                                    <option value="6000">6000 (海运)</option>
-                                </select>
-                             </div>
-                             {(() => {
-                                 const calc = calculateAdvancedShipping();
-                                 return (
-                                     <div className="flex gap-4 ml-auto font-medium">
-                                         <span title={`体积重: ${calc.volWeightKg.toFixed(2)}kg`}>体积重: {calc.volWeightKg.toFixed(2)}kg</span>
-                                         <span title={`实重: ${calc.actualWeightKg.toFixed(2)}kg`}>实重: {calc.actualWeightKg.toFixed(2)}kg</span>
-                                         <span className={calc.isVolumetric ? "text-orange-600 font-bold" : "text-green-600"}>
-                                            计费重: {calc.chargeWeightKg.toFixed(2)}kg 
-                                            {calc.isVolumetric && <span className="ml-1 text-xs bg-orange-100 px-1 rounded text-orange-600">抛货</span>}
-                                         </span>
-                                     </div>
-                                 )
-                             })()}
-                        </div>
-                    </div>
-
-                    <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                            <h4 className="font-bold text-gray-700 text-sm border-l-4 border-green-500 pl-2">2. 目的地配置 (分仓)</h4>
-                            <button 
-                                onClick={() => setShippingPlan(p => ({
-                                    ...p, 
-                                    destinations: [...p.destinations, { id: Date.now(), name: '其他', cartons: 0, price: 0, enabled: true }]
-                                }))}
-                                className="text-xs text-blue-600 hover:underline flex items-center gap-1"
-                            >
-                                + 添加目的地
-                            </button>
-                        </div>
-                        <div className="border rounded-lg overflow-hidden">
-                            <table className="w-full text-sm text-left">
-                                <thead className="bg-gray-50 text-gray-500 font-medium">
-                                    <tr>
-                                        <th className="p-2 w-10">启用</th>
-                                        <th className="p-2">目的地</th>
-                                        <th className="p-2 w-24">箱数</th>
-                                        <th className="p-2 w-32">单价 (￥/kg)</th>
-                                        <th className="p-2 w-10"></th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100">
-                                    {shippingPlan.destinations.map((dest, idx) => (
-                                        <tr key={dest.id} className={dest.enabled ? "bg-white" : "bg-gray-50 opacity-60"}>
-                                            <td className="p-2 text-center">
-                                                <input 
-                                                    type="checkbox" 
-                                                    checked={dest.enabled} 
-                                                    onChange={(e) => {
-                                                        const newDest = [...shippingPlan.destinations];
-                                                        newDest[idx].enabled = e.target.checked;
-                                                        setShippingPlan(p => ({...p, destinations: newDest}));
-                                                    }}
-                                                />
-                                            </td>
-                                            <td className="p-2">
-                                                <input 
-                                                    value={dest.name} 
-                                                    onChange={(e) => {
-                                                        const newDest = [...shippingPlan.destinations];
-                                                        newDest[idx].name = e.target.value;
-                                                        setShippingPlan(p => ({...p, destinations: newDest}));
-                                                    }}
-                                                    className="w-full bg-transparent border-b border-dashed border-gray-300 focus:outline-none focus:border-blue-500"
-                                                />
-                                            </td>
-                                            <td className="p-2">
-                                                <Input 
-                                                    type="number" 
-                                                    value={dest.cartons} 
-                                                    onChange={(e:any) => {
-                                                        const newDest = [...shippingPlan.destinations];
-                                                        newDest[idx].cartons = e.target.value;
-                                                        setShippingPlan(p => ({...p, destinations: newDest}));
-                                                    }}
-                                                    className="h-7"
-                                                />
-                                            </td>
-                                            <td className="p-2">
-                                                <Input 
-                                                    type="number" 
-                                                    value={dest.price} 
-                                                    onChange={(e:any) => {
-                                                        const newDest = [...shippingPlan.destinations];
-                                                        newDest[idx].price = e.target.value;
-                                                        setShippingPlan(p => ({...p, destinations: newDest}));
-                                                    }}
-                                                    className="h-7"
-                                                />
-                                            </td>
-                                            <td className="p-2 text-center">
-                                                <button 
-                                                    onClick={() => {
-                                                        const newDest = shippingPlan.destinations.filter((_, i) => i !== idx);
-                                                        setShippingPlan(p => ({...p, destinations: newDest}));
-                                                    }}
-                                                    className="text-red-400 hover:text-red-600"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div className="space-y-3">
-                        <h4 className="font-bold text-gray-700 text-sm border-l-4 border-purple-500 pl-2">3. 其他费用</h4>
-                        <div className="flex items-center gap-4">
-                            <label className="text-sm text-gray-600">整票固定费用 (￥):</label>
-                            <Input 
-                                type="number" 
-                                value={shippingPlan.fixedFee} 
-                                onChange={(e:any) => setShippingPlan(p => ({...p, fixedFee: e.target.value}))}
-                                className="w-32"
-                            />
-                            <span className="text-xs text-gray-400">(报关费、文件费等总和)</span>
-                        </div>
-                    </div>
-
-                    <div className="bg-gray-100 p-4 rounded-lg space-y-2 border border-gray-200">
-                        {(() => {
-                             const calc = calculateAdvancedShipping();
-                             return (
-                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                                     <div>
-                                         <div className="text-xs text-gray-500">总箱数</div>
-                                         <div className="font-bold text-lg">{calc.totalCartons}</div>
-                                     </div>
-                                     <div>
-                                         <div className="text-xs text-gray-500">总发货量</div>
-                                         <div className="font-bold text-lg">{calc.totalUnits} <span className="text-xs font-normal text-gray-400">pcs</span></div>
-                                     </div>
-                                     <div>
-                                         <div className="text-xs text-gray-500">总运费 (￥)</div>
-                                         <div className="font-bold text-lg text-blue-600">¥{calc.totalCost.toFixed(2)}</div>
-                                     </div>
-                                     <div className="bg-white rounded border p-1 shadow-sm">
-                                         <div className="text-xs text-gray-500">单个产品头程</div>
-                                         <div className="font-bold text-xl text-green-600">¥{calc.perUnitCost.toFixed(2)}</div>
-                                     </div>
-                                 </div>
-                             );
-                        })()}
-                    </div>
-                </div>
-                <div className="p-4 border-t bg-gray-50 flex justify-end gap-3 rounded-b-xl">
-                    <Button variant="secondary" onClick={toggleAdvancedModal}>取消</Button>
-                    <Button variant="primary" onClick={applyAdvancedShipping}>应用结果</Button>
-                </div>
-            </div>
-        </div>
-      )}
       <div className="flex items-center gap-2 mb-2">
         <Truck className="h-6 w-6 text-blue-600" />
         <h2 className="text-xl font-bold text-gray-800">美国站配送费及利润计算</h2>
@@ -1718,65 +1433,242 @@ export default function FBACalculatorPage() {
                                 )}
                             </div>
                             <button 
-                                onClick={() => updateInput('shippingMode', inputs.shippingMode === 'direct' ? 'calculate' : 'direct')}
+                                onClick={() => updateInput('shippingMode', inputs.shippingMode === 'direct' ? 'advanced' : 'direct')}
                                 className="text-xs text-blue-600 hover:text-blue-800 underline whitespace-nowrap"
                             >
-                                {inputs.shippingMode === 'direct' ? '计算器' : '直接输入'}
+                                {inputs.shippingMode === 'direct' ? '高级计算器' : '直接输入'}
                             </button>
                         </div>
                         
-                        {inputs.shippingMode === 'calculate' && (
-                            <div className="bg-gray-100 p-3 rounded text-xs space-y-3 border border-gray-200">
-                                <div className="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <label className="text-gray-500 block mb-1">运费单价 (￥/kg)</label>
-                                        <Input type="number" value={inputs.scUnitPrice} onChange={(e:any) => updateInput('scUnitPrice', e.target.value)} className="h-7 bg-white" />
-                                    </div>
-                                    <div>
-                                        <label className="text-gray-500 block mb-1">抛重系数</label>
-                                        <select 
-                                            value={inputs.scDivisor} 
-                                            onChange={(e:any) => updateInput('scDivisor', e.target.value)}
-                                            className="w-full h-7 rounded-md border border-gray-300 bg-white px-2 text-xs"
-                                        >
-                                            <option value="5000">5000 (常见)</option>
-                                            <option value="6000">6000</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="text-gray-500 block mb-1">每票固定费用 (￥)</label>
-                                    <div className="flex gap-2">
-                                        <Input type="number" value={inputs.scFixedFee} onChange={(e:any) => updateInput('scFixedFee', e.target.value)} className="h-7 bg-white flex-1" placeholder="总固定费" />
-                                        <div className="flex items-center text-gray-400 whitespace-nowrap">
-                                            ÷ {inputs.shipmentQty} 个
+                        {inputs.shippingMode === 'advanced' && (
+                            <div className="bg-gray-100 p-4 rounded text-xs space-y-4 border border-gray-200">
+                                <div className="text-sm font-bold text-gray-700">高级头程运费计算器</div>
+                                <div className="space-y-3">
+                                    <h4 className="font-bold text-gray-700 text-sm border-l-4 border-blue-500 pl-2">1. 装箱规格 (单箱)</h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-xs text-gray-500 font-medium">外箱尺寸 (长x宽x高)</label>
+                                            <div className="flex gap-2">
+                                                <Input 
+                                                    type="number" 
+                                                    value={shippingPlan.cartonLength} 
+                                                    onChange={(e:any) => setShippingPlan(p => ({...p, cartonLength: e.target.value}))}
+                                                    placeholder="长"
+                                                />
+                                                <Input 
+                                                    type="number" 
+                                                    value={shippingPlan.cartonWidth} 
+                                                    onChange={(e:any) => setShippingPlan(p => ({...p, cartonWidth: e.target.value}))}
+                                                    placeholder="宽"
+                                                />
+                                                <Input 
+                                                    type="number" 
+                                                    value={shippingPlan.cartonHeight} 
+                                                    onChange={(e:any) => setShippingPlan(p => ({...p, cartonHeight: e.target.value}))}
+                                                    placeholder="高"
+                                                />
+                                                <select 
+                                                    className="border rounded px-2 bg-gray-50 text-sm"
+                                                    value={shippingPlan.cartonUnit}
+                                                    onChange={(e:any) => setShippingPlan(p => ({...p, cartonUnit: e.target.value}))}
+                                                >
+                                                    <option value="cm">cm</option>
+                                                    <option value="in">in</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-xs text-gray-500 font-medium">单箱毛重 & 装箱数</label>
+                                            <div className="flex gap-2">
+                                                <div className="flex-1 flex">
+                                                    <Input 
+                                                        type="number" 
+                                                        value={shippingPlan.cartonWeight} 
+                                                        onChange={(e:any) => setShippingPlan(p => ({...p, cartonWeight: e.target.value}))}
+                                                        className="rounded-r-none border-r-0"
+                                                        placeholder="重量"
+                                                    />
+                                                    <select 
+                                                        className="border border-l-0 rounded-r px-2 bg-gray-50 text-sm focus:outline-none"
+                                                        value={shippingPlan.weightUnit}
+                                                        onChange={(e:any) => setShippingPlan(p => ({...p, weightUnit: e.target.value}))}
+                                                    >
+                                                        <option value="kg">kg</option>
+                                                        <option value="lb">lb</option>
+                                                    </select>
+                                                </div>
+                                                <div className="flex-1">
+                                                    <Input 
+                                                        type="number" 
+                                                        value={shippingPlan.unitsPerCarton} 
+                                                        onChange={(e:any) => setShippingPlan(p => ({...p, unitsPerCarton: e.target.value}))}
+                                                        placeholder="每箱数量"
+                                                    />
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
+                                    <div className="flex items-center gap-4 bg-blue-50 p-3 rounded-lg text-sm text-blue-800">
+                                         <div className="flex items-center gap-2">
+                                            <span>抛重系数:</span>
+                                            <select 
+                                                value={shippingPlan.divisor} 
+                                                onChange={(e:any) => setShippingPlan(p => ({...p, divisor: e.target.value}))}
+                                                className="border rounded px-2 py-0.5 bg-white text-sm"
+                                            >
+                                                <option value="5000">5000 (空运/快递)</option>
+                                                <option value="6000">6000 (海运)</option>
+                                            </select>
+                                         </div>
+                                         {(() => {
+                                             const calc = calculateAdvancedShipping();
+                                             return (
+                                                 <div className="flex gap-4 ml-auto font-medium">
+                                                     <span title={`体积重: ${calc.volWeightKg.toFixed(2)}kg`}>体积重: {calc.volWeightKg.toFixed(2)}kg</span>
+                                                     <span title={`实重: ${calc.actualWeightKg.toFixed(2)}kg`}>实重: {calc.actualWeightKg.toFixed(2)}kg</span>
+                                                     <span className={calc.isVolumetric ? "text-orange-600 font-bold" : "text-green-600"}>
+                                                        计费重: {calc.chargeWeightKg.toFixed(2)}kg 
+                                                        {calc.isVolumetric && <span className="ml-1 text-xs bg-orange-100 px-1 rounded text-orange-600">抛货</span>}
+                                                     </span>
+                                                 </div>
+                                             )
+                                         })()}
+                                    </div>
                                 </div>
-                                <div className="pt-2 border-t border-gray-200 text-gray-600 space-y-1">
+
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-center">
+                                        <h4 className="font-bold text-gray-700 text-sm border-l-4 border-green-500 pl-2">2. 目的地配置 (分仓)</h4>
+                                        <button 
+                                            onClick={() => setShippingPlan(p => ({
+                                                ...p, 
+                                                destinations: [...p.destinations, { id: Date.now(), name: '其他', cartons: 0, price: 0, enabled: true }]
+                                            }))}
+                                            className="text-xs text-blue-600 hover:underline flex items-center gap-1"
+                                        >
+                                            + 添加目的地
+                                        </button>
+                                    </div>
+                                    <div className="border rounded-lg overflow-hidden">
+                                        <table className="w-full text-sm text-left">
+                                            <thead className="bg-gray-50 text-gray-500 font-medium">
+                                                <tr>
+                                                    <th className="p-2 w-10">启用</th>
+                                                    <th className="p-2">目的地</th>
+                                                    <th className="p-2 w-24">箱数</th>
+                                                    <th className="p-2 w-32">单价 (￥/kg)</th>
+                                                    <th className="p-2 w-10"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-100">
+                                                {shippingPlan.destinations.map((dest, idx) => (
+                                                    <tr key={dest.id} className={dest.enabled ? "bg-white" : "bg-gray-50 opacity-60"}>
+                                                        <td className="p-2 text-center">
+                                                            <input 
+                                                                type="checkbox" 
+                                                                checked={dest.enabled} 
+                                                                onChange={(e) => {
+                                                                    const newDest = [...shippingPlan.destinations];
+                                                                    newDest[idx].enabled = e.target.checked;
+                                                                    setShippingPlan(p => ({...p, destinations: newDest}));
+                                                                }}
+                                                            />
+                                                        </td>
+                                                        <td className="p-2">
+                                                            <input 
+                                                                value={dest.name} 
+                                                                onChange={(e) => {
+                                                                    const newDest = [...shippingPlan.destinations];
+                                                                    newDest[idx].name = e.target.value;
+                                                                    setShippingPlan(p => ({...p, destinations: newDest}));
+                                                                }}
+                                                                className="w-full bg-transparent border-b border-dashed border-gray-300 focus:outline-none focus:border-blue-500"
+                                                            />
+                                                        </td>
+                                                        <td className="p-2">
+                                                            <Input 
+                                                                type="number" 
+                                                                value={dest.cartons} 
+                                                                onChange={(e:any) => {
+                                                                    const newDest = [...shippingPlan.destinations];
+                                                                    newDest[idx].cartons = e.target.value;
+                                                                    setShippingPlan(p => ({...p, destinations: newDest}));
+                                                                }}
+                                                                className="h-7"
+                                                            />
+                                                        </td>
+                                                        <td className="p-2">
+                                                            <Input 
+                                                                type="number" 
+                                                                value={dest.price} 
+                                                                onChange={(e:any) => {
+                                                                    const newDest = [...shippingPlan.destinations];
+                                                                    newDest[idx].price = e.target.value;
+                                                                    setShippingPlan(p => ({...p, destinations: newDest}));
+                                                                }}
+                                                                className="h-7"
+                                                            />
+                                                        </td>
+                                                        <td className="p-2 text-center">
+                                                            <button 
+                                                                onClick={() => {
+                                                                    const newDest = shippingPlan.destinations.filter((_, i) => i !== idx);
+                                                                    setShippingPlan(p => ({...p, destinations: newDest}));
+                                                                }}
+                                                                className="text-red-400 hover:text-red-600"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <h4 className="font-bold text-gray-700 text-sm border-l-4 border-purple-500 pl-2">3. 其他费用</h4>
+                                    <div className="flex items-center gap-4">
+                                        <label className="text-sm text-gray-600">整票固定费用 (￥):</label>
+                                        <Input 
+                                            type="number" 
+                                            value={shippingPlan.fixedFee} 
+                                            onChange={(e:any) => setShippingPlan(p => ({...p, fixedFee: e.target.value}))}
+                                            className="w-32"
+                                        />
+                                        <span className="text-xs text-gray-400">(报关费、文件费等总和)</span>
+                                    </div>
+                                </div>
+
+                                <div className="bg-gray-100 p-4 rounded-lg space-y-2 border border-gray-200">
                                     {(() => {
-                                        const l = parseFloat(inputs.length) || 0;
-                                        const w = parseFloat(inputs.width) || 0;
-                                        const h = parseFloat(inputs.height) || 0;
-                                        const l_cm = toCm(l, inputs.lengthUnit);
-                                        const w_cm = toCm(w, inputs.widthUnit);
-                                        const h_cm = toCm(h, inputs.heightUnit);
-                                        const div = parseFloat(inputs.scDivisor) || 6000;
-                                        const volKg = (l_cm * w_cm * h_cm) / div;
-                                        
-                                        const actKg = toKg(parseFloat(inputs.actualWeight)||0, inputs.weightUnit);
-                                        const chgKg = Math.max(actKg, volKg);
-                                        const unitFixed = (parseFloat(inputs.scFixedFee)||0) / (parseInt(inputs.shipmentQty)||1);
-                                        
-                                        return (
-                                            <>
-                                                <div className="flex justify-between"><span>体积重:</span> <span>{volKg.toFixed(3)} kg</span></div>
-                                                <div className="flex justify-between"><span>实重:</span> <span>{actKg.toFixed(3)} kg</span></div>
-                                                <div className="flex justify-between font-medium text-blue-600"><span>计费重:</span> <span>{chgKg.toFixed(3)} kg</span></div>
-                                                <div className="flex justify-between text-gray-400 text-[10px]"><span>固定费均摊:</span> <span>¥{unitFixed.toFixed(2)}/个</span></div>
-                                            </>
-                                        );
+                                         const calc = calculateAdvancedShipping();
+                                         return (
+                                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                                                 <div>
+                                                     <div className="text-xs text-gray-500">总箱数</div>
+                                                     <div className="font-bold text-lg">{calc.totalCartons}</div>
+                                                 </div>
+                                                 <div>
+                                                     <div className="text-xs text-gray-500">总发货量</div>
+                                                     <div className="font-bold text-lg">{calc.totalUnits} <span className="text-xs font-normal text-gray-400">pcs</span></div>
+                                                 </div>
+                                                 <div>
+                                                     <div className="text-xs text-gray-500">总运费 (￥)</div>
+                                                     <div className="font-bold text-lg text-blue-600">¥{calc.totalCost.toFixed(2)}</div>
+                                                 </div>
+                                                 <div className="bg-white rounded border p-1 shadow-sm">
+                                                     <div className="text-xs text-gray-500">单个产品头程</div>
+                                                     <div className="font-bold text-xl text-green-600">¥{calc.perUnitCost.toFixed(2)}</div>
+                                                 </div>
+                                             </div>
+                                         );
                                     })()}
+                                </div>
+                                <div className="flex justify-end gap-3">
+                                    <Button variant="secondary" onClick={() => updateInput('shippingMode', 'direct')}>收起</Button>
+                                    <Button variant="primary" onClick={applyAdvancedShipping}>应用结果</Button>
                                 </div>
                             </div>
                         )}
