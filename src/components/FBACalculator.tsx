@@ -272,18 +272,6 @@ const FeeTable = ({ initialSeason, initialVersion }: any) => {
     alert("下载功能在此React版本中暂未完全实现 (需重写CSV生成逻辑)");
   };
 
-  const toCm = (val: number, unit: string) => {
-    if (unit === 'cm') return val;
-    return val * 2.54;
-  };
-
-  const toKg = (val: number, unit: string) => {
-    if (unit === 'g') return val / 1000;
-    if (unit === 'lb') return val * 0.453592;
-    if (unit === 'oz') return val * 0.0283495;
-    return val; // assume kg if unknown
-  };
-
   const [shippingPlan, setShippingPlan] = useState({
     isOpen: false,
     cartonLength: 50, cartonWidth: 40, cartonHeight: 30, cartonUnit: 'cm',
@@ -663,6 +651,18 @@ function sort3(a: number, b: number, c: number) {
   let arr = [a, b, c].sort((x, y) => y - x);
   return { l: arr[0], w: arr[1], h: arr[2] };
 }
+
+  const toCm = (val: number, unit: string) => {
+    if (unit === 'cm') return val;
+    return val * 2.54;
+  };
+
+  const toKg = (val: number, unit: string) => {
+    if (unit === 'g') return val / 1000;
+    if (unit === 'lb') return val * 0.453592;
+    if (unit === 'oz') return val * 0.0283495;
+    return val; // assume kg if unknown
+  };
 
 // Fee Data
 const feeData: any = {
