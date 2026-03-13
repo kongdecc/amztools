@@ -1,0 +1,1079 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>中国产业带</title>
+    <style>
+      :root {
+        --bg: #f6f7fb;
+        --card: #ffffff;
+        --text: #1d1f24;
+        --muted: #6b7280;
+        --border: #e6e9f0;
+        --accent: #ff7a2f;
+        --accent-soft: #fff2ea;
+        --shadow: 0 10px 30px rgba(22, 27, 45, 0.08);
+        --radius: 16px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        padding-top: 3.5rem;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      .page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 28px 20px 60px;
+        width: 100%;
+        flex: 1;
+      }
+      .hero {
+        background: linear-gradient(135deg, #ffffff 0%, #f9fafc 100%);
+        border-radius: 24px;
+        padding: 18px 20px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+      }
+      .hero-top {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px 28px;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .hero-title {
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: 0.2px;
+      }
+      .hero-subtitle {
+        color: var(--muted);
+        margin-top: 6px;
+        font-size: 12px;
+      }
+      .hero-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 8px;
+        min-width: 420px;
+      }
+      .input, .select, .button {
+        height: 36px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: #fff;
+        padding: 0 12px;
+        font-size: 13px;
+        color: var(--text);
+      }
+      .input {
+        min-width: 200px;
+      }
+      .button {
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        padding: 0 16px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .button.secondary {
+        background: #ffffff;
+        color: var(--text);
+        border: 1px solid var(--border);
+      }
+      .stats {
+        margin-top: 10px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .stats span {
+        background: var(--accent-soft);
+        color: #b55317;
+        border-radius: 999px;
+        padding: 6px 12px;
+        font-weight: 600;
+      }
+      .section {
+        margin-top: 26px;
+        display: grid;
+        gap: 18px;
+      }
+      .province-card {
+        background: var(--card);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        padding: 20px 22px;
+      }
+      .province-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+      .province-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .province-pill {
+        background: var(--accent);
+        color: #fff;
+        border-radius: 12px;
+        padding: 6px 14px;
+        font-weight: 700;
+        font-size: 15px;
+      }
+      .province-meta {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .back-link {
+        text-decoration: none;
+        font-size: 12px;
+        color: var(--accent);
+        background: #fff7f1;
+        border: 1px solid #ffd9c3;
+        padding: 6px 12px;
+        border-radius: 999px;
+        white-space: nowrap;
+      }
+      #filterBar {
+        scroll-margin-top: 24px;
+      }
+      .belt-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 16px;
+      }
+      .belt-item {
+        padding: 14px 14px 12px;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: #fcfdff;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-height: 120px;
+      }
+      .belt-title {
+        color: var(--accent);
+        font-weight: 700;
+        font-size: 14px;
+      }
+      .belt-desc {
+        color: #4b5563;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .tag {
+        background: #f1f5f9;
+        color: #3f4b5b;
+        font-size: 11px;
+        border-radius: 999px;
+        padding: 4px 8px;
+      }
+      .highlight {
+        background: var(--accent-soft);
+        color: #b55317;
+        padding: 0 2px;
+        border-radius: 4px;
+      }
+      .empty {
+        text-align: center;
+        padding: 40px 12px;
+        color: var(--muted);
+        font-size: 14px;
+        background: var(--card);
+        border-radius: 18px;
+        border: 1px dashed var(--border);
+      }
+      .tb-header { height: 3.5rem; background-color: #5b5bd6; color: white; display: flex; align-items: center; padding: 0 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); position: fixed; top: 0; left: 0; right: 0; z-index: 1000; font-family: system-ui, -apple-system, sans-serif; justify-content: space-between; }
+      @media (min-width: 768px) { .tb-header { padding: 0 2.5rem; justify-content: flex-start; } }
+      .tb-logo-area { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; font-size: 1.125rem; min-width: 0; flex: 1; }
+      @media (min-width: 768px) { .tb-logo-area { flex: initial; margin-right: 1.5rem; } }
+      .tb-logo-icon { background-color: rgba(255,255,255,0.2); padding: 0.25rem; border-radius: 0.25rem; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+      .tb-nav-desktop { display: none; margin-left: auto; align-items: center; gap: 1.5rem; flex-shrink: 0; }
+      @media (min-width: 768px) { .tb-nav-desktop { display: flex; } }
+      .tb-nav-link { font-size: 0.875rem; color: rgba(255,255,255,0.9); text-decoration: none; display: flex; align-items: center; gap: 0.25rem; cursor: pointer; background: none; border: none; padding: 0; }
+      .tb-nav-link:hover { color: white; }
+      .tb-mobile-toggle { display: flex; align-items: center; gap: 0.75rem; margin-left: auto; flex-shrink: 0; }
+      @media (min-width: 768px) { .tb-mobile-toggle { display: none; } }
+      .tb-btn-icon { padding: 0.5rem; border-radius: 0.25rem; background: none; border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+      .tb-btn-icon:hover { background-color: rgba(255,255,255,0.1); }
+      .tb-mobile-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: none; }
+      .tb-mobile-overlay.open { display: block; }
+      .tb-mobile-menu { position: fixed; top: 0; right: 0; bottom: 0; width: 16rem; background: white; z-index: 2001; transform: translateX(100%); transition: transform 0.3s ease-in-out; padding: 1.5rem; overflow-y: auto; color: #1f2937; }
+      .tb-mobile-menu.open { transform: translateX(0); }
+      .tb-mobile-nav-item { display: block; padding: 0.75rem 0; font-size: 1rem; font-weight: 500; color: #374151; text-decoration: none; border-bottom: 1px solid #f3f4f6; }
+      @media (max-width: 720px) {
+        .hero-top {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .hero-actions {
+          width: 100%;
+          min-width: 0;
+          grid-template-columns: 1fr;
+        }
+        .input, .select, .button {
+          width: 100%;
+        }
+        .back-link {
+          padding: 6px 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="site-header-container">
+      <div class="tb-header">
+        <div class="tb-logo-area">
+          <div class="tb-logo-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-dashboard"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+          </div>
+          <span>跨境工具魔方 AmzToolBox</span>
+        </div>
+        <nav class="tb-nav-desktop">
+          <a href="/" class="tb-nav-link">首页</a>
+          <a href="/functionality" class="tb-nav-link">功能分类</a>
+          <a href="/about" class="tb-nav-link">关于</a>
+          <a href="/blog" class="tb-nav-link">博客</a>
+          <a href="/suggest" class="tb-nav-link">提需求</a>
+          <a href="/reward" class="tb-nav-link">打赏支持</a>
+        </nav>
+        <div class="tb-mobile-toggle">
+          <button id="mobileMenuBtn" class="tb-btn-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="tb-mobile-overlay" id="mobileOverlay"></div>
+      <div class="tb-mobile-menu" id="mobileMenu">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <span style="font-weight: 700; font-size: 1.25rem;">跨境工具魔方 AmzToolBox</span>
+          <button id="closeMobileBtn" style="background: none; border: none; padding: 0.5rem; cursor: pointer;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+        </div>
+        <a href="/" class="tb-mobile-nav-item">首页</a>
+        <a href="/functionality" class="tb-mobile-nav-item">功能分类</a>
+        <a href="/about" class="tb-mobile-nav-item">关于</a>
+        <a href="/blog" class="tb-mobile-nav-item">博客</a>
+        <a href="/suggest" class="tb-mobile-nav-item">提需求</a>
+        <a href="/reward" class="tb-mobile-nav-item">打赏支持</a>
+      </div>
+    </div>
+    <div class="page">
+      <section id="filterBar" class="hero">
+        <div class="hero-top">
+          <div>
+            <div class="hero-title">中国产业带</div>
+            <div class="hero-subtitle">按大区、省份、关键词、产业类型与产业带快速定位目标产业带</div>
+          </div>
+          <div class="hero-actions">
+            <input id="keywordInput" class="input" placeholder="输入产业带名称或产品关键词" />
+            <select id="regionSelect" class="select"></select>
+            <select id="provinceSelect" class="select"></select>
+            <select id="tagSelect" class="select"></select>
+            <select id="citySelect" class="select"></select>
+            <button id="resetBtn" class="button secondary">重置筛选</button>
+          </div>
+        </div>
+        <div class="stats">
+          <span id="beltCount">0 个产业带</span>
+          <span id="provinceCount">0 个省份/自治区</span>
+          <span id="activeCount">0 条结果</span>
+        </div>
+      </section>
+
+      <section id="listSection" class="section"></section>
+    </div>
+    <footer style="text-align: center; padding: 1.5rem 0; font-size: 0.75rem; color: #9ca3af; background-color: #f8fafc; border-top: 1px solid #e2e8f0; margin-top: auto;">
+      © 2025 跨境工具魔方 AmzToolBox. All rights reserved.
+      <span style="margin: 0 0.5rem;">|</span>
+      <a href="/privacy" style="color: inherit; text-decoration: none;">隐私说明</a>
+    </footer>
+
+    <script>
+      const rawData = [
+        {
+          province: "新疆维吾尔自治区",
+          belts: [
+            { name: "塔城产业带", desc: "农产品(线椒、辣椒酱、蜂蜜、羊奶、精油)、特色手工艺品(手风琴)" },
+            { name: "阿勒泰产业带", desc: "有机食品(冷水鱼、奶制品、牛羊肉)、珠宝(黄金、海蓝宝石、碧玺)" },
+            { name: "和田产业带", desc: "和田玉及珠宝玉石、农副产品(坚果、中药材)" },
+            { name: "克孜勒苏产业带", desc: "农牧产品(无花果、杏)、矿产(有色金属、建材加工)" },
+            { name: "克拉玛依产业带", desc: "工业陶瓷" },
+            { name: "昌吉产业带", desc: "农产品及食品(粮、棉、制酱番茄、酿酒葡萄)、新材料(硅基、铝基)" },
+            { name: "喀什产业带", desc: "农产品(棉花、干果)、纺织服装、锂电池" },
+            { name: "巴音郭楞产业带", desc: "特色农产品(香梨、棉花)、纺织服装" },
+            { name: "吐鲁番产业带", desc: "葡萄(葡萄干、葡萄酒)、手工艺品(刺绣、编织品、民族服饰)" },
+            { name: "伊犁产业带", desc: "农副产品(枸杞、香牛)" },
+            { name: "博尔塔拉产业带", desc: "农副产品(枸杞、香牛)" },
+            { name: "阿克苏产业带", desc: "农产品(棉花、苹果、核桃、红枣)、纺织" },
+            { name: "乌鲁木齐产业带", desc: "纺织服装、农产品(核桃、梨、葡萄)、机电、光伏、锂电" },
+            { name: "哈密产业带", desc: "特色农产品(哈密瓜、大枣、葡萄干)、手工艺品(和田玉、地毯)" }
+          ]
+        },
+        {
+          province: "青海省",
+          belts: [
+            { name: "海西产业带", desc: "农牧(枸杞、青稞、藏羊、牦牛)、盐湖化工" },
+            { name: "玉树产业带", desc: "生态畜牧(牦牛肉干、藏羊肉干)" },
+            { name: "海北产业带", desc: "生态畜牧(牦牛肉干、藏羊肉干)" },
+            { name: "西宁产业带", desc: "青海藏毯、有机农牧" },
+            { name: "海南产业带", desc: "畜牧(牦牛肉干、藏羊肉干、奶制品)" },
+            { name: "黄南产业带", desc: "生态畜牧(牦牛肉干、藏羊肉干)、晶黄果制品" },
+            { name: "海东产业带", desc: "特色农牧(绿壳蛋、藏香猪、牦牛)" },
+            { name: "果洛产业带", desc: "生态畜牧" }
+          ]
+        },
+        {
+          province: "甘肃省",
+          belts: [
+            { name: "兰州产业带", desc: "农特产(兰州百合、兰州玫瑰、牛肉面)、中药材(枸杞、黄芪)、手工艺品(刺绣、剪纸、泥塑)" },
+            { name: "张掖产业带", desc: "特色农业(玉米、蔬菜)" },
+            { name: "金昌产业带", desc: "有色金属新材料、新能源电池" },
+            { name: "平凉产业带", desc: "农牧(苹果、牛)" },
+            { name: "定西产业带", desc: "中药材、农产品(马铃薯)" },
+            { name: "陇南产业带", desc: "特色农产品(花椒、中药材、苹果、核桃)" },
+            { name: "酒泉产业带", desc: "新能源(光伏、储能装备)、特色农产品(瓜菜花卉制种、脱水蔬菜)" },
+            { name: "武威产业带", desc: "特色农产品(蔬菜籽)、食品(肉类、宠物食品)、木材制品" },
+            { name: "甘南产业带", desc: "畜牧(牦牛、藏羊乳肉制品)、藏药、手工艺品(藏香、唐卡、藏族服饰)" },
+            { name: "嘉峪关产业带", desc: "钢铁及金属加工" },
+            { name: "白银产业带", desc: "特色农产品(瓜菜花卉制种)、机械制造" },
+            { name: "庆阳产业带", desc: "特色农产品(苹果、黄花菜、白瓜籽、小杂粮)、中药材(大黄、当归)" },
+            { name: "天水产业带", desc: "特色农产品(花牛苹果、乌岽薯、调味品)、装备制造(轴承、水泵、电工电器)、非遗文创(天水雕漆、甘谷麻鞋)" },
+            { name: "临夏产业带", desc: "食品和农副产品、手工艺品(保安腰刀、砖雕、刺绣)" }
+          ]
+        },
+        {
+          province: "广西壮族自治区",
+          belts: [
+            { name: "河池产业带", desc: "桑蚕茧丝绸、有色金属、特色农业" },
+            { name: "百色产业带", desc: "铝、特色农产品、中药材" },
+            { name: "防城港产业带", desc: "钢铁制品、有色金属" },
+            { name: "北海产业带", desc: "机电、渔业" },
+            { name: "钦州产业带", desc: "特色农产品、金属新材料" },
+            { name: "来宾产业带", desc: "蔗糖、金属新材料" },
+            { name: "桂林产业带", desc: "电子信息、装备制造、生态食品" },
+            { name: "贺州产业带", desc: "碳酸钙、电子信息、特色农产品" },
+            { name: "南宁产业带", desc: "铝精深加工、新能源电池、电子信息、特色农产品" },
+            { name: "梧州产业带", desc: "人工宝石、特色农产品、再生资源" },
+            { name: "贵港产业带", desc: "木材家居、造纸、服装、电动两轮车、中药材" },
+            { name: "玉林产业带", desc: "竹木草制品、中药材和香料产业、陶瓷、铁锅" },
+            { name: "柳州产业带", desc: "汽车零部件、螺蛳粉、工程机械、林木及轻工" },
+            { name: "崇左产业带", desc: "特色农产品(甘蔗、桑蚕、西瓜、芒果)、机电产品" }
+          ]
+        },
+        {
+          province: "陕西省",
+          belts: [
+            { name: "铜川产业带", desc: "耀州瓷、特色农产品" },
+            { name: "商洛产业带", desc: "中药材、特色食品" },
+            { name: "咸阳产业带", desc: "纺织服装、电子与机械设备、特色农产品、文创产品" },
+            { name: "汉中产业带", desc: "特色农产品、中药衍生品、新能源消费品" },
+            { name: "榆林产业带", desc: "羊毛制品、文创产品、能源化工、特色食品" },
+            { name: "宝鸡产业带", desc: "钛及钛合金制品、装备制造、特色农产品、汽车零部件" },
+            { name: "渭南产业带", desc: "特色农产品、3D打印、新能源消费品、非遗文创" },
+            { name: "延安产业带", desc: "文创制造、特色食品、新能源消费品" },
+            { name: "西安产业带", desc: "特色农产品、文创产品、3D打印、光伏设备" },
+            { name: "安康产业带", desc: "富硒农业、丝绸织品、魔芋产业" }
+          ]
+        },
+        {
+          province: "贵州省",
+          belts: [
+            { name: "毕节产业带", desc: "特色农产品(苹果、南瓜条、天麻)、纺织服装" },
+            { name: "遵义产业带", desc: "白酒(酱香型)、特色农产品(中药材、茶叶、辣椒)" },
+            { name: "贵阳产业带", desc: "特色农产品(辣椒、茶叶、菌菇)、手工艺品(苗绣、蜡染、刺绣)、汽车零部件" },
+            { name: "六盘水产业带", desc: "食品(刺梨、猕猴桃、辣椒)、电子产品及配件(平板保护壳)、手工艺品(蜡染、刺绣)" },
+            { name: "黔东南产业带", desc: "特色农产品(蓝莓、酸汤、中药材)、轻纺服装" },
+            { name: "铜仁产业带", desc: "特色农产品(茶叶、中药材、食用菌)、新能源电池" },
+            { name: "黔西南产业带", desc: "特色农产品(茶叶、中药材)" },
+            { name: "黔南产业带", desc: "特色农产品(茶叶、刺梨)" },
+            { name: "安顺产业带", desc: "特色农产品(茶叶、金刺梨、中药材)、手工艺品(蜡染、民族服饰)" }
+          ]
+        },
+        {
+          province: "四川省",
+          belts: [
+            { name: "甘孜州产业带", desc: "农产品" },
+            { name: "成都产业带", desc: "鞋靴、电子信息、装备制造及汽车零部件、食品、家具" },
+            { name: "雅安产业带", desc: "农产品" },
+            { name: "阿坝州产业带", desc: "农产品、手工艺品、旅游纪念品" },
+            { name: "绵阳产业带", desc: "电子信息、装备制造及汽车、食品及特色农业" },
+            { name: "广元产业带", desc: "铝基新材料、食品饮料" },
+            { name: "巴中产业带", desc: "农产品" },
+            { name: "南充产业带", desc: "汽车零部件、纺织服装、电子信息" },
+            { name: "德阳产业带", desc: "装备制造、电子信息、中药饮片及食品调料" },
+            { name: "遂宁产业带", desc: "新能源(锂电)、电子信息" },
+            { name: "广安产业带", desc: "电子信息、汽车配件、轻纺服装" },
+            { name: "资阳产业带", desc: "纺织鞋服、口腔医疗器械" },
+            { name: "凉山州产业带", desc: "稀土、制茶、特色农产品" },
+            { name: "宜宾产业带", desc: "装备制造及汽车、白酒、轻工纺织" },
+            { name: "乐山产业带", desc: "特色农业、光伏储能" },
+            { name: "自贡产业带", desc: "彩灯、装备制造、食品饮料" },
+            { name: "达州产业带", desc: "食品加工、电子信息、装备制造、轻纺服饰" },
+            { name: "眉山产业带", desc: "装备制造、食品" },
+            { name: "泸州产业带", desc: "白酒、食品轻纺" },
+            { name: "攀枝花产业带", desc: "钛白粉、机械、光热材料" },
+            { name: "内江产业带", desc: "机械制造、冶金建材" }
+          ]
+        },
+        {
+          province: "云南省",
+          belts: [
+            { name: "怒江产业带", desc: "农产品" },
+            { name: "大理产业带", desc: "高原特色农产品、手工艺品" },
+            { name: "保山产业带", desc: "高原特色农产品、咖啡" },
+            { name: "德宏产业带", desc: "高原特色农产品、天然橡胶及制品、民族工艺品" },
+            { name: "临沧产业带", desc: "农产品、橡胶" },
+            { name: "迪庆产业带", desc: "高原特色农产品" },
+            { name: "昭通产业带", desc: "特色农产品、硅铝" },
+            { name: "普洱产业带", desc: "茶、咖啡" },
+            { name: "丽江产业带", desc: "特色农产品、民族工艺品" },
+            { name: "昆明产业带", desc: "花卉、高原特色食品、药妆及保健品、电子信息制造" },
+            { name: "曲靖产业带", desc: "新能源电池、绿色硅光伏、绿色铝精深加工、不锈钢、特色农产品" },
+            { name: "楚雄产业带", desc: "新能源电池、绿色硅光伏、绿色铝精深加工、不锈钢、特色农产品" },
+            { name: "玉溪产业带", desc: "高原农产品、新能源电池" },
+            { name: "文山产业带", desc: "中药材、铝产业、高原特色农产品" },
+            { name: "红河产业带", desc: "高原特色农产品、有色金属" },
+            { name: "西双版纳产业带", desc: "热带农产品、手工艺品" }
+          ]
+        },
+        {
+          province: "宁夏回族自治区",
+          belts: [
+            { name: "银川产业带", desc: "枸杞、葡萄酒、羊绒织物" },
+            { name: "吴忠产业带", desc: "特色农产品(枸杞、滩羊肉及制品)、羊绒纺织" },
+            { name: "石嘴山产业带", desc: "脱水蔬菜" },
+            { name: "固原产业带", desc: "特色农牧(黄牛肉、马铃薯及冷凉蔬菜)" },
+            { name: "中卫产业带", desc: "特色农产品(枸杞、硒砂瓜、乳制品)" }
+          ]
+        },
+        {
+          province: "西藏自治区",
+          belts: [
+            { name: "阿里产业带", desc: "畜牧(羊绒)、特色农业(青稞、藏药材)、手工艺品(藏族刺绣、手工编织)" },
+            { name: "日喀则产业带", desc: "农牧(青稞、畜牧)" },
+            { name: "那曲产业带", desc: "畜牧(牦牛、冬虫夏草)、特色工艺品(多玛羊毛、藏毯)" },
+            { name: "昌都产业带", desc: "农牧产业及加工品(青稞、牦牛肉、藏香猪、藏鸡、野生菌)、手工艺品(唐卡、金银铜铁工艺、泥塑、木刻)" },
+            { name: "林芝产业带", desc: "高原水果" },
+            { name: "山南产业带", desc: "特色农牧" },
+            { name: "拉萨产业带", desc: "农牧产品(藏红花、青稞制品、牦牛肉干、藏药、藏茶)、手工艺品(藏饰、唐卡、藏香等)" }
+          ]
+        },
+        {
+          province: "山西省",
+          belts: [
+            { name: "晋城产业带", desc: "光机电、特种农业" },
+            { name: "太原产业带", desc: "新能源(光伏、储能)、装备制造、新材料" },
+            { name: "阳泉产业带", desc: "富硒农业、陶瓷" },
+            { name: "朔州产业带", desc: "陶瓷" },
+            { name: "运城产业带", desc: "特色果蔬、玻璃器皿" },
+            { name: "忻州产业带", desc: "杂粮、特色手工艺品" },
+            { name: "长治产业带", desc: "LED光电、新材料" },
+            { name: "大同产业带", desc: "新能源(光伏、储能)、装备制造、新材料" },
+            { name: "晋中产业带", desc: "特色食品(食用菌、红枣)" },
+            { name: "吕梁产业带", desc: "白酒、铝镁锂新材料" },
+            { name: "临汾产业带", desc: "煤炭化工、装备制造、钢铁制品" }
+          ]
+        },
+        {
+          province: "江西省",
+          belts: [
+            { name: "萍乡产业带", desc: "电子信息、工业陶瓷、花炮" },
+            { name: "九江产业带", desc: "纺织" },
+            { name: "吉安产业带", desc: "箱包、陶瓷、香精香料" },
+            { name: "南昌产业带", desc: "食品、轻纺、电子信息、汽车零部件" },
+            { name: "新余产业带", desc: "锂电、夏布" },
+            { name: "景德镇产业带", desc: "家居、纺织服装、电子信息" },
+            { name: "鹰潭产业带", desc: "眼镜、有色金属(铜)" },
+            { name: "赣州产业带", desc: "有色金属及新材料" },
+            { name: "抚州产业带", desc: "新能源汽车及零部件、农产品" },
+            { name: "上饶产业带", desc: "纺织服装、新能源" },
+            { name: "宜春产业带", desc: "锂电新能源、建材家居、食品" }
+          ]
+        },
+        {
+          province: "海南省",
+          belts: [
+            { name: "海口产业带", desc: "热带特色农业(热带水果、海鲜)、旅游产品" },
+            { name: "儋州产业带", desc: "健康食品、热带特色农产品" },
+            { name: "三亚产业带", desc: "热带特色农业、旅游产品" },
+            { name: "陵水产业带", desc: "健康食品、热带特色农产品" }
+          ]
+        },
+        {
+          province: "河北省",
+          belts: [
+            { name: "张家口产业带", desc: "食品" },
+            { name: "承德产业带", desc: "食品、特色工艺品" },
+            { name: "邯郸产业带", desc: "精品钢材、装备制造、食品、家电、五金机电" },
+            { name: "邢台产业带", desc: "羊绒及制品、童车及零部件、宠物食品、机械制造、电线电缆" },
+            { name: "石家庄产业带", desc: "装备制造、家居建材、食品、皮革、纺织服装" },
+            { name: "保定产业带", desc: "纺织、箱包、装备制造、食品" },
+            { name: "秦皇岛产业带", desc: "装备制造、光伏" },
+            { name: "衡水产业带", desc: "纺织服装、光伏新能源" },
+            { name: "沧州产业带", desc: "管道装备、服装服饰、玩具、五金机电" },
+            { name: "唐山产业带", desc: "家居建材、装备制造、食品、钢铁" },
+            { name: "廊坊产业带", desc: "电子信息、装备制造、家具、食品" }
+          ]
+        },
+        {
+          province: "湖北省",
+          belts: [
+            { name: "十堰产业带", desc: "汽车零部件、食品饮料" },
+            { name: "荆门产业带", desc: "磷化产业、新能源与新材料、农产品" },
+            { name: "宜昌产业带", desc: "钢琴乐器、绿色化工、装备制造、特色农业及食品" },
+            { name: "神农架产业带", desc: "中药材、农产品" },
+            { name: "黄冈产业带", desc: "光电信息、特色农产品、医药化工" },
+            { name: "随州产业带", desc: "专用汽车及零部件、风机" },
+            { name: "仙桃产业带", desc: "非织造布、食品加工、纺织服装" },
+            { name: "孝感产业带", desc: "童车、食品加工、光电子信息、纺织服装、纸塑包装、盐磷化工" },
+            { name: "武汉产业带", desc: "汽车及零部件、光电子信息、纺织服装、食品加工、高端装备与先进基础材料" },
+            { name: "鄂州产业带", desc: "光电子、金刚石刀具、特色农业" },
+            { name: "黄石产业带", desc: "冶金新材料、纺织服装、特色农业" },
+            { name: "恩施产业带", desc: "特色农产品、工艺品" },
+            { name: "潜江产业带", desc: "特色农业、户外服装" },
+            { name: "天门产业带", desc: "服装、蔬菜" },
+            { name: "襄阳产业带", desc: "汽车及零部件、装备制造、电子信息、食品加工" },
+            { name: "咸宁产业带", desc: "装备制造、食品、纺织" },
+            { name: "荆州产业带", desc: "纺织服装、特色农产品、装备制造、造纸" }
+          ]
+        },
+        {
+          province: "湖南省",
+          belts: [
+            { name: "张家界产业带", desc: "农产品、手工艺品" },
+            { name: "湘西(吉首)产业带", desc: "农产品、手工艺品" },
+            { name: "衡阳产业带", desc: "输变电装备、钟表、小家电、服装纺织、箱包、童车" },
+            { name: "郴州产业带", desc: "有色金属、电子信息" },
+            { name: "娄底产业带", desc: "文印耗材、体育用品、农机、美发工具" },
+            { name: "邵阳产业带", desc: "发制品、箱包、打火机" },
+            { name: "永州产业带", desc: "食品加工、中药材、电子信息" },
+            { name: "怀化产业带", desc: "箱包皮具、电子信息、竹制品" },
+            { name: "株洲产业带", desc: "陶瓷、硬质合金、服饰" },
+            { name: "益阳产业带", desc: "竹木制品、鞋服、电子信息" },
+            { name: "常德产业带", desc: "装备制造、食品" },
+            { name: "湘潭产业带", desc: "湘莲、槟榔、机电、汽车及零部件" },
+            { name: "岳阳产业带", desc: "装备制造、食品" },
+            { name: "长沙产业带", desc: "医疗器械、汽车及零部件、工程机械、电子信息、烟花爆竹、储能材料、食品加工" }
+          ]
+        },
+        {
+          province: "广东省",
+          belts: [
+            { name: "清远产业带", desc: "纺织服装、家居用品、特色农产品" },
+            { name: "佛山产业带", desc: "智能家电、家具、陶瓷、建材、绿色照明、高端纺织、食品饮料" },
+            { name: "肇庆产业带", desc: "五金、南药" },
+            { name: "云浮产业带", desc: "不锈钢餐厨具、石艺工艺品、特色农产品" },
+            { name: "茂名产业带", desc: "农产品(荔枝、化橘红)、工艺品、服装纺织" },
+            { name: "广州产业带", desc: "纺织服装、箱包皮具、珠宝首饰、美妆日化、食品饮料、灯光音响、汽配" },
+            { name: "惠州产业带", desc: "3C电子信息、服装、家具、鞋业" },
+            { name: "湛江产业带", desc: "小家电、特色农产品" },
+            { name: "汕尾产业带", desc: "金银珠宝首饰、电子信息" },
+            { name: "河源产业带", desc: "电子信息、机械模具、先进材料" },
+            { name: "梅州产业带", desc: "高端陶瓷、机械装备" },
+            { name: "潮州产业带", desc: "陶瓷、食品、不锈钢制品、服装纺织、特色工艺品" },
+            { name: "深圳产业带", desc: "服装、3C电子、黄金珠宝、钟表、家具、内衣、眼镜、医疗器械" },
+            { name: "中山产业带", desc: "灯饰、家电、纺织服装、食品、五金、红木家具" },
+            { name: "汕头产业带", desc: "玩具、服装服饰、美妆、保洁产品、塑料制品" },
+            { name: "揭阳产业带", desc: "五金不锈钢、纺织服装、珠宝玉器、塑料制品、小家电" },
+            { name: "韶关产业带", desc: "装备制造(齿轮、轴承、液压件)、电子信息、新材料" },
+            { name: "东莞产业带", desc: "纺织服装鞋帽、造纸及纸制品、玩具制造、食品饮料、家具制造、黄金珠宝、包装印刷、橡胶和塑料制品" },
+            { name: "珠海产业带", desc: "打印耗材、家电、美妆" },
+            { name: "江门产业带", desc: "摩托车及配件、陈皮、金属制品、造纸和印刷、家电" },
+            { name: "阳江产业带", desc: "五金刀具、塑料家居用品、装备制造" }
+          ]
+        },
+        {
+          province: "福建省",
+          belts: [
+            { name: "厦门产业带", desc: "服装、卫浴、健身器材、食品、电力电器、眼镜" },
+            { name: "宁德产业带", desc: "锂电池、不锈钢、食用菌、合成革、电机电器" },
+            { name: "福州产业带", desc: "纺织化纤、轻工食品、机械制造、冶金、家居日用、家居工艺、注塑拖鞋、茉莉花茶、食用菌" },
+            { name: "南平产业带", desc: "茶、竹" },
+            { name: "漳州产业带", desc: "食品、食用菌、石英钟表" },
+            { name: "泉州产业带", desc: "运动鞋服、纺织服装、水暖厨卫、藤铁工艺、陶瓷工艺品、食品" },
+            { name: "三明产业带", desc: "建材" },
+            { name: "龙岩产业带", desc: "有色金属、特色农业" },
+            { name: "莆田产业带", desc: "鞋服、工艺美术、食品" }
+          ]
+        },
+        {
+          province: "浙江省",
+          belts: [
+            { name: "杭州产业带", desc: "时尚服装、纺织、灯具照明、卫浴、鞋业、羽绒、雨伞、球拍、五金工具、制笔、蜂产品" },
+            { name: "金华产业带", desc: "纺织服装、食品制造、五金、家具制造、电子信息、小商品" },
+            { name: "丽水产业带", desc: "滚动功能部件、中医药材" },
+            { name: "舟山产业带", desc: "水产、中医药" },
+            { name: "湖州产业带", desc: "美妆、童装、家具(椅业)" },
+            { name: "嘉兴产业带", desc: "皮革、羊毛衫、经编、蚕丝被、箱包、家居家具、紧固件" },
+            { name: "温州产业带", desc: "电气、鞋业、服装、汽车零部件、泵阀、工艺美术" },
+            { name: "宁波产业带", desc: "家电、服装、五金、户外照明、野营装备、文具" },
+            { name: "绍兴产业带", desc: "黄酒、茶叶、纺织、珍珠、厨具" },
+            { name: "台州产业带", desc: "汽车零部件、塑料、工艺美术、缝制设备" },
+            { name: "衢州产业带", desc: "纸业、油茶、茶叶" }
+          ]
+        },
+        {
+          province: "江苏省",
+          belts: [
+            { name: "徐州产业带", desc: "工程机械、高端纺织、食品及农副产品" },
+            { name: "宿迁产业带", desc: "花卉苗木、家具家居、白酒、纺织服装" },
+            { name: "盐城产业带", desc: "新能源、汽车零部件、轻工纺织、机械设备" },
+            { name: "镇江产业带", desc: "眼镜、五金工具、汽配、户外用品、雪地靴" },
+            { name: "扬州产业带", desc: "酒店用品、毛绒玩具、汽配、灯具" },
+            { name: "连云港产业带", desc: "水晶、海产品、主题服饰" },
+            { name: "淮安产业带", desc: "酒店布草及家居用品、户外运动用品、服饰配件、食品及餐厨用品、竹木草制品" },
+            { name: "南京产业带", desc: "智能制造、户外用品、电子工具、纺织服装、汽车及零部件、电子信息" },
+            { name: "泰州产业带", desc: "汽配、木制乐器、纺织箱包、机电机械、不锈钢制品、食品保健" },
+            { name: "无锡产业带", desc: "纺织服装、紫砂陶瓷、宠物用品、电动车、汽车零部件、高端精密制造" },
+            { name: "南通产业带", desc: "智能制造、户外用品、电子工具、纺织服装、汽车及零部件、电子信息" },
+            { name: "常州产业带", desc: "新能源、汽车零部件、纺织服装、家电、机械设备、工具、建材家居、旅游用品" },
+            { name: "苏州产业带", desc: "电子信息、装备制造、纺织服装、孕童小家电、家居办公、光伏新能源、塑胶机械、汽车配件配饰、婚纱礼服" }
+          ]
+        },
+        {
+          province: "安徽省",
+          belts: [
+            { name: "安庆产业带", desc: "刷业、羽绒家纺" },
+            { name: "淮北产业带", desc: "铝基材料、绿色食品" },
+            { name: "巢湖产业带", desc: "特色农产品、轻工制造" },
+            { name: "芜湖产业带", desc: "汽车零部件、电子电器、电线电缆" },
+            { name: "六安产业带", desc: "婚纱、家电、家居、装备制造" },
+            { name: "淮南产业带", desc: "汽车零部件、装备制造、绿色食品" },
+            { name: "亳州产业带", desc: "中药材、白酒及保健酒、轻纺服饰" },
+            { name: "阜阳产业带", desc: "柳编工艺品、木制工艺品、3C电子" },
+            { name: "合肥产业带", desc: "装备制造、新能源汽车及零部件、光伏及新能源" },
+            { name: "蚌埠产业带", desc: "玻璃新材料、装备制造、汽车零部件、纺织服装" },
+            { name: "滁州产业带", desc: "家电、光伏新能源、硅基材料、健康食品" },
+            { name: "宣城产业带", desc: "汽车零部件、服饰、光伏新能源" },
+            { name: "宿州产业带", desc: "轻纺鞋服、家居、特色农产品" },
+            { name: "马鞍山产业带", desc: "机床机械、汽车零部件" },
+            { name: "铜陵产业带", desc: "铜基新材料、精细化工、纺织" },
+            { name: "黄山产业带", desc: "文旅创意产品、特色农产品" },
+            { name: "池州产业带", desc: "竹产业、绿色食品、装备制造、金属与非金属材料" }
+          ]
+        },
+        {
+          province: "河南省",
+          belts: [
+            { name: "三门峡产业带", desc: "黄金、食用菌" },
+            { name: "濮阳产业带", desc: "羽绒、家居" },
+            { name: "鹤壁产业带", desc: "汽车电子、食品" },
+            { name: "焦作产业带", desc: "食品、汽车零部件" },
+            { name: "新乡产业带", desc: "装备制造、食品、轻纺" },
+            { name: "洛阳产业带", desc: "装备制造、钢制家具、食品" },
+            { name: "南阳产业带", desc: "食用菌、中药材、装备制造、月季" },
+            { name: "安阳产业带", desc: "钢制品加工、食品、针织服装" },
+            { name: "周口产业带", desc: "调味品、纺织服装、锅炉" },
+            { name: "商丘产业带", desc: "装备制造、纺织服装制鞋、食品" },
+            { name: "驻马店产业带", desc: "食品、装备制造、提琴、户外用品" },
+            { name: "郑州产业带", desc: "电子信息、装备制造、食品" },
+            { name: "济源产业带", desc: "有色金属" },
+            { name: "平顶山产业带", desc: "尼龙、储能" },
+            { name: "信阳产业带", desc: "茶叶、纺织" },
+            { name: "漯河产业带", desc: "食品、宠物用品" },
+            { name: "开封产业带", desc: "流量计、食品、家居" },
+            { name: "许昌产业带", desc: "电力装备、发制品、金刚石、蜂产品及蜂机具、卫浴、建筑机械、腐竹及食用菌、社火道具" }
+          ]
+        },
+        {
+          province: "黑龙江省",
+          belts: [
+            { name: "黑河产业带", desc: "机电、农产品" },
+            { name: "大兴安岭产业带", desc: "食品(黑木耳等菌类)、中药材" },
+            { name: "齐齐哈尔产业带", desc: "机械装备、冰雪装备" },
+            { name: "大庆产业带", desc: "农产品及特色食品、能源材料及加工产品" },
+            { name: "牡丹江产业带", desc: "林木木纸、装备制造" },
+            { name: "双鸭山产业带", desc: "农产品" },
+            { name: "鸡西产业带", desc: "食品" },
+            { name: "绥化产业带", desc: "食品" },
+            { name: "伊春产业带", desc: "食品、北药" },
+            { name: "佳木斯产业带", desc: "农机、口腔医疗" },
+            { name: "七台河产业带", desc: "石墨烯" },
+            { name: "鹤岗产业带", desc: "石墨、金属加工" },
+            { name: "哈尔滨产业带", desc: "绿色农产品、机械装备、冰雪装备" }
+          ]
+        },
+        {
+          province: "山东省",
+          belts: [
+            { name: "滨州产业带", desc: "绳网、商用厨具、铝制品、纺织服装" },
+            { name: "德州产业带", desc: "高端装备、纺织服装、食品加工" },
+            { name: "聊城产业带", desc: "轴承、宠物用品、农副产品、纺织服装" },
+            { name: "济南产业带", desc: "纺织服装、汽车配件、小家电、雕刻机" },
+            { name: "泰安产业带", desc: "装备制造、纺织服装" },
+            { name: "济宁产业带", desc: "冰雪运动服饰、机械设备、造纸" },
+            { name: "潍坊产业带", desc: "农产品及食品加工产业、农业机械、吉他、手套、木制家具" },
+            { name: "淄博产业带", desc: "汽车配件、机电类、玻璃制品" },
+            { name: "东营产业带", desc: "橡胶轮胎、石油装备、精密铸造" },
+            { name: "烟台产业带", desc: "农产品及食品、汽车汽配" },
+            { name: "菏泽产业带", desc: "木制品、发制品" },
+            { name: "枣庄产业带", desc: "机械、石榴" },
+            { name: "威海产业带", desc: "渔具、户外运动用品" },
+            { name: "日照产业带", desc: "五金工具、体育用品、健身器材" },
+            { name: "临沂产业带", desc: "木业、食品产业、机械、柳编" },
+            { name: "青岛产业带", desc: "假发、家电、纺织服装、汽车配件、美妆、草编、玻璃" }
+          ]
+        },
+        {
+          province: "吉林省",
+          belts: [
+            { name: "辽源产业带", desc: "林业纺织、汽车零部件、合成材料" },
+            { name: "延边产业带", desc: "人参、特色农业" },
+            { name: "白山产业带", desc: "人参、食品" },
+            { name: "通化产业带", desc: "人参、装备制造" },
+            { name: "吉林产业带", desc: "碳纤维材料、冰雪装备、手工制品、特色农产品(人参)" },
+            { name: "长春产业带", desc: "汽车零部件、光电信息、农产品(人参)" },
+            { name: "松原产业带", desc: "农产品加工、装备制造" },
+            { name: "白城产业带", desc: "农产品及加工产品" },
+            { name: "四平产业带", desc: "农产品、装备制造" }
+          ]
+        },
+        {
+          province: "辽宁省",
+          belts: [
+            { name: "阜新产业带", desc: "玛瑙工艺品、装备制造、农产品" },
+            { name: "沈阳产业带", desc: "装备制造、汽车零部件、食品、医疗器械、电子信息" },
+            { name: "铁岭产业带", desc: "橡胶密封件、特色农牧" },
+            { name: "抚顺产业带", desc: "运动机械、装备制造、石油化工" },
+            { name: "大连产业带", desc: "纺织服装、轴承机床及机械设备、木制品" },
+            { name: "辽阳产业带", desc: "特色农产品(大米、虫草)、钢铁制品" },
+            { name: "鞍山产业带", desc: "钢铁制品、服装、菱镁、装备制造、箱包" },
+            { name: "丹东产业带", desc: "特色农产品(草莓)、水产品、纺织服装" },
+            { name: "锦州产业带", desc: "石英、汽车零部件" },
+            { name: "葫芦岛产业带", desc: "泳装、农产品" },
+            { name: "营口产业带", desc: "线材材料、乐器、汽保设备" },
+            { name: "盘锦产业带", desc: "粮食、塑料制品、轻工建材" },
+            { name: "本溪产业带", desc: "钢铁制品、人参" }
+          ]
+        },
+        {
+          province: "内蒙古自治区",
+          belts: [
+            { name: "包头产业带", desc: "稀土材料、新材料、铝制品" },
+            { name: "兴安产业带", desc: "果蔬加工(沙果干、蓝莓干)、农畜产品(牛羊肉、玉米)" },
+            { name: "阿拉善产业带", desc: "农畜产品(牛羊肉、骆驼肉制品)、盐化工" },
+            { name: "乌海产业带", desc: "煤化工、新材料(工程塑料)、锂电池、氯碱制品" },
+            { name: "通辽产业带", desc: "农畜产品(玉米、牛肉干)、中药材(黄芪)" },
+            { name: "呼和浩特产业带", desc: "乳制品、羊绒制品、光伏组件与储能设备" },
+            { name: "乌兰察布产业带", desc: "钽合金、新材料" },
+            { name: "巴彦淖尔产业带", desc: "农畜产品(葵花籽、驼奶粉)" },
+            { name: "呼伦贝尔产业带", desc: "农畜产品(牛羊肉、奶制品)、特色农产品(黑木耳、中草药)" },
+            { name: "赤峰产业带", desc: "服装、针纺、有色金属、农畜产品(荞麦花、驼奶粉)" },
+            { name: "鄂尔多斯产业带", desc: "羊绒制品、新材料(石墨烯、碳纤维)" }
+          ]
+        },
+        {
+          province: "上海市",
+          belts: [
+            { name: "电子信息产业带", desc: "分布地区: 浦东、松江、奉贤" },
+            { name: "汽车及零部件产业带", desc: "分布地区: 嘉定、浦东" },
+            { name: "服装服饰产业带", desc: "分布地区: 普陀、虹口、青浦" },
+            { name: "美妆个护产业带", desc: "分布地区: 奉贤" },
+            { name: "工艺品产业带", desc: "分布地区: 松江、闵行" },
+            { name: "医疗器械产业带", desc: "分布地区: 浦东、嘉定" }
+          ]
+        },
+        {
+          province: "重庆市",
+          belts: [
+            { name: "汽摩及零部件产业带", desc: "分布地区: 两江新区、渝北区、九龙坡、江津" },
+            { name: "五金工具产业带", desc: "分布地区: 大足" },
+            { name: "电器设备产业带", desc: "分布地区: 两江新区、重庆高新区" }
+          ]
+        },
+        {
+          province: "北京市",
+          belts: [
+            { name: "医疗器械产业带", desc: "分布地区: 大兴、昌平" },
+            { name: "集成电路产业带", desc: "分布地区: 海淀、大兴、朝阳" },
+            { name: "装备制造产业带", desc: "分布地区: 亦庄新区" },
+            { name: "汽车零部件产业带", desc: "分布地区: 顺义、亦庄、昌平、大兴" }
+          ]
+        },
+        {
+          province: "天津市",
+          belts: [
+            { name: "自行车产业带", desc: "分布地区: 静海、武清" },
+            { name: "地毯产业带", desc: "分布地区: 武清" },
+            { name: "汽车零部件产业带", desc: "分布地区: 滨海新区、武清" },
+            { name: "电子信息产业带", desc: "分布地区: 滨海新区" }
+          ]
+        }
+      ];
+
+      const tagRules = [
+        { tag: "农牧", keywords: ["农产品", "农特产", "农副", "特色农业", "特色农产品", "高原特色农产品", "高原农产品", "热带农产品", "农牧", "畜牧", "生态畜牧", "特色农牧", "农牧产品", "农牧产业", "农产品及食品", "农产品及加工品"] },
+        { tag: "食品饮料", keywords: ["食品", "食品饮料", "食品加工", "特色食品", "肉类", "调味品", "牛肉面", "螺蛳粉", "饮料"] },
+        { tag: "酒类", keywords: ["葡萄酒", "白酒", "酿酒", "酒"] },
+        { tag: "中药材", keywords: ["中药材", "藏药", "药妆", "保健品", "药"] },
+        { tag: "手工艺", keywords: ["手工艺", "刺绣", "蜡染", "唐卡", "编织", "泥塑", "剪纸", "民族服饰", "工艺品", "彩灯"] },
+        { tag: "纺织服装", keywords: ["纺织", "服装", "鞋靴", "羊绒", "丝绸", "织物", "轻纺", "鞋服"] },
+        { tag: "装备制造", keywords: ["装备制造", "机械", "机电", "设备", "工程机械", "轴承", "水泵", "电工电器"] },
+        { tag: "电子信息", keywords: ["电子信息", "电子产品", "电子与机械设备", "电子信息制造"] },
+        { tag: "新能源", keywords: ["新能源", "光伏", "储能", "锂电", "光热"] },
+        { tag: "新材料", keywords: ["新材料", "硅", "铝", "钛", "稀土", "有色金属", "钢铁", "金属", "建材", "碳酸钙"] },
+        { tag: "文创", keywords: ["文创", "非遗", "旅游纪念品"] },
+        { tag: "汽车", keywords: ["汽车", "汽车零部件", "汽车配件", "电动两轮车"] },
+        { tag: "家居轻工", keywords: ["家具", "家居", "轻工", "造纸", "竹木草", "木材", "林木"] },
+        { tag: "陶瓷", keywords: ["陶瓷", "瓷"] },
+        { tag: "渔业", keywords: ["渔业", "冷水鱼"] }
+      ];
+
+      const keywordInput = document.getElementById("keywordInput");
+      const regionSelect = document.getElementById("regionSelect");
+      const provinceSelect = document.getElementById("provinceSelect");
+      const tagSelect = document.getElementById("tagSelect");
+      const citySelect = document.getElementById("citySelect");
+      const resetBtn = document.getElementById("resetBtn");
+      const listSection = document.getElementById("listSection");
+      const beltCount = document.getElementById("beltCount");
+      const provinceCount = document.getElementById("provinceCount");
+      const activeCount = document.getElementById("activeCount");
+
+      const allBelts = rawData.flatMap((item) => item.belts.map((belt) => ({ ...belt, province: item.province })));
+
+      const regionMap = {
+        华北: ["北京市", "天津市", "河北省", "山西省", "内蒙古自治区"],
+        华东: ["上海市", "江苏省", "浙江省", "安徽省", "福建省", "江西省", "山东省"],
+        华南: ["广东省", "广西壮族自治区", "海南省"],
+        华中: ["河南省", "湖北省", "湖南省"],
+        西南: ["重庆市", "四川省", "贵州省", "云南省", "西藏自治区"],
+        西北: ["陕西省", "甘肃省", "青海省", "宁夏回族自治区", "新疆维吾尔自治区"],
+        东北: ["辽宁省", "吉林省", "黑龙江省"]
+      };
+
+      const provinceToRegion = Object.entries(regionMap).reduce((acc, [region, provinces]) => {
+        provinces.forEach((province) => {
+          acc[province] = region;
+        });
+        return acc;
+      }, {});
+
+      const deriveTags = (text) => {
+        const hit = new Set();
+        tagRules.forEach((rule) => {
+          if (rule.keywords.some((kw) => text.includes(kw))) {
+            hit.add(rule.tag);
+          }
+        });
+        return Array.from(hit);
+      };
+
+      const buildSelectOptions = () => {
+        regionSelect.innerHTML = "";
+        provinceSelect.innerHTML = "";
+        tagSelect.innerHTML = "";
+        citySelect.innerHTML = "";
+        const regionOption = document.createElement("option");
+        regionOption.value = "";
+        regionOption.textContent = "全部大区";
+        regionSelect.appendChild(regionOption);
+        Object.keys(regionMap).forEach((region) => {
+          const opt = document.createElement("option");
+          opt.value = region;
+          opt.textContent = region;
+          regionSelect.appendChild(opt);
+        });
+        const provinceOption = document.createElement("option");
+        provinceOption.value = "";
+        provinceOption.textContent = "全部省份/自治区";
+        provinceSelect.appendChild(provinceOption);
+        rawData.forEach((item) => {
+          const opt = document.createElement("option");
+          opt.value = item.province;
+          opt.textContent = item.province;
+          provinceSelect.appendChild(opt);
+        });
+        const tagOption = document.createElement("option");
+        tagOption.value = "";
+        tagOption.textContent = "全部产业类型";
+        tagSelect.appendChild(tagOption);
+        tagRules.forEach((rule) => {
+          const opt = document.createElement("option");
+          opt.value = rule.tag;
+          opt.textContent = rule.tag;
+          tagSelect.appendChild(opt);
+        });
+        const cityOption = document.createElement("option");
+        cityOption.value = "";
+        cityOption.textContent = "全部产业带";
+        citySelect.appendChild(cityOption);
+        const cityNames = Array.from(new Set(allBelts.map((belt) => belt.name))).sort((a, b) => a.localeCompare(b, "zh-CN"));
+        cityNames.forEach((name) => {
+          const opt = document.createElement("option");
+          opt.value = name;
+          opt.textContent = name;
+          citySelect.appendChild(opt);
+        });
+      };
+
+      const highlightText = (text, keyword) => {
+        if (!keyword) {
+          return text;
+        }
+        const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        return text.replace(new RegExp(escaped, "gi"), (match) => `<span class="highlight">${match}</span>`);
+      };
+
+      const render = () => {
+        const keyword = keywordInput.value.trim();
+        const regionFilter = regionSelect.value;
+        const provinceFilter = provinceSelect.value;
+        const tagFilter = tagSelect.value;
+        const cityFilter = citySelect.value;
+        let activeItems = 0;
+        listSection.innerHTML = "";
+        const fragments = document.createDocumentFragment();
+        rawData.forEach((province) => {
+          const filteredBelts = province.belts
+            .map((belt) => {
+              const text = `${province.province}${belt.name}${belt.desc}`;
+              const tags = deriveTags(text);
+              return { ...belt, tags, text };
+            })
+            .filter((belt) => {
+              const hitKeyword = keyword === "" || belt.text.includes(keyword);
+              const hitRegion = regionFilter === "" || provinceToRegion[province.province] === regionFilter;
+              const hitProvince = provinceFilter === "" || province.province === provinceFilter;
+              const hitTag = tagFilter === "" || belt.tags.includes(tagFilter);
+              const hitCity = cityFilter === "" || belt.name === cityFilter;
+              return hitKeyword && hitRegion && hitProvince && hitTag && hitCity;
+            });
+          if (filteredBelts.length === 0) {
+            return;
+          }
+          activeItems += filteredBelts.length;
+          const card = document.createElement("div");
+          card.className = "province-card";
+          const head = document.createElement("div");
+          head.className = "province-head";
+          const info = document.createElement("div");
+          info.className = "province-info";
+          const pill = document.createElement("div");
+          pill.className = "province-pill";
+          pill.textContent = province.province;
+          const meta = document.createElement("div");
+          meta.className = "province-meta";
+          meta.textContent = `共 ${filteredBelts.length} 个产业带`;
+          info.appendChild(pill);
+          info.appendChild(meta);
+          const back = document.createElement("a");
+          back.className = "back-link";
+          back.href = "#filterBar";
+          back.textContent = "回到筛选";
+          head.appendChild(info);
+          head.appendChild(back);
+          const grid = document.createElement("div");
+          grid.className = "belt-grid";
+          filteredBelts.forEach((belt) => {
+            const item = document.createElement("div");
+            item.className = "belt-item";
+            const title = document.createElement("div");
+            title.className = "belt-title";
+            title.innerHTML = highlightText(belt.name, keyword);
+            const desc = document.createElement("div");
+            desc.className = "belt-desc";
+            desc.innerHTML = highlightText(belt.desc, keyword);
+            const tagWrap = document.createElement("div");
+            tagWrap.className = "tags";
+            belt.tags.forEach((tag) => {
+              const tagNode = document.createElement("span");
+              tagNode.className = "tag";
+              tagNode.textContent = tag;
+              tagWrap.appendChild(tagNode);
+            });
+            item.appendChild(title);
+            item.appendChild(desc);
+            if (belt.tags.length > 0) {
+              item.appendChild(tagWrap);
+            }
+            grid.appendChild(item);
+          });
+          card.appendChild(head);
+          card.appendChild(grid);
+          fragments.appendChild(card);
+        });
+        if (activeItems === 0) {
+          const empty = document.createElement("div");
+          empty.className = "empty";
+          empty.textContent = "未找到匹配的产业带，请尝试调整筛选条件。";
+          listSection.appendChild(empty);
+        } else {
+          listSection.appendChild(fragments);
+        }
+        activeCount.textContent = `${activeItems} 条结果`;
+      };
+
+      const updateStats = () => {
+        beltCount.textContent = `${allBelts.length} 个产业带`;
+        provinceCount.textContent = `${rawData.length} 个省份/自治区`;
+      };
+
+      keywordInput.addEventListener("input", render);
+      regionSelect.addEventListener("change", render);
+      provinceSelect.addEventListener("change", render);
+      tagSelect.addEventListener("change", render);
+      citySelect.addEventListener("change", render);
+      resetBtn.addEventListener("click", () => {
+        keywordInput.value = "";
+        regionSelect.value = "";
+        provinceSelect.value = "";
+        tagSelect.value = "";
+        citySelect.value = "";
+        render();
+      });
+
+      buildSelectOptions();
+      updateStats();
+      render();
+
+      const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+      const closeMobileBtn = document.getElementById("closeMobileBtn");
+      const mobileOverlay = document.getElementById("mobileOverlay");
+      const mobileMenu = document.getElementById("mobileMenu");
+
+      const toggleMobileMenu = () => {
+        const isOpen = mobileMenu.classList.contains("open");
+        if (isOpen) {
+          mobileMenu.classList.remove("open");
+          mobileOverlay.classList.remove("open");
+          document.body.style.overflow = "";
+        } else {
+          mobileMenu.classList.add("open");
+          mobileOverlay.classList.add("open");
+          document.body.style.overflow = "hidden";
+        }
+      };
+
+      if (mobileMenuBtn) mobileMenuBtn.addEventListener("click", toggleMobileMenu);
+      if (closeMobileBtn) closeMobileBtn.addEventListener("click", toggleMobileMenu);
+      if (mobileOverlay) mobileOverlay.addEventListener("click", toggleMobileMenu);
+    </script>
+  </body>
+</html>
