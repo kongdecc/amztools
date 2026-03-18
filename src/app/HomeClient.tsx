@@ -170,7 +170,7 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
               </Link>
               <span className="text-gray-300">|</span>
               <a href="https://amzlink.top/documents" target="_blank" rel="noopener noreferrer" className="text-red-600 hover:text-red-700 flex items-center gap-1 transition-colors">
-                <span>海量免费运营资料免费下载</span>
+                <span>→海量免费运营资料免费下载←</span>
               </a>
             </div>
           </div>
