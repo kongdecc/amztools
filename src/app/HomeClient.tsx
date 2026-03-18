@@ -151,22 +151,28 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
             value={searchKeyword}
             onChange={(e) => setSearchKeyword(e.target.value)}
           />
-          <div className="text-center mt-3 text-sm text-gray-500 font-medium flex items-center justify-center gap-4">
+          <div className="text-center mt-3 text-sm text-gray-500 font-medium flex flex-col items-center justify-center gap-2">
             <span>已经累计上传：<span className="text-indigo-600 font-bold">{modules.filter((m: any) => m.status !== '下架').length}</span> 个工具</span>
-            <Link href="/marketing-calendar.html" target="_blank" prefetch={false} className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors">
-              <span>📅</span>
-              <span className="underline decoration-indigo-300 underline-offset-4 hover:decoration-indigo-600">2026年电商营销日历</span>
-            </Link>
-            <span className="text-gray-300">|</span>
-            <Link href="/marketing-calendar-summary.html" target="_blank" prefetch={false} className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors">
-              <span>📊</span>
-              <span className="underline decoration-indigo-300 underline-offset-4 hover:decoration-indigo-600">2026年亚马逊全球营销日历</span>
-            </Link>
-            <span className="text-gray-300">|</span>
-            <Link href="/china-industry-belts.html" target="_blank" prefetch={false} className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors">
-              <span>🏭</span>
-              <span className="underline decoration-indigo-300 underline-offset-4 hover:decoration-indigo-600">中国产业带</span>
-            </Link>
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              <Link href="/marketing-calendar.html" target="_blank" prefetch={false} className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors">
+                <span>📅</span>
+                <span className="underline decoration-indigo-300 underline-offset-4 hover:decoration-indigo-600">2026年电商营销日历</span>
+              </Link>
+              <span className="text-gray-300">|</span>
+              <Link href="/marketing-calendar-summary.html" target="_blank" prefetch={false} className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors">
+                <span>📊</span>
+                <span className="underline decoration-indigo-300 underline-offset-4 hover:decoration-indigo-600">2026年亚马逊全球营销日历</span>
+              </Link>
+              <span className="text-gray-300">|</span>
+              <Link href="/china-industry-belts.html" target="_blank" prefetch={false} className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors">
+                <span>🏭</span>
+                <span className="underline decoration-indigo-300 underline-offset-4 hover:decoration-indigo-600">中国产业带</span>
+              </Link>
+              <span className="text-gray-300">|</span>
+              <a href="https://amzlink.top/documents" target="_blank" rel="noopener noreferrer" className="text-red-600 hover:text-red-700 flex items-center gap-1 transition-colors">
+                <span>海量免费运营资料免费下载</span>
+              </a>
+            </div>
           </div>
         </div>
       </Card>
