@@ -7,6 +7,15 @@ import path from 'path'
 
 import { DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 
+const BAIDU_ANALYTICS_ID = 'f41283b760f768032fa2b7990826c3c3'
+const BAIDU_ANALYTICS_SCRIPT = `var _hmt = window._hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?${BAIDU_ANALYTICS_ID}";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();`
+
 export async function generateMetadata(): Promise<Metadata> {
   let logoUrl = ''
   let faviconUrl = ''
@@ -131,6 +140,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
           />
         )}
+        <script dangerouslySetInnerHTML={{ __html: BAIDU_ANALYTICS_SCRIPT }} />
         {showAnalytics && analyticsHeadHtml && <div dangerouslySetInnerHTML={{ __html: analyticsHeadHtml }} style={{ display: 'none' }} />}
         {children}
         {showAnalytics && analyticsBodyHtml && <div dangerouslySetInnerHTML={{ __html: analyticsBodyHtml }} />}
