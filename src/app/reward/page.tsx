@@ -3,6 +3,7 @@ import { Metadata } from 'next'
 import { LayoutDashboard, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import RewardImage from '@/components/RewardImage'
+import TopAdBar from '@/components/TopAdBar'
 import { BLOCKED_TOOL_KEYS, DEFAULT_NAV_ITEMS, DEFAULT_TOOLS, DEFAULT_CATEGORIES, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 
 export const revalidate = 0
@@ -191,7 +192,7 @@ export default async function RewardPage() {
             })}
         </nav>
       </header>
-
+      <TopAdBar />
       <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl">
           <div className="p-8 text-center">

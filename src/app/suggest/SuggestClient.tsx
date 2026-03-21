@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSettings } from '@/components/SettingsProvider'
+import TopAdBar from '@/components/TopAdBar'
 import { LayoutDashboard, Send, ChevronDown, MoreHorizontal } from 'lucide-react'
 import { DEFAULT_CATEGORIES, DEFAULT_TOOLS, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 
@@ -158,7 +159,7 @@ export default function SuggestClient({ initialNavItems, modules }: SuggestClien
           </div>
         </div>
       </header>
-
+      <TopAdBar />
       <div className="flex-1">
         <div className="max-w-6xl mx-auto px-8 py-10">
           <nav aria-label="breadcrumb" className="text-xs text-gray-500 mb-4 flex items-center gap-2">

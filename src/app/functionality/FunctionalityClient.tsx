@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { LayoutDashboard, ChevronDown, Search, MoreHorizontal, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Trash2, AlertCircle, CheckCircle, Filter, Image as ImageIcon, Crosshair, Globe, Star, Hammer, ArrowLeftRight, Activity, Users, Box, Warehouse, FileText, Languages, Shuffle } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
+import TopAdBar from '@/components/TopAdBar'
 import { DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 
 const Card = ({ children, className = '', onClick, ...props }: any) => (
@@ -224,6 +225,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
           </div>
         </div>
       </header>
+      <TopAdBar />
       <div className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center mb-12">

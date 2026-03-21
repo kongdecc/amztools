@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { LayoutDashboard, Calculator, Crosshair, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Trash2, AlertCircle, CheckCircle, Filter, Image as ImageIcon, Globe, Star, Hammer, Search, Activity, Users, Box, Warehouse, FileText, Tags } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
+import TopAdBar from '@/components/TopAdBar'
 import { ChevronDown } from 'lucide-react'
 import ToolContainer from '@/components/ToolContainer'
 import { DEFAULT_NAV_ITEMS, DEFAULT_TOOLS, DEFAULT_CATEGORIES, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
@@ -202,6 +203,7 @@ export default function ClientPage({
           })}
         </nav>
       </header>
+      <TopAdBar />
       <main className="flex-1 p-8">
         <div className={key === 'amazon-ads-analyzer' ? "w-full" : "max-w-7xl mx-auto"}>
           {renderTool()}

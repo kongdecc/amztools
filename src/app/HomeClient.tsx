@@ -6,6 +6,7 @@ import { useSettings } from '@/components/SettingsProvider'
 import Head from 'next/head'
 import Link from 'next/link'
 import ToolContainer from '@/components/ToolContainer'
+import TopAdBar from '@/components/TopAdBar'
 import { DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 
 import { useRef } from 'react'
@@ -569,6 +570,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
           </div>
         </div>
       </header>
+      <TopAdBar />
       <div className="flex flex-1">
         {!isFull && (
         <aside className="w-64 bg-white border-r border-gray-200 flex-shrink-0 hidden md:flex flex-col">
