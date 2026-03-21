@@ -295,6 +295,12 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
           <span className="mx-2">|</span>
           <a href="/privacy" className="hover:text-blue-600">隐私说明</a>
         </footer>
+        <div className="mt-2 text-xs text-gray-500">
+          <span>友情链接： </span>
+          <a href="https://amzlink.top/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600">
+            跨境乐趣园
+          </a>
+        </div>
       </div>
     </div>
   )

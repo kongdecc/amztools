@@ -747,27 +747,30 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
           <a href="/privacy" className="hover:text-blue-600">隐私说明</a>
         </footer>
         {(() => {
+          let parsedList: any[] = []
           try {
             const arr = JSON.parse(String(settings.friendLinks || '[]'))
-            const list = Array.isArray(arr) ? arr : []
-            if (list.length === 0) return null
-            return (
-              <div className="mt-2 text-xs text-gray-500">
-                {String(settings.showFriendLinksLabel || 'false') === 'true' && <span>友情链接： </span>}
-                {list
-                  .slice()
-                  .sort((a: any, b: any) => (Number(a.order || 0) - Number(b.order || 0)))
-                  .map((l: any, i: number) => (
-                    <span key={i}>
-                      <a href={l.href || '#'} target={l.isExternal ? '_blank' : '_self'} rel={l.isExternal ? 'noopener noreferrer' : undefined} className="hover:text-blue-600">
-                        {l.label || '友链'}
-                      </a>
-                      {i < list.length - 1 ? ', ' : ''}
-                    </span>
-                  ))}
-              </div>
-            )
-          } catch { return null }
+            parsedList = Array.isArray(arr) ? arr : []
+          } catch {}
+          const fallbackList = [{ label: '跨境乐趣园', href: 'https://amzlink.top/', isExternal: true, order: 0 }]
+          const list = parsedList.length > 0 ? parsedList : fallbackList
+          const showLabel = parsedList.length > 0 ? String(settings.showFriendLinksLabel || 'false') === 'true' : true
+          return (
+            <div className="mt-2 text-xs text-gray-500">
+              {showLabel && <span>友情链接： </span>}
+              {list
+                .slice()
+                .sort((a: any, b: any) => (Number(a.order || 0) - Number(b.order || 0)))
+                .map((l: any, i: number) => (
+                  <span key={i}>
+                    <a href={l.href || '#'} target={l.isExternal ? '_blank' : '_self'} rel={l.isExternal ? 'noopener noreferrer' : undefined} className="hover:text-blue-600">
+                      {l.label || '友链'}
+                    </a>
+                    {i < list.length - 1 ? ', ' : ''}
+                  </span>
+                ))}
+            </div>
+          )
         })()}
       </div>
     </div>
