@@ -337,6 +337,7 @@ const FeeTable = ({ initialSeason, initialVersion }: any) => {
 
 function cmToInch(cm: number) { return cm / 2.54; }
 function gToOz(g: number) { return g / 28.3495; }
+function kgToOz(kg: number) { return kg * 35.27396195; }
 function ozToLb(oz: number) { return oz / 16; }
 function lbToOz(lb: number) { return lb * 16; }
 function round2(x: number) { return Math.round(x * 100) / 100; }
@@ -816,6 +817,7 @@ export default function FBACalculatorPage() {
 
     let actualWeightOz = parseFloat(inputs.actualWeight) || 0;
     if (inputs.weightUnit === 'g') actualWeightOz = gToOz(actualWeightOz);
+    if (inputs.weightUnit === 'kg') actualWeightOz = kgToOz(actualWeightOz);
     if (inputs.weightUnit === 'lb') actualWeightOz = lbToOz(actualWeightOz);
 
     const getVolumeWeight = (l: number, w: number, h: number) => {
@@ -1042,6 +1044,7 @@ export default function FBACalculatorPage() {
     if (inputs.heightUnit === 'cm') h = cmToInch(h);
     let actualWeightOz = parseFloat(inputs.actualWeight) || 0;
     if (inputs.weightUnit === 'g') actualWeightOz = gToOz(actualWeightOz);
+    if (inputs.weightUnit === 'kg') actualWeightOz = kgToOz(actualWeightOz);
     if (inputs.weightUnit === 'lb') actualWeightOz = lbToOz(actualWeightOz);
     const getVolumeWeight = (l: number, w: number, h: number) => { let volumeLb = (l * w * h) / 139; return Math.max(0, volumeLb); };
     let volumeWeightOz = getVolumeWeight(l, w, h) * 16;
@@ -1143,6 +1146,7 @@ export default function FBACalculatorPage() {
       if (loaded.heightUnit === 'cm') h = cmToInch(h);
       let actualWeightOz = parseFloat(loaded.actualWeight) || 0;
       if (loaded.weightUnit === 'g') actualWeightOz = gToOz(actualWeightOz);
+      if (loaded.weightUnit === 'kg') actualWeightOz = kgToOz(actualWeightOz);
       if (loaded.weightUnit === 'lb') actualWeightOz = lbToOz(actualWeightOz);
       const getVolumeWeight = (l: number, w: number, h: number) => { let volumeLb = (l * w * h) / 139; return Math.max(0, volumeLb); };
       let volumeWeightOz = getVolumeWeight(l, w, h) * 16;
@@ -1565,7 +1569,7 @@ export default function FBACalculatorPage() {
                    <div className="flex">
                      <Input type="number" value={inputs.actualWeight} onChange={(e:any) => updateInput('actualWeight', e.target.value)} className="rounded-r-none border-r-0" />
                      <select className="bg-gray-100 border border-gray-300 rounded-r-md text-xs px-2 focus:outline-none" value={inputs.weightUnit} onChange={(e:any) => updateInput('weightUnit', e.target.value)}>
-                        <option value="oz">oz</option><option value="g">g</option><option value="lb">lb</option>
+                       <option value="oz">oz</option><option value="g">g</option><option value="kg">kg</option><option value="lb">lb</option>
                      </select>
                    </div>
                   </div>
