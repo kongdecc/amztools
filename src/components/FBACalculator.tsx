@@ -819,9 +819,7 @@ export default function FBACalculatorPage() {
     if (inputs.weightUnit === 'lb') actualWeightOz = lbToOz(actualWeightOz);
 
     const getVolumeWeight = (l: number, w: number, h: number) => {
-      let _w = Math.max(w, 2);
-      let _h = Math.max(h, 2);
-      let volumeLb = (l * _w * _h) / 139;
+      let volumeLb = (l * w * h) / 139;
       return Math.max(0, volumeLb);
     };
 
@@ -1045,7 +1043,7 @@ export default function FBACalculatorPage() {
     let actualWeightOz = parseFloat(inputs.actualWeight) || 0;
     if (inputs.weightUnit === 'g') actualWeightOz = gToOz(actualWeightOz);
     if (inputs.weightUnit === 'lb') actualWeightOz = lbToOz(actualWeightOz);
-    const getVolumeWeight = (l: number, w: number, h: number) => { let _w = Math.max(w, 2); let _h = Math.max(h, 2); let volumeLb = (l * _w * _h) / 139; return Math.max(0, volumeLb); };
+    const getVolumeWeight = (l: number, w: number, h: number) => { let volumeLb = (l * w * h) / 139; return Math.max(0, volumeLb); };
     let volumeWeightOz = getVolumeWeight(l, w, h) * 16;
     const getTier = (l: number, w: number, h: number, shipWeightOz: number) => { const { l: L, w: W, h: H } = sort3(l, w, h); const sum = L + 2 * W + 2 * H; if (shipWeightOz <= 16 && L <= 15 && W <= 12 && H <= 0.75) return "小号标准尺寸"; if (shipWeightOz <= 320 && L <= 18 && W <= 14 && H <= 8) return "大号标准尺寸"; const weightLb = shipWeightOz / 16; if (weightLb > 150 || L > 108 || sum > 165) return "超大件"; if (weightLb <= 70 && L <= 60 && W <= 30 && sum <= 130) return "小号大件"; if (weightLb <= 50 && L <= 108 && sum <= 165) return "大号大件"; return "超大件"; };
     let tierTemp = getTier(l, w, h, actualWeightOz);
@@ -1146,7 +1144,7 @@ export default function FBACalculatorPage() {
       let actualWeightOz = parseFloat(loaded.actualWeight) || 0;
       if (loaded.weightUnit === 'g') actualWeightOz = gToOz(actualWeightOz);
       if (loaded.weightUnit === 'lb') actualWeightOz = lbToOz(actualWeightOz);
-      const getVolumeWeight = (l: number, w: number, h: number) => { let _w = Math.max(w, 2); let _h = Math.max(h, 2); let volumeLb = (l * _w * _h) / 139; return Math.max(0, volumeLb); };
+      const getVolumeWeight = (l: number, w: number, h: number) => { let volumeLb = (l * w * h) / 139; return Math.max(0, volumeLb); };
       let volumeWeightOz = getVolumeWeight(l, w, h) * 16;
       const getTier = (l: number, w: number, h: number, shipWeightOz: number) => { const { l: L, w: W, h: H } = sort3(l, w, h); const sum = L + 2 * W + 2 * H; if (shipWeightOz <= 16 && L <= 15 && W <= 12 && H <= 0.75) return "小号标准尺寸"; if (shipWeightOz <= 320 && L <= 18 && W <= 14 && H <= 8) return "大号标准尺寸"; const weightLb = shipWeightOz / 16; if (weightLb > 150 || L > 108 || sum > 165) return "超大件"; if (weightLb <= 70 && L <= 60 && W <= 30 && sum <= 130) return "小号大件"; if (weightLb <= 50 && L <= 108 && sum <= 165) return "大号大件"; return "超大件"; };
       let tierTemp = getTier(l, w, h, actualWeightOz);
