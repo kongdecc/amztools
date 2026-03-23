@@ -2,7 +2,7 @@
 
 const TOP_AD_ENABLED = String(process.env.NEXT_PUBLIC_TOP_AD_ENABLED || 'true') === 'true'
 const TOP_AD_TYPE = String(process.env.NEXT_PUBLIC_TOP_AD_TYPE || 'text').toLowerCase()
-const TOP_AD_TEXT = String(process.env.NEXT_PUBLIC_TOP_AD_TEXT || '亚马逊卖家讨论群日报，海量运营干货资料免费下载，欢迎查看使用。')
+const TOP_AD_TEXT = String(process.env.NEXT_PUBLIC_TOP_AD_TEXT || '跨境乐趣园：亚马逊卖家讨论群日报，海量运营干货资料免费下载，欢迎查看使用。')
 const TOP_AD_IMAGE_URL = String(process.env.NEXT_PUBLIC_TOP_AD_IMAGE_URL || '').trim()
 const TOP_AD_LINK = String(process.env.NEXT_PUBLIC_TOP_AD_LINK || 'https://amzlink.top/').trim()
 

@@ -173,6 +173,10 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
               <a href="https://amzlink.top/documents" target="_blank" rel="noopener noreferrer" className="text-red-600 hover:text-red-700 flex items-center gap-1 transition-colors">
                 <span>→海量免费运营资料免费下载←</span>
               </a>
+              <span className="text-gray-300">|</span>
+              <a href="https://ima.qq.com/wiki/?shareId=0be06fcdaaa028216deccee46181b58d01bd5583fe9d5a4f4f1488aa90002f8c" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors">
+                <span>【ima知识库】跨境乐趣园（亚马逊）</span>
+              </a>
             </div>
           </div>
         </div>
