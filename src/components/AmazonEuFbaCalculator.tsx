@@ -3,6 +3,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { AlertCircle, ExternalLink, Maximize2, Minimize2, RefreshCw } from 'lucide-react'
 
+const TOOL_PATH = '/amazon-eu-fba-calculator.html'
+
 export default function AmazonEuFbaCalculator() {
   const hostRef = useRef<HTMLDivElement | null>(null)
   const [isFullScreen, setIsFullScreen] = useState(false)
@@ -20,7 +22,7 @@ export default function AmazonEuFbaCalculator() {
     setIsReady(false)
     setLoadError('')
     try {
-      const res = await fetch('/Amazon-EU-FBA计算器.html', { cache: 'no-store' })
+      const res = await fetch(TOOL_PATH, { cache: 'no-store' })
       if (!res.ok) throw new Error(`加载失败: HTTP ${res.status}`)
       const htmlText = await res.text()
       const parser = new DOMParser()
@@ -62,7 +64,7 @@ export default function AmazonEuFbaCalculator() {
   }, [])
 
   const openInNewTab = () => {
-    window.open('/Amazon-EU-FBA计算器.html', '_blank', 'noopener,noreferrer')
+    window.open(TOOL_PATH, '_blank', 'noopener,noreferrer')
   }
 
   return (
@@ -97,8 +99,11 @@ export default function AmazonEuFbaCalculator() {
             {loadError}
           </div>
         )}
-        <div style={{ height: frameHeight, minHeight: 760 }} className="w-full">
-          <div ref={hostRef} className="w-full h-full" />
+        <div
+          style={isFullScreen ? { height: frameHeight, minHeight: 760 } : { minHeight: 760 }}
+          className={isFullScreen ? 'w-full overflow-y-auto' : 'w-full'}
+        >
+          <div ref={hostRef} className="w-full" />
         </div>
       </div>
     </div>
