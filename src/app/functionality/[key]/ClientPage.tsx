@@ -35,6 +35,7 @@ export default function ClientPage({
     'word-count': ListOrdered,
     'char-count': BarChart3,
     'delivery': Truck,
+    'amazon-eu-fba-calculator': Truck,
     'returns-v2': Trash2,
     'listing-check': LayoutDashboard,
     'forbidden-words': AlertCircle,

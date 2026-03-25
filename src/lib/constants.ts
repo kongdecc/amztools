@@ -34,6 +34,7 @@ export const DEFAULT_TOOLS = [
   { key: 'amazon-ads-analyzer', title: '亚马逊广告分析工具', desc: '可视化分析亚马逊广告报表，支持多维度KPI分析、散点图趋势和搜索词优化建议', status: '启用', views: 0, color: 'blue', order: 3, category: 'advertising' },
 
   { key: 'delivery', title: '美国站配送费计算', desc: '按2025/2026规则计算配送费用', status: '启用', views: 0, color: 'orange', order: 3, category: 'operation' },
+  { key: 'amazon-eu-fba-calculator', title: 'Amazon EU FBA 费用计算器', desc: '欧洲站配送费/仓储费/弃置退仓/多站点对比的一体化计算', status: '启用', views: 0, color: 'orange', order: 3.1, category: 'operation' },
   { key: 'storage-fee-calc', title: '亚马逊 FBA 全能仓储费计算器', desc: '集成月度仓储费、利用率附加费及超龄库存附加费（含2026新规）', status: '启用', views: 0, color: 'blue', order: 4, category: 'operation' },
   { key: 'returns-v2', title: '退货报告分析V2', desc: '上传退货报告，原因/趋势/仓库/评论多维分析', status: '启用', views: 0, color: 'red', order: 5, category: 'operation' },
   { key: 'forbidden-words', title: '亚马逊文案违禁词检测', desc: '检测亚马逊文案中的违禁词，支持自定义词库和批量替换', status: '启用', views: 0, color: 'red', order: 6, category: 'operation' },
