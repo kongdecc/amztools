@@ -1,20 +1,14 @@
 'use client'
 
-import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { AlertCircle, ExternalLink, Maximize2, Minimize2, RefreshCw } from 'lucide-react'
+import React, { useEffect, useRef, useState } from 'react'
+import { AlertCircle, ExternalLink, RefreshCw } from 'lucide-react'
 
 const TOOL_PATH = '/amazon-eu-fba-calculator.html'
 
 export default function AmazonEuFbaCalculator() {
   const hostRef = useRef<HTMLDivElement | null>(null)
-  const [isFullScreen, setIsFullScreen] = useState(false)
   const [isReady, setIsReady] = useState(false)
   const [loadError, setLoadError] = useState<string>('')
-
-  const frameHeight = useMemo(() => {
-    if (isFullScreen) return 'calc(100vh - 140px)'
-    return 'calc(100vh - 260px)'
-  }, [isFullScreen])
 
   const mountTool = async () => {
     const host = hostRef.current
@@ -39,6 +33,24 @@ export default function AmazonEuFbaCalculator() {
         .tool-root{width:100%}
         .tool-root .container{max-width:none !important;width:100% !important;padding:16px !important;margin:0 !important;}
         .tool-root body{margin:0}
+        .tool-root .tab{
+          border-color:#c7d2fe !important;
+          background:#eef2ff !important;
+          color:#3730a3 !important;
+          transition:all .2s ease !important;
+        }
+        .tool-root .tab:hover{
+          background:#e0e7ff !important;
+          border-color:#a5b4fc !important;
+          color:#312e81 !important;
+          transform:translateY(-1px) !important;
+        }
+        .tool-root .tab[aria-selected="true"]{
+          background:#4f46e5 !important;
+          border-color:#4338ca !important;
+          color:#ffffff !important;
+          box-shadow:0 0 0 3px rgba(79,70,229,.2) !important;
+        }
         @media (max-width:860px){
           .tool-root .container{padding:12px !important;}
         }
@@ -73,16 +85,11 @@ export default function AmazonEuFbaCalculator() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div>
             <h2 className="text-lg md:text-xl font-bold text-gray-800">Amazon EU FBA 费用计算器</h2>
-            <p className="text-sm text-gray-500 mt-1">已去除 iframe，直接在系统页面内渲染并运行原版逻辑</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <button onClick={mountTool} className="px-3 py-2 rounded-lg text-sm font-medium border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2">
               <RefreshCw className="h-4 w-4" />
               刷新工具
-            </button>
-            <button onClick={() => setIsFullScreen(v => !v)} className="px-3 py-2 rounded-lg text-sm font-medium border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2">
-              {isFullScreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-              {isFullScreen ? '退出全屏' : '全屏显示'}
             </button>
             <button onClick={openInNewTab} className="px-3 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-2">
               <ExternalLink className="h-4 w-4" />
@@ -99,10 +106,7 @@ export default function AmazonEuFbaCalculator() {
             {loadError}
           </div>
         )}
-        <div
-          style={isFullScreen ? { height: frameHeight, minHeight: 760 } : { minHeight: 760 }}
-          className={isFullScreen ? 'w-full overflow-y-auto' : 'w-full'}
-        >
+        <div style={{ minHeight: 760 }} className="w-full">
           <div ref={hostRef} className="w-full" />
         </div>
       </div>
