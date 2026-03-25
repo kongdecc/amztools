@@ -59,7 +59,7 @@ const PlaceholderPage = ({ title, icon: Icon }: { title: string; icon: any }) =>
 )
 
 const ToolContainer = memo(({ activeTab }: { activeTab: string }) => {
-  const isFullWidth = activeTab === 'amazon-ads-analyzer' || activeTab === 'amazon-eu-fba-calculator'
+  const isFullWidth = activeTab === 'amazon-ads-analyzer'
   
   const content = (() => {
     switch (activeTab) {
