@@ -341,6 +341,7 @@ function kgToOz(kg: number) { return kg * 35.27396195; }
 function ozToLb(oz: number) { return oz / 16; }
 function lbToOz(lb: number) { return lb * 16; }
 function round2(x: number) { return Math.round(x * 100) / 100; }
+const FUEL_SURCHARGE_RATE = 0.035;
 function getPriceBand(price: number) {
   // If sale price is empty/invalid, default to $10~$50 band to avoid underestimating fees.
   if (!(price > 0)) return 'mid';
@@ -634,6 +635,7 @@ export default function FBACalculatorPage() {
     shipWeightOz: 0,
     fee: 'N/A',
     lithiumUSD: 0,
+    fuelUSD: 0,
     totalShippingFee: 0,
     surchargeSuggest: false,
     amazonPayout: 0,
@@ -905,7 +907,9 @@ export default function FBACalculatorPage() {
     const surchargeSuggest = (tier === '超大件' && weightLb <= 150 && (dims.l > 96 || sum > 130));
     const surchargeUSD = parseFloat(inputs.surchargeUSD) || 0;
     const lithiumUSD = (inputs.productType !== 'danger' && inputs.hasLithium) ? 0.11 : 0;
-    const totalShippingFee = feeNum + surchargeUSD + lithiumUSD;
+    const shippingFeeBase = feeNum + surchargeUSD + lithiumUSD;
+    const fuelUSD = shippingFeeBase * FUEL_SURCHARGE_RATE;
+    const totalShippingFee = shippingFeeBase + fuelUSD;
 
     // 2. Profit Calculation
     const profitPrice = parseFloat(inputs.profitPrice) || 0;
@@ -975,7 +979,8 @@ export default function FBACalculatorPage() {
     // Actually, let's just use `totalShippingFee` for now as the "FBA Fee" in profit calc,
     // and display it. If we want manual override, we'd need a separate "manualFBAFee" state or similar.
     // For simplicity and to match the HTML behavior where it auto-updates:
-    const finalFBAFee = inputs.manualFBAFee !== null ? (parseFloat(inputs.manualFBAFee) || 0) : totalShippingFee;
+    const baseFBAFee = inputs.manualFBAFee !== null ? (parseFloat(inputs.manualFBAFee) || 0) : shippingFeeBase;
+    const finalFBAFee = baseFBAFee + (baseFBAFee * FUEL_SURCHARGE_RATE);
 
     const storageFee = parseFloat(inputs.storageFee) || 0;
     const otherFee = parseFloat(inputs.otherFee) || 0;
@@ -1014,6 +1019,7 @@ export default function FBACalculatorPage() {
       shipWeightOz,
       fee,
       lithiumUSD,
+      fuelUSD,
       totalShippingFee,
       surchargeSuggest,
       amazonPayout,
@@ -1088,7 +1094,8 @@ export default function FBACalculatorPage() {
     let feeNum = pickFee();
     const surchargeUSD = parseFloat(inputs.surchargeUSD) || 0;
     const lithiumUSD = (inputs.productType !== 'danger' && inputs.hasLithium) ? 0.11 : 0;
-    const totalShippingFeeSave = feeNum + surchargeUSD + lithiumUSD;
+    const shippingFeeBaseSave = feeNum + surchargeUSD + lithiumUSD;
+    const totalShippingFeeSave = shippingFeeBaseSave + (shippingFeeBaseSave * FUEL_SURCHARGE_RATE);
     const finalFBAFeeForSave = inputs.manualFBAFee !== null && String(inputs.manualFBAFee).trim() !== ''
       ? (parseFloat(String(inputs.manualFBAFee)) || 0)
       : totalShippingFeeSave;
@@ -1190,7 +1197,8 @@ export default function FBACalculatorPage() {
       let feeNum = pickFee();
       const surchargeUSD = parseFloat(loaded.surchargeUSD) || 0;
       const lithiumUSD = (loaded.productType !== 'danger' && loaded.hasLithium) ? 0.11 : 0;
-      (loaded as any).manualFBAFee = feeNum + surchargeUSD + lithiumUSD;
+      const shippingFeeBaseLoaded = feeNum + surchargeUSD + lithiumUSD;
+      (loaded as any).manualFBAFee = shippingFeeBaseLoaded + (shippingFeeBaseLoaded * FUEL_SURCHARGE_RATE);
     }
     setInputs(loaded);
     setShowHistory(false);
@@ -1644,6 +1652,7 @@ export default function FBACalculatorPage() {
                <div className="flex justify-between"><span>基本配送费:</span> <span className="font-medium">{typeof results.fee === 'number' ? '$'+results.fee.toFixed(2) : results.fee}</span></div>
                {results.lithiumUSD > 0 && <div className="flex justify-between"><span>锂电池费:</span> <span className="font-medium">${results.lithiumUSD.toFixed(2)}</span></div>}
                {parseFloat(inputs.surchargeUSD) > 0 && <div className="flex justify-between"><span>附加费:</span> <span className="font-medium">${parseFloat(inputs.surchargeUSD).toFixed(2)}</span></div>}
+              <div className="flex justify-between"><span>燃油附加费(3.5%):</span> <span className="font-medium">${results.fuelUSD.toFixed(2)}</span></div>
                <div className="border-t border-blue-200 pt-2 mt-2 flex justify-between text-base font-bold text-blue-800">
                  <span>总配送费:</span> <span>${results.totalShippingFee.toFixed(2)}</span>
                </div>

@@ -343,6 +343,7 @@ export default function CpcCalculator() {
         }
       }
       if (m.has_lithium && m.type !== 'danger') fbaFee += 0.11
+      fbaFee = fbaFee * 1.035
     }
 
     // Commission
@@ -594,7 +595,7 @@ export default function CpcCalculator() {
                </div>
                <div className="h-px bg-gray-200 my-1.5"></div>
                <div className="flex justify-between text-xs items-center">
-                 <span className="text-gray-500 flex items-center">FBA 配送费:<TooltipIcon text="基于尺寸分段、重量及当年费率表 (含锂电池等附加费)" /></span>
+                <span className="text-gray-500 flex items-center">FBA 配送费:<TooltipIcon text="基于尺寸分段、重量及当年费率表 (含锂电池费与3.5%燃油附加费)" /></span>
                  <span className="text-blue-600 font-mono font-bold text-sm">${results.m.fba.toFixed(2)}</span>
                </div>
                <div className="flex justify-between text-xs items-center">
