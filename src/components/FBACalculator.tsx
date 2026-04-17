@@ -383,12 +383,12 @@ const feeData: any = {
     non_peak_2026: {
       small_standard: { steps: [2,4,6,8,10,12,14,16], lt10: [2.43,2.49,2.56,2.66,2.77,2.82,2.92,2.95], mid: [3.32,3.42,3.45,3.54,3.68,3.78,3.91,3.96], high: [3.58,3.68,3.71,3.80,3.94,4.04,4.17,4.22] },
       large_standard: { pre3_steps_oz: [4,8,12,16,20,24,28,32,36,40,44,48], lt10_pre3: [2.91,3.13,3.38,3.78,4.22,4.60,4.75,5.00,5.10,5.28,5.44,5.85], mid_pre3: [3.73,3.95,4.20,4.60,5.04,5.42,5.57,5.82,5.92,6.10,6.26,6.67], high_pre3: [3.99,4.21,4.46,4.86,5.30,5.68,5.83,6.08,6.18,6.36,6.52,6.93], post3_base: { lt10: 6.15, mid: 6.97, high: 7.23 }, post3_increment_per_4oz: 0.08 },
-      small_oversize_0_50: { base: { lt10: 6.78, mid: 7.55, high: 7.55 }, per_lb: 0.38 },
-      large_oversize_0_50: { base: { lt10: 8.58, mid: 9.35, high: 9.35 }, per_lb: 0.38 },
-      super_oversize_0_50: { base: { lt10: 25.56, mid: 26.33, high: 26.33 }, per_lb: 0.38 },
-      super_oversize_50_70: { base: { lt10: 36.55, mid: 37.32, high: 37.32 }, start_lb: 50, per_lb: 0.75 },
-      super_oversize_70_150: { base: { lt10: 50.55, mid: 51.32, high: 51.32 }, start_lb: 71, per_lb: 0.75 },
-      super_oversize_gt_150: { base: { lt10: 194.18, mid: 194.95, high: 194.95 }, start_lb: 151, per_lb: 0.19 }
+      small_oversize_0_50: { base: { lt10: 6.69, mid: 7.55, high: 7.55 }, per_lb: 0.38 },
+      large_oversize_0_50: { base: { lt10: 8.49, mid: 9.35, high: 9.35 }, per_lb: 0.38 },
+      super_oversize_0_50: { base: { lt10: 25.47, mid: 26.33, high: 26.33 }, per_lb: 0.38 },
+      super_oversize_50_70: { base: { lt10: 36.46, mid: 37.32, high: 37.32 }, start_lb: 50, per_lb: 0.75 },
+      super_oversize_70_150: { base: { lt10: 50.46, mid: 51.32, high: 51.32 }, start_lb: 71, per_lb: 0.75 },
+      super_oversize_gt_150: { base: { lt10: 194.09, mid: 194.95, high: 194.95 }, start_lb: 151, per_lb: 0.19 }
     },
     peak_2025: {
       small_standard: { steps: [2,4,6,8,10,12,14,16], lt10: [2.48,2.57,2.67,2.76,2.87,2.97,3.05,3.10], mid: [3.25,3.34,3.44,3.53,3.64,3.74,3.82,3.87], high: [3.25,3.34,3.44,3.53,3.64,3.74,3.82,3.87] },
@@ -415,12 +415,12 @@ const feeData: any = {
     non_peak_2026: {
       small_standard: { steps: [2,4,6,8,10,12,14,16], lt10: [2.62,2.64,2.68,2.81,3.00,3.10,3.20,3.30], mid: [3.51,3.54,3.59,3.69,3.91,4.09,4.20,4.25], high: [3.77,3.80,3.85,3.95,4.17,4.35,4.46,4.51] },
       large_standard: { pre3_steps_oz: [4,8,12,16,24,32,40,48], lt10_pre3: [3.48,3.68,3.90,4.35,5.05,5.22,5.32,5.43], mid_pre3: [4.30,4.50,4.72,5.17,5.87,6.04,6.14,6.25], high_pre3: [4.56,4.76,4.98,5.43,6.13,6.30,6.40,6.51], post3_base: { lt10: 6.78, mid: 6.97, high: 7.55 }, post3_increment_per_half_lb: 0.16 },
-      small_oversize_0_50: { base: { lt10: 8.84, mid: 9.61, high: 9.61 }, per_lb: 0.38 },
-      large_oversize_0_50: { base: { lt10: 8.58, mid: 9.35, high: 9.35 }, per_lb: 0.38 },
-      super_oversize_0_50: { base: { lt10: 25.56, mid: 26.33, high: 26.33 }, per_lb: 0.38 },
-      super_oversize_50_70: { base: { lt10: 36.55, mid: 37.32, high: 37.32 }, start_lb: 50, per_lb: 0.75 },
-      super_oversize_70_150: { base: { lt10: 50.55, mid: 51.32, high: 51.32 }, start_lb: 71, per_lb: 0.75 },
-      super_oversize_gt_150: { base: { lt10: 194.18, mid: 194.95, high: 194.95 }, start_lb: 151, per_lb: 0.19 }
+      small_oversize_0_50: { base: { lt10: 8.75, mid: 9.61, high: 9.61 }, per_lb: 0.38 },
+      large_oversize_0_50: { base: { lt10: 8.49, mid: 9.35, high: 9.35 }, per_lb: 0.38 },
+      super_oversize_0_50: { base: { lt10: 25.47, mid: 26.33, high: 26.33 }, per_lb: 0.38 },
+      super_oversize_50_70: { base: { lt10: 36.46, mid: 37.32, high: 37.32 }, start_lb: 50, per_lb: 0.75 },
+      super_oversize_70_150: { base: { lt10: 50.46, mid: 51.32, high: 51.32 }, start_lb: 71, per_lb: 0.75 },
+      super_oversize_gt_150: { base: { lt10: 194.09, mid: 194.95, high: 194.95 }, start_lb: 151, per_lb: 0.19 }
     },
     peak_2025: {
       small_standard: { steps: [2,4,6,8,10,12,14,16], lt10: [2.73,2.73,2.90,2.90,3.22,3.22,3.50,3.50], mid: [3.50,3.50,3.67,3.67,3.99,3.99,4.27,4.27], high: [3.50,3.50,3.67,3.67,3.99,3.99,4.27,4.27] },
@@ -447,12 +447,12 @@ const feeData: any = {
     non_peak_2026: {
       small_standard: { steps: [2,4,6,8,10,12,14,16], lt10: [3.40,3.43,3.48,3.55,3.64,3.65,3.73,3.73], mid: [4.29,4.36,4.37,4.43,4.55,4.61,4.72,4.72], high: [4.55,4.62,4.63,4.69,4.81,4.87,4.98,4.98] },
       large_standard: { pre3_steps_oz: [20,24,28,32,36,40,44,48], lt10_pre3: [4.82,5.20,5.35,5.49,5.56,5.74,5.90,6.31], mid_pre3: [5.64,6.02,6.17,6.31,6.38,6.56,6.72,7.13], high_pre3: [5.90,6.28,6.43,6.57,6.64,6.82,6.98,7.39], post3_base: { lt10: 6.61, mid: 7.43, high: 7.69 }, post3_increment_per_4oz: 0.08 },
-      small_oversize_0_50: { base: { lt10: 7.5, mid: 8.27, high: 8.27 }, per_lb: 0.38 },
-      large_oversize_0_50: { base: { lt10: 9.3, mid: 10.07, high: 10.07 }, per_lb: 0.38 },
-      super_oversize_0_50: { base: { lt10: 27.67, mid: 28.44, high: 28.44 }, per_lb: 0.38 },
-      super_oversize_50_70: { base: { lt10: 39.76, mid: 40.53, high: 40.53 }, start_lb: 50, per_lb: 0.75 },
-      super_oversize_70_150: { base: { lt10: 57.68, mid: 58.45, high: 58.45 }, start_lb: 71, per_lb: 0.75 },
-      super_oversize_gt_150: { base: { lt10: 218.76, mid: 219.53, high: 219.53 }, start_lb: 151, per_lb: 0.19 }
+      small_oversize_0_50: { base: { lt10: 7.41, mid: 8.27, high: 8.27 }, per_lb: 0.38 },
+      large_oversize_0_50: { base: { lt10: 9.21, mid: 10.07, high: 10.07 }, per_lb: 0.38 },
+      super_oversize_0_50: { base: { lt10: 27.58, mid: 28.44, high: 28.44 }, per_lb: 0.38 },
+      super_oversize_50_70: { base: { lt10: 39.67, mid: 40.53, high: 40.53 }, start_lb: 50, per_lb: 0.75 },
+      super_oversize_70_150: { base: { lt10: 57.59, mid: 58.45, high: 58.45 }, start_lb: 71, per_lb: 0.75 },
+      super_oversize_gt_150: { base: { lt10: 218.67, mid: 219.53, high: 219.53 }, start_lb: 151, per_lb: 0.19 }
     },
     peak_2025: {
       small_standard: { steps: [2,4,6,8,10,12,14,16], lt10: [3.60,3.69,3.79,3.88,3.99,4.08,4.16,4.25], mid: [4.37,4.46,4.56,4.65,4.76,4.85,4.93,5.02], high: [4.37,4.46,4.56,4.65,4.76,4.85,4.93,5.02] },
