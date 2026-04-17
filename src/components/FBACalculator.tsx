@@ -341,6 +341,13 @@ function kgToOz(kg: number) { return kg * 35.27396195; }
 function ozToLb(oz: number) { return oz / 16; }
 function lbToOz(lb: number) { return lb * 16; }
 function round2(x: number) { return Math.round(x * 100) / 100; }
+function getPriceBand(price: number) {
+  // If sale price is empty/invalid, default to $10~$50 band to avoid underestimating fees.
+  if (!(price > 0)) return 'mid';
+  if (price < 10) return 'lt10';
+  if (price <= 50) return 'mid';
+  return 'high';
+}
 
 function sort3(a: number, b: number, c: number) {
   let arr = [a, b, c].sort((x, y) => y - x);
@@ -852,7 +859,7 @@ export default function FBACalculatorPage() {
       const dataset = feeData[productType]?.[seasonKey];
       if (!dataset) return 'N/A';
       
-      const band = price < 10 ? 'lt10' : (price <= 50 ? 'mid' : 'high');
+      const band = getPriceBand(price);
       const weightLb = shipWeightOz / 16;
 
       if (tier === '小号标准尺寸') {
@@ -1056,7 +1063,7 @@ export default function FBACalculatorPage() {
     const priceUSD = parseFloat(inputs.priceUSD) || 0;
     const seasonKey = inputs.season === 'peak' ? 'peak_2025' : (inputs.version === '2026' ? 'non_peak_2026' : 'non_peak_2025');
     const dataset = feeData[inputs.productType]?.[seasonKey];
-    const band = priceUSD < 10 ? 'lt10' : (priceUSD <= 50 ? 'mid' : 'high');
+    const band = getPriceBand(priceUSD);
     const weightLb = shipWeightOz / 16;
     const pickFee = () => {
       if (!dataset) return 0;
@@ -1158,7 +1165,7 @@ export default function FBACalculatorPage() {
       const priceUSD = parseFloat(loaded.priceUSD) || 0;
       const seasonKey = loaded.season === 'peak' ? 'peak_2025' : (loaded.version === '2026' ? 'non_peak_2026' : 'non_peak_2025');
       const dataset = feeData[loaded.productType]?.[seasonKey];
-      const band = priceUSD < 10 ? 'lt10' : (priceUSD <= 50 ? 'mid' : 'high');
+      const band = getPriceBand(priceUSD);
       const weightLb = shipWeightOz / 16;
       const pickFee = () => {
         if (!dataset) return 0;

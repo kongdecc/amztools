@@ -321,7 +321,8 @@ export default function CpcCalculator() {
       const table = seasonData[tier]
       
       if (table) {
-        const band = price < 10 ? 'lt10' : 'mid'
+        // If sale price is empty/invalid, default to $10~$50 band to avoid underestimating FBA fee.
+        const band = price > 0 && price < 10 ? 'lt10' : 'mid'
         if (tier === 'ss' || (tier === 'ls' && table.steps)) {
           const steps = table.steps
           const fees = table[band] || table['mid']
