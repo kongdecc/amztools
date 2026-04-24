@@ -3,20 +3,81 @@
   <head>
     <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>亚马逊广告报告分析工具（原型）</title>
+    <title>亚马逊广告报告分析工具</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
     <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+      }
       body {
         font-family: 'Inter', system-ui, sans-serif;
+        background: #f8fafc;
       }
       h1, h2, h3, h4, h5, h6 {
         font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
       }
+      .site-header {
+        height: 56px;
+        background: #5b5bd6;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+        box-sizing: border-box;
+      }
+      .site-brand {
+        font-weight: 700;
+        font-size: 16px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .site-nav {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+      .site-nav a {
+        color: rgba(255, 255, 255, 0.92);
+        text-decoration: none;
+        font-size: 14px;
+      }
+      .site-nav a:hover {
+        color: #fff;
+      }
+      #root {
+        min-height: calc(100vh - 56px);
+      }
+      @media (max-width: 768px) {
+        .site-header {
+          padding: 0 12px;
+        }
+        .site-brand {
+          font-size: 14px;
+          max-width: 48%;
+        }
+        .site-nav {
+          gap: 12px;
+        }
+      }
     </style>
   </head>
   <body>
+    <header class="site-header">
+      <div class="site-brand">跨境工具魔方 AmzToolBox</div>
+      <nav class="site-nav" aria-label="主导航">
+        <a href="/">首页</a>
+        <a href="/functionality">功能分类</a>
+        <a href="/about">关于</a>
+        <a href="/blog">博客</a>
+        <a href="/suggest">提需求</a>
+      </nav>
+    </header>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
