@@ -20,6 +20,15 @@ function summarizeKey(values: string[], fallback: string) {
 export type AggregatedRowDetails = {
   campaignNames: string[];
   adGroupNames: string[];
+  adGroupStats: {
+    campaignName: string;
+    adGroupName: string;
+    impressions: number;
+    clicks: number;
+    spend: number;
+    sales: number;
+    orders: number;
+  }[];
   matchTypes: string[];
   sourceRows: number;
 };
@@ -64,10 +73,12 @@ export function aggregateBySearchTerm(rows: AdRecord[]) {
         acc.clicks += r.clicks;
         acc.spend += r.spend;
         acc.sales += r.sales;
+        acc.directSales += r.directSales;
+        acc.indirectSales += r.indirectSales;
         acc.orders += r.orders;
         return acc;
       },
-      { impressions: 0, clicks: 0, spend: 0, sales: 0, orders: 0 }
+      { impressions: 0, clicks: 0, spend: 0, sales: 0, directSales: 0, indirectSales: 0, orders: 0 }
     );
 
     const campaignNames = Array.from(new Set(bucket.rows.map((r) => r.campaignName.trim()).filter(Boolean))).sort(
@@ -110,6 +121,8 @@ export function aggregateBySearchTerm(rows: AdRecord[]) {
       clicks: sum.clicks,
       spend: sum.spend,
       sales: sum.sales,
+      directSales: sum.directSales,
+      indirectSales: sum.indirectSales,
       orders: sum.orders,
       ctr,
       cpc,
@@ -121,6 +134,33 @@ export function aggregateBySearchTerm(rows: AdRecord[]) {
     detailsById[id] = {
       campaignNames,
       adGroupNames,
+      adGroupStats: Array.from(
+        bucket.rows.reduce((acc, row) => {
+          const campaignName = row.campaignName.trim();
+          const adGroupName = row.adGroupName.trim();
+          if (!adGroupName) return acc;
+          const key = `${campaignName}||${adGroupName}`;
+          const prev =
+            acc.get(key) ?? { campaignName, adGroupName, impressions: 0, clicks: 0, spend: 0, sales: 0, orders: 0 };
+          acc.set(key, {
+            campaignName,
+            adGroupName,
+            impressions: prev.impressions + row.impressions,
+            clicks: prev.clicks + row.clicks,
+            spend: prev.spend + row.spend,
+            sales: prev.sales + row.sales,
+            orders: prev.orders + row.orders,
+          });
+          return acc;
+        }, new Map<string, { campaignName: string; adGroupName: string; impressions: number; clicks: number; spend: number; sales: number; orders: number }>())
+      )
+        .map(([, stats]) => stats)
+        .sort(
+          (a, b) =>
+            b.clicks - a.clicks ||
+            a.campaignName.localeCompare(b.campaignName, "zh-Hans-CN") ||
+            a.adGroupName.localeCompare(b.adGroupName, "zh-Hans-CN")
+        ),
       matchTypes,
       sourceRows: bucket.rows.length,
     };

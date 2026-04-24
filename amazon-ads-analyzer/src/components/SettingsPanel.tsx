@@ -92,30 +92,46 @@ function MultiSelectDropdown({
   selected: string[];
   onChange: (next: string[]) => void;
 }) {
+  const [query, setQuery] = useState("");
   const selectedSet = useMemo(() => new Set(selected), [selected]);
   const summary = selected.length ? `${label}（${selected.length}）` : `${label}（全部）`;
+  const filteredOptions = useMemo(() => {
+    const keyword = query.trim().toLowerCase();
+    if (!keyword) return options;
+    return options.filter((opt) => opt.toLowerCase().includes(keyword));
+  }, [options, query]);
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="justify-between w-full">
+        <Button variant="outline" size="default" className="justify-between w-full">
           <span className="truncate">{summary}</span>
           <ChevronDown className="w-4 h-4 opacity-60" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-[320px] max-h-[420px] overflow-auto">
+      <DropdownMenuContent
+        align="start"
+        className="min-w-[240px] w-[var(--radix-popper-anchor-width)] max-h-[420px] overflow-auto"
+      >
         <DropdownMenuLabel>{label}</DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <div className="px-2 pb-2">
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={`搜索${label}`}
+          />
+        </div>
         <div className="flex gap-2 px-2 pb-2">
           <Button variant="secondary" size="sm" onClick={() => onChange([])}>
             全部
           </Button>
-          <Button variant="outline" size="sm" onClick={() => onChange(options)}>
+          <Button variant="outline" size="sm" onClick={() => onChange(filteredOptions)}>
             全选
           </Button>
         </div>
         <DropdownMenuSeparator />
-        {options.map((opt) => (
+        {filteredOptions.map((opt) => (
           <DropdownMenuCheckboxItem
             key={opt}
             checked={selectedSet.has(opt)}
@@ -127,7 +143,7 @@ function MultiSelectDropdown({
             <span className="truncate">{opt}</span>
           </DropdownMenuCheckboxItem>
         ))}
-        {!options.length ? (
+        {!filteredOptions.length ? (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem disabled>暂无可选项</DropdownMenuItem>
@@ -158,7 +174,19 @@ export function SettingsPanel({ data }: { data: AdRecord[] }) {
           />
         </div>
 
-        <div className="md:col-span-3 space-y-1">
+        <div className="md:col-span-4 space-y-1">
+          <Label>快速筛选（搜索词/ASIN）</Label>
+          <Input
+            value={settings.quickFilter}
+            onChange={(e) => updateSettings({ quickFilter: e.target.value })}
+            placeholder="例如：B0XXXXXXX / usb charger"
+          />
+          <div className="text-[11px] text-muted-foreground">
+            B0 开头按 ASIN 精确匹配，其余按包含匹配
+          </div>
+        </div>
+
+        <div className="md:col-span-4 space-y-1">
           <Label>排除词</Label>
           <Input
             value={settings.excludeTerm}
@@ -386,6 +414,21 @@ export function SettingsPanel({ data }: { data: AdRecord[] }) {
                 <span className="text-sm font-medium text-primary">
                   {settings.targetAcos}%
                 </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Input
+                  className="w-[120px]"
+                  type="number"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={String(settings.targetAcos)}
+                  onChange={(e) => {
+                    const next = Math.max(0, Math.min(100, Math.floor(Number(e.target.value) || 0)));
+                    updateSettings({ targetAcos: next });
+                  }}
+                />
+                <div className="text-xs text-muted-foreground">支持直接输入（0-100）</div>
               </div>
               <Slider
                 value={[settings.targetAcos]}

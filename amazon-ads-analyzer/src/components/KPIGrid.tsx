@@ -14,6 +14,8 @@ import {
 interface KPIGridProps {
   totalSpend: number;
   totalSales: number;
+  directSales: number;
+  indirectSales: number;
   overallAcos: number;
   totalClicks: number;
   totalImpressions: number;
@@ -30,6 +32,8 @@ interface KPIGridProps {
 export function KPIGrid({
   totalSpend,
   totalSales,
+  directSales,
+  indirectSales,
   overallAcos,
   totalClicks,
   totalImpressions,
@@ -44,6 +48,11 @@ export function KPIGrid({
 }: KPIGridProps) {
   const formatMoney = (val: number) => 
     new Intl.NumberFormat('zh-CN', { style: 'currency', currency }).format(val);
+  const safeTotalSales = Number.isFinite(totalSales) ? totalSales : 0;
+  const safeDirectSales = Number.isFinite(directSales) ? directSales : 0;
+  const safeIndirectSales = Number.isFinite(indirectSales) ? indirectSales : 0;
+  const directShare = safeTotalSales > 0 ? safeDirectSales / safeTotalSales : 0;
+  const indirectShare = safeTotalSales > 0 ? safeIndirectSales / safeTotalSales : 0;
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -64,8 +73,30 @@ export function KPIGrid({
           <ShoppingCart className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{formatMoney(totalSales)}</div>
+          <div className="text-2xl font-bold">{formatMoney(safeTotalSales)}</div>
           <p className="text-xs text-muted-foreground">带来销售</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">直接销售额</CardTitle>
+          <ShoppingBag className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{formatMoney(safeDirectSales)}</div>
+          <p className="text-xs text-muted-foreground">占比 {(directShare * 100).toFixed(2)}%</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">间接销售额</CardTitle>
+          <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{formatMoney(safeIndirectSales)}</div>
+          <p className="text-xs text-muted-foreground">占比 {(indirectShare * 100).toFixed(2)}%</p>
         </CardContent>
       </Card>
 

@@ -47,6 +47,7 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useStore } from "@/store";
 import { ArrowDown, ArrowUp, ArrowUpDown, CalendarIcon, ChevronDown, Copy, Download, FilterX, RotateCcw } from "lucide-react";
 import * as XLSX from "xlsx";
@@ -56,6 +57,7 @@ interface DataTableProps {
   targetAcos: number;
   currency: string;
   aggregatedDetailsById?: Record<string, AggregatedRowDetails>;
+  onSearchTermCompare?: (term: string) => void;
 }
 
 type SortKey =
@@ -85,6 +87,15 @@ function getAcosForCompare(row: AdRecord) {
 function getSortValue(row: AdRecord, key: SortKey) {
   if (key === "acos") return getAcosForCompare(row);
   return row[key];
+}
+
+function isAsin(value: string) {
+  const t = value.trim();
+  if (!t) return false;
+  if (/\s/.test(t)) return false;
+  if (!t.toLowerCase().startsWith("b0")) return false;
+  if (/^b0[a-z0-9]{8}$/i.test(t)) return true;
+  return t.length >= 10;
 }
 
 function getPaginationItems(current: number, total: number) {
@@ -238,28 +249,51 @@ function MultiSelectDropdown({
 }) {
   const selectedSet = useMemo(() => new Set(selected), [selected]);
   const summary = selected.length ? `${label}（${selected.length}）` : `${label}（全部）`;
+  const [open, setOpen] = useState(false);
+  const [keyword, setKeyword] = useState("");
+  const filteredOptions = useMemo(() => {
+    const q = keyword.trim().toLowerCase();
+    if (!q) return options;
+    return options.filter((opt) => opt.toLowerCase().includes(q));
+  }, [keyword, options]);
 
   return (
-    <DropdownMenu>
+    <DropdownMenu
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        if (!next) setKeyword("");
+      }}
+    >
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="justify-between w-full">
+        <Button variant="outline" size="default" className="justify-between w-full">
           <span className="truncate">{summary}</span>
           <ChevronDown className="w-4 h-4 opacity-60" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-[320px] max-h-[420px] overflow-auto">
+      <DropdownMenuContent
+        align="start"
+        className="min-w-[240px] w-[var(--radix-popper-anchor-width)] max-h-[420px] overflow-auto"
+      >
         <DropdownMenuLabel>{label}</DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <div className="px-2 pb-2">
+          <Input
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            placeholder={`输入关键词筛选${label}`}
+          />
+        </div>
         <div className="flex gap-2 px-2 pb-2">
           <Button variant="secondary" size="sm" onClick={() => onChange([])}>
             全部
           </Button>
-          <Button variant="outline" size="sm" onClick={() => onChange(options)}>
+          <Button variant="outline" size="sm" onClick={() => onChange(filteredOptions)}>
             全选
           </Button>
         </div>
         <DropdownMenuSeparator />
-        {options.map((opt) => (
+        {filteredOptions.map((opt) => (
           <DropdownMenuCheckboxItem
             key={opt}
             checked={selectedSet.has(opt)}
@@ -271,6 +305,12 @@ function MultiSelectDropdown({
             <span className="truncate">{opt}</span>
           </DropdownMenuCheckboxItem>
         ))}
+        {options.length && !filteredOptions.length ? (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem disabled>无匹配结果</DropdownMenuItem>
+          </>
+        ) : null}
         {!options.length ? (
           <>
             <DropdownMenuSeparator />
@@ -282,18 +322,24 @@ function MultiSelectDropdown({
   );
 }
 
-export function DataTable({ data, targetAcos, currency, aggregatedDetailsById }: DataTableProps) {
-  const { data: rawData, fileName, settings, updateSettings, resetFilters, reset, filtersVersion } = useStore();
+export function DataTable({ data, targetAcos, currency, aggregatedDetailsById, onSearchTermCompare }: DataTableProps) {
+  const { data: rawData, fileName, settings, updateSettings, resetFilters, filtersVersion } = useStore();
   const baseData = useMemo(() => rawData ?? [], [rawData]);
   const [sortKey, setSortKey] = useState<SortKey>("spend");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [pageSize, setPageSize] = useState<number>(50);
+  const [customPageSizeInput, setCustomPageSizeInput] = useState<string>("");
+  const [panelOpen, setPanelOpen] = useState(false);
   const [page, setPage] = useState<number>(1);
   const [filtersOpen, setFiltersOpen] = useState(true);
   const [metricsOpen, setMetricsOpen] = useState(true);
+  const [termScope, setTermScope] = useState<"keywords" | "all" | "asin">("all");
   const [copyFeedback, setCopyFeedback] = useState<{ id: string; ok: boolean } | null>(null);
   const [expandedAgg, setExpandedAgg] = useState<Record<string, boolean>>({});
   const copyFeedbackTimerRef = useRef<number | null>(null);
+  const reportRangeKeyRef = useRef<string | null>(null);
+  const [calendarAnchor, setCalendarAnchor] = useState<{ key: string; month: Date } | null>(null);
+  const [calendarKey, setCalendarKey] = useState(0);
 
   useEffect(() => {
     return () => {
@@ -306,6 +352,38 @@ export function DataTable({ data, targetAcos, currency, aggregatedDetailsById }:
   const campaignOptions = useMemo(() => toUniqueSorted(baseData.map((d) => d.campaignName)), [baseData]);
   const adGroupOptions = useMemo(() => toUniqueSorted(baseData.map((d) => d.adGroupName)), [baseData]);
   const matchTypeOptions = useMemo(() => toUniqueSorted(baseData.map((d) => d.matchType)), [baseData]);
+  const reportDateRange = useMemo(() => {
+    const dates = baseData.map((r) => r.date).filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d));
+    if (!dates.length) return null;
+    const minYmd = dates.reduce((acc, d) => (d < acc ? d : acc), dates[0]);
+    const maxYmd = dates.reduce((acc, d) => (d > acc ? d : acc), dates[0]);
+    return {
+      minYmd,
+      maxYmd,
+      from: new Date(`${minYmd}T00:00:00.000Z`),
+      to: new Date(`${maxYmd}T00:00:00.000Z`),
+    };
+  }, [baseData]);
+  const reportRangeKey = reportDateRange ? `${reportDateRange.minYmd}-${reportDateRange.maxYmd}` : "empty";
+  const calendarDefaultMonth =
+    calendarAnchor?.key === reportRangeKey
+      ? calendarAnchor.month
+      : reportDateRange?.from ?? new Date();
+  const isDateDisabled = (d: Date) => {
+    if (!reportDateRange) return false;
+    const min = reportDateRange.from.getTime();
+    const max = reportDateRange.to.getTime();
+    const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())).getTime();
+    return t < min || t > max;
+  };
+
+  useEffect(() => {
+    if (!reportDateRange) return;
+    const key = `${reportDateRange.minYmd}-${reportDateRange.maxYmd}`;
+    if (reportRangeKeyRef.current === key) return;
+    reportRangeKeyRef.current = key;
+    updateSettings({ dateRange: { from: reportDateRange.from, to: reportDateRange.to } });
+  }, [reportDateRange, updateSettings]);
 
   const money = useMemo(
     () =>
@@ -317,8 +395,14 @@ export function DataTable({ data, targetAcos, currency, aggregatedDetailsById }:
     [currency]
   );
 
+  const tableSource = useMemo(() => {
+    if (termScope === "all") return data;
+    if (termScope === "asin") return data.filter((row) => isAsin(row.searchTerm));
+    return data.filter((row) => !isAsin(row.searchTerm));
+  }, [data, termScope]);
+
   const sortedData = useMemo(() => {
-    const next = [...data];
+    const next = [...tableSource];
     next.sort((a, b) => {
       const av = getSortValue(a, sortKey);
       const bv = getSortValue(b, sortKey);
@@ -330,7 +414,7 @@ export function DataTable({ data, targetAcos, currency, aggregatedDetailsById }:
       return sortDir === "asc" ? cmp : -cmp;
     });
     return next;
-  }, [data, sortDir, sortKey]);
+  }, [sortDir, sortKey, tableSource]);
 
   const effectivePageSize = pageSize === 0 ? Math.max(1, sortedData.length) : pageSize;
   const totalPages = Math.max(1, Math.ceil(sortedData.length / effectivePageSize));
@@ -348,11 +432,72 @@ export function DataTable({ data, targetAcos, currency, aggregatedDetailsById }:
     const end = Math.min(sortedData.length, safePage * effectivePageSize);
     return `${start}-${end} / ${sortedData.length}`;
   }, [effectivePageSize, safePage, sortedData.length]);
+  const hasActiveFilterConditions = useMemo(() => {
+    const hasTextFilter =
+      settings.searchTerm.trim().length > 0 ||
+      settings.quickFilter.trim().length > 0 ||
+      settings.excludeTerm.trim().length > 0;
+    const hasSelectFilter =
+      settings.campaignNames.length > 0 ||
+      settings.adGroupNames.length > 0 ||
+      settings.matchTypes.length > 0 ||
+      settings.conversion !== "全部";
+    const hasRangeFilter =
+      settings.minImpressions !== null ||
+      settings.impressionsMax !== null ||
+      settings.minClicks !== null ||
+      settings.clicksMax !== null ||
+      settings.spendMin !== null ||
+      settings.spendMax !== null ||
+      settings.salesMin !== null ||
+      settings.salesMax !== null ||
+      settings.ordersMin !== null ||
+      settings.ordersMax !== null ||
+      settings.ctrMinPct !== null ||
+      settings.ctrMaxPct !== null ||
+      settings.cpcMin !== null ||
+      settings.cpcMax !== null ||
+      settings.acosMin !== null ||
+      settings.acosMax !== null ||
+      settings.roasMin !== null ||
+      settings.roasMax !== null ||
+      settings.conversionRateMinPct !== null ||
+      settings.conversionRateMaxPct !== null;
+    return hasTextFilter || hasSelectFilter || hasRangeFilter;
+  }, [
+    settings.acosMax,
+    settings.acosMin,
+    settings.adGroupNames,
+    settings.campaignNames,
+    settings.clicksMax,
+    settings.conversion,
+    settings.conversionRateMaxPct,
+    settings.conversionRateMinPct,
+    settings.cpcMax,
+    settings.cpcMin,
+    settings.ctrMaxPct,
+    settings.ctrMinPct,
+    settings.excludeTerm,
+    settings.impressionsMax,
+    settings.matchTypes,
+    settings.minClicks,
+    settings.minImpressions,
+    settings.ordersMax,
+    settings.ordersMin,
+    settings.quickFilter,
+    settings.roasMax,
+    settings.roasMin,
+    settings.salesMax,
+    settings.salesMin,
+    settings.searchTerm,
+    settings.spendMax,
+    settings.spendMin,
+  ]);
 
   const aggregatedSourceRows = useMemo(() => {
     if (!aggregatedDetailsById) return null;
-    return Object.values(aggregatedDetailsById).reduce((acc, d) => acc + d.sourceRows, 0);
-  }, [aggregatedDetailsById]);
+    return tableSource.reduce((acc, row) => acc + (aggregatedDetailsById[row.id]?.sourceRows ?? 0), 0);
+  }, [aggregatedDetailsById, tableSource]);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -381,11 +526,52 @@ export function DataTable({ data, targetAcos, currency, aggregatedDetailsById }:
     setExpandedAgg((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
+  const toYmd = (d: Date) => format(d, "yyyy-MM-dd");
+  const getQuickRange = (days: number) => {
+    if (!reportDateRange) return null;
+    const max = reportDateRange.to.getTime();
+    const min = reportDateRange.from.getTime();
+    const startTime = max - (days - 1) * 24 * 60 * 60 * 1000;
+    return { from: new Date(Math.max(startTime, min)), to: new Date(max) };
+  };
+  const isQuickRangeSelected = (days: number) => {
+    if (!settings.dateRange.from || !settings.dateRange.to) return false;
+    const range = getQuickRange(days);
+    if (!range) return false;
+    return toYmd(range.from) === toYmd(settings.dateRange.from) && toYmd(range.to) === toYmd(settings.dateRange.to);
+  };
+
+  const handleReturnToToday = () => {
+    const today = new Date();
+    setCalendarAnchor({ key: reportRangeKey, month: today });
+    setCalendarKey((k) => k + 1);
+    if (!reportDateRange) {
+      updateSettings({ dateRange: { from: today, to: today } });
+      return;
+    }
+    const t = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())).getTime();
+    const min = reportDateRange.from.getTime();
+    const max = reportDateRange.to.getTime();
+    if (t >= min && t <= max) {
+      updateSettings({ dateRange: { from: today, to: today } });
+    }
+  };
+
+  const handleQuickRange = (days: number) => {
+    const range = getQuickRange(days);
+    if (!range) return;
+    const end = range.to;
+    setCalendarAnchor({ key: reportRangeKey, month: end });
+    setCalendarKey((k) => k + 1);
+    updateSettings({ dateRange: range });
+  };
+
   const renderMultiValueCell = (
     kind: "广告活动" | "广告组" | "匹配类型",
     displayText: string,
     values: string[] | undefined,
-    rowId: string
+    rowId: string,
+    stats?: { campaignName: string; adGroupName: string; clicks: number; orders: number }[]
   ) => {
     if (!isMultiValueLabel(displayText) || !values?.length) return <span className="truncate">{displayText}</span>;
 
@@ -408,13 +594,23 @@ export function DataTable({ data, targetAcos, currency, aggregatedDetailsById }:
                 {values.length} 个 • 点击可展开明细
               </div>
             </div>
-            <div className="flex flex-wrap gap-1">
-              {values.map((v) => (
-                <Badge key={v} variant="secondary">
-                  {v}
-                </Badge>
-              ))}
-            </div>
+            {kind === "广告组" && stats?.length ? (
+              <div className="flex flex-wrap gap-1">
+                {stats.map((item) => (
+                  <Badge key={`${item.campaignName}-${item.adGroupName}`} variant="secondary">
+                    {item.campaignName} / {item.adGroupName} · 点击 {item.clicks.toLocaleString()}
+                  </Badge>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-1">
+                {values.map((v) => (
+                  <Badge key={v} variant="secondary">
+                    {v}
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
         </HoverCardContent>
       </HoverCard>
@@ -422,8 +618,8 @@ export function DataTable({ data, targetAcos, currency, aggregatedDetailsById }:
   };
 
   const handleExport = () => {
-    if (!data.length) return;
-    const rows = data.map((row) => {
+    if (!tableSource.length) return;
+    const rows = tableSource.map((row) => {
       const acosText = row.sales > 0 ? row.acos : row.spend > 0 ? Number.POSITIVE_INFINITY : 0;
       const acosExport =
         row.sales > 0 ? Number(row.acos.toFixed(2)) : row.spend > 0 ? "∞" : Number((0).toFixed(2));
@@ -456,61 +652,216 @@ export function DataTable({ data, targetAcos, currency, aggregatedDetailsById }:
 
   return (
     <Card className="col-span-1 md:col-span-2">
-      <CardHeader>
-        <div className="space-y-3">
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
-            <div className="space-y-1">
-              <CardTitle>{settings.viewMode === "按搜索词汇总" ? "搜索词汇总" : "搜索词明细"}</CardTitle>
-              <div className="text-xs text-muted-foreground">
-                {settings.viewMode === "按搜索词汇总" && aggregatedSourceRows !== null
-                  ? `共 ${baseData.length} 条，筛选后 ${aggregatedSourceRows} 条，汇总 ${data.length} 个 • ${rangeText}`
-                  : `共 ${baseData.length} 条，筛选后 ${data.length} 条 • ${rangeText}`}
+      <Collapsible open={panelOpen} onOpenChange={setPanelOpen}>
+        <CardHeader>
+          <div className="space-y-3">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <CardTitle>{settings.viewMode === "按搜索词汇总" ? "搜索词汇总" : "搜索词明细"}</CardTitle>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="ghost" size="sm" className="gap-1">
+                      {panelOpen ? "收起" : "展开"}
+                      <ChevronDown className={`w-4 h-4 transition-transform ${panelOpen ? "rotate-180" : ""}`} />
+                    </Button>
+                  </CollapsibleTrigger>
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {settings.viewMode === "按搜索词汇总" && aggregatedSourceRows !== null
+                    ? `共 ${baseData.length} 条，筛选后 ${aggregatedSourceRows} 条，汇总 ${tableSource.length} 个 • ${rangeText}`
+                    : `共 ${baseData.length} 条，筛选后 ${tableSource.length} 条 • ${rangeText}`}
+                </div>
               </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">视图</span>
-                <Select
-                  value={settings.viewMode}
-                  onValueChange={(v) => updateSettings({ viewMode: v as typeof settings.viewMode })}
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">视图</span>
+                  <Select
+                    value={settings.viewMode}
+                    onValueChange={(v) => updateSettings({ viewMode: v as typeof settings.viewMode })}
+                  >
+                    <SelectTrigger size="sm" className="w-[180px]">
+                      <SelectValue placeholder="视图" />
+                    </SelectTrigger>
+                    <SelectContent align="end">
+                      <SelectItem value="按搜索词汇总">按搜索词汇总</SelectItem>
+                      <SelectItem value="明细">明细</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Tabs value={termScope} onValueChange={(v) => { setTermScope(v as typeof termScope); setPage(1); }} className="w-full md:w-auto">
+                  <TabsList className="w-full md:w-fit">
+                    <TabsTrigger
+                      value="keywords"
+                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                    >
+                      关键词（不含 ASIN）
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="all"
+                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                    >
+                      搜索词（全部）
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="asin"
+                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                    >
+                      ASIN（仅 B0 开头）
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+                <Button variant="outline" size="sm" className="gap-2" onClick={handleExport} disabled={!tableSource.length}>
+                  <Download className="w-4 h-4" />
+                  导出筛选结果
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  onClick={resetFilters}
+                  disabled={!hasActiveFilterConditions}
                 >
-                  <SelectTrigger size="sm" className="w-[180px]">
-                    <SelectValue placeholder="视图" />
-                  </SelectTrigger>
-                  <SelectContent align="end">
-                    <SelectItem value="按搜索词汇总">按搜索词汇总</SelectItem>
-                    <SelectItem value="明细">明细</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button variant="outline" size="sm" className="gap-2" onClick={handleExport} disabled={!data.length}>
-                <Download className="w-4 h-4" />
-                导出筛选结果
-              </Button>
-              <Button variant="outline" size="sm" className="gap-2" onClick={resetFilters}>
-                <FilterX className="w-4 h-4" />
-                清空筛选
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setFiltersOpen((v) => !v)}>
-                {filtersOpen ? "收起筛选" : "展开筛选"}
-              </Button>
-              <Select value={String(pageSize)} onValueChange={(v) => setPageSize(Number(v))}>
-                <SelectTrigger size="sm" className="w-[140px]">
-                  <SelectValue placeholder="每页条数" />
-                </SelectTrigger>
-                <SelectContent align="end">
-                  <SelectItem value="25">每页 25</SelectItem>
-                  <SelectItem value="50">每页 50</SelectItem>
-                  <SelectItem value="100">每页 100</SelectItem>
-                  <SelectItem value="0">全部</SelectItem>
-                </SelectContent>
-              </Select>
+                  <FilterX className="w-4 h-4" />
+                  清空筛选
+                </Button>
+                <Button variant="outline" size="sm" disabled={!panelOpen} onClick={() => setFiltersOpen((v) => !v)}>
+                  {filtersOpen ? "收起筛选" : "展开筛选"}
+                </Button>
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={String(pageSize)}
+                    onValueChange={(v) => {
+                      setPageSize(Number(v));
+                      setPage(1);
+                      setCustomPageSizeInput("");
+                    }}
+                  >
+                    <SelectTrigger size="sm" className="w-[140px]">
+                      <SelectValue placeholder="每页条数" />
+                    </SelectTrigger>
+                    <SelectContent align="end">
+                      {[25, 50, 100, 0].includes(pageSize) ? null : (
+                        <SelectItem value={String(pageSize)}>每页 {pageSize}</SelectItem>
+                      )}
+                      <SelectItem value="25">每页 25</SelectItem>
+                      <SelectItem value="50">每页 50</SelectItem>
+                      <SelectItem value="100">每页 100</SelectItem>
+                      <SelectItem value="0">全部</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    className="w-[110px]"
+                    type="number"
+                    min={1}
+                    inputMode="numeric"
+                    value={customPageSizeInput}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      setCustomPageSizeInput(raw);
+                      const next = Math.floor(Number(raw));
+                      if (!Number.isFinite(next) || next <= 0) return;
+                      setPageSize(next);
+                      setPage(1);
+                    }}
+                    placeholder="自定义"
+                  />
+                </div>
             </div>
           </div>
 
-          <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
+          <Collapsible open={panelOpen && filtersOpen} onOpenChange={setFiltersOpen}>
             <CollapsibleContent>
-              <div className="rounded-lg border bg-card p-4 space-y-3">
+              <div className="rounded-lg border bg-card p-4 space-y-4">
+                <div className="space-y-2">
+                  <div className="text-xs text-muted-foreground">日期范围（开始日期）</div>
+                  <div className="flex flex-wrap gap-2 items-center">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="min-w-[220px] justify-start gap-2 font-normal"
+                        >
+                          <CalendarIcon className="w-4 h-4" />
+                          {settings.dateRange.from
+                            ? settings.dateRange.to
+                              ? `${format(settings.dateRange.from, "yyyy-MM-dd")} ~ ${format(
+                                  settings.dateRange.to,
+                                  "yyyy-MM-dd"
+                                )}`
+                              : format(settings.dateRange.from, "yyyy-MM-dd")
+                            : "全部日期"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent align="start" className="w-auto p-0">
+                        <Calendar
+                          key={`calendar-${reportRangeKey}-${calendarKey}`}
+                          mode="range"
+                          numberOfMonths={2}
+                          defaultMonth={calendarDefaultMonth}
+                          selected={settings.dateRange as DateRange}
+                          onSelect={(range) => updateSettings({ dateRange: range ?? {} })}
+                          disabled={isDateDisabled}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <Button
+                      type="button"
+                      variant={isQuickRangeSelected(7) ? "default" : "outline"}
+                      size="sm"
+                      className="gap-2"
+                      disabled={!reportDateRange}
+                      onClick={() => handleQuickRange(7)}
+                    >
+                      近7天
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={isQuickRangeSelected(14) ? "default" : "outline"}
+                      size="sm"
+                      className="gap-2"
+                      disabled={!reportDateRange}
+                      onClick={() => handleQuickRange(14)}
+                    >
+                      近14天
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={isQuickRangeSelected(30) ? "default" : "outline"}
+                      size="sm"
+                      className="gap-2"
+                      disabled={!reportDateRange}
+                      onClick={() => handleQuickRange(30)}
+                    >
+                      近30天
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                      onClick={handleReturnToToday}
+                    >
+                      <CalendarIcon className="w-4 h-4" />
+                      回到今天
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                      disabled={!settings.dateRange.from && !settings.dateRange.to}
+                      onClick={() => updateSettings({ dateRange: {} })}
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                      清除
+                    </Button>
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">
+                    原表日期范围：{reportDateRange ? `${reportDateRange.minYmd} ~ ${reportDateRange.maxYmd}` : "—"}
+                  </div>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
                   <div className="md:col-span-4 space-y-1">
                     <Label>搜索词包含</Label>
@@ -521,7 +872,19 @@ export function DataTable({ data, targetAcos, currency, aggregatedDetailsById }:
                     />
                   </div>
 
-                  <div className="md:col-span-3 space-y-1">
+                  <div className="md:col-span-4 space-y-1">
+                    <Label>快速筛选（搜索词/ASIN）</Label>
+                    <Input
+                      value={settings.quickFilter}
+                      onChange={(e) => updateSettings({ quickFilter: e.target.value })}
+                      placeholder="例如：B0XXXXXXX / usb charger"
+                    />
+                    <div className="text-[11px] text-muted-foreground">
+                      B0 开头按 ASIN 精确匹配，其余按包含匹配
+                    </div>
+                  </div>
+
+                  <div className="md:col-span-4 space-y-1">
                     <Label>排除词</Label>
                     <Input
                       value={settings.excludeTerm}
@@ -530,7 +893,7 @@ export function DataTable({ data, targetAcos, currency, aggregatedDetailsById }:
                     />
                   </div>
 
-                  <div className="md:col-span-2 space-y-1">
+                  <div className="md:col-span-3 space-y-1">
                     <Label>转化</Label>
                     <Select
                       value={settings.conversion}
@@ -558,7 +921,8 @@ export function DataTable({ data, targetAcos, currency, aggregatedDetailsById }:
                       onChange={(next) => updateSettings({ matchTypes: next })}
                     />
                   </div>
-
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
                   <div className="md:col-span-6 space-y-1">
                     <Label>广告活动</Label>
                     <MultiSelectDropdown
@@ -578,52 +942,9 @@ export function DataTable({ data, targetAcos, currency, aggregatedDetailsById }:
                       onChange={(next) => updateSettings({ adGroupNames: next })}
                     />
                   </div>
+                </div>
 
-                  <div className="md:col-span-6 space-y-1">
-                    <Label>日期范围（开始日期）</Label>
-                    <div className="flex gap-2">
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className="w-full justify-start gap-2 font-normal"
-                          >
-                            <CalendarIcon className="w-4 h-4" />
-                            {settings.dateRange.from
-                              ? settings.dateRange.to
-                                ? `${format(settings.dateRange.from, "yyyy-MM-dd")} ~ ${format(
-                                    settings.dateRange.to,
-                                    "yyyy-MM-dd"
-                                  )}`
-                                : format(settings.dateRange.from, "yyyy-MM-dd")
-                              : "全部日期"}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent align="start" className="w-auto p-0">
-                          <Calendar
-                            mode="range"
-                            numberOfMonths={2}
-                            selected={settings.dateRange as DateRange}
-                            onSelect={(range) => updateSettings({ dateRange: range ?? {} })}
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="gap-2"
-                        disabled={!settings.dateRange.from && !settings.dateRange.to}
-                        onClick={() => updateSettings({ dateRange: {} })}
-                      >
-                        <RotateCcw className="w-4 h-4" />
-                        清除
-                      </Button>
-                    </div>
-                  </div>
-
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
                   <div className="md:col-span-12">
                     <Collapsible open={metricsOpen} onOpenChange={setMetricsOpen}>
                       <div className="flex items-center justify-between">
@@ -772,6 +1093,21 @@ export function DataTable({ data, targetAcos, currency, aggregatedDetailsById }:
                       <Label>目标 ACOS（用于颜色标记）</Label>
                       <span className="text-sm font-medium text-primary">{settings.targetAcos}%</span>
                     </div>
+                    <div className="flex items-center gap-3">
+                      <Input
+                        className="w-[120px]"
+                        type="number"
+                        min={0}
+                        max={100}
+                        step={1}
+                        value={String(settings.targetAcos)}
+                        onChange={(e) => {
+                          const next = Math.max(0, Math.min(100, Math.floor(Number(e.target.value) || 0)));
+                          updateSettings({ targetAcos: next });
+                        }}
+                      />
+                      <div className="text-xs text-muted-foreground">支持直接输入（0-100）</div>
+                    </div>
                     <Slider
                       value={[settings.targetAcos]}
                       onValueChange={([v]) => updateSettings({ targetAcos: v })}
@@ -796,9 +1132,14 @@ export function DataTable({ data, targetAcos, currency, aggregatedDetailsById }:
                   </div>
 
                   <div className="md:col-span-12 flex flex-col md:flex-row gap-2 pt-2">
-                    <Button variant="outline" className="gap-2" onClick={reset}>
+                    <Button
+                      variant="outline"
+                      className="gap-2"
+                      onClick={resetFilters}
+                      disabled={!hasActiveFilterConditions}
+                    >
                       <RotateCcw className="w-4 h-4" />
-                      重置数据与设置
+                      重置筛选条件
                     </Button>
                   </div>
                 </div>
@@ -807,7 +1148,8 @@ export function DataTable({ data, targetAcos, currency, aggregatedDetailsById }:
           </Collapsible>
         </div>
       </CardHeader>
-      <CardContent>
+      <CollapsibleContent>
+        <CardContent>
         <div className="rounded-md border">
           <Table>
             <TableHeader>
@@ -815,6 +1157,7 @@ export function DataTable({ data, targetAcos, currency, aggregatedDetailsById }:
                 <TableHead className="w-[320px]">
                   <button className="flex items-center gap-1" onClick={() => toggleSort("searchTerm")} type="button">
                     搜索词
+                    <span className="text-xs text-primary font-medium">点击词看对比</span>
                     {renderSortIndicator("searchTerm")}
                   </button>
                 </TableHead>
@@ -923,7 +1266,14 @@ export function DataTable({ data, targetAcos, currency, aggregatedDetailsById }:
                               <ChevronDown className={cn("size-4 transition-transform", expanded ? "rotate-180" : "")} />
                             </Button>
                           ) : null}
-                          <span className="truncate">{row.searchTerm}</span>
+                          <button
+                            type="button"
+                            className="truncate text-left text-primary hover:underline"
+                            onClick={() => onSearchTermCompare?.(row.searchTerm)}
+                            title="查看对比"
+                          >
+                            {row.searchTerm}
+                          </button>
                           <Button
                             type="button"
                             variant="ghost"
@@ -951,13 +1301,13 @@ export function DataTable({ data, targetAcos, currency, aggregatedDetailsById }:
                         </div>
                       </TableCell>
                       <TableCell className="max-w-[220px] truncate" title={row.campaignName}>
-                        {renderMultiValueCell("广告活动", row.campaignName, details?.campaignNames, row.id)}
+                      {renderMultiValueCell("广告活动", row.campaignName, details?.campaignNames, row.id)}
                       </TableCell>
                       <TableCell className="max-w-[220px] truncate" title={row.adGroupName}>
-                        {renderMultiValueCell("广告组", row.adGroupName, details?.adGroupNames, row.id)}
+                      {renderMultiValueCell("广告组", row.adGroupName, details?.adGroupNames, row.id, details?.adGroupStats)}
                       </TableCell>
                       <TableCell title={row.matchType}>
-                        {renderMultiValueCell("匹配类型", row.matchType, details?.matchTypes, row.id)}
+                      {renderMultiValueCell("匹配类型", row.matchType, details?.matchTypes, row.id)}
                       </TableCell>
                       <TableCell className="text-right">{row.impressions.toLocaleString()}</TableCell>
                       <TableCell className="text-right">{row.clicks.toLocaleString()}</TableCell>
@@ -1097,7 +1447,9 @@ export function DataTable({ data, targetAcos, currency, aggregatedDetailsById }:
             </Pagination>
           </div>
         )}
-      </CardContent>
+        </CardContent>
+      </CollapsibleContent>
+      </Collapsible>
     </Card>
   );
 }

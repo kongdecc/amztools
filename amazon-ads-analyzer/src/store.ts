@@ -26,6 +26,10 @@ export const DEFAULT_SUGGESTION_RULES: AnalysisSettings["suggestionRules"] = {
   bidMinClicks: 6,
   bidUpAcosFactor: 0.7,
   bidDownAcosFactor: 1.3,
+  highClickMinClicks: 40,
+  highClickMaxCvrPct: 5,
+  adGroupNoOrderMinClicks: 10,
+  highAcosThreshold: 40,
 };
 
 const getDefaultSettings = (): AnalysisSettings => ({
@@ -52,6 +56,7 @@ const getDefaultSettings = (): AnalysisSettings => ({
   conversionRateMaxPct: null,
   currency: 'USD',
   searchTerm: '',
+  quickFilter: '',
   excludeTerm: '',
   campaignNames: [],
   adGroupNames: [],
@@ -70,7 +75,25 @@ export const useStore = create<AppState>((set) => ({
   settings: getDefaultSettings(),
   filtersVersion: 0,
   
-  setData: (data, fileName) => set({ data, fileName }),
+  setData: (data, fileName) =>
+    set((state) => {
+      const dates = data.map((r) => r.date).filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d));
+      const minYmd = dates.length ? dates.reduce((acc, d) => (d < acc ? d : acc), dates[0]) : null;
+      const maxYmd = dates.length ? dates.reduce((acc, d) => (d > acc ? d : acc), dates[0]) : null;
+      const dateRange =
+        minYmd && maxYmd
+          ? {
+              from: new Date(`${minYmd}T00:00:00.000Z`),
+              to: new Date(`${maxYmd}T00:00:00.000Z`),
+            }
+          : {};
+
+      return {
+        data,
+        fileName,
+        settings: { ...state.settings, dateRange },
+      };
+    }),
   setLoading: (isLoading) => set({ isLoading }),
   updateSettings: (newSettings) => set((state) => ({ 
     settings: { ...state.settings, ...newSettings } 
@@ -101,12 +124,12 @@ export const useStore = create<AppState>((set) => ({
         conversionRateMinPct: null,
         conversionRateMaxPct: null,
         searchTerm: '',
+        quickFilter: '',
         excludeTerm: '',
         campaignNames: [],
         adGroupNames: [],
         matchTypes: [],
         conversion: '全部',
-        dateRange: {},
       },
     })),
   reset: () =>

@@ -159,8 +159,8 @@ export const parseExcel = async (
 
         const columns: Record<string, ColumnSpec> = {
           date: {
-            aliases: ["开始日期", "Start Date", "開始日", "Date", "Datum", "Fecha de inicio"],
-            regexes: [/start\s*date/i, /开始日期/, /開始日/],
+            aliases: ["开始日期", "日期", "Start Date", "開始日", "Date", "Datum", "Fecha de inicio"],
+            regexes: [/start\s*date/i, /开始日期/, /開始日/, /日期/],
           },
           searchTerm: {
             aliases: ["客户搜索词", "Customer Search Term", "Customer search term", "検索語句", "Suchbegriff", "Terme de recherche client"],
@@ -178,6 +178,10 @@ export const parseExcel = async (
             aliases: ["匹配类型", "Match Type", "マッチタイプ", "Type de correspondance", "Tipo de concordancia"],
             regexes: [/match\s*type/i, /匹配类型/],
           },
+          targeting: {
+            aliases: ["投放", "Targeting", "ターゲティング", "Ciblage", "Segmentación"],
+            regexes: [/targeting/i, /投放/, /ターゲティング/],
+          },
           impressions: {
             aliases: ["展示量", "Impressions", "表示回数", "Impressionen", "Impresiones"],
             regexes: [/impressions?/i, /展示量/, /表示回数/],
@@ -194,6 +198,14 @@ export const parseExcel = async (
             aliases: ["7天总销售额", "7 Day Total Sales", "7-day total sales", "14 Day Total Sales", "14-day total sales", "7日間の総売上", "総売上"],
             regexes: [/\b\d+\s*day.*total.*sales/i, /\d+\s*天.*销售额/i, /sales/i, /売上/],
           },
+          directSales: {
+            aliases: ["7天内广告SKU销售额", "7 Day Advertised SKU Sales", "7-day advertised SKU sales"],
+            regexes: [/advertised\s*sku\s*sales/i, /广告sku销售额/i, /广告sku.*销售额/i],
+          },
+          indirectSales: {
+            aliases: ["7天内其他SKU销售额", "7 Day Other SKU Sales", "7-day other SKU sales"],
+            regexes: [/other\s*sku\s*sales/i, /其他sku销售额/i, /其他sku.*销售额/i],
+          },
           orders: {
             aliases: ["7天总订单数(#)", "7 Day Total Orders (#)", "7-day total orders", "14 Day Total Orders (#)", "14-day total orders", "7日間の総注文数", "総注文数"],
             regexes: [/\b\d+\s*day.*total.*orders/i, /\d+\s*天.*订单数/i, /orders?/i, /注文数/],
@@ -206,10 +218,13 @@ export const parseExcel = async (
           campaignName: resolveColumn("campaignName", columns.campaignName),
           adGroupName: resolveColumn("adGroupName", columns.adGroupName),
           matchType: resolveColumn("matchType", columns.matchType),
+          targeting: resolveColumn("targeting", columns.targeting),
           impressions: resolveColumn("impressions", columns.impressions),
           clicks: resolveColumn("clicks", columns.clicks),
           spend: resolveColumn("spend", columns.spend),
           sales: resolveColumn("sales", columns.sales),
+          directSales: resolveColumn("directSales", columns.directSales),
+          indirectSales: resolveColumn("indirectSales", columns.indirectSales),
           orders: resolveColumn("orders", columns.orders),
         };
         
@@ -227,6 +242,8 @@ export const parseExcel = async (
             const clicks = num(colKey.clicks ? row[colKey.clicks] : 0);
             const spend = num(colKey.spend ? row[colKey.spend] : 0);
             const sales = num(colKey.sales ? row[colKey.sales] : 0);
+            const directSales = num(colKey.directSales ? row[colKey.directSales] : 0);
+            const indirectSales = num(colKey.indirectSales ? row[colKey.indirectSales] : 0);
             const orders = num(colKey.orders ? row[colKey.orders] : 0);
             
             // Skip invalid rows (e.g. summary rows or empty)
@@ -240,18 +257,22 @@ export const parseExcel = async (
             const campaignName = String(campaignNameRaw ?? "Unknown").trim() || "Unknown";
             const adGroupName = String((colKey.adGroupName ? row[colKey.adGroupName] : row["广告组名称"]) ?? "Unknown").trim() || "Unknown";
             const matchType = String((colKey.matchType ? row[colKey.matchType] : row["匹配类型"]) ?? "Unknown").trim() || "Unknown";
+            const targeting = String((colKey.targeting ? row[colKey.targeting] : row["投放"]) ?? "").trim();
 
             return {
               id: nanoid(),
-              date: normalizeDate(colKey.date ? row[colKey.date] : row["开始日期"]),
+              date: normalizeDate(colKey.date ? row[colKey.date] : row["开始日期"] ?? row["日期"]),
               campaignName,
               adGroupName,
+              targeting,
               matchType,
               searchTerm,
               impressions,
               clicks,
               spend,
               sales,
+              directSales,
+              indirectSales,
               orders,
               ctr: impressions > 0 ? clicks / impressions : 0,
               cpc: clicks > 0 ? spend / clicks : 0,

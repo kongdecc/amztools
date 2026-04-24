@@ -16,6 +16,8 @@ export interface RawAdRecord {
   '每次点击成本(CPC)'?: number;
   '花费'?: number;
   '7天总销售额'?: number;
+  '7天内广告SKU销售额'?: number;
+  '7天内其他SKU销售额'?: number;
   '广告成本销售比(ACOS)'?: number;
   '投入产出比(ROAS)'?: number;
   '7天总订单数(#)'?: number;
@@ -29,12 +31,15 @@ export interface AdRecord {
   date: string; // YYYY-MM-DD
   campaignName: string;
   adGroupName: string;
+  targeting: string;
   matchType: string;
   searchTerm: string;
   impressions: number;
   clicks: number;
   spend: number;
   sales: number;
+  directSales: number;
+  indirectSales: number;
   orders: number;
   
   // Calculated / Normalized fields
@@ -59,6 +64,10 @@ export interface SuggestionRules {
   bidMinClicks: number;
   bidUpAcosFactor: number;
   bidDownAcosFactor: number;
+  highClickMinClicks: number;
+  highClickMaxCvrPct: number;
+  adGroupNoOrderMinClicks: number;
+  highAcosThreshold: number;
 }
 
 export interface AnalysisSettings {
@@ -85,6 +94,7 @@ export interface AnalysisSettings {
   conversionRateMaxPct: number | null;
   currency: string;
   searchTerm: string;
+  quickFilter: string;
   excludeTerm: string;
   campaignNames: string[];
   adGroupNames: string[];
