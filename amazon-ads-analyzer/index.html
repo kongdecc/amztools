@@ -53,6 +53,12 @@
       #root {
         min-height: calc(100vh - 56px);
       }
+      body.embedded .site-header {
+        display: none;
+      }
+      body.embedded #root {
+        min-height: 100vh;
+      }
       @media (max-width: 768px) {
         .site-header {
           padding: 0 12px;
@@ -79,6 +85,11 @@
       </nav>
     </header>
     <div id="root"></div>
+    <script>
+      if (window.self !== window.top) {
+        document.body.classList.add('embedded');
+      }
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
