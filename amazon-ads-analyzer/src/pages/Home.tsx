@@ -39,7 +39,6 @@ import { Streamdown } from 'streamdown';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 import { format } from 'date-fns';
-import { Link } from 'wouter';
 import usageMarkdown from '../../使用说明.md?raw';
 import { Bar, BarChart, CartesianGrid, LabelList, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
@@ -2406,11 +2405,6 @@ export default function Home() {
           </Collapsible>
 
           <FileUpload />
-          <div className="flex justify-center">
-            <Link href="/">
-              <Button variant="outline" size="sm">返回类型选择</Button>
-            </Link>
-          </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 max-w-3xl mx-auto text-left">
             <div className="space-y-2">
@@ -2457,9 +2451,6 @@ export default function Home() {
                   <RotateCcw className="w-4 h-4" />
                   重置数据与设置
                 </Button>
-                <Link href="/">
-                  <Button variant="outline" size="sm">返回类型选择</Button>
-                </Link>
               </div>
             </div>
             <div className="flex flex-col items-start gap-2 md:flex-row md:items-center md:gap-3">
