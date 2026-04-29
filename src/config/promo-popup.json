@@ -1,0 +1,11 @@
+{
+  "enabled": true,
+  "imageUrl": "https://pub-2a43946b555a4a1d8c9fcabbb581ed41.r2.dev/bsg429.jpg",
+  "linkUrl": "",
+  "alt": "宣传活动",
+  "autoCloseSeconds": 120,
+  "hideForHours": 12,
+  "backdropClose": true,
+  "showCloseButton": true,
+  "version": "2026-04-29-1"
+}

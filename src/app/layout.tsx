@@ -4,6 +4,7 @@ import { db } from '@/lib/db'
 import { Metadata } from 'next'
 import fs from 'fs'
 import path from 'path'
+import GlobalPromoPopup from '@/components/GlobalPromoPopup'
 
 import { DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 
@@ -142,6 +143,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         )}
         <script dangerouslySetInnerHTML={{ __html: BAIDU_ANALYTICS_SCRIPT }} />
         {showAnalytics && analyticsHeadHtml && <div dangerouslySetInnerHTML={{ __html: analyticsHeadHtml }} style={{ display: 'none' }} />}
+        <GlobalPromoPopup />
         {children}
         {showAnalytics && analyticsBodyHtml && <div dangerouslySetInnerHTML={{ __html: analyticsBodyHtml }} />}
       </body>
