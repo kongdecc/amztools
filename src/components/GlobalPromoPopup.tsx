@@ -13,16 +13,31 @@ type PromoConfig = {
   hideForHours?: number
   backdropClose?: boolean
   showCloseButton?: boolean
+  startAt?: string
+  endAt?: string
   version?: string
 }
 
 const STORAGE_PREFIX = 'global_promo_popup'
+
+function parseOptionalDateTime(value?: string) {
+  const raw = String(value || '').trim()
+  if (!raw) return undefined
+
+  const normalized = raw.includes('T') ? raw : raw.replace(' ', 'T')
+  const parsed = Date.parse(normalized)
+
+  if (!Number.isFinite(parsed)) return undefined
+  return parsed
+}
 
 function getNormalizedConfig(raw: PromoConfig) {
   const imageUrl = String(raw.imageUrl || '').trim()
   const linkUrl = String(raw.linkUrl || '').trim()
   const autoCloseSeconds = Number(raw.autoCloseSeconds)
   const hideForHours = Number(raw.hideForHours)
+  const startAt = parseOptionalDateTime(raw.startAt)
+  const endAt = parseOptionalDateTime(raw.endAt)
 
   return {
     enabled: Boolean(raw.enabled) && imageUrl.length > 0,
@@ -33,6 +48,8 @@ function getNormalizedConfig(raw: PromoConfig) {
     hideForHours: Number.isFinite(hideForHours) && hideForHours >= 0 ? hideForHours : 12,
     backdropClose: raw.backdropClose !== false,
     showCloseButton: raw.showCloseButton !== false,
+    startAt,
+    endAt,
     version: String(raw.version || 'default')
   }
 }
@@ -41,8 +58,15 @@ export default function GlobalPromoPopup() {
   const config = useMemo(() => getNormalizedConfig(promoConfig), [])
   const [open, setOpen] = useState(false)
 
+  const isWithinSchedule = useMemo(() => {
+    const now = Date.now()
+    if (typeof config.startAt === 'number' && now < config.startAt) return false
+    if (typeof config.endAt === 'number' && now > config.endAt) return false
+    return true
+  }, [config])
+
   useEffect(() => {
-    if (!config.enabled) return
+    if (!config.enabled || !isWithinSchedule) return
 
     const dismissKey = `${STORAGE_PREFIX}:${config.version}`
 
@@ -56,7 +80,7 @@ export default function GlobalPromoPopup() {
     } catch {}
 
     setOpen(true)
-  }, [config])
+  }, [config, isWithinSchedule])
 
   useEffect(() => {
     if (!open) return

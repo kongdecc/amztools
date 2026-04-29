@@ -7,5 +7,7 @@
   "hideForHours": 12,
   "backdropClose": true,
   "showCloseButton": true,
+  "startAt": "",
+  "endAt": "",
   "version": "2026-04-29-1"
 }
