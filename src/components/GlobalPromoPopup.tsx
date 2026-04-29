@@ -57,13 +57,28 @@ function getNormalizedConfig(raw: PromoConfig) {
 export default function GlobalPromoPopup() {
   const config = useMemo(() => getNormalizedConfig(promoConfig), [])
   const [open, setOpen] = useState(false)
+  const [now, setNow] = useState(() => Date.now())
 
   const isWithinSchedule = useMemo(() => {
-    const now = Date.now()
     if (typeof config.startAt === 'number' && now < config.startAt) return false
     if (typeof config.endAt === 'number' && now > config.endAt) return false
     return true
-  }, [config])
+  }, [config.endAt, config.startAt, now])
+
+  useEffect(() => {
+    const nextBoundary = [config.startAt, config.endAt]
+      .filter((value): value is number => typeof value === 'number' && value > now)
+      .sort((a, b) => a - b)[0]
+
+    if (!nextBoundary) return
+
+    const delay = Math.min(nextBoundary - now + 50, 2147483647)
+    const timer = window.setTimeout(() => {
+      setNow(Date.now())
+    }, delay)
+
+    return () => window.clearTimeout(timer)
+  }, [config.endAt, config.startAt, now])
 
   useEffect(() => {
     if (!config.enabled || !isWithinSchedule) return
@@ -81,6 +96,11 @@ export default function GlobalPromoPopup() {
 
     setOpen(true)
   }, [config, isWithinSchedule])
+
+  useEffect(() => {
+    if (!open || isWithinSchedule) return
+    setOpen(false)
+  }, [open, isWithinSchedule])
 
   useEffect(() => {
     if (!open) return
