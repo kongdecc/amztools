@@ -44,6 +44,7 @@ export default function ClientPage({
     'content-filter': Filter,
     'image-resizer': ImageIcon,
     'image-compression': ImageIcon,
+    'image-to-pdf-batch': ImageIcon,
     'amazon-global': Globe,
     'rating-sales-reverse': Star,
     'max-reserve-fee': Calculator,

@@ -112,6 +112,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
     'duplicate-remover': CheckCircle,
     'content-filter': Filter,
     'image-resizer': ImageIcon,
+    'image-to-pdf-batch': ImageIcon,
     'amazon-global': Globe,
     'rating-sales-reverse': Star,
     'max-reserve-fee': Calculator,

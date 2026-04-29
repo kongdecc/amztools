@@ -64,5 +64,6 @@ export const DEFAULT_TOOLS = [
 
   { key: 'carton-calc-advanced', title: '外箱装箱计算器', desc: '支持 6 种朝向 + 单层补洞混合摆放，估算更接近实际装箱结果', status: '启用', views: 0, color: 'orange', order: 30, category: 'other' },
   { key: 'partner-equity-calculator', title: '合伙人权益计算器', desc: '支持2人/3人合伙模式，自动计算资金股/人力股比例及股权价值，支持Excel导出和打印', status: '启用', views: 0, color: 'teal', order: 31, category: 'other' },
-  { key: 'sales-calc', title: '亚马逊销售额计算', desc: '智能计算亚马逊销售报表总金额，自动匹配历史汇率，支持多文件批量处理', status: '启用', views: 0, color: 'indigo', order: 32, category: 'other' }
+  { key: 'sales-calc', title: '亚马逊销售额计算', desc: '智能计算亚马逊销售报表总金额，自动匹配历史汇率，支持多文件批量处理', status: '启用', views: 0, color: 'indigo', order: 32, category: 'other' },
+  { key: 'image-to-pdf-batch', title: '批量图片转 PDF', desc: '批量导入图片并合并导出 PDF，支持排序、页边距、页面方向和适配方式设置', status: '启用', views: 0, color: 'blue', order: 33, category: 'other' }
 ]
