@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>批量图片转 PDF 工具</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+      background: #f5f7fb;
+      color: #1f2937;
+    }
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 32px 18px 60px;
+    }
+    .header {
+      background: linear-gradient(135deg, #111827, #374151);
+      color: white;
+      border-radius: 22px;
+      padding: 30px;
+      box-shadow: 0 16px 40px rgba(17, 24, 39, 0.18);
+    }
+    .header h1 {
+      margin: 0 0 10px;
+      font-size: 30px;
+      letter-spacing: 0.5px;
+    }
+    .header p {
+      margin: 0;
+      color: #d1d5db;
+      line-height: 1.7;
+    }
+    .panel {
+      margin-top: 22px;
+      background: white;
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+      border: 1px solid #e5e7eb;
+    }
+    .upload-box {
+      border: 2px dashed #9ca3af;
+      border-radius: 18px;
+      padding: 34px 20px;
+      text-align: center;
+      background: #f9fafb;
+      transition: 0.2s ease;
+      cursor: pointer;
+    }
+    .upload-box:hover,
+    .upload-box.dragover {
+      border-color: #111827;
+      background: #eef2ff;
+    }
+    .upload-box strong {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+    .upload-box span {
+      color: #6b7280;
+      font-size: 14px;
+    }
+    input[type="file"] { display: none; }
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+    .field label {
+      display: block;
+      font-size: 13px;
+      color: #4b5563;
+      margin-bottom: 6px;
+    }
+    .field select,
+    .field input {
+      width: 100%;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      padding: 11px 12px;
+      font-size: 14px;
+      background: white;
+      outline: none;
+    }
+    .field select:focus,
+    .field input:focus { border-color: #111827; }
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+    button {
+      border: 0;
+      border-radius: 13px;
+      padding: 12px 18px;
+      font-size: 15px;
+      cursor: pointer;
+      font-weight: 650;
+      transition: 0.18s ease;
+    }
+    .primary {
+      background: #111827;
+      color: white;
+    }
+    .primary:hover { transform: translateY(-1px); background: #000; }
+    .secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+    .secondary:hover { background: #d1d5db; }
+    .danger {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    .danger:hover { background: #fecaca; }
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+    .status {
+      margin-top: 14px;
+      color: #4b5563;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .preview-header h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      overflow: hidden;
+      background: white;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+    }
+    .thumb {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background: #f3f4f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .card-body {
+      padding: 12px;
+    }
+    .filename {
+      font-size: 13px;
+      font-weight: 650;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 8px;
+    }
+    .meta {
+      color: #6b7280;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+    .mini-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .mini-actions button {
+      padding: 7px 9px;
+      font-size: 12px;
+      border-radius: 9px;
+      flex: 1;
+    }
+    .empty {
+      border: 1px dashed #d1d5db;
+      border-radius: 18px;
+      padding: 28px;
+      text-align: center;
+      color: #6b7280;
+      background: #f9fafb;
+    }
+    .note {
+      margin-top: 16px;
+      padding: 14px 16px;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      color: #92400e;
+      border-radius: 14px;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    @media (max-width: 760px) {
+      .controls { grid-template-columns: 1fr; }
+      .header h1 { font-size: 24px; }
+      .container { padding: 18px 12px 40px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="header">
+      <h1>批量图片转 PDF 工具</h1>
+      <p>选择多张 JPG / PNG / WebP 图片后，可自动合并成一个 PDF。多张图片时，每张图片单独占一页，并可导出保存到本地。</p>
+    </section>
+
+    <section class="panel">
+      <label class="upload-box" id="uploadBox" for="fileInput">
+        <strong>点击选择图片，或把图片拖到这里</strong>
+        <span>支持多选；生成过程全部在浏览器本地完成</span>
+      </label>
+      <input id="fileInput" type="file" accept="image/*" multiple />
+
+      <div class="controls">
+        <div class="field">
+          <label for="pageSize">PDF 页面尺寸</label>
+          <select id="pageSize">
+            <option value="a4">A4</option>
+            <option value="letter">Letter</option>
+            <option value="image">跟随图片尺寸</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="orientation">页面方向</label>
+          <select id="orientation">
+            <option value="portrait">竖版</option>
+            <option value="landscape">横版</option>
+            <option value="auto">自动匹配图片</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="fitMode">图片适配方式</label>
+          <select id="fitMode">
+            <option value="contain">完整显示，保留边距</option>
+            <option value="cover">铺满页面，可能裁切</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="margin">页面边距 mm</label>
+          <input id="margin" type="number" min="0" max="50" value="8" />
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" id="exportBtn" disabled>导出 PDF</button>
+        <button class="secondary" id="sortBtn" disabled>按文件名排序</button>
+        <button class="danger" id="clearBtn" disabled>清空图片</button>
+      </div>
+      <div class="status" id="status">尚未选择图片。</div>
+      <div class="note">提示：如用于打印，建议选择 A4 + 完整显示；如想每页无白边铺满，选择“铺满页面”。</div>
+    </section>
+
+    <section class="panel">
+      <div class="preview-header">
+        <h2>图片预览与顺序</h2>
+        <span id="countText">0 张</span>
+      </div>
+      <div id="preview" class="empty">选择图片后会在这里显示，顺序就是 PDF 页码顺序。</div>
+    </section>
+  </div>
+
+  <script>
+    const { jsPDF } = window.jspdf;
+    const fileInput = document.getElementById('fileInput');
+    const uploadBox = document.getElementById('uploadBox');
+    const preview = document.getElementById('preview');
+    const statusEl = document.getElementById('status');
+    const countText = document.getElementById('countText');
+    const exportBtn = document.getElementById('exportBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const sortBtn = document.getElementById('sortBtn');
+
+    let images = [];
+
+    fileInput.addEventListener('change', (e) => addFiles(e.target.files));
+
+    uploadBox.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadBox.classList.add('dragover');
+    });
+    uploadBox.addEventListener('dragleave', () => uploadBox.classList.remove('dragover'));
+    uploadBox.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadBox.classList.remove('dragover');
+      addFiles(e.dataTransfer.files);
+    });
+
+    clearBtn.addEventListener('click', () => {
+      images.forEach(item => URL.revokeObjectURL(item.url));
+      images = [];
+      fileInput.value = '';
+      renderPreview();
+    });
+
+    sortBtn.addEventListener('click', () => {
+      images.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN', { numeric: true }));
+      renderPreview();
+    });
+
+    exportBtn.addEventListener('click', exportPdf);
+
+    function addFiles(fileList) {
+      const files = Array.from(fileList).filter(file => file.type.startsWith('image/'));
+      if (!files.length) {
+        setStatus('没有识别到图片文件，请选择 JPG、PNG、WebP 等图片。');
+        return;
+      }
+
+      const loaders = files.map(file => new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => resolve({
+          file,
+          url,
+          name: file.name,
+          size: file.size,
+          width: img.naturalWidth,
+          height: img.naturalHeight
+        });
+        img.onerror = () => reject(new Error(file.name + ' 加载失败'));
+        img.src = url;
+      }));
+
+      Promise.all(loaders)
+        .then(newItems => {
+          images.push(...newItems);
+          renderPreview();
+          setStatus(`已添加 ${newItems.length} 张图片，共 ${images.length} 张。`);
+        })
+        .catch(err => setStatus(err.message));
+    }
+
+    function renderPreview() {
+      countText.textContent = images.length + ' 张';
+      exportBtn.disabled = images.length === 0;
+      clearBtn.disabled = images.length === 0;
+      sortBtn.disabled = images.length === 0;
+
+      if (!images.length) {
+        preview.className = 'empty';
+        preview.textContent = '选择图片后会在这里显示，顺序就是 PDF 页码顺序。';
+        setStatus('尚未选择图片。');
+        return;
+      }
+
+      preview.className = 'grid';
+      preview.innerHTML = images.map((item, index) => `
+        <div class="card">
+          <div class="thumb"><img src="${item.url}" alt="${escapeHtml(item.name)}"></div>
+          <div class="card-body">
+            <div class="filename" title="${escapeHtml(item.name)}">${index + 1}. ${escapeHtml(item.name)}</div>
+            <div class="meta">${item.width} × ${item.height}px · ${formatSize(item.size)}</div>
+            <div class="mini-actions">
+              <button class="secondary" onclick="moveImage(${index}, -1)" ${index === 0 ? 'disabled' : ''}>上移</button>
+              <button class="secondary" onclick="moveImage(${index}, 1)" ${index === images.length - 1 ? 'disabled' : ''}>下移</button>
+              <button class="danger" onclick="removeImage(${index})">删除</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    window.moveImage = function(index, direction) {
+      const target = index + direction;
+      if (target < 0 || target >= images.length) return;
+      [images[index], images[target]] = [images[target], images[index]];
+      renderPreview();
+    };
+
+    window.removeImage = function(index) {
+      URL.revokeObjectURL(images[index].url);
+      images.splice(index, 1);
+      renderPreview();
+    };
+
+    async function exportPdf() {
+      if (!images.length) return;
+      exportBtn.disabled = true;
+      setStatus('正在生成 PDF，请稍候……');
+
+      try {
+        const pageSize = document.getElementById('pageSize').value;
+        const orientationSetting = document.getElementById('orientation').value;
+        const fitMode = document.getElementById('fitMode').value;
+        const margin = Math.max(0, Number(document.getElementById('margin').value) || 0);
+
+        let pdf = null;
+
+        for (let i = 0; i < images.length; i++) {
+          const item = images[i];
+          const imageData = await fileToDataUrl(item.file);
+          const imageOrientation = item.width >= item.height ? 'landscape' : 'portrait';
+          const orientation = orientationSetting === 'auto' ? imageOrientation : orientationSetting;
+
+          let format = pageSize;
+          if (pageSize === 'image') {
+            const widthMm = pxToMm(item.width);
+            const heightMm = pxToMm(item.height);
+            format = [widthMm, heightMm];
+          }
+
+          if (!pdf) {
+            pdf = new jsPDF({ orientation, unit: 'mm', format });
+          } else {
+            pdf.addPage(format, orientation);
+          }
+
+          const pageWidth = pdf.internal.pageSize.getWidth();
+          const pageHeight = pdf.internal.pageSize.getHeight();
+          const boxWidth = Math.max(1, pageWidth - margin * 2);
+          const boxHeight = Math.max(1, pageHeight - margin * 2);
+
+          const imgRatio = item.width / item.height;
+          const boxRatio = boxWidth / boxHeight;
+
+          let drawWidth, drawHeight;
+          if (fitMode === 'cover') {
+            if (imgRatio > boxRatio) {
+              drawHeight = boxHeight;
+              drawWidth = drawHeight * imgRatio;
+            } else {
+              drawWidth = boxWidth;
+              drawHeight = drawWidth / imgRatio;
+            }
+          } else {
+            if (imgRatio > boxRatio) {
+              drawWidth = boxWidth;
+              drawHeight = drawWidth / imgRatio;
+            } else {
+              drawHeight = boxHeight;
+              drawWidth = drawHeight * imgRatio;
+            }
+          }
+
+          const x = (pageWidth - drawWidth) / 2;
+          const y = (pageHeight - drawHeight) / 2;
+          const type = getImageType(item.file.type);
+          pdf.addImage(imageData, type, x, y, drawWidth, drawHeight, undefined, 'FAST');
+          setStatus(`正在处理第 ${i + 1} / ${images.length} 页：${item.name}`);
+        }
+
+        const timestamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+        pdf.save(`images-to-pdf-${timestamp}.pdf`);
+        setStatus(`PDF 已生成并开始下载，共 ${images.length} 页。`);
+      } catch (error) {
+        console.error(error);
+        setStatus('生成失败：' + error.message);
+      } finally {
+        exportBtn.disabled = images.length === 0;
+      }
+    }
+
+    function fileToDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('读取图片失败：' + file.name));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function getImageType(mime) {
+      if (mime.includes('png')) return 'PNG';
+      if (mime.includes('webp')) return 'WEBP';
+      return 'JPEG';
+    }
+
+    function pxToMm(px) {
+      return px * 25.4 / 96;
+    }
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / 1024 / 1024).toFixed(2) + ' MB';
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/[&<>'"]/g, ch => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#039;',
+        '"': '&quot;'
+      }[ch]));
+    }
+
+    function setStatus(text) {
+      statusEl.textContent = text;
+    }
+  </script>
+</body>
+</html>

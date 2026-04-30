@@ -2,7 +2,7 @@ import { SettingsProvider } from '@/components/SettingsProvider'
 import FunctionalityClient from './FunctionalityClient'
 import { db } from '@/lib/db'
 import { Metadata } from 'next'
-import { DEFAULT_TOOLS, DEFAULT_CATEGORIES, DEFAULT_NAV_ITEMS, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
+import { BLOCKED_TOOL_KEYS, DEFAULT_TOOLS, DEFAULT_CATEGORIES, DEFAULT_NAV_ITEMS, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 
 export const revalidate = 0
 
@@ -49,9 +49,10 @@ export default async function FunctionalityPage() {
     initialCategories = DEFAULT_CATEGORIES
   }
 
+  const blockedKeys = new Set(BLOCKED_TOOL_KEYS)
   let initialModules: any[] = []
   try {
-    initialModules = Array.isArray(modulesRows) ? modulesRows.filter((m:any)=>m.status !== '下架') : []
+    initialModules = Array.isArray(modulesRows) ? modulesRows.filter((m:any)=>m.status !== '下架' && !blockedKeys.has(m.key)) : []
     // Merge logic to ensure consistency with homepage
     const ensure = (arr: any[]) => {
       const keys = new Set(arr.map((x: any) => x.key))
@@ -59,7 +60,7 @@ export default async function FunctionalityPage() {
       for (const d of DEFAULT_TOOLS) if (!keys.has(d.key)) merged.push(d)
       return merged
     }
-    initialModules = ensure(initialModules)
+    initialModules = ensure(initialModules).filter((m: any) => !blockedKeys.has(m.key))
     
     // Force override status for 'word-count' if it is '维护'
     initialModules = initialModules.map((m: any) => {
@@ -69,7 +70,7 @@ export default async function FunctionalityPage() {
       return m
     })
   } catch { 
-    initialModules = DEFAULT_TOOLS
+    initialModules = DEFAULT_TOOLS.filter((m: any) => !blockedKeys.has(m.key))
   }
 
   let navItems: any[] = []

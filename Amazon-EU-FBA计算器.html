@@ -1,0 +1,1737 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Amazon EU FBA 费用计算器（基于群友：长沙-Ryo 的表格生成）</title>
+  <style>
+    :root{
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --border:#e5e7eb;
+      --text:#111827;
+      --muted:#6b7280;
+      --primary:#2563eb;
+      --primary2:#1d4ed8;
+      --danger:#ef4444;
+      --ring: rgba(37,99,235,.25);
+      --shadow: 0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.10);
+      --radius:14px;
+      --radius2:12px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    *{box-sizing:border-box}
+    body{margin:0; background:var(--bg); color:var(--text); font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", Arial;}
+    .container{max-width:1100px; margin:0 auto; padding:18px}
+    .topbar{display:flex; gap:12px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; margin-bottom:14px}
+    h1{margin:0; font-size:18px; font-weight:800}
+    .sub{color:var(--muted); font-size:12px; line-height:1.45; margin-top:6px}
+
+    .card{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow)}
+    .card .hd{padding:14px 16px; border-bottom:1px solid var(--border); display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap}
+    .card .bd{padding:16px}
+
+    .tabs{display:flex; gap:10px; flex-wrap:wrap}
+    .tab{border:1px solid var(--border); background:#fff; padding:8px 12px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer}
+    .tab[aria-selected="true"]{border-color: rgba(37,99,235,.35); box-shadow:0 0 0 3px var(--ring); color:var(--primary)}
+
+    .grid{display:grid; grid-template-columns:repeat(12,1fr); gap:12px}
+    .field{grid-column: span 4}
+    .field.small{grid-column: span 3}
+    .field.wide{grid-column: span 6}
+    .label{display:flex; gap:8px; align-items:center; justify-content:space-between; font-size:12px; font-weight:700; color:#374151; margin-bottom:6px}
+    .hint{font-size:11px; color:var(--muted); font-weight:600}
+
+    input, select{width:100%; height:38px; padding:8px 10px; border-radius:10px; border:1px solid #d1d5db; background:transparent; font-size:13px; outline:none}
+    input:focus, select:focus{border-color: rgba(37,99,235,.75); box-shadow:0 0 0 3px var(--ring)}
+
+    .btnrow{display:flex; gap:10px; flex-wrap:wrap}
+    .btn{height:38px; padding:0 14px; border-radius:12px; border:1px solid var(--border); background:#fff; font-weight:800; font-size:13px; cursor:pointer; display:inline-flex; align-items:center; gap:8px}
+    .btn.primary{background:var(--primary); color:#fff; border-color:transparent}
+    .btn.primary:hover{background:var(--primary2)}
+    .btn.ghost:hover{background:#f3f4f6}
+
+    .kpis{display:grid; grid-template-columns:repeat(12,1fr); gap:12px}
+    .kpi{grid-column: span 4; padding:12px 14px; border:1px solid var(--border); border-radius:14px; background:#fff}
+    .kpi .t{font-size:12px; color:var(--muted); font-weight:700}
+    .kpi .v{margin-top:6px; font-size:18px; font-weight:900; letter-spacing:.2px}
+    .kpi .v.mono{font-family:var(--mono)}
+
+    details{border:1px solid var(--border); border-radius:14px; background:#fff; overflow:hidden}
+    summary{list-style:none; cursor:pointer; padding:12px 14px; background:#f9fafb; font-weight:900; color:#374151; display:flex; align-items:center; justify-content:space-between}
+    summary::-webkit-details-marker{display:none}
+    .detailbd{padding:14px}
+
+    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    .muted{color:var(--muted)}
+
+    .note{margin-top:12px; font-size:12px; color:var(--muted)}
+    .badge{display:inline-flex; align-items:center; padding:2px 8px; border-radius:999px; background:#eef2ff; color:#3730a3; font-size:11px; font-weight:800; border:1px solid #e0e7ff}
+
+    @media (max-width: 860px){
+      .field, .field.small, .field.wide{grid-column: span 12}
+      .kpi{grid-column: span 12}
+    }
+
+.policy{max-width:920px;margin:0 auto;color:#111827}
+.policy h2,.policy h3{margin-top:18px}
+.policy p,.policy li{color:#374151;font-size:13px;line-height:1.7}
+.policy code{font-family:var(--mono);font-size:12px;background:#f3f4f6;padding:2px 6px;border-radius:8px}
+.policy pre{background:#0b1020;color:#e8ecff;padding:12px 14px;border-radius:12px;overflow:auto}
+.policy blockquote{border-left:3px solid #c7d2fe;margin:12px 0;padding:8px 12px;background:#f8fafc;color:#374151}
+.policy hr{border:none;border-top:1px solid var(--border);margin:16px 0}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div>
+        <h1>Amazon EU FBA 费用计算器（基于群友：长沙-Ryo 的表格生成）</h1>
+        <div class="sub">
+          输入单个产品的重量/尺寸等参数，实时输出配送费、尺寸类别、仓储费用（可选）。
+        </div>
+      </div>
+      <div class="tabs" role="tablist" aria-label="市场切换">
+        <button class="tab" role="tab" aria-selected="true" data-tab="de">DE 配送费</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="eun">欧洲配送网络</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="ret">弃置/退仓</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="policy">费用政策说明</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="compare">多站点对比</button>
+      </div>
+    </div>
+
+    <section class="card" id="panel-de" role="tabpanel">
+      <div class="hd">
+        <div class="row">
+          <span class="badge">DE</span>
+          <span class="muted" style="font-size:12px; font-weight:700">适用于：亚马逊物流配送费 DE（单品计算）</span>
+        </div>
+        <div class="btnrow">
+          <button class="btn ghost" id="de-demo">填充示例</button>
+          <button class="btn ghost" id="de-reset">清空</button>
+        
+          <button class="btn ghost" id="de-save">保存记录</button>
+          <button class="btn ghost" id="de-historyBtn">记录</button></div>
+      </div>
+      <div class="bd">
+        <details id="de-history" style="margin-bottom:12px">
+          <summary>计算记录 <span class="muted" style="font-weight:800; font-size:12px">展开/收起</span></summary>
+          <div class="detailbd">
+            <div class="muted" style="font-size:12px; font-weight:700; margin-bottom:8px">保存在本地浏览器，可回载、删除</div>
+            <div id="de-historyList"></div>
+          </div>
+        </details>
+
+        <div class="grid" id="de-form">
+          <div class="field">
+            <div class="label">产品名 <span class="hint">可选</span></div>
+            <input id="de-name" placeholder="产品1" />
+          </div>
+          <div class="field">
+            <div class="label">单位重量（g）</div>
+            <div class="row">
+  <input id="de-unitG" inputmode="decimal" placeholder="例如：1.95" style="flex:1" />
+  <select id="de-unitUnit" style="width:120px">
+    <option value="g">g</option>
+    <option value="kg">kg</option>
+    <option value="lb">lb</option>
+    <option value="oz">oz</option>
+  </select>
+</div>
+          </div>
+          <div class="field">
+            <div class="label">汇率（EUR/RMB）</div>
+            <input id="de-fx" inputmode="decimal" placeholder="例如：8.0884" />
+          </div>
+
+          <div class="field small">
+            <div class="label">最长边(cm)</div>
+            <input id="de-L" inputmode="decimal" placeholder="39" />
+          </div>
+          <div class="field small">
+            <div class="label">次长边(cm)</div>
+            <input id="de-W" inputmode="decimal" placeholder="22" />
+          </div>
+          <div class="field small">
+            <div class="label">最短边(cm)</div>
+            <input id="de-H" inputmode="decimal" placeholder="15" />
+          </div>
+          <div class="field small">
+            <div class="label">旺季</div>
+            <select id="de-peak">
+              <option value="是">是</option>
+              <option value="否">否</option>
+            </select>
+          </div>
+          <div class="field small">
+            <div class="label">自动判断旺季</div>
+            <select id="de-autoPeak">
+              <option value="auto">自动（按当前日期）</option>
+              <option value="manual">手动</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="kpis">
+          <div class="kpi">
+            <div class="t">FBA尺寸类别</div>
+            <div class="v" id="de-size">—</div>
+          </div>
+          <div class="kpi">
+            <div class="t">配送费 / Unit（EUR）</div>
+            <div class="v mono" id="de-fba-eur">—</div>
+          </div>
+          <div class="kpi">
+            <div class="t">配送费 / Unit（RMB）</div>
+            <div class="v mono" id="de-fba-rmb">—</div>
+          </div>
+          <div class="kpi">
+            <div class="t">体积重量（g）</div>
+            <div class="v mono" id="de-volg">—</div>
+          </div>
+          <div class="kpi">
+            <div class="t">重量/体积重最大取值（g）</div>
+            <div class="v mono" id="de-maxg">—</div>
+          </div>
+          <div class="kpi">
+            <div class="t">中欧计划FBA（EUR）</div>
+            <div class="v mono" id="de-mce-eur">—</div>
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <details>
+          <summary>利润试算（详细） <span class="muted" style="font-weight:800; font-size:12px">展开/收起</span></summary>
+          <div class="detailbd">
+            <div class="grid">
+              <div class="field">
+                <div class="label">售价（EUR）</div>
+                <input id="de-price" inputmode="decimal" placeholder="例如：19.99" />
+              </div>
+              <div class="field">
+                <div class="label">销售佣金率（%）</div>
+                <input id="de-refRate" inputmode="decimal" placeholder="例如：15" />
+              </div>
+              <div class="field">
+                <div class="label">配送费口径</div>
+                <select id="de-feeMode">
+                  <option value="standard">标准配送费</option>
+                  <option value="mce">中欧计划（更低）</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <div class="label">采购成本（RMB）</div>
+                <input id="de-cogs" inputmode="decimal" placeholder="例如：25" />
+              </div>
+              <div class="field">
+                <div class="label">头程/运费（RMB）</div>
+                <input id="de-inbound" inputmode="decimal" placeholder="例如：10" />
+              </div>
+              <div class="field">
+                <div class="label">其他杂费（EUR）</div>
+                <input id="de-otherFee" inputmode="decimal" placeholder="例如：0.2" />
+              </div>
+
+              <div class="field">
+                <div class="label">广告 ACoS（%）</div>
+                <input id="de-acos" inputmode="decimal" placeholder="例如：10" />
+              </div>
+              <div class="field">
+                <div class="label">退货率（%）</div>
+                <input id="de-returnRate" inputmode="decimal" placeholder="例如：5" />
+              </div>
+              <div class="field">
+                <div class="label">不可售比例（%）</div>
+                <input id="de-unsellable" inputmode="decimal" placeholder="例如：30" />
+              </div>
+
+              <div class="field wide">
+                <div class="label">仓储费口径</div>
+                <select id="de-storageMode">
+                  <option value="auto">使用本页仓储费计算结果</option>
+                  <option value="manual">手动输入仓储费（EUR）</option>
+                </select>
+              </div>
+              <div class="field">
+                <div class="label">手动仓储费（EUR）</div>
+                <input id="de-storageManual" inputmode="decimal" placeholder="当选择手动时生效" />
+              </div>
+            </div>
+
+            <div style="height:12px"></div>
+
+            <div class="kpis">
+              <div class="kpi">
+                <div class="t">佣金（EUR）</div>
+                <div class="v mono" id="de-refFee">—</div>
+              </div>
+              <div class="kpi">
+                <div class="t">FBA配送费（EUR）</div>
+                <div class="v mono" id="de-fbaUsed">—</div>
+              </div>
+              <div class="kpi">
+                <div class="t">到手回款（EUR）</div>
+                <div class="v mono" id="de-payout">—</div>
+              </div>
+
+              <div class="kpi">
+                <div class="t">采购+头程（EUR）</div>
+                <div class="v mono" id="de-costEur">—</div>
+              </div>
+              <div class="kpi">
+                <div class="t">广告费（EUR）</div>
+                <div class="v mono" id="de-ads">—</div>
+              </div>
+              <div class="kpi">
+                <div class="t">退货损失（EUR）</div>
+                <div class="v mono" id="de-returnLoss">—</div>
+              </div>
+
+              <div class="kpi">
+                <div class="t">净利润（EUR）</div>
+                <div class="v mono" id="de-net">—</div>
+              </div>
+              <div class="kpi">
+                <div class="t">净利率</div>
+                <div class="v mono" id="de-margin">—</div>
+              </div>
+              <div class="kpi">
+                <div class="t">盈亏平衡 ACoS</div>
+                <div class="v mono" id="de-beAcos">—</div>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <div style="height:12px"></div>
+
+        
+
+        <div style="height:12px"></div>
+
+        <details>
+          <summary>仓储费（可选） <span class="muted" style="font-weight:800; font-size:12px">展开/收起</span></summary>
+          <div class="detailbd">
+            <div class="grid">
+              <div class="field small">
+                <div class="label">存放天数</div>
+                <input id="de-days" inputmode="decimal" placeholder="10" />
+              </div>
+              <div class="field small">
+                <div class="label">当月总天数</div>
+                <input id="de-monthDays" inputmode="decimal" placeholder="30" />
+              </div>
+              <div class="field small">
+                <div class="label">在库数量</div>
+                <input id="de-qty" inputmode="decimal" placeholder="100" />
+              </div>
+              <div class="field small">
+                <div class="label">利用率周数</div>
+                <input id="de-weeks" inputmode="decimal" placeholder="23" />
+              </div>
+              <div class="field">
+                <div class="label">仓储天数段</div>
+                <select id="de-agedBucket">
+                  <option value="0-240">0-240</option>
+                  <option value="241-270">241-270</option>
+                  <option value="271-300">271-300</option>
+                  <option value="301-330">301-330</option>
+                  <option value="331-365">331-365</option>
+                  <option value="366-455">366-455</option>
+                  <option value="455+">455+</option>
+                </select>
+              </div>
+              <div class="field">
+                <div class="label">超龄产品数量</div>
+                <input id="de-agedQty" inputmode="decimal" placeholder="100" />
+              </div>
+            </div>
+
+            <div style="height:12px"></div>
+
+            <div class="kpis">
+              <div class="kpi">
+                <div class="t">月度仓储费率（EUR）</div>
+                <div class="v mono" id="de-rate">—</div>
+              </div>
+              <div class="kpi">
+                <div class="t">月实际仓储费（EUR）</div>
+                <div class="v mono" id="de-storage">—</div>
+              </div>
+              <div class="kpi">
+                <div class="t">仓储利用率附加费（EUR）</div>
+                <div class="v mono" id="de-util">—</div>
+              </div>
+              <div class="kpi">
+                <div class="t">超龄库存附加费（EUR）</div>
+                <div class="v mono" id="de-aged">—</div>
+              </div>
+            </div>
+          </div>
+        </details>
+
+
+      </div>
+    </section>
+
+    <section class="card" id="panel-eun" role="tabpanel" style="display:none">
+      <div class="hd">
+        <div class="row">
+          <span class="badge">FR / IT / ES / PL / CZ</span>
+          <span class="muted" style="font-size:12px; font-weight:700">适用于：欧洲配送网络（单品计算）</span>
+        </div>
+        <div class="btnrow">
+          <button class="btn ghost" id="eun-demo">填充示例</button>
+          <button class="btn ghost" id="eun-reset">清空</button>
+        
+          <button class="btn ghost" id="eun-save">保存记录</button>
+          <button class="btn ghost" id="eun-historyBtn">记录</button></div>
+      </div>
+      <div class="bd">
+        <details id="eun-history" style="margin-bottom:12px">
+          <summary>计算记录 <span class="muted" style="font-weight:800; font-size:12px">展开/收起</span></summary>
+          <div class="detailbd">
+            <div class="muted" style="font-size:12px; font-weight:700; margin-bottom:8px">保存在本地浏览器，可回载、删除</div>
+            <div id="eun-historyList"></div>
+          </div>
+        </details>
+
+        <div class="grid">
+          <div class="field"><div class="label">产品名 <span class="hint">可选</span></div><input id="eun-name" placeholder="产品1" /></div>
+          <div class="field"><div class="label">单位重量（g）</div><div class="row">
+  <input id="eun-unitG" inputmode="decimal" placeholder="例如：1.95" style="flex:1" />
+  <select id="eun-unitUnit" style="width:120px">
+    <option value="g">g</option>
+    <option value="kg">kg</option>
+    <option value="lb">lb</option>
+    <option value="oz">oz</option>
+  </select>
+</div></div>
+          <div class="field"><div class="label">汇率（EUR/RMB）</div><input id="eun-fx" inputmode="decimal" placeholder="8.0884" /></div>
+
+          <div class="field small"><div class="label">最长边(cm)</div><input id="eun-L" inputmode="decimal" placeholder="39" /></div>
+          <div class="field small"><div class="label">次长边(cm)</div><input id="eun-W" inputmode="decimal" placeholder="22" /></div>
+          <div class="field small"><div class="label">最短边(cm)</div><input id="eun-H" inputmode="decimal" placeholder="15" /></div>
+          <div class="field small"><div class="label">旺季</div><select id="eun-peak"><option value="是">是</option><option value="否">否</option></select></div>
+          <div class="field small"><div class="label">自动判断旺季</div><select id="eun-autoPeak"><option value="auto">自动（按当前日期）</option><option value="manual">手动</option></select></div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="kpis">
+          <div class="kpi"><div class="t">FBA尺寸类别</div><div class="v" id="eun-size">—</div></div>
+          <div class="kpi"><div class="t">配送费 / Unit（EUR）</div><div class="v mono" id="eun-fba-eur">—</div></div>
+          <div class="kpi"><div class="t">配送费 / Unit（RMB）</div><div class="v mono" id="eun-fba-rmb">—</div></div>
+          <div class="kpi"><div class="t">体积重量（g）</div><div class="v mono" id="eun-volg">—</div></div>
+          <div class="kpi"><div class="t">最大取值（g）</div><div class="v mono" id="eun-maxg">—</div></div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <details>
+          <summary>利润试算（详细） <span class="muted" style="font-weight:800; font-size:12px">展开/收起</span></summary>
+          <div class="detailbd">
+            <div class="grid">
+              <div class="field"><div class="label">售价（EUR）</div><input id="eun-price" inputmode="decimal" placeholder="例如：19.99" /></div>
+              <div class="field"><div class="label">销售佣金率（%）</div><input id="eun-refRate" inputmode="decimal" placeholder="例如：15" /></div>
+              <div class="field"><div class="label">采购成本（RMB）</div><input id="eun-cogs" inputmode="decimal" placeholder="例如：25" /></div>
+              <div class="field"><div class="label">头程/运费（RMB）</div><input id="eun-inbound" inputmode="decimal" placeholder="例如：10" /></div>
+              <div class="field"><div class="label">其他杂费（EUR）</div><input id="eun-otherFee" inputmode="decimal" placeholder="例如：0.2" /></div>
+              <div class="field"><div class="label">广告 ACoS（%）</div><input id="eun-acos" inputmode="decimal" placeholder="例如：10" /></div>
+              <div class="field"><div class="label">退货率（%）</div><input id="eun-returnRate" inputmode="decimal" placeholder="例如：5" /></div>
+              <div class="field"><div class="label">不可售比例（%）</div><input id="eun-unsellable" inputmode="decimal" placeholder="例如：30" /></div>
+              <div class="field wide"><div class="label">仓储费口径</div>
+                <select id="eun-storageMode"><option value="auto">使用本页仓储费计算结果</option><option value="manual">手动输入仓储费（EUR）</option></select>
+              </div>
+              <div class="field"><div class="label">手动仓储费（EUR）</div><input id="eun-storageManual" inputmode="decimal" placeholder="当选择手动时生效" /></div>
+            </div>
+
+            <div style="height:12px"></div>
+
+            <div class="kpis">
+              <div class="kpi"><div class="t">佣金（EUR）</div><div class="v mono" id="eun-refFee">—</div></div>
+              <div class="kpi"><div class="t">FBA配送费（EUR）</div><div class="v mono" id="eun-fbaUsed">—</div></div>
+              <div class="kpi"><div class="t">到手回款（EUR）</div><div class="v mono" id="eun-payout">—</div></div>
+              <div class="kpi"><div class="t">采购+头程（EUR）</div><div class="v mono" id="eun-costEur">—</div></div>
+              <div class="kpi"><div class="t">广告费（EUR）</div><div class="v mono" id="eun-ads">—</div></div>
+              <div class="kpi"><div class="t">退货损失（EUR）</div><div class="v mono" id="eun-returnLoss">—</div></div>
+              <div class="kpi"><div class="t">净利润（EUR）</div><div class="v mono" id="eun-net">—</div></div>
+              <div class="kpi"><div class="t">净利率</div><div class="v mono" id="eun-margin">—</div></div>
+              <div class="kpi"><div class="t">盈亏平衡 ACoS</div><div class="v mono" id="eun-beAcos">—</div></div>
+            </div>
+          </div>
+        </details>
+
+        <div style="height:12px"></div>
+
+<details>
+          <summary>仓储费（可选） <span class="muted" style="font-weight:800; font-size:12px">展开/收起</span></summary>
+          <div class="detailbd">
+            <div class="grid">
+              <div class="field small"><div class="label">存放天数</div><input id="eun-days" inputmode="decimal" placeholder="10" /></div>
+              <div class="field small"><div class="label">当月总天数</div><input id="eun-monthDays" inputmode="decimal" placeholder="30" /></div>
+              <div class="field small"><div class="label">入库数量</div><input id="eun-qty" inputmode="decimal" placeholder="100" /></div>
+            </div>
+            <div style="height:12px"></div>
+            <div class="kpis">
+              <div class="kpi"><div class="t">月度仓储费率（EUR）</div><div class="v mono" id="eun-rate">—</div></div>
+              <div class="kpi"><div class="t">月实际仓储费（EUR）</div><div class="v mono" id="eun-storage">—</div></div>
+            </div>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section class="card" id="panel-ret" role="tabpanel" style="display:none">
+      <div class="hd">
+        <div class="row">
+          <span class="badge">弃置 / 退回 / 清仓</span>
+          <span class="muted" style="font-size:12px; font-weight:700">适用于：弃置 / 退仓费计算（单品计算）</span>
+        </div>
+        <div class="btnrow">
+          <button class="btn ghost" id="ret-demo">填充示例</button>
+          <button class="btn ghost" id="ret-reset">清空</button>
+        
+          <button class="btn ghost" id="ret-save">保存记录</button>
+          <button class="btn ghost" id="ret-historyBtn">记录</button></div>
+      </div>
+      <div class="bd">
+        <details id="ret-history" style="margin-bottom:12px">
+          <summary>计算记录 <span class="muted" style="font-weight:800; font-size:12px">展开/收起</span></summary>
+          <div class="detailbd">
+            <div class="muted" style="font-size:12px; font-weight:700; margin-bottom:8px">保存在本地浏览器，可回载、删除</div>
+            <div id="ret-historyList"></div>
+          </div>
+        </details>
+
+        <div class="grid">
+          <div class="field"><div class="label">产品名 <span class="hint">可选</span></div><input id="ret-name" placeholder="产品1" /></div>
+          <div class="field"><div class="label">退货类型</div><select id="ret-type"><option value="退回给卖家">退回给卖家</option><option value="清仓">清仓</option><option value="弃置">弃置</option></select></div>
+          <div class="field"><div class="label">数量</div><input id="ret-qty" inputmode="decimal" placeholder="100" /></div>
+          <div class="field"><div class="label">计费尺寸</div>
+            <select id="ret-mode">
+              <option value="auto">自动（按尺寸类别）</option>
+              <option value="standard">标准尺寸费率</option>
+              <option value="oversize">大件尺寸费率</option>
+            </select>
+          </div>
+
+          <div class="field"><div class="label">单位重量（g）</div><div class="row">
+  <input id="ret-unitG" inputmode="decimal" placeholder="例如：1.95" style="flex:1" />
+  <select id="ret-unitUnit" style="width:120px">
+    <option value="g">g</option>
+    <option value="kg">kg</option>
+    <option value="lb">lb</option>
+    <option value="oz">oz</option>
+  </select>
+</div></div>
+          <div class="field"><div class="label">汇率（EUR/RMB）</div><input id="ret-fx" inputmode="decimal" placeholder="8.0884" /></div>
+
+          <div class="field small"><div class="label">最长边(cm)</div><input id="ret-L" inputmode="decimal" placeholder="35" /></div>
+          <div class="field small"><div class="label">次长边(cm)</div><input id="ret-W" inputmode="decimal" placeholder="15" /></div>
+          <div class="field small"><div class="label">最短边(cm)</div><input id="ret-H" inputmode="decimal" placeholder="15" /></div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="kpis">
+          <div class="kpi"><div class="t">FBA尺寸类别</div><div class="v" id="ret-size">—</div></div>
+          <div class="kpi"><div class="t">单个退货费用（EUR）</div><div class="v mono" id="ret-per-eur">—</div></div>
+          <div class="kpi"><div class="t">单个退货费用（RMB）</div><div class="v mono" id="ret-per-rmb">—</div></div>
+          <div class="kpi"><div class="t">退货总费用（EUR）</div><div class="v mono" id="ret-total-eur">—</div></div>
+          <div class="kpi"><div class="t">体积重量（g）</div><div class="v mono" id="ret-volg">—</div></div>
+          <div class="kpi"><div class="t">最大取值（g）</div><div class="v mono" id="ret-maxg">—</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="panel-policy" role="tabpanel" style="display:none">
+      <div class="hd">
+        <div class="row">
+          <span class="badge">说明</span>
+          <span class="muted" style="font-size:12px; font-weight:700">亚马逊欧洲站 FBA 费用政策说明</span>
+        </div>
+        <div class="btnrow">
+          <button class="btn ghost" id="policy-top">回到顶部</button>
+        </div>
+      </div>
+      <div class="bd">
+        <div id="policy-content" class="policy">
+<blockquote>
+<p>适用范围：本文档用于说明本工具所采用的 <strong>EU 费用计算口径（DE / 欧洲配送网络 FR/IT/ES/PL/CZ / 弃置与退仓）</strong> 与费率常量。</p>
+<p>说明：亚马逊政策可能更新；如费率或规则发生调整，应以最新官方公告与卖家平台信息为准。</p>
+</blockquote>
+<hr />
+<h2 id="输入字段与计费口径">1. 输入字段与计费口径</h2>
+<h3 id="尺寸与重量">1.1 尺寸与重量</h3>
+<ul>
+<li><strong>单位重量（g）</strong>：商品包装后的实际称重重量。</li>
+<li><strong>三边尺寸（cm）</strong>：最长边、次长边、最短边。</li>
+</ul>
+<h3 id="体积重量g">1.2 体积重量（g）</h3>
+<p>计算公式：</p>
+<ul>
+<li><strong>体积重量(g) = 长(cm) × 宽(cm) × 高(cm) × 1000 ÷ 5000</strong></li>
+</ul>
+<h3 id="计费重量g">1.3 计费重量（g）</h3>
+<ul>
+<li><strong>计费重量(g) = MAX(单位重量(g), 体积重量(g))</strong></li>
+</ul>
+<p>在本工具中： - 尺寸分段、配送费、退仓/弃置费用等均基于上述计费重量与尺寸阈值判断。</p>
+<hr />
+<h2 id="fba-尺寸类别判定eu通用">2. FBA 尺寸类别判定（EU通用）</h2>
+<p>本工具会根据 <strong>单位重量、体积重量、三边尺寸</strong> 判定 <strong>FBA 尺寸类别</strong>。规则按优先顺序匹配（命中即停止）。</p>
+<blockquote>
+<p>注：以下为“逻辑结构说明”，阈值与类别名称与本工具一致。</p>
+</blockquote>
+<h3 id="信封类按单位重量-尺寸">2.1 信封类（按单位重量 + 尺寸）</h3>
+<ul>
+<li>轻型信封 / 标准信封 / 大信封 / 超大信封</li>
+</ul>
+<p>典型限制： - 最长边 ≤ 33cm - 次长边 ≤ 23cm - 最短边 ≤ 2.5cm / 4cm / 6cm（不同信封档位不同） - 单位重量上限：100g / 460g / 960g（不同档位不同）</p>
+<h3 id="包裹类按单位重量-体积重量-尺寸">2.2 包裹类（按单位重量 + 体积重量 + 尺寸）</h3>
+<ul>
+<li>小包裹</li>
+<li>标准包裹</li>
+</ul>
+<p>典型限制（示例）： - 小包裹：单位重量 ≤ 3900g、体积重量 ≤ 2100g、尺寸 ≤ 35×25×12cm - 标准包裹：单位重量 ≤ 11900g、体积重量 ≤ 7960g、尺寸 ≤ 45×34×26cm</p>
+<h3 id="大件类按单位重量-体积重量-尺寸">2.3 大件类（按单位重量 + 体积重量 + 尺寸）</h3>
+<ul>
+<li>小号大件</li>
+<li>轻型标准大件</li>
+<li>重型标准大件</li>
+<li>大型标准大件</li>
+<li>超大件</li>
+<li>重型大件</li>
+</ul>
+<p>大件类通常使用更宽松的尺寸阈值，但配合更高的重量/体积上限。</p>
+<hr />
+<h2 id="配送费fba配送费-unit">3. 配送费（FBA配送费 / Unit）</h2>
+<p>本工具支持两套费用表：</p>
+<ul>
+<li><strong>DE：亚马逊物流配送费（德国站）</strong></li>
+<li><strong>欧洲配送网络：FR / IT / ES / PL / CZ</strong></li>
+</ul>
+<p>两套费用表共享同一套“尺寸类别判定”，但 <strong>配送费阶梯与常量不同</strong>。</p>
+<h3 id="de-配送费阶梯摘要">3.1 DE 配送费阶梯（摘要）</h3>
+<p>DE 的配送费按“尺寸类别 + 重量区间”阶梯计算：</p>
+<ul>
+<li>信封类：更多使用 <strong>单位重量</strong> 分段（例如 0–20g、20–40g…）</li>
+<li>包裹/大件类：更多使用 <strong>计费重量（MAX重量）</strong> 分段（例如 ≤150g、150–400g… 或以 760g 为首重并按每 1000g 进位加价）</li>
+</ul>
+<h3 id="欧洲配送网络fritesplcz配送费阶梯摘要">3.2 欧洲配送网络（FR/IT/ES/PL/CZ）配送费阶梯（摘要）</h3>
+<p>逻辑与 DE 类似： - 同样按“尺寸类别 + 重量区间”阶梯 - 但各区间对应的费率常量不同（整体水平明显高于 DE 的示例）</p>
+<hr />
+<h2 id="汇率换算">4. 汇率换算</h2>
+<p>本工具支持将 EUR 金额换算为 RMB：</p>
+<ul>
+<li><strong>RMB = EUR × 汇率（EUR/RMB）</strong></li>
+</ul>
+<blockquote>
+<p>注意：汇率由用户输入，本工具不自动联网获取实时汇率。</p>
+</blockquote>
+<hr />
+<h2 id="月度仓储费storage">5. 月度仓储费（Storage）</h2>
+<h3 id="月度仓储费率eur">5.1 月度仓储费率（EUR）</h3>
+<p>费率由两个因素决定：</p>
+<ul>
+<li>是否旺季（是/否）</li>
+<li>是否大件（尺寸类别名称包含“<strong>大件</strong>”）</li>
+</ul>
+<p>本工具中的费率常量如下：</p>
+<ul>
+<li>旺季：
+<ul>
+<li>大件：34.49</li>
+<li>非大件：52.20</li>
+</ul></li>
+<li>非旺季：
+<ul>
+<li>大件：21.78</li>
+<li>非大件：27.54</li>
+</ul></li>
+</ul>
+<blockquote>
+<p>注：此处为本工具内置的费率常量口径，不代表官方最新值。</p>
+</blockquote>
+<h3 id="月实际仓储费eur">5.2 月实际仓储费（EUR）</h3>
+<ul>
+<li><strong>月实际仓储费(EUR) = 月度仓储费率 × 存放天数 × 在库数量 × 体积(m³) ÷ 当月总天数</strong></li>
+<li>其中：<strong>体积(m³) = 长×宽×高 ÷ 1,000,000</strong>（cm³ → m³）</li>
+</ul>
+<hr />
+<h2 id="仓储利用率附加费storage-utilization-surcharge仅de模块展示">6. 仓储利用率附加费（Storage Utilization Surcharge，仅DE模块展示）</h2>
+<p>按“利用率周数”分段加收。本工具使用如下分段常量：</p>
+<ul>
+<li>≤22 周：0</li>
+<li>22–28 周：14.85</li>
+<li>28–36 周：27.05</li>
+<li>36–44 周：37.61</li>
+<li>44–52 周：46.55</li>
+<li><blockquote>
+<p>52 周：76.87</p>
+</blockquote></li>
+</ul>
+<p>附加费计算结构为：</p>
+<ul>
+<li><strong>附加费 = 基础体积占用（按天数/数量/体积/当月天数折算）× 分段费率常量</strong></li>
+</ul>
+<hr />
+<h2 id="超龄库存附加费aged-inventory-surcharge仅de模块展示">7. 超龄库存附加费（Aged Inventory Surcharge，仅DE模块展示）</h2>
+<p>按“仓储天数段”分段加收，分段常量如下：</p>
+<ul>
+<li>0–240：0</li>
+<li>241–270：47.99</li>
+<li>271–300：125.16</li>
+<li>301–330：129.92</li>
+<li>331–365：135.98</li>
+<li>366–455：MAX(227.63, 超龄数量×0.2)</li>
+<li>455+：MAX(261.97, 超龄数量×0.25)</li>
+</ul>
+<p>附加费计算结构为：</p>
+<ul>
+<li><strong>超龄附加费 =（存放天数 × 超龄数量 × 体积 ÷ 当月天数）× 分段常量</strong></li>
+</ul>
+<hr />
+<h2 id="弃置-退仓费removal-disposal-return-to-seller">8. 弃置 / 退仓费（Removal / Disposal / Return to Seller）</h2>
+<p>本工具支持三种退货类型：</p>
+<ul>
+<li>退回给卖家</li>
+<li>清仓</li>
+<li>弃置</li>
+</ul>
+<p>并分为两套费率：</p>
+<ul>
+<li><strong>标准尺寸费率</strong></li>
+<li><strong>大件尺寸费率</strong></li>
+</ul>
+<h3 id="计费尺寸判定">8.1 计费尺寸判定</h3>
+<p>默认口径可按尺寸类别自动判断： - 尺寸类别包含“<strong>大件</strong>” → 使用大件尺寸费率 - 否则 → 使用标准尺寸费率</p>
+<p>同时支持手动选择“标准尺寸费率/大件尺寸费率”。</p>
+<h3 id="标准尺寸单个费用eur">8.2 标准尺寸：单个费用（EUR）</h3>
+<p>标准尺寸按计费重量（g）分段（≤200 / ≤500 / ≤1000 / &gt;1000，并可能按每1000g进位加价）。</p>
+<h3 id="大件尺寸单个费用eur">8.3 大件尺寸：单个费用（EUR）</h3>
+<p>大件尺寸按计费重量（g）分段（≤500 / ≤1000 / ≤2000 / ≤5000 / &gt;5000，并可能按每1000g进位加价）。</p>
+<hr />
+<h2 id="利润试算口径说明">9. 利润试算（口径说明）</h2>
+<p>用于估算单品在不同站点口径下的利润指标（示例：DE / 欧洲配送网络）。</p>
+<p>输入： - 售价（EUR） - 成本（RMB） - 汇率（EUR/RMB） - 佣金率（%）</p>
+<p>计算： - 成本（EUR）= 成本（RMB）÷ 汇率 - 佣金（EUR）= 售价 × 佣金率 - <strong>毛利（EUR）= 售价 − 成本(EUR) − FBA配送费(EUR) − 佣金(EUR)</strong> - <strong>毛利率 = 毛利 ÷ 售价</strong></p>
+<hr />
+<h2 id="免责声明与使用提示">10. 免责声明与使用提示</h2>
+<ul>
+<li>本文档为费用计算说明与口径解释，便于理解计算结果；不构成任何形式的官方承诺或法律/财务建议。</li>
+<li>实际收费可能随站点政策、活动、时间、产品属性与后台配置而变化；请以亚马逊卖家平台/官方公告为准。</li>
+<li>输入的汇率由用户自行提供；若使用实时汇率或特定结算汇率，请以你的业务口径为准。</li>
+</ul>
+<hr />
+<h2 id="常见计算案例">11. 常见计算案例</h2>
+<blockquote>
+<p>以下案例用于演示计算口径与字段含义，数值为示例输入；实际结果会随费率、汇率、旺季等变化。</p>
+</blockquote>
+<h3 id="案例-a标准包裹de配送费-仓储费">案例 A：标准包裹（DE）配送费 + 仓储费</h3>
+<ul>
+<li>输入
+<ul>
+<li>单位重量：1.95 g（示例值，实际业务中通常为 1950 g；以实际称重口径为准）</li>
+<li>尺寸：39 × 22 × 15 cm</li>
+<li>汇率：8.0884</li>
+<li>旺季：否（或自动判断）</li>
+<li>仓储：存放 10 天、当月 30 天、在库 100</li>
+</ul></li>
+<li>过程（摘要）
+<ul>
+<li>体积重量 = 39×22×15×1000/5000 = 2574 g</li>
+<li>计费重量 = MAX(单位重量, 体积重量) = 2574 g</li>
+<li>尺寸类别：标准包裹</li>
+<li>配送费：按“尺寸类别 + 重量区间”查询</li>
+<li>仓储费：按体积(m³)、天数、数量折算</li>
+</ul></li>
+</ul>
+<h3 id="案例-b欧洲配送网络-vs-de-的差异">案例 B：欧洲配送网络 vs DE 的差异</h3>
+<ul>
+<li>同一组尺寸/重量输入，在不同站点口径下：
+<ul>
+<li><strong>尺寸类别通常一致</strong>（判定逻辑相同）</li>
+<li><strong>配送费可能不同</strong>（费率常量不同）</li>
+<li>因此利润试算中，净利润/净利率也会出现差异</li>
+</ul></li>
+</ul>
+<h3 id="案例-c弃置-退回给卖家标准尺寸">案例 C：弃置 / 退回给卖家（标准尺寸）</h3>
+<ul>
+<li>输入
+<ul>
+<li>退货类型：退回给卖家</li>
+<li>计费重量：按 MAX(单位重量, 体积重量)</li>
+<li>数量：100</li>
+</ul></li>
+<li>结果
+<ul>
+<li>单个费用按“标准尺寸费率”的重量分段计算</li>
+<li>总费用 = 单个费用 × 数量</li>
+</ul></li>
+</ul>
+<hr />
+<h2 id="faq常见问题">12. FAQ（常见问题）</h2>
+<h3 id="q1为什么同样输入de-与欧洲配送网络的结果不同">Q1：为什么同样输入，DE 与欧洲配送网络的结果不同？</h3>
+<ul>
+<li>站点口径的配送费费率常量不同；尺寸类别判定逻辑一致，但查表结果不同。</li>
+</ul>
+<h3 id="q2旺季如何判断">Q2：旺季如何判断？</h3>
+<ul>
+<li>本工具可按当前日期自动判断旺季（规则可配置）。如平台定义的旺季窗口与工具默认规则不一致，应以平台口径为准。</li>
+</ul>
+<h3 id="q3重量输入用-kglboz-可以吗">Q3：重量输入用 kg/lb/oz 可以吗？</h3>
+<ul>
+<li>可以。本工具会将输入重量统一换算为 g 后参与计算。</li>
+</ul>
+<h3 id="q4体积重量与计费重量有什么区别">Q4：体积重量与计费重量有什么区别？</h3>
+<ul>
+<li>体积重量：由尺寸推导出的“等效重量”。</li>
+<li>计费重量：单位重量与体积重量取较大者，用于阶梯计费。</li>
+</ul>
+<h3 id="q5利润试算里的成本包含哪些">Q5：利润试算里的“成本”包含哪些？</h3>
+<ul>
+<li>支持拆分为采购成本与头程/运费（以 RMB 输入），并按输入汇率换算为 EUR 参与计算。</li>
+</ul>
+</div>
+      </div>
+    </section>
+
+
+    <section class="card" id="panel-compare" role="tabpanel" style="display:none">
+      <div class="hd">
+        <div class="row">
+          <span class="badge">对比</span>
+          <span class="muted" style="font-size:12px; font-weight:700">一键对比 DE 与欧洲配送网络（FR/IT/ES/PL/CZ）的利润口径</span>
+        </div>
+        <div class="btnrow">
+          <button class="btn ghost" id="cmp-demo">填充示例</button>
+          <button class="btn ghost" id="cmp-reset">清空</button>
+          <button class="btn ghost" id="cmp-save">保存记录</button>
+          <button class="btn ghost" id="cmp-historyBtn">记录</button>
+        </div>
+      </div>
+      <div class="bd">
+        <details id="cmp-history" style="margin-bottom:12px">
+          <summary>计算记录 <span class="muted" style="font-weight:800; font-size:12px">展开/收起</span></summary>
+          <div class="detailbd">
+            <div class="muted" style="font-size:12px; font-weight:700; margin-bottom:8px">保存在本地浏览器，可回载、删除</div>
+            <div id="cmp-historyList"></div>
+          </div>
+        </details>
+
+        <div class="grid">
+          <div class="field">
+            <div class="label">单位重量</div>
+            <div class="row">
+              <input id="cmp-unit" inputmode="decimal" placeholder="例如：1.95" style="flex:1" />
+              <select id="cmp-unitUnit" style="width:120px">
+                <option value="g">g</option>
+                <option value="kg">kg</option>
+                <option value="lb">lb</option>
+                <option value="oz">oz</option>
+              </select>
+            </div>
+          </div>
+          <div class="field small"><div class="label">最长边(cm)</div><input id="cmp-L" inputmode="decimal" placeholder="39" /></div>
+          <div class="field small"><div class="label">次长边(cm)</div><input id="cmp-W" inputmode="decimal" placeholder="22" /></div>
+          <div class="field small"><div class="label">最短边(cm)</div><input id="cmp-H" inputmode="decimal" placeholder="15" /></div>
+          <div class="field"><div class="label">汇率（EUR/RMB）</div><input id="cmp-fx" inputmode="decimal" placeholder="8.0884" /></div>
+          <div class="field"><div class="label">售价（EUR）</div><input id="cmp-price" inputmode="decimal" placeholder="19.99" /></div>
+          <div class="field"><div class="label">销售佣金率（%）</div><input id="cmp-refRate" inputmode="decimal" placeholder="15" /></div>
+
+          <div class="field"><div class="label">采购成本（RMB）</div><input id="cmp-cogs" inputmode="decimal" placeholder="25" /></div>
+          <div class="field"><div class="label">头程/运费（RMB）</div><input id="cmp-inbound" inputmode="decimal" placeholder="10" /></div>
+          <div class="field"><div class="label">其他杂费（EUR）</div><input id="cmp-otherFee" inputmode="decimal" placeholder="0" /></div>
+
+          <div class="field"><div class="label">广告 ACoS（%）</div><input id="cmp-acos" inputmode="decimal" placeholder="10" /></div>
+          <div class="field"><div class="label">退货率（%）</div><input id="cmp-returnRate" inputmode="decimal" placeholder="5" /></div>
+          <div class="field"><div class="label">不可售比例（%）</div><input id="cmp-unsellable" inputmode="decimal" placeholder="30" /></div>
+
+          <div class="field wide"><div class="label">仓储费（EUR）</div><input id="cmp-storage" inputmode="decimal" placeholder="可选：不填则按0" /></div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="kpis">
+          <div class="kpi"><div class="t">FBA尺寸类别</div><div class="v" id="cmp-size">—</div></div>
+          <div class="kpi"><div class="t">体积重量（g）</div><div class="v mono" id="cmp-volg">—</div></div>
+          <div class="kpi"><div class="t">计费重量（g）</div><div class="v mono" id="cmp-maxg">—</div></div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="kpis">
+          <div class="kpi"><div class="t">DE 配送费（EUR）</div><div class="v mono" id="cmp-de-fba">—</div></div>
+          <div class="kpi"><div class="t">DE 中欧计划（EUR）</div><div class="v mono" id="cmp-de-mce">—</div></div>
+          <div class="kpi"><div class="t">欧洲配送网络 配送费（EUR）</div><div class="v mono" id="cmp-eun-fba">—</div></div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="kpis">
+          <div class="kpi"><div class="t">DE 净利润（EUR）</div><div class="v mono" id="cmp-de-net">—</div></div>
+          <div class="kpi"><div class="t">DE 中欧计划净利润（EUR）</div><div class="v mono" id="cmp-de-mce-net">—</div></div>
+          <div class="kpi"><div class="t">欧洲配送网络 净利润（EUR）</div><div class="v mono" id="cmp-eun-net">—</div></div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="kpis">
+          <div class="kpi"><div class="t">DE 净利率</div><div class="v mono" id="cmp-de-margin">—</div></div>
+          <div class="kpi"><div class="t">DE 中欧计划净利率</div><div class="v mono" id="cmp-de-mce-margin">—</div></div>
+          <div class="kpi"><div class="t">欧洲配送网络 净利率</div><div class="v mono" id="cmp-eun-margin">—</div></div>
+        </div>
+
+      </div>
+    </section>
+
+
+  </div>
+
+<script>
+// -------------------------
+// 计算函数（来自你提供的Excel逻辑复刻）
+// -------------------------
+const roundup0 = (x) => Math.ceil(x);
+const n = (v) => {
+  if (v === null || v === undefined || v === '') return null;
+  const num = Number(v);
+  return Number.isFinite(num) ? num : null;
+};
+
+function toGram(val, unit){
+  if(val===null) return null;
+  const u = (unit||'g').toLowerCase();
+  if(u==='g') return val;
+  if(u==='kg') return val*1000;
+  if(u==='lb') return val*453.59237;
+  if(u==='oz') return val*28.349523125;
+  return val;
+}
+const fmt = (v, digits=2) => (v===null||v===undefined||Number.isNaN(v)) ? '—' : (Math.round(v*10**digits)/10**digits).toFixed(digits);
+
+function volumetricWeightG(l,w,h){
+  if([l,w,h].some(x=>x===null)) return null;
+  return (l*w*h*1000)/5000;
+}
+function maxWeightG(unitG, volG){
+  if(unitG===null || volG===null) return null;
+  return Math.max(unitG, volG);
+}
+function sizeCategory(unitG, volG, L, W, H){
+  const F = maxWeightG(unitG, volG);
+  if(F===null) return '—';
+  const D = unitG;
+  const E = volG;
+  const G=L, H2=W, I=H;
+  if (D<=100 && G<=33 && H2<=23 && I<=2.5) return '轻型信封';
+  if (D<=460 && G<=33 && H2<=23 && I<=2.5) return '标准信封';
+  if (D<=960 && G<=33 && H2<=23 && I<=4) return '大信封';
+  if (D<=960 && G<=33 && H2<=23 && I<=6) return '超大信封';
+  if (D<=3900 && E<=2100 && G<=35 && H2<=25 && I<=12) return '小包裹';
+  if (D<=11900 && E<=7960 && G<=45 && H2<=34 && I<=26) return '标准包裹';
+  if (D<=1760 && E<=25820 && G<=61 && H2<=46 && I<=46) return '小号大件';
+  if (D<=15000 && E<=72720 && G<=101 && H2<=60 && I<=60) return '轻型标准大件';
+  if (15000 < D && D<=23000 && E<=72720 && G<=101 && H2<=60 && I<=60) return '重型标准大件';
+  if (D<=23000 && E<=86400 && G<=120 && H2<=60 && I<=60) return '大型标准大件';
+  if (D<=23000 && E<=126000 && G>120 && H2<=60 && I<=60) return '超大件';
+  if (D>23000 && D<=31500 && E<=126000) return '重型大件';
+  return '未匹配尺寸';
+}
+
+function fbaFeeDE(unitG, volG, L, W, H){
+  const F = maxWeightG(unitG, volG);
+  if(F===null) return null;
+  const D=unitG, G=L, H2=W, I=H;
+
+  if (D<=20 && G<=33 && H2<=23 && I<=2.5) return 2.33;
+  if (D>20 && D<=40 && G<=33 && H2<=23 && I<=2.5) return 2.37;
+  if (D>40 && D<=60 && G<=33 && H2<=23 && I<=2.5) return 2.39;
+  if (D>60 && D<=80 && G<=33 && H2<=23 && I<=2.5) return 2.52;
+  if (D>80 && D<=100 && G<=33 && H2<=23 && I<=2.5) return 2.54;
+  if (D>100 && D<=210 && G<=33 && H2<=23 && I<=2.5) return 2.57;
+  if (D>210 && D<=460 && G<=33 && H2<=23 && I<=2.5) return 2.68;
+
+  if (D<=960 && G<=33 && H2<=23 && I<=4) return 3.04;
+  if (D<=960 && G<=33 && H2<=23 && I<=6) return 3.42;
+
+  if (F<=150 && G<=35 && H2<=25 && I<=12) return 3.38;
+  if (F>150 && F<=400 && G<=35 && H2<=25 && I<=12) return 3.39;
+  if (F>400 && F<=900 && G<=35 && H2<=25 && I<=12) return 3.40;
+  if (F>900 && F<=1400 && G<=35 && H2<=25 && I<=12) return 3.41;
+  if (F>1400 && F<=1900 && G<=35 && H2<=25 && I<=12) return 3.43;
+  if (F>1900 && F<=3900 && G<=35 && H2<=25 && I<=12) return 4.54;
+
+  if (F<=150 && G<=45 && H2<=34 && I<=26) return 3.39;
+  if (F>150 && F<=400 && G<=45 && H2<=34 && I<=26) return 3.42;
+  if (F>400 && F<=900 && G<=45 && H2<=34 && I<=26) return 3.44;
+  if (F>900 && F<=1400 && G<=45 && H2<=34 && I<=26) return 3.93;
+  if (F>1400 && F<=1900 && G<=45 && H2<=34 && I<=26) return 3.95;
+  if (F>1900 && F<=2900 && G<=45 && H2<=34 && I<=26) return 4.55;
+  if (F>2900 && F<=3900 && G<=45 && H2<=34 && I<=26) return 5.09;
+  if (F>3900 && F<=5900 && G<=45 && H2<=34 && I<=26) return 5.22;
+  if (F>5900 && F<=8900 && G<=45 && H2<=34 && I<=26) return 6.03;
+  if (F>8900 && F<=11900 && G<=45 && H2<=34 && I<=26) return 6.65;
+
+  if (F<=760 && G<=61 && H2<=46 && I<=46) return 4.56;
+  if (F>760 && D<=1760 && volG!==null && volG<=25820 && G<=61 && H2<=46 && I<=46) {
+    return 4.56 + roundup0((F-760)/1000)*0.18;
+  }
+
+  if (D<=15000 && F<=760 && G<=101 && H2<=60 && I<=60) return 4.59;
+  if (D<=15000 && F>760 && G<=101 && H2<=60 && I<=60) {
+    return 4.59 + roundup0((F-760)/1000)*0.18;
+  }
+
+  if (15000 < D && D<=23000 && F<=15760 && G<=101 && H2<=60 && I<=60) return 7.25;
+  if (15000 < D && D<=23000 && F>15760 && G<=101 && H2<=60 && I<=60) {
+    return 7.25 + roundup0((F-15760)/1000)*0.07;
+  }
+
+  if (D<=23000 && F<=760 && G<=120 && H2<=60 && I<=60) return 6.06;
+  if (D<=23000 && F>760 && G<=120 && H2<=60 && I<=60) {
+    return 6.06 + roundup0((F-760)/1000)*0.08;
+  }
+
+  if (D<=23000 && volG!==null && volG<=126000 && F<=760 && G>120 && H2<=60 && I<=60) return 8.24;
+  if (D<=23000 && volG!==null && volG<=126000 && F>760 && G>120 && H2<=60 && I<=60) {
+    return 8.24 + roundup0((F-760)/1000)*0.27;
+  }
+
+  if (D>23000 && D<=31500 && volG!==null && volG<=126000 && F<=31500) return 13.00;
+  if (D>23000 && D<=31500 && volG!==null && volG<=126000 && F>31500) {
+    return 13.00 + roundup0((F-31500)/1000)*0.15;
+  }
+
+  return null;
+}
+
+function fbaFeeEUN(unitG, volG, L, W, H){
+  const F = maxWeightG(unitG, volG);
+  if(F===null) return null;
+  const D=unitG, G=L, H2=W, I=H;
+
+  if (D<=20 && G<=33 && H2<=23 && I<=2.5) return 5.08;
+  if (D>20 && D<=40 && G<=33 && H2<=23 && I<=2.5) return 5.11;
+  if (D>40 && D<=60 && G<=33 && H2<=23 && I<=2.5) return 5.16;
+  if (D>60 && D<=80 && G<=33 && H2<=23 && I<=2.5) return 5.47;
+  if (D>80 && D<=100 && G<=33 && H2<=23 && I<=2.5) return 5.50;
+  if (D>100 && D<=210 && G<=33 && H2<=23 && I<=2.5) return 5.50;
+  if (D>210 && D<=460 && G<=33 && H2<=23 && I<=2.5) return 5.53;
+
+  if (D<=960 && G<=33 && H2<=23 && I<=4) return 6.09;
+  if (D<=960 && G<=33 && H2<=23 && I<=6) return 6.72;
+
+  if (F<=150 && G<=35 && H2<=25 && I<=12) return 6.61;
+  if (F>150 && F<=400 && G<=35 && H2<=25 && I<=12) return 7.05;
+  if (F>400 && F<=900 && G<=35 && H2<=25 && I<=12) return 8.45;
+  if (F>900 && F<=1400 && G<=35 && H2<=25 && I<=12) return 9.28;
+  if (F>1400 && F<=1900 && G<=35 && H2<=25 && I<=12) return 10.58;
+  if (F>1900 && F<=3900 && G<=35 && H2<=25 && I<=12) return 13.42;
+
+  if (F<=150 && G<=45 && H2<=34 && I<=26) return 6.63;
+  if (F>150 && F<=400 && G<=45 && H2<=34 && I<=26) return 7.73;
+  if (F>400 && F<=900 && G<=45 && H2<=34 && I<=26) return 9.19;
+  if (F>900 && F<=1400 && G<=45 && H2<=34 && I<=26) return 10.43;
+  if (F>1400 && F<=1900 && G<=45 && H2<=34 && I<=26) return 11.97;
+  if (F>1900 && F<=2900 && G<=45 && H2<=34 && I<=26) return 13.42;
+  if (F>2900 && F<=3900 && G<=45 && H2<=34 && I<=26) return 15.80;
+  if (F>3900 && F<=5900 && G<=45 && H2<=34 && I<=26) return 16.67;
+  if (F>5900 && F<=8900 && G<=45 && H2<=34 && I<=26) return 18.06;
+  if (F>8900 && F<=11900 && G<=45 && H2<=34 && I<=26) return 21.24;
+
+  if (F<=760 && G<=61 && H2<=46 && I<=46) return 17.68;
+  if (F>760 && D<=1760 && volG!==null && volG<=25820 && G<=61 && H2<=46 && I<=46) {
+    return 17.68 + roundup0((F-760)/1000)*0.36;
+  }
+
+  if (D<=15000 && F<=760 && G<=101 && H2<=60 && I<=60) return 21.55;
+  if (D<=15000 && F>760 && G<=101 && H2<=60 && I<=60) {
+    return 21.55 + roundup0((F-760)/1000)*0.78;
+  }
+
+  if (15000 < D && D<=23000 && F<=15760 && G<=101 && H2<=60 && I<=60) return 32.87;
+  if (15000 < D && D<=23000 && F>15760 && G<=101 && H2<=60 && I<=60) {
+    return 32.87 + roundup0((F-15760)/1000)*0.38;
+  }
+
+  if (D<=23000 && F<=760 && G<=120 && H2<=60 && I<=60) return 22.13;
+  if (D<=23000 && F>760 && G<=120 && H2<=60 && I<=60) {
+    return 22.13 + roundup0((F-760)/1000)*0.78;
+  }
+
+  if (D<=23000 && volG!==null && volG<=126000 && F<=760 && G>120 && H2<=60 && I<=60) return 32.95;
+  if (D<=23000 && volG!==null && volG<=126000 && F>760 && G>120 && H2<=60 && I<=60) {
+    return 32.95 + roundup0((F-760)/1000)*1.15;
+  }
+
+  if (D>23000 && D<=31500 && volG!==null && volG<=126000 && F<=31500) return 37.67;
+  if (D>23000 && D<=31500 && volG!==null && volG<=126000 && F>31500) {
+    return 37.67 + roundup0((F-31500)/1000)*1.24;
+  }
+
+  return null;
+}
+
+function monthlyStorageRateEUR(isPeak, sizeCat){
+  if(!isPeak) return null;
+  const isLarge = String(sizeCat||'').includes('大件');
+  if(isPeak==='是') return isLarge ? 34.49 : 52.2;
+  if(isPeak==='否') return isLarge ? 21.78 : 27.54;
+  return null;
+}
+function monthlyStorageFeeEUR(rate, daysStored, qty, L,W,H, totalDays){
+  if([rate,daysStored,qty,L,W,H,totalDays].some(x=>x===null)) return null;
+  const volM3 = (L*W*H)/1000000;
+  return rate * daysStored * qty * volM3 / totalDays;
+}
+function storageUtilSurchargeEUR(daysStored, qty, L,W,H, totalDays, weeks){
+  if([daysStored,qty,L,W,H,totalDays,weeks].some(x=>x===null)) return null;
+  const base = (daysStored*qty*(L*W*H)/1000000)/totalDays;
+  let factor = null;
+  if (weeks<=22) factor = 0;
+  else if (weeks>22 && weeks<=28) factor = 14.85;
+  else if (weeks>28 && weeks<=36) factor = 27.05;
+  else if (weeks>36 && weeks<=44) factor = 37.61;
+  else if (weeks>44 && weeks<=52) factor = 46.55;
+  else if (weeks>52) factor = 76.87;
+  else return null;
+  return base * factor;
+}
+function agedInventorySurchargeEUR(daysStored, agedQty, L,W,H,totalDays, bucket){
+  if([daysStored,agedQty,L,W,H,totalDays].some(x=>x===null)) return null;
+  if(!bucket) return null;
+  const base = (daysStored*agedQty*(L*W*H)/1000000)/totalDays;
+  let fee = null;
+  if(bucket==='0-240') fee = 0;
+  else if(bucket==='241-270') fee = 47.99;
+  else if(bucket==='271-300') fee = 125.16;
+  else if(bucket==='301-330') fee = 129.92;
+  else if(bucket==='331-365') fee = 135.98;
+  else if(bucket==='366-455') fee = Math.max(227.63, agedQty*0.2);
+  else if(bucket==='455+') fee = Math.max(261.97, agedQty*0.25);
+  else fee = null;
+  return fee===null ? null : base * fee;
+}
+
+function returnFeePerUnit(type, maxWg, isOversize){
+  if(!type || maxWg===null) return null;
+  const F=maxWg;
+  if(!isOversize){
+    if(type==='清仓'){
+      if(F<=200) return 0.42;
+      if(F>200 && F<=500) return 0.52;
+      if(F>500 && F<=1000) return 0.93;
+      if(F>1000) return 1.02 + roundup0((F-1000)/1000)*0.53;
+    }
+    if(type==='退回给卖家'){
+      if(F<=200) return 0.50;
+      if(F>200 && F<=500) return 0.79;
+      if(F>500 && F<=1000) return 1.80;
+      if(F>1000) return 2.32 + roundup0((F-1000)/1000)*0.87;
+    }
+    if(type==='弃置'){
+      if(F<=200) return 0.74;
+      if(F>200 && F<=500) return 1.19;
+      if(F>500 && F<=1000) return 2.73;
+      if(F>1000) return 3.74 + 1.41*roundup0((F-1000)/1000);
+    }
+    return null;
+  }
+  // 大件尺寸（Excel: M39 等数组公式）
+  if(type==='清仓'){
+    if(F<=500) return 0.83;
+    if(F>500 && F<=1000) return 1.67;
+    if(F>1000 && F<=2000) return 2.51;
+    if(F>2000 && F<=5000) return 4.19;
+    if(F>5000) return 5.02 + roundup0((F-5000)/1000)*0.52;
+  }
+  if(type==='退回给卖家'){
+    if(F<=500) return 2.46;
+    if(F>500 && F<=1000) return 4.8;
+    if(F>1000 && F<=2000) return 6.15;
+    if(F>2000 && F<=5000) return 8.55;
+    if(F>5000) return 10.49 + roundup0((F-5000)/1000)*0.86;
+  }
+  if(type==='弃置'){
+    if(F<=500) return 3.74;
+    if(F>500 && F<=1000) return 7.67;
+    if(F>1000 && F<=2000) return 10.66;
+    if(F>2000 && F<=5000) return 14.59;
+    if(F>5000) return 15.23 + 1.55*roundup0((F-5000)/1000);
+  }
+  return null;
+}
+
+// -------------------------
+// UI 逻辑
+// -------------------------
+function $(id){return document.getElementById(id)}
+function setText(id, v){ $(id).textContent = v; }
+
+function isPeakSeasonEU(dateObj){
+  // 规则：10/15 ~ 次年 1/14 视为旺季（可按你们口径再改）
+  const y=dateObj.getFullYear();
+  const m=dateObj.getMonth()+1;
+  const d=dateObj.getDate();
+  const cur=y*10000+m*100+d;
+  const start=y*10000+10*100+15;
+  const end=y*10000+12*100+31;
+  const start2=y*10000+1*100+1;
+  const end2=y*10000+1*100+14;
+  // 10/15~12/31
+  if(cur>=start && cur<=end) return true;
+  // 1/1~1/14
+  if(cur>=start2 && cur<=end2) return true;
+  return false;
+}
+
+function resolvePeak(prefix){
+  const modeEl=$(prefix+'-autoPeak');
+  const peakEl=$(prefix+'-peak');
+  if(!modeEl || !peakEl) return peakEl ? peakEl.value : '否';
+  const mode=modeEl.value;
+  if(mode==='manual'){
+    peakEl.disabled=false;
+    return peakEl.value;
+  }
+  // auto
+  peakEl.disabled=true;
+  const isPeak=isPeakSeasonEU(new Date());
+  peakEl.value = isPeak ? '是' : '否';
+  return peakEl.value;
+}
+
+function calcDE(){
+  const unitVal=n($('de-unitG').value);
+  const unitG=toGram(unitVal, $('de-unitUnit') ? $('de-unitUnit').value : 'g');
+  const L=n($('de-L').value), W=n($('de-W').value), H=n($('de-H').value);
+  const fx=n($('de-fx').value);
+  const peak=resolvePeak('de');
+
+  const volG=volumetricWeightG(L,W,H);
+  const maxG=maxWeightG(unitG, volG);
+  const size=sizeCategory(unitG, volG, L,W,H);
+  const fbaEur=fbaFeeDE(unitG, volG, L,W,H);
+  const fbaRmb=(fbaEur!==null && fx!==null) ? fbaEur*fx : null;
+  const mceEur=(fbaEur===null)? null : (fbaEur-0.26);
+
+  setText('de-size', size);
+  setText('de-fba-eur', fbaEur===null? '—' : fmt(fbaEur,2));
+  setText('de-fba-rmb', fbaRmb===null? '—' : fmt(fbaRmb,2));
+  setText('de-volg', volG===null? '—' : fmt(volG,2));
+  setText('de-maxg', maxG===null? '—' : fmt(maxG,2));
+  setText('de-mce-eur', mceEur===null? '—' : fmt(mceEur,2));
+
+  // profit optional (detailed)
+  const price=n($('de-price')?.value);
+  const refRatePct=n($('de-refRate')?.value);
+  const cogsRmb=n($('de-cogs')?.value) || 0;
+  const inboundRmb=n($('de-inbound')?.value) || 0;
+  const otherFee=n($('de-otherFee')?.value) || 0;
+  const acosPct=n($('de-acos')?.value) || 0;
+  const returnRatePct=n($('de-returnRate')?.value) || 0;
+  const unsellablePct=n($('de-unsellable')?.value) || 0;
+
+  const feeMode=$('de-feeMode') ? $('de-feeMode').value : 'standard';
+  const fbaUsed = feeMode==='mce' ? mceEur : fbaEur;
+
+  // storage used
+  const storageMode=$('de-storageMode') ? $('de-storageMode').value : 'auto';
+  const storageManual=n($('de-storageManual')?.value);
+  // 先用当前仓储计算结果（下面会算出storageEur）或手动覆盖
+  // 这里先占位，稍后计算完storageEur后再确定 storageUsed
+
+  const costEur = (fx!==null) ? ((cogsRmb + inboundRmb)/fx) : null;
+  const refFee = (price!==null && refRatePct!==null) ? (price*refRatePct/100) : null;
+  const payout = (price!==null && refFee!==null && fbaUsed!==null) ? (price - refFee - fbaUsed) : null;
+  const ads = (price!==null) ? (price * acosPct/100) : null;
+  const returnLoss = (price!==null && fbaUsed!==null) ? ((price + fbaUsed) * (returnRatePct/100) * (unsellablePct/100)) : null;
+
+  // outputs will be finalized after storageEur computed below
+
+  // storage optional
+  const rate=monthlyStorageRateEUR(peak, size);
+  const days=n($('de-days').value);
+  const monthDays=n($('de-monthDays').value);
+  const qty=n($('de-qty').value);
+  const weeks=n($('de-weeks').value);
+  const agedBucket=$('de-agedBucket').value;
+  const agedQty=n($('de-agedQty').value);
+
+  const storage=monthlyStorageFeeEUR(rate, days, qty, L,W,H, monthDays);
+  const util=storageUtilSurchargeEUR(days, qty, L,W,H, monthDays, weeks);
+  const aged=agedInventorySurchargeEUR(days, agedQty, L,W,H, monthDays, agedBucket);
+
+  setText('de-rate', rate===null? '—' : fmt(rate,2));
+  setText('de-storage', storage===null? '—' : fmt(storage,4));
+  setText('de-util', util===null? '—' : fmt(util,4));
+  setText('de-aged', aged===null? '—' : fmt(aged,4));
+
+  // finalize profit outputs
+  const storageUsed = (storageMode==='manual') ? (storageManual===null? null : storageManual) : storage;
+  const net = (price!==null && refFee!==null && fbaUsed!==null && costEur!==null && ads!==null && returnLoss!==null && storageUsed!==null) ?
+    (price - refFee - fbaUsed - costEur - ads - returnLoss - storageUsed - otherFee) : null;
+  const margin = (net!==null && price!==null && price!==0) ? (net/price) : null;
+  const beAcos = (price!==null && price!==0 && refFee!==null && fbaUsed!==null && costEur!==null && returnLoss!==null && storageUsed!==null) ?
+    ((price - refFee - fbaUsed - costEur - returnLoss - storageUsed - otherFee)/price) : null;
+
+  if($('de-refFee')) setText('de-refFee', refFee===null? '—' : fmt(refFee,2));
+  if($('de-fbaUsed')) setText('de-fbaUsed', fbaUsed===null? '—' : fmt(fbaUsed,2));
+  if($('de-payout')) setText('de-payout', payout===null? '—' : fmt(payout,2));
+  if($('de-costEur')) setText('de-costEur', costEur===null? '—' : fmt(costEur,2));
+  if($('de-ads')) setText('de-ads', ads===null? '—' : fmt(ads,2));
+  if($('de-returnLoss')) setText('de-returnLoss', returnLoss===null? '—' : fmt(returnLoss,2));
+  if($('de-net')) setText('de-net', net===null? '—' : fmt(net,2));
+  if($('de-margin')) setText('de-margin', margin===null? '—' : ((margin*100).toFixed(2)+'%'));
+  if($('de-beAcos')) setText('de-beAcos', beAcos===null? '—' : ((beAcos*100).toFixed(2)+'%'));
+}
+
+function calcEUN(){
+  const unitVal=n($('eun-unitG').value);
+  const unitG=toGram(unitVal, $('eun-unitUnit') ? $('eun-unitUnit').value : 'g');
+  const L=n($('eun-L').value), W=n($('eun-W').value), H=n($('eun-H').value);
+  const fx=n($('eun-fx').value);
+  const peak=resolvePeak('eun');
+
+  const volG=volumetricWeightG(L,W,H);
+  const maxG=maxWeightG(unitG, volG);
+  const size=sizeCategory(unitG, volG, L,W,H);
+  const fbaEur=fbaFeeEUN(unitG, volG, L,W,H);
+  const fbaRmb=(fbaEur!==null && fx!==null) ? fbaEur*fx : null;
+
+  setText('eun-size', size);
+  setText('eun-fba-eur', fbaEur===null? '—' : fmt(fbaEur,2));
+  setText('eun-fba-rmb', fbaRmb===null? '—' : fmt(fbaRmb,2));
+  setText('eun-volg', volG===null? '—' : fmt(volG,2));
+  setText('eun-maxg', maxG===null? '—' : fmt(maxG,2));
+
+  // profit optional (detailed)
+  const price=n($('eun-price')?.value);
+  const refRatePct=n($('eun-refRate')?.value);
+  const cogsRmb=n($('eun-cogs')?.value) || 0;
+  const inboundRmb=n($('eun-inbound')?.value) || 0;
+  const otherFee=n($('eun-otherFee')?.value) || 0;
+  const acosPct=n($('eun-acos')?.value) || 0;
+  const returnRatePct=n($('eun-returnRate')?.value) || 0;
+  const unsellablePct=n($('eun-unsellable')?.value) || 0;
+
+  const storageMode=$('eun-storageMode') ? $('eun-storageMode').value : 'auto';
+  const storageManual=n($('eun-storageManual')?.value);
+
+  const costEur = (fx!==null) ? ((cogsRmb + inboundRmb)/fx) : null;
+  const refFee = (price!==null && refRatePct!==null) ? (price*refRatePct/100) : null;
+  const payout = (price!==null && refFee!==null && fbaEur!==null) ? (price - refFee - fbaEur) : null;
+  const ads = (price!==null) ? (price * acosPct/100) : null;
+  const returnLoss = (price!==null && fbaEur!==null) ? ((price + fbaEur) * (returnRatePct/100) * (unsellablePct/100)) : null;
+
+  // outputs will be finalized after storage computed below
+
+  const rate=monthlyStorageRateEUR(peak, size);
+  const days=n($('eun-days').value);
+  const monthDays=n($('eun-monthDays').value);
+  const qty=n($('eun-qty').value);
+  const storage=monthlyStorageFeeEUR(rate, days, qty, L,W,H, monthDays);
+  setText('eun-rate', rate===null? '—' : fmt(rate,2));
+  setText('eun-storage', storage===null? '—' : fmt(storage,4));
+
+  // finalize profit outputs
+  const storageUsed = (storageMode==='manual') ? (storageManual===null? null : storageManual) : storage;
+  const net = (price!==null && refFee!==null && fbaEur!==null && costEur!==null && ads!==null && returnLoss!==null && storageUsed!==null) ?
+    (price - refFee - fbaEur - costEur - ads - returnLoss - storageUsed - otherFee) : null;
+  const margin = (net!==null && price!==null && price!==0) ? (net/price) : null;
+  const beAcos = (price!==null && price!==0 && refFee!==null && fbaEur!==null && costEur!==null && returnLoss!==null && storageUsed!==null) ?
+    ((price - refFee - fbaEur - costEur - returnLoss - storageUsed - otherFee)/price) : null;
+
+  if($('eun-refFee')) setText('eun-refFee', refFee===null? '—' : fmt(refFee,2));
+  if($('eun-fbaUsed')) setText('eun-fbaUsed', fbaEur===null? '—' : fmt(fbaEur,2));
+  if($('eun-payout')) setText('eun-payout', payout===null? '—' : fmt(payout,2));
+  if($('eun-costEur')) setText('eun-costEur', costEur===null? '—' : fmt(costEur,2));
+  if($('eun-ads')) setText('eun-ads', ads===null? '—' : fmt(ads,2));
+  if($('eun-returnLoss')) setText('eun-returnLoss', returnLoss===null? '—' : fmt(returnLoss,2));
+  if($('eun-net')) setText('eun-net', net===null? '—' : fmt(net,2));
+  if($('eun-margin')) setText('eun-margin', margin===null? '—' : ((margin*100).toFixed(2)+'%'));
+  if($('eun-beAcos')) setText('eun-beAcos', beAcos===null? '—' : ((beAcos*100).toFixed(2)+'%'));
+}
+
+function calcRET(){
+  const unitVal=n($('ret-unitG').value);
+  const unitG=toGram(unitVal, $('ret-unitUnit') ? $('ret-unitUnit').value : 'g');
+  const L=n($('ret-L').value), W=n($('ret-W').value), H=n($('ret-H').value);
+  const fx=n($('ret-fx').value);
+  const type=$('ret-type').value;
+  const qty=n($('ret-qty').value);
+
+  const volG=volumetricWeightG(L,W,H);
+  const maxG=maxWeightG(unitG, volG);
+  const size=sizeCategory(unitG, volG, L,W,H);
+  const mode=$('ret-mode') ? $('ret-mode').value : 'auto';
+  const isOversize = (mode==='oversize') ? true : (mode==='standard') ? false : String(size||'').includes('大件');
+
+  const perEur=(maxG===null)? null : returnFeePerUnit(type, maxG, isOversize);
+  const perRmb=(perEur!==null && fx!==null) ? perEur*fx : null;
+  const totalEur=(perEur!==null && qty!==null) ? perEur*qty : null;
+
+  setText('ret-size', size);
+  setText('ret-volg', volG===null? '—' : fmt(volG,2));
+  setText('ret-maxg', maxG===null? '—' : fmt(maxG,2));
+  setText('ret-per-eur', perEur===null? '—' : fmt(perEur,2));
+  setText('ret-per-rmb', perRmb===null? '—' : fmt(perRmb,2));
+  setText('ret-total-eur', totalEur===null? '—' : fmt(totalEur,2));
+}
+
+function bindCalc(prefix, fn){
+  const panel=document.getElementById('panel-'+prefix);
+  panel.querySelectorAll('input,select').forEach(el=>{
+    el.addEventListener('input', fn);
+    el.addEventListener('change', fn);
+  });
+}
+
+function fillDemoDE(){
+  $('de-name').value='产品1';
+  $('de-unitG').value='1.95';
+  if($('de-unitUnit')) $('de-unitUnit').value='g';
+  $('de-fx').value='8.0884';
+  $('de-L').value='39'; $('de-W').value='22'; $('de-H').value='15';
+  if($('de-refRate')) $('de-refRate').value='15';
+  if($('de-price')) $('de-price').value='19.99';
+  if($('de-cost')) $('de-cost').value='35';
+  $('de-peak').value='否';
+  if($('de-feeMode')) $('de-feeMode').value='standard';
+  if($('de-cogs')) $('de-cogs').value='25';
+  if($('de-inbound')) $('de-inbound').value='10';
+  if($('de-otherFee')) $('de-otherFee').value='0';
+  if($('de-acos')) $('de-acos').value='10';
+  if($('de-returnRate')) $('de-returnRate').value='5';
+  if($('de-unsellable')) $('de-unsellable').value='30';
+  if($('de-storageMode')) $('de-storageMode').value='auto';
+  if($('de-storageManual')) $('de-storageManual').value='';
+  $('de-days').value='10'; $('de-monthDays').value='30'; $('de-qty').value='100';
+  $('de-weeks').value='23'; $('de-agedBucket').value='366-455'; $('de-agedQty').value='100';
+  calcDE();
+}
+function fillDemoEUN(){
+  $('eun-name').value='产品1';
+  $('eun-unitG').value='1.95';
+  if($('eun-unitUnit')) $('eun-unitUnit').value='g';
+  $('eun-fx').value='8.0884';
+  $('eun-L').value='39'; $('eun-W').value='22'; $('eun-H').value='15';
+  if($('eun-refRate')) $('eun-refRate').value='15';
+  if($('eun-price')) $('eun-price').value='19.99';
+  if($('eun-cogs')) $('eun-cogs').value='25';
+  if($('eun-inbound')) $('eun-inbound').value='10';
+  if($('eun-otherFee')) $('eun-otherFee').value='0';
+  if($('eun-acos')) $('eun-acos').value='10';
+  if($('eun-returnRate')) $('eun-returnRate').value='5';
+  if($('eun-unsellable')) $('eun-unsellable').value='30';
+  if($('eun-storageMode')) $('eun-storageMode').value='auto';
+  if($('eun-storageManual')) $('eun-storageManual').value='';
+  $('eun-peak').value='否';
+  $('eun-days').value='10'; $('eun-monthDays').value='30'; $('eun-qty').value='100';
+  calcEUN();
+}
+function fillDemoRET(){
+  $('ret-name').value='产品1';
+  $('ret-type').value='退回给卖家';
+  $('ret-qty').value='100';
+  if($('ret-mode')) $('ret-mode').value='auto';
+  $('ret-unitG').value='2100';
+  if($('ret-unitUnit')) $('ret-unitUnit').value='g';
+  $('ret-fx').value='8.0884';
+  $('ret-L').value='35'; $('ret-W').value='15'; $('ret-H').value='15';
+  calcRET();
+}
+
+function resetPanel(prefix){
+  const panel=document.getElementById('panel-'+prefix);
+  panel.querySelectorAll('input').forEach(i=>i.value='');
+  panel.querySelectorAll('select').forEach(s=>{ s.selectedIndex=0; });
+}
+
+// tabs
+const tabs=[...document.querySelectorAll('.tab')];
+const panels={de:$('panel-de'), eun:$('panel-eun'), ret:$('panel-ret'), policy:$('panel-policy'), compare:$('panel-compare')};
+function switchTab(key){
+  tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.tab===key ? 'true':'false'));
+  Object.entries(panels).forEach(([k,p])=>{ p.style.display = (k===key) ? '' : 'none'; });
+}
+
+tabs.forEach(t=>t.addEventListener('click',()=>switchTab(t.dataset.tab)));
+
+// policy
+if($('policy-top')) $('policy-top').addEventListener('click', ()=> window.scrollTo({top:0, behavior:'smooth'}));
+
+// history
+const HISTORY_KEY='amazon_eu_fba_calc_history_v1';
+function loadHistory(){
+  try{ return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]') || []; }catch(e){ return []; }
+}
+function saveHistory(list){
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+}
+function panelInputs(prefix){
+  const panel=$('panel-'+prefix);
+  const data={};
+  panel.querySelectorAll('input,select').forEach(el=>{
+    if(!el.id) return;
+    // skip buttons
+    if(el.tagName==='BUTTON') return;
+    data[el.id]=el.value;
+  });
+  return data;
+}
+function applyInputs(prefix, data){
+  const panel=$('panel-'+prefix);
+  Object.entries(data||{}).forEach(([id,val])=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    if(el.tagName==='INPUT' || el.tagName==='SELECT') el.value=val;
+  });
+  if(prefix==='de') calcDE();
+  if(prefix==='eun') calcEUN();
+  if(prefix==='ret') calcRET();
+}
+function renderHistory(prefix){
+  const box=$(prefix+'-historyList');
+  if(!box) return;
+  const list=loadHistory().filter(x=>x.prefix===prefix);
+  if(list.length===0){ box.innerHTML='<div class="muted" style="font-size:12px">暂无记录</div>'; return; }
+  box.innerHTML='';
+  list.slice().reverse().forEach(item=>{
+    const row=document.createElement('div');
+    row.className='row';
+    row.style.justifyContent='space-between';
+    row.style.border='1px solid var(--border)';
+    row.style.borderRadius='12px';
+    row.style.padding='10px 12px';
+    row.style.marginBottom='8px';
+    const left=document.createElement('div');
+    left.innerHTML=`<div style="font-weight:900; font-size:13px">${item.title||'记录'}</div><div class="muted" style="font-size:12px">${new Date(item.ts).toLocaleString()}</div>`;
+    const right=document.createElement('div');
+    right.className='row';
+    const btnLoad=document.createElement('button');
+    btnLoad.className='btn ghost';
+    btnLoad.textContent='回载';
+    btnLoad.onclick=()=>applyInputs(prefix,item.data);
+    const btnDel=document.createElement('button');
+    btnDel.className='btn ghost';
+    btnDel.textContent='删除';
+    btnDel.onclick=()=>{
+      const all=loadHistory();
+      const next=all.filter(x=>x.id!==item.id);
+      saveHistory(next);
+      renderHistory(prefix);
+    };
+    right.appendChild(btnLoad);
+    right.appendChild(btnDel);
+    row.appendChild(left);
+    row.appendChild(right);
+    box.appendChild(row);
+  });
+}
+function bindHistory(prefix){
+  const btn=$(prefix+'-save');
+  if(btn){
+    btn.addEventListener('click', ()=>{
+      const all=loadHistory();
+      const data=panelInputs(prefix);
+      const title=(data[prefix+'-name']||data[prefix+'-asin']||data[prefix+'-type']||prefix).toString().slice(0,40);
+      const item={id: Math.random().toString(36).slice(2), prefix, ts: Date.now(), title, data};
+      all.push(item);
+      saveHistory(all);
+      renderHistory(prefix);
+      const det=$(prefix+'-history');
+      if(det) det.open=true;
+    });
+  }
+  const btn2=$(prefix+'-historyBtn');
+  if(btn2){
+    btn2.addEventListener('click', ()=>{
+      const det=$(prefix+'-history');
+      if(det) det.open=!det.open;
+      renderHistory(prefix);
+    });
+  }
+  renderHistory(prefix);
+}
+bindHistory('de');
+bindHistory('eun');
+bindHistory('ret');
+
+// compare calculations
+function calcCompare(){
+  const unitVal=n($('cmp-unit')?.value);
+  const unitG=toGram(unitVal, $('cmp-unitUnit')? $('cmp-unitUnit').value:'g');
+  const L=n($('cmp-L')?.value), W=n($('cmp-W')?.value), H=n($('cmp-H')?.value);
+  const fx=n($('cmp-fx')?.value);
+  const price=n($('cmp-price')?.value);
+  const refRatePct=n($('cmp-refRate')?.value) || 0;
+  const cogsRmb=n($('cmp-cogs')?.value) || 0;
+  const inboundRmb=n($('cmp-inbound')?.value) || 0;
+  const otherFee=n($('cmp-otherFee')?.value) || 0;
+  const acosPct=n($('cmp-acos')?.value) || 0;
+  const returnRatePct=n($('cmp-returnRate')?.value) || 0;
+  const unsellablePct=n($('cmp-unsellable')?.value) || 0;
+  const storage=n($('cmp-storage')?.value) || 0;
+
+  const volG=volumetricWeightG(L,W,H);
+  const maxG=maxWeightG(unitG, volG);
+  const size=sizeCategory(unitG, volG, L,W,H);
+
+  const deFba=fbaFeeDE(unitG, volG, L,W,H);
+  const deMce=(deFba===null)? null : (deFba-0.26);
+  const eunFba=fbaFeeEUN(unitG, volG, L,W,H);
+
+  setText('cmp-size', size);
+  setText('cmp-volg', volG===null? '—' : fmt(volG,2));
+  setText('cmp-maxg', maxG===null? '—' : fmt(maxG,2));
+  setText('cmp-de-fba', deFba===null? '—' : fmt(deFba,2));
+  setText('cmp-de-mce', deMce===null? '—' : fmt(deMce,2));
+  setText('cmp-eun-fba', eunFba===null? '—' : fmt(eunFba,2));
+
+  const costEur = (fx!==null) ? ((cogsRmb+inboundRmb)/fx) : null;
+  const refFee = (price!==null) ? (price*refRatePct/100) : null;
+  const ads = (price!==null) ? (price*acosPct/100) : null;
+
+  function profitFor(fba){
+    if(price===null || fba===null || costEur===null || refFee===null || ads===null) return {net:null, margin:null};
+    const returnLoss = (price + fba) * (returnRatePct/100) * (unsellablePct/100);
+    const net = price - refFee - fba - costEur - ads - returnLoss - storage - otherFee;
+    const margin = price!==0 ? net/price : null;
+    return {net, margin};
+  }
+
+  const pDe=profitFor(deFba);
+  const pDeM=profitFor(deMce);
+  const pEun=profitFor(eunFba);
+
+  setText('cmp-de-net', pDe.net===null? '—' : fmt(pDe.net,2));
+  setText('cmp-de-mce-net', pDeM.net===null? '—' : fmt(pDeM.net,2));
+  setText('cmp-eun-net', pEun.net===null? '—' : fmt(pEun.net,2));
+
+  setText('cmp-de-margin', pDe.margin===null? '—' : (pDe.margin*100).toFixed(2)+'%');
+  setText('cmp-de-mce-margin', pDeM.margin===null? '—' : (pDeM.margin*100).toFixed(2)+'%');
+  setText('cmp-eun-margin', pEun.margin===null? '—' : (pEun.margin*100).toFixed(2)+'%');
+}
+
+function bindCompare(){
+  const panel=$('panel-compare');
+  if(!panel) return;
+  panel.querySelectorAll('input,select').forEach(el=>{
+    el.addEventListener('input', calcCompare);
+    el.addEventListener('change', calcCompare);
+  });
+  if($('cmp-demo')) $('cmp-demo').addEventListener('click', ()=>{
+    $('cmp-unit').value='1.95';
+    $('cmp-unitUnit').value='g';
+    $('cmp-L').value='39'; $('cmp-W').value='22'; $('cmp-H').value='15';
+    $('cmp-fx').value='8.0884';
+    $('cmp-price').value='19.99';
+    $('cmp-refRate').value='15';
+    $('cmp-cogs').value='25';
+    $('cmp-inbound').value='10';
+    $('cmp-otherFee').value='0';
+    $('cmp-acos').value='10';
+    $('cmp-returnRate').value='5';
+    $('cmp-unsellable').value='30';
+    $('cmp-storage').value='';
+    calcCompare();
+  });
+  if($('cmp-reset')) $('cmp-reset').addEventListener('click', ()=>{
+    panel.querySelectorAll('input').forEach(i=>i.value='');
+    panel.querySelectorAll('select').forEach(s=>s.selectedIndex=0);
+    calcCompare();
+  });
+  // history for compare (reuse same functions)
+  function renderCmp(){
+    const box=$('cmp-historyList');
+    if(!box) return;
+    const list=loadHistory().filter(x=>x.prefix==='compare');
+    if(list.length===0){ box.innerHTML='<div class="muted" style="font-size:12px">暂无记录</div>'; return; }
+    box.innerHTML='';
+    list.slice().reverse().forEach(item=>{
+      const row=document.createElement('div');
+      row.className='row';
+      row.style.justifyContent='space-between';
+      row.style.border='1px solid var(--border)';
+      row.style.borderRadius='12px';
+      row.style.padding='10px 12px';
+      row.style.marginBottom='8px';
+      const left=document.createElement('div');
+      left.innerHTML=`<div style="font-weight:900; font-size:13px">${item.title||'记录'}</div><div class="muted" style="font-size:12px">${new Date(item.ts).toLocaleString()}</div>`;
+      const right=document.createElement('div');
+      right.className='row';
+      const btnLoad=document.createElement('button');
+      btnLoad.className='btn ghost';
+      btnLoad.textContent='回载';
+      btnLoad.onclick=()=>applyInputs('compare', item.data);
+      const btnDel=document.createElement('button');
+      btnDel.className='btn ghost';
+      btnDel.textContent='删除';
+      btnDel.onclick=()=>{ const all=loadHistory(); saveHistory(all.filter(x=>x.id!==item.id)); renderCmp(); };
+      right.appendChild(btnLoad); right.appendChild(btnDel);
+      row.appendChild(left); row.appendChild(right);
+      box.appendChild(row);
+    });
+  }
+  // override applyInputs to handle compare
+  const oldApply=applyInputs;
+  applyInputs=function(prefix, data){
+    if(prefix!=='compare') return oldApply(prefix,data);
+    Object.entries(data||{}).forEach(([id,val])=>{ const el=document.getElementById(id); if(el && (el.tagName==='INPUT' || el.tagName==='SELECT')) el.value=val; });
+    calcCompare();
+  };
+
+  if($('cmp-save')) $('cmp-save').addEventListener('click', ()=>{
+    const all=loadHistory();
+    const data=panelInputs('compare');
+    const title=(data['cmp-price']? ('EUR '+data['cmp-price']) : '对比').toString();
+    all.push({id:Math.random().toString(36).slice(2), prefix:'compare', ts:Date.now(), title, data});
+    saveHistory(all);
+    renderCmp();
+    if($('cmp-history')) $('cmp-history').open=true;
+  });
+  if($('cmp-historyBtn')) $('cmp-historyBtn').addEventListener('click', ()=>{
+    if($('cmp-history')) $('cmp-history').open=!$('cmp-history').open;
+    renderCmp();
+  });
+
+  renderCmp();
+  calcCompare();
+}
+
+bindCompare();
+
+// bind
+bindCalc('de', calcDE);
+bindCalc('eun', calcEUN);
+bindCalc('ret', calcRET);
+
+// 初始：旺季自动判断
+if($('de-autoPeak')) $('de-autoPeak').value='auto';
+if($('eun-autoPeak')) $('eun-autoPeak').value='auto';
+
+// buttons
+$('de-demo').addEventListener('click', fillDemoDE);
+$('eun-demo').addEventListener('click', fillDemoEUN);
+$('ret-demo').addEventListener('click', fillDemoRET);
+$('de-reset').addEventListener('click', ()=>{resetPanel('de'); calcDE();});
+$('eun-reset').addEventListener('click', ()=>{resetPanel('eun'); calcEUN();});
+$('ret-reset').addEventListener('click', ()=>{resetPanel('ret'); calcRET();});
+
+// init
+fillDemoDE();
+fillDemoEUN();
+fillDemoRET();
+switchTab('de');
+</script>
+</body>
+</html>
