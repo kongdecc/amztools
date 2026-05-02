@@ -171,19 +171,50 @@ export default function GlobalPromoPopup() {
           </button>
         )}
 
-        {config.linkUrl ? (
-          <a
-            href={config.linkUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block"
-            onClick={() => dismiss('manual')}
-          >
-            {image}
-          </a>
-        ) : (
-          image
-        )}
+        <div className="space-y-3">
+          {config.linkUrl ? (
+            <a
+              href={config.linkUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block"
+              onClick={() => dismiss('manual')}
+            >
+              {image}
+            </a>
+          ) : (
+            <a
+              href={config.imageUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block"
+            >
+              {image}
+            </a>
+          )}
+
+          <div className="flex items-center justify-center gap-3">
+            <a
+              href={config.imageUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-w-28 items-center justify-center rounded-full bg-white px-4 py-2 text-sm font-medium text-gray-900 shadow-lg transition hover:bg-gray-100"
+            >
+              查看原图
+            </a>
+            {config.linkUrl && (
+              <a
+                href={config.linkUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-w-28 items-center justify-center rounded-full bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-lg transition hover:bg-indigo-700"
+                onClick={() => dismiss('manual')}
+              >
+                前往活动页
+              </a>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   )
