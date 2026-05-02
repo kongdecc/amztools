@@ -2,7 +2,7 @@ import { SettingsProvider } from '@/components/SettingsProvider'
 import BlogListClient from './BlogListClient'
 import { db } from '@/lib/db'
 import { Metadata } from 'next'
-import { DEFAULT_NAV_ITEMS, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
+import { DEFAULT_NAV_ITEMS, DEFAULT_SITE_SETTINGS, ensureNavItems } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
 
@@ -71,12 +71,12 @@ export default async function Page() {
     const row = await db.siteSettings.findUnique({ where: { key: 'navigation' } })
     const arr = row && row.value ? JSON.parse(row.value) : []
     if (Array.isArray(arr) && arr.length > 0) {
-      navItems = arr
+      navItems = ensureNavItems(arr)
     } else {
-      navItems = DEFAULT_NAV_ITEMS
+      navItems = ensureNavItems(DEFAULT_NAV_ITEMS)
     }
   } catch {
-    navItems = DEFAULT_NAV_ITEMS
+    navItems = ensureNavItems(DEFAULT_NAV_ITEMS)
   }
   const base = getSiteBase()
   const origin = base ? String(base).replace(/\/$/, '') : ''

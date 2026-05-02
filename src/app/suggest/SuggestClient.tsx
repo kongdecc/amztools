@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useSettings } from '@/components/SettingsProvider'
 import TopAdBar from '@/components/TopAdBar'
 import { LayoutDashboard, Send, ChevronDown, MoreHorizontal } from 'lucide-react'
-import { DEFAULT_CATEGORIES, DEFAULT_TOOLS, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
+import { DEFAULT_CATEGORIES, DEFAULT_TOOLS, DEFAULT_SITE_SETTINGS, ensureNavItems } from '@/lib/constants'
 
 interface SuggestClientProps {
   initialNavItems: any[]
@@ -36,7 +36,7 @@ export default function SuggestClient({ initialNavItems, modules }: SuggestClien
     try {
       const raw = (settings as any).navigation
       const arr = raw ? JSON.parse(String(raw)) : []
-      if (Array.isArray(arr) && arr.length) setNavItems(arr)
+      if (Array.isArray(arr) && arr.length) setNavItems(ensureNavItems(arr))
     } catch {}
   }, [settings])
 

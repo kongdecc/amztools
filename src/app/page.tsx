@@ -2,7 +2,7 @@ import { SettingsProvider } from '@/components/SettingsProvider'
 import HomeLayoutClient from './HomeClient'
 import { db } from '@/lib/db'
 import { Suspense } from 'react'
-import { BLOCKED_TOOL_KEYS, DEFAULT_TOOLS, DEFAULT_CATEGORIES, DEFAULT_NAV_ITEMS } from '@/lib/constants'
+import { BLOCKED_TOOL_KEYS, DEFAULT_TOOLS, DEFAULT_CATEGORIES, DEFAULT_NAV_ITEMS, ensureNavItems } from '@/lib/constants'
 
 export const revalidate = 0
 
@@ -56,9 +56,9 @@ export default async function Page({ searchParams }: { searchParams?: Record<str
   let navItems: any[] = []
   try {
     const arr = navRow && (navRow as any).value ? JSON.parse(String((navRow as any).value)) : []
-    navItems = Array.isArray(arr) && arr.length > 0 ? arr : DEFAULT_NAV_ITEMS
+    navItems = ensureNavItems(Array.isArray(arr) && arr.length > 0 ? arr : DEFAULT_NAV_ITEMS)
   } catch {
-    navItems = DEFAULT_NAV_ITEMS
+    navItems = ensureNavItems(DEFAULT_NAV_ITEMS)
   }
 
   const blockedKeys = new Set(BLOCKED_TOOL_KEYS)
@@ -95,12 +95,6 @@ export default async function Page({ searchParams }: { searchParams?: Record<str
   let categories = categoriesRows
   if (!categories || categories.length === 0) {
     categories = DEFAULT_CATEGORIES
-  }
-
-  // Ensure "Functionality" menu item exists
-  const hasFuncMenu = navItems.some((item: any) => String(item.label || '').includes('功能分类') || String(item.id || '') === 'functionality')
-  if (!hasFuncMenu) {
-    navItems.splice(0, 0, { id: 'functionality', label: '功能分类', order: 0, children: [] })
   }
 
   const initialActiveTab = String(searchParams?.tab || '')

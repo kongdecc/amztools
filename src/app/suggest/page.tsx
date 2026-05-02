@@ -2,7 +2,7 @@ import { SettingsProvider } from '@/components/SettingsProvider'
 import SuggestClient from './SuggestClient'
 import { db } from '@/lib/db'
 import { Metadata } from 'next'
-import { BLOCKED_TOOL_KEYS, DEFAULT_NAV_ITEMS, DEFAULT_TOOLS, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
+import { BLOCKED_TOOL_KEYS, DEFAULT_NAV_ITEMS, DEFAULT_TOOLS, DEFAULT_SITE_SETTINGS, ensureNavItems } from '@/lib/constants'
 
 export const revalidate = 0
 
@@ -38,7 +38,7 @@ export default async function Page() {
     
     const row = await (db as any).siteSettings.findUnique({ where: { key: 'navigation' } })
     const arr = row && (row as any).value ? JSON.parse(String((row as any).value)) : []
-    navItems = Array.isArray(arr) && arr.length > 0 ? arr : DEFAULT_NAV_ITEMS
+    navItems = ensureNavItems(Array.isArray(arr) && arr.length > 0 ? arr : DEFAULT_NAV_ITEMS)
 
     const mods = await (db as any).toolModule.findMany({ orderBy: { order: 'asc' } })
     modules = Array.isArray(mods) ? mods.filter((m:any) => m.status !== '下架' && !blockedKeys.has(m.key)) : []
@@ -61,13 +61,13 @@ export default async function Page() {
     })
 
   } catch { 
-    navItems = DEFAULT_NAV_ITEMS
+    navItems = ensureNavItems(DEFAULT_NAV_ITEMS)
     modules = DEFAULT_TOOLS.filter((m: any) => !blockedKeys.has(m.key))
   }
 
   // Fallback nav items if empty (optional, but good for robustness)
   if (navItems.length === 0) {
-    navItems = DEFAULT_NAV_ITEMS
+    navItems = ensureNavItems(DEFAULT_NAV_ITEMS)
   }
 
   const jsonLd = {

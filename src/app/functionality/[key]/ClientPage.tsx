@@ -8,7 +8,7 @@ import { useSettings } from '@/components/SettingsProvider'
 import TopAdBar from '@/components/TopAdBar'
 import { ChevronDown } from 'lucide-react'
 import ToolContainer from '@/components/ToolContainer'
-import { DEFAULT_NAV_ITEMS, DEFAULT_TOOLS, DEFAULT_CATEGORIES, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
+import { DEFAULT_NAV_ITEMS, DEFAULT_TOOLS, DEFAULT_CATEGORIES, DEFAULT_SITE_SETTINGS, ensureNavItems } from '@/lib/constants'
 
 export default function ClientPage({ 
   initialModules = [], 
@@ -126,7 +126,7 @@ export default function ClientPage({
       try { 
         const raw = (settings as any).navigation; 
         const arr = raw ? JSON.parse(String(raw)) : []; 
-        setNavItems(Array.isArray(arr) && arr.length > 0 ? arr : DEFAULT_NAV_ITEMS) 
+        setNavItems(ensureNavItems(Array.isArray(arr) && arr.length > 0 ? arr : DEFAULT_NAV_ITEMS)) 
       } catch {} 
     } else {
       // If props provided, use them, but check if settings updated? 
@@ -136,7 +136,7 @@ export default function ClientPage({
          try {
            const raw = (settings as any).navigation
            const arr = JSON.parse(String(raw))
-           if (Array.isArray(arr) && arr.length > 0) setNavItems(arr)
+           if (Array.isArray(arr) && arr.length > 0) setNavItems(ensureNavItems(arr))
          } catch {}
       }
     }

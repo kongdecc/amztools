@@ -4,7 +4,7 @@ import { LayoutDashboard, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import RewardImage from '@/components/RewardImage'
 import TopAdBar from '@/components/TopAdBar'
-import { BLOCKED_TOOL_KEYS, DEFAULT_NAV_ITEMS, DEFAULT_TOOLS, DEFAULT_CATEGORIES, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
+import { BLOCKED_TOOL_KEYS, DEFAULT_NAV_ITEMS, DEFAULT_TOOLS, DEFAULT_CATEGORIES, DEFAULT_SITE_SETTINGS, ensureNavItems } from '@/lib/constants'
 
 export const revalidate = 0
 
@@ -29,15 +29,9 @@ async function getSettings() {
     try {
       const navRow = await (db as any).siteSettings.findUnique({ where: { key: 'navigation' } })
       const arr = navRow && (navRow as any).value ? JSON.parse(String((navRow as any).value)) : []
-      navItems = Array.isArray(arr) && arr.length > 0 ? arr : DEFAULT_NAV_ITEMS
+      navItems = ensureNavItems(Array.isArray(arr) && arr.length > 0 ? arr : DEFAULT_NAV_ITEMS)
     } catch {
-      navItems = DEFAULT_NAV_ITEMS
-    }
-    
-    // Ensure "Functionality" menu item exists
-    const hasFuncMenu = navItems.some((item: any) => String(item.label || '').includes('功能分类') || String(item.id || '') === 'functionality')
-    if (!hasFuncMenu) {
-      navItems.splice(0, 0, { id: 'functionality', label: '功能分类', order: 0, children: [] })
+      navItems = ensureNavItems(DEFAULT_NAV_ITEMS)
     }
 
     let modules: any[] = []
@@ -90,7 +84,7 @@ async function getSettings() {
       friendLinks: '[]',
       showFriendLinksLabel: false,
       rewardDescription: '如果您觉得本工具箱对您有帮助，欢迎打赏支持我们继续维护和开发！',
-      navItems: DEFAULT_NAV_ITEMS,
+      navItems: ensureNavItems(DEFAULT_NAV_ITEMS),
       modules: DEFAULT_TOOLS.filter((m: any) => !blockedKeys.has(m.key)),
       categories: DEFAULT_CATEGORIES
     }

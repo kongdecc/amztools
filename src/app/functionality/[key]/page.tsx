@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import { db } from '@/lib/db'
-import { BLOCKED_TOOL_KEYS, DEFAULT_TOOLS, DEFAULT_CATEGORIES, DEFAULT_NAV_ITEMS, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
+import { BLOCKED_TOOL_KEYS, DEFAULT_TOOLS, DEFAULT_CATEGORIES, DEFAULT_NAV_ITEMS, DEFAULT_SITE_SETTINGS, ensureNavItems } from '@/lib/constants'
 import ClientPage from './ClientPage'
 import { SettingsProvider } from '@/components/SettingsProvider'
 
@@ -51,8 +51,8 @@ async function getData() {
   let navItems = []
   try {
     const arr = navRow && (navRow as any).value ? JSON.parse(String((navRow as any).value)) : []
-    navItems = Array.isArray(arr) && arr.length > 0 ? arr : DEFAULT_NAV_ITEMS
-  } catch { navItems = DEFAULT_NAV_ITEMS }
+    navItems = ensureNavItems(Array.isArray(arr) && arr.length > 0 ? arr : DEFAULT_NAV_ITEMS)
+  } catch { navItems = ensureNavItems(DEFAULT_NAV_ITEMS) }
 
   return { settings, categories, modules, navItems }
 }

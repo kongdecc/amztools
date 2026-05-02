@@ -16,8 +16,47 @@ export const DEFAULT_NAV_ITEMS = [
   { id: 'functionality', label: '功能分类', order: 0, children: [] },
   { id: 'about', label: '关于', href: '/about', order: 1, isExternal: false, active: true },
   { id: 'blog', label: '博客', href: '/blog', order: 2, isExternal: false, active: true },
-  { id: 'suggest', label: '提需求', href: '/suggest', order: 3, isExternal: false, active: true }
+  { id: 'suggest', label: '提需求', href: '/suggest', order: 3, isExternal: false, active: true },
+  { id: 'reward', label: '打赏支持', href: '/reward', order: 4, isExternal: false, active: true }
 ]
+
+export function ensureNavItems(items: any[]) {
+  const list = Array.isArray(items) ? items.filter(Boolean) : []
+  const byId: Record<string, any> = {}
+
+  for (const item of list) {
+    const id = String((item as any)?.id || '').trim()
+    if (id) byId[id] = item
+  }
+
+  for (const def of DEFAULT_NAV_ITEMS) {
+    const existing = byId[def.id]
+    if (!existing) {
+      byId[def.id] = { ...def }
+      continue
+    }
+
+    const merged = { ...def, ...existing }
+
+    if (def.id === 'functionality') {
+      merged.children = Array.isArray(existing.children) ? existing.children : []
+      merged.href = undefined
+      merged.isExternal = false
+      merged.active = true
+    } else {
+      const href = typeof existing.href === 'string' ? existing.href : ''
+      if (!href || href === '/adout' || (!Boolean(existing.isExternal) && !href.startsWith('/'))) {
+        merged.href = def.href
+      }
+      merged.isExternal = existing.isExternal === true
+      merged.active = existing.active === false ? false : true
+    }
+
+    byId[def.id] = merged
+  }
+
+  return Object.values(byId).sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
+}
 
 export const DEFAULT_CATEGORIES = [
   { key: 'advertising', label: '广告工具', enabled: true, order: 1 },

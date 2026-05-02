@@ -2,7 +2,7 @@ import { SettingsProvider } from '@/components/SettingsProvider'
 import { db } from '@/lib/db'
 import { marked } from 'marked'
 import AboutClient from '@/app/about/AboutClient'
-import { DEFAULT_NAV_ITEMS, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
+import { DEFAULT_NAV_ITEMS, DEFAULT_SITE_SETTINGS, ensureNavItems } from '@/lib/constants'
 
 export const revalidate = 0
 
@@ -17,12 +17,12 @@ export default async function Page() {
     const row = await (db as any).siteSettings.findUnique({ where: { key: 'navigation' } })
     const arr = row && (row as any).value ? JSON.parse(String((row as any).value)) : []
     if (Array.isArray(arr) && arr.length > 0) {
-      navItems = arr
+      navItems = ensureNavItems(arr)
     } else {
-      navItems = DEFAULT_NAV_ITEMS
+      navItems = ensureNavItems(DEFAULT_NAV_ITEMS)
     }
   } catch {
-    navItems = DEFAULT_NAV_ITEMS
+    navItems = ensureNavItems(DEFAULT_NAV_ITEMS)
   }
   const aboutContent = String(initialSettings['aboutContent'] || DEFAULT_SITE_SETTINGS.siteDescription)
   let initialHtml = ''

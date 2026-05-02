@@ -2,7 +2,7 @@ import { SettingsProvider } from '@/components/SettingsProvider'
 import FunctionalityClient from './FunctionalityClient'
 import { db } from '@/lib/db'
 import { Metadata } from 'next'
-import { BLOCKED_TOOL_KEYS, DEFAULT_TOOLS, DEFAULT_CATEGORIES, DEFAULT_NAV_ITEMS, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
+import { BLOCKED_TOOL_KEYS, DEFAULT_TOOLS, DEFAULT_CATEGORIES, DEFAULT_NAV_ITEMS, DEFAULT_SITE_SETTINGS, ensureNavItems } from '@/lib/constants'
 
 export const revalidate = 0
 
@@ -76,8 +76,8 @@ export default async function FunctionalityPage() {
   let navItems: any[] = []
   try {
     const arr = navRow && (navRow as any).value ? JSON.parse(String((navRow as any).value)) : []
-    navItems = Array.isArray(arr) && arr.length > 0 ? arr : DEFAULT_NAV_ITEMS
-  } catch { navItems = DEFAULT_NAV_ITEMS }
+    navItems = ensureNavItems(Array.isArray(arr) && arr.length > 0 ? arr : DEFAULT_NAV_ITEMS)
+  } catch { navItems = ensureNavItems(DEFAULT_NAV_ITEMS) }
 
   const safeOrigin = process.env.NEXT_PUBLIC_SITE_URL || ''
   const jsonLd = {
