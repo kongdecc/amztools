@@ -110,8 +110,8 @@ export async function DELETE(request: Request) {
     const url = new URL(request.url)
     const id = url.searchParams.get('id') || ''
     if (!id) return NextResponse.json({ error: 'bad_request' }, { status: 400 })
-    const current = await readDbNav(true) ?? readFileNav() ?? defaults
-    const next = current.filter(x => x.id !== id)
+    const current = await readDbNav(true) ?? readFileNav() ?? (ensureNavItems(DEFAULT_NAV_ITEMS) as NavItem[])
+    const next = current.filter((x: NavItem) => x.id !== id)
     const ok = await writeDbNav(next)
     if (!ok) writeFileNav(next)
     return NextResponse.json({ ok: true })
