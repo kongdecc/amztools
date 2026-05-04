@@ -20,12 +20,20 @@ export const DEFAULT_NAV_ITEMS = [
   { id: 'reward', label: '打赏支持', href: '/reward', order: 4, isExternal: false, active: true }
 ]
 
+function isFunctionalityNavItem(item: any) {
+  const id = String(item?.id || '').trim().toLowerCase()
+  const label = String(item?.label || '').trim()
+  const href = String(item?.href || '').trim().toLowerCase()
+  return id === 'functionality' || label.includes('功能分类') || href === '/functionality'
+}
+
 export function ensureNavItems(items: any[]) {
   const list = Array.isArray(items) ? items.filter(Boolean) : []
   const byId: Record<string, any> = {}
 
   for (const item of list) {
-    const id = String((item as any)?.id || '').trim()
+    const raw = item as any
+    const id = isFunctionalityNavItem(raw) ? 'functionality' : String(raw?.id || '').trim()
     if (id) byId[id] = item
   }
 
