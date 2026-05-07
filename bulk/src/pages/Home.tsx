@@ -2135,6 +2135,7 @@ function createInitialSd(): SdCampaignWizard {
 }
 
 export default function Home() {
+  const isEmbedded = typeof window !== "undefined" && window.self !== window.top;
   const [tool, setTool] = useState<"sp" | "sb" | "sd" | "portfolios">("sp");
   const [helpOpen, setHelpOpen] = useState(false);
   const [workspaceLayout, setWorkspaceLayout] = useState<"split" | "editor" | "preview">("split");
@@ -2796,23 +2797,20 @@ export default function Home() {
           )}
         </div>
 
-        <footer className="mt-10 text-xs text-muted-foreground">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span>纯前端生成，不上传你的数据到任何服务器</span>
-            <span>
-              版权归 跨境乐趣园所有 | 作者：達哥 | 官网：
-              {" "}
-              <a
-                href="https://amzlink.top/"
-                target="_blank"
-                rel="noreferrer"
-                className="text-primary underline-offset-4 hover:underline"
-              >
-                https://amzlink.top/
-              </a>
-            </span>
-          </div>
-        </footer>
+        {!isEmbedded ? (
+          <footer className="mt-10 pb-6 text-center text-xs text-muted-foreground">
+            版权归 跨境乐趣园所有 | 作者：達哥 | 官网：
+            {" "}
+            <a
+              href="https://amzlink.top/"
+              target="_blank"
+              rel="noreferrer"
+              className="text-primary underline underline-offset-4"
+            >
+              https://amzlink.top/
+            </a>
+          </footer>
+        ) : null}
       </div>
     </div>
   );
