@@ -42,6 +42,7 @@ const ImageInfoViewerPage = dynamic(() => import('@/components/ImageInfoViewerPa
 const StorageFeeCalculatorPage = dynamic(() => import('@/components/StorageFeeCalculatorPage'), { loading: LoadingTool })
 const AmazonCalculatorPage = dynamic(() => import('@/components/AmazonCalculatorPage'), { loading: LoadingTool })
 const AmazonAdsAnalyzer = dynamic(() => import('@/components/AmazonAdsAnalyzer'), { loading: LoadingTool })
+const AmazonBulkAdsTool = dynamic(() => import('@/components/AmazonBulkAdsTool'), { loading: LoadingTool })
 const AmazonEuFbaCalculator = dynamic(() => import('@/components/AmazonEuFbaCalculator'), { loading: LoadingTool })
 
 const PlaceholderPage = ({ title, icon: Icon }: { title: string; icon: any }) => (
@@ -61,7 +62,7 @@ const PlaceholderPage = ({ title, icon: Icon }: { title: string; icon: any }) =>
 )
 
 const ToolContainer = memo(({ activeTab }: { activeTab: string }) => {
-  const isFullWidth = activeTab === 'amazon-ads-analyzer'
+  const isFullWidth = activeTab === 'amazon-ads-analyzer' || activeTab === 'amazon-bulk-ads-tool'
   
   const content = (() => {
     switch (activeTab) {
@@ -99,6 +100,7 @@ const ToolContainer = memo(({ activeTab }: { activeTab: string }) => {
       case 'storage-fee-calc': return <StorageFeeCalculatorPage />
       case 'sales-calc': return <AmazonCalculatorPage />
       case 'amazon-ads-analyzer': return <AmazonAdsAnalyzer />
+      case 'amazon-bulk-ads-tool': return <AmazonBulkAdsTool />
       case 'amazon-eu-fba-calculator': return <AmazonEuFbaCalculator />
       default: return <PlaceholderPage title="功能开发中" icon={Hammer} />
     }

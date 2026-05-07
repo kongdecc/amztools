@@ -28,6 +28,7 @@ export default function ClientPage({
   const iconMap: Record<string, any> = {
     'ad-calc': Calculator,
     'amazon-ads-analyzer': BarChart3,
+    'amazon-bulk-ads-tool': BarChart3,
     'cpc-compass': Crosshair,
     'editor': Type,
     'unit': Scale,
@@ -208,7 +209,7 @@ export default function ClientPage({
       </header>
       <TopAdBar />
       <main className="flex-1 p-8">
-        <div className={key === 'amazon-ads-analyzer' ? "w-full" : "max-w-7xl mx-auto"}>
+        <div className={key === 'amazon-ads-analyzer' || key === 'amazon-bulk-ads-tool' ? "w-full" : "max-w-7xl mx-auto"}>
           {renderTool()}
         </div>
       </main>

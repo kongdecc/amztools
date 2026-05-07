@@ -79,6 +79,7 @@ export const DEFAULT_TOOLS = [
   { key: 'ad-calc', title: '广告竞价计算', desc: '亚马逊广告策略实时出价计算，支持Fixed/Dynamic策略', status: '启用', views: 0, color: 'blue', order: 1, category: 'advertising' },
   { key: 'cpc-compass', title: 'CPC利润测算', desc: '集成FBA费率、佣金计算，精准推导盈亏平衡CPC及ACOS', status: '启用', views: 0, color: 'blue', order: 2, category: 'advertising' },
   { key: 'amazon-ads-analyzer', title: '亚马逊广告分析工具', desc: '可视化分析亚马逊广告报表，支持多维度KPI分析、散点图趋势和搜索词优化建议', status: '启用', views: 0, color: 'blue', order: 3, category: 'advertising' },
+  { key: 'amazon-bulk-ads-tool', title: '亚马逊广告批量处理工具', desc: '广告 Bulk 表批量创建、导入、更新和导出，纯前端处理不上传数据', status: '启用', views: 0, color: 'blue', order: 3.5, category: 'advertising' },
 
   { key: 'delivery', title: '美国站配送费计算', desc: '按2025/2026规则计算配送费用', status: '启用', views: 0, color: 'orange', order: 3, category: 'operation' },
   { key: 'amazon-eu-fba-calculator', title: 'Amazon EU FBA 费用计算器', desc: '欧洲站配送费/仓储费/弃置退仓/多站点对比的一体化计算', status: '启用', views: 0, color: 'orange', order: 3.1, category: 'operation' },

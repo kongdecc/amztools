@@ -98,6 +98,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
   const iconMap: Record<string, any> = {
     'ad-calc': Calculator,
     'amazon-ads-analyzer': BarChart3,
+    'amazon-bulk-ads-tool': BarChart3,
     'cpc-compass': Crosshair,
     'editor': Type,
     'unit': Scale,
@@ -131,6 +132,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
   const colorOverride: Record<string, string> = {
     'ad-calc': 'blue',
     'amazon-ads-analyzer': 'blue',
+    'amazon-bulk-ads-tool': 'blue',
     'cpc-compass': 'blue',
     'editor': 'fuchsia',
     'unit': 'emerald',

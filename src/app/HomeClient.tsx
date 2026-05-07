@@ -35,6 +35,7 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
   const iconMap: Record<string, any> = {
     'ad-calc': Calculator,
     'amazon-ads-analyzer': BarChart3,
+    'amazon-bulk-ads-tool': BarChart3,
     'cpc-compass': Crosshair,
     'editor': Type,
     'unit': Scale,
@@ -188,6 +189,7 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
                     const colorOverride: Record<string, string> = {
                       'ad-calc': 'blue',
                       'amazon-ads-analyzer': 'blue',
+                      'amazon-bulk-ads-tool': 'blue',
                       'cpc-compass': 'blue',
                       'editor': 'fuchsia',
                       'unit': 'emerald',
@@ -315,6 +317,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
   const iconMap: Record<string, any> = useMemo(() => ({
     'ad-calc': Calculator,
     'amazon-ads-analyzer': BarChart3,
+    'amazon-bulk-ads-tool': BarChart3,
     'cpc-compass': Crosshair,
     'editor': Type,
     'unit': Scale,
@@ -659,7 +662,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
               </button>
             </div>
           )}
-          <div className="max-w-7xl mx-auto">
+          <div className={activeTab === 'amazon-ads-analyzer' || activeTab === 'amazon-bulk-ads-tool' ? 'w-full' : 'max-w-7xl mx-auto'}>
             {activeTab === 'home' ? (
               <HomePage onNavigate={handleNavigate} modules={modules} categories={categories} />
             ) : activeTab === 'functionality' ? (
