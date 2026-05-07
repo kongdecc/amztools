@@ -38,6 +38,7 @@ const FBAWarehouses = dynamic(() => import('@/components/FBAWarehouses'), { load
 const FBALabelEditor = dynamic(() => import('@/components/FBALabelEditor'), { loading: LoadingTool })
 const ImageCompressionPage = dynamic(() => import('@/components/ImageCompressionPage'), { loading: LoadingTool })
 const ImageToPdfBatchPage = dynamic(() => import('@/components/ImageToPdfBatchPage'), { loading: LoadingTool })
+const ImageInfoViewerPage = dynamic(() => import('@/components/ImageInfoViewerPage'), { loading: LoadingTool })
 const StorageFeeCalculatorPage = dynamic(() => import('@/components/StorageFeeCalculatorPage'), { loading: LoadingTool })
 const AmazonCalculatorPage = dynamic(() => import('@/components/AmazonCalculatorPage'), { loading: LoadingTool })
 const AmazonAdsAnalyzer = dynamic(() => import('@/components/AmazonAdsAnalyzer'), { loading: LoadingTool })
@@ -93,6 +94,7 @@ const ToolContainer = memo(({ activeTab }: { activeTab: string }) => {
       case 'fba-label-editor': return <FBALabelEditor />
       case 'image-compression': return <ImageCompressionPage />
       case 'image-to-pdf-batch': return <ImageToPdfBatchPage />
+      case 'image-info-viewer': return <ImageInfoViewerPage />
       case 'amazon-promotion-stacking': return <AmazonPromotionStackingCalculator />
       case 'storage-fee-calc': return <StorageFeeCalculatorPage />
       case 'sales-calc': return <AmazonCalculatorPage />

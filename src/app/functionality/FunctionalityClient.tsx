@@ -113,6 +113,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
     'content-filter': Filter,
     'image-resizer': ImageIcon,
     'image-to-pdf-batch': ImageIcon,
+    'image-info-viewer': ImageIcon,
     'amazon-global': Globe,
     'rating-sales-reverse': Star,
     'max-reserve-fee': Calculator,

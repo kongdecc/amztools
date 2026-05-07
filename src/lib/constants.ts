@@ -108,6 +108,7 @@ export const DEFAULT_TOOLS = [
   { key: 'duplicate-remover', title: '去除重复文本工具', desc: '智能去重，多种模式，支持按行、空格、逗号等分隔符，支持排序和过滤', status: '启用', views: 0, color: 'purple', order: 27, category: 'image-text' },
   { key: 'content-filter', title: '英文文本过滤工具', desc: '智能筛选和删除英文文本中的介词、连词、冠词等无实际意义的词汇', status: '启用', views: 0, color: 'teal', order: 28, category: 'image-text' },
   { key: 'pinyin-converter', title: '汉字转拼音', desc: '支持声调/无声调拼音转换，拼音对照，语音朗读', status: '启用', views: 0, color: 'blue', order: 29, category: 'image-text' },
+  { key: 'image-info-viewer', title: '批量图片信息查看器', desc: '批量查看图片尺寸、清晰度、设备、作者、拍摄参数和完整 EXIF 元数据', status: '启用', views: 0, color: 'indigo', order: 29.5, category: 'image-text' },
 
   { key: 'carton-calc-advanced', title: '外箱装箱计算器', desc: '支持 6 种朝向 + 单层补洞混合摆放，估算更接近实际装箱结果', status: '启用', views: 0, color: 'orange', order: 30, category: 'other' },
   { key: 'partner-equity-calculator', title: '合伙人权益计算器', desc: '支持2人/3人合伙模式，自动计算资金股/人力股比例及股权价值，支持Excel导出和打印', status: '启用', views: 0, color: 'teal', order: 31, category: 'other' },
