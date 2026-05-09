@@ -46,6 +46,7 @@ export default function ClientPage({
     'image-resizer': ImageIcon,
     'image-compression': ImageIcon,
     'image-to-pdf-batch': ImageIcon,
+    'pdf-image-watermark-redaction': FileText,
     'image-info-viewer': ImageIcon,
     'amazon-global': Globe,
     'rating-sales-reverse': Star,

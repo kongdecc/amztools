@@ -39,6 +39,7 @@ const FBALabelEditor = dynamic(() => import('@/components/FBALabelEditor'), { lo
 const ImageCompressionPage = dynamic(() => import('@/components/ImageCompressionPage'), { loading: LoadingTool })
 const ImageToPdfBatchPage = dynamic(() => import('@/components/ImageToPdfBatchPage'), { loading: LoadingTool })
 const ImageInfoViewerPage = dynamic(() => import('@/components/ImageInfoViewerPage'), { loading: LoadingTool })
+const PdfImageWatermarkRedactionPage = dynamic(() => import('@/components/PdfImageWatermarkRedactionPage'), { loading: LoadingTool })
 const StorageFeeCalculatorPage = dynamic(() => import('@/components/StorageFeeCalculatorPage'), { loading: LoadingTool })
 const AmazonCalculatorPage = dynamic(() => import('@/components/AmazonCalculatorPage'), { loading: LoadingTool })
 const AmazonAdsAnalyzer = dynamic(() => import('@/components/AmazonAdsAnalyzer'), { loading: LoadingTool })
@@ -96,6 +97,7 @@ const ToolContainer = memo(({ activeTab }: { activeTab: string }) => {
       case 'image-compression': return <ImageCompressionPage />
       case 'image-to-pdf-batch': return <ImageToPdfBatchPage />
       case 'image-info-viewer': return <ImageInfoViewerPage />
+      case 'pdf-image-watermark-redaction': return <PdfImageWatermarkRedactionPage />
       case 'amazon-promotion-stacking': return <AmazonPromotionStackingCalculator />
       case 'storage-fee-calc': return <StorageFeeCalculatorPage />
       case 'sales-calc': return <AmazonCalculatorPage />

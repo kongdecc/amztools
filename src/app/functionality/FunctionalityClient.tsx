@@ -114,6 +114,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
     'content-filter': Filter,
     'image-resizer': ImageIcon,
     'image-to-pdf-batch': ImageIcon,
+    'pdf-image-watermark-redaction': FileText,
     'image-info-viewer': ImageIcon,
     'amazon-global': Globe,
     'rating-sales-reverse': Star,
