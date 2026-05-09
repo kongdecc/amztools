@@ -476,7 +476,8 @@ export default function PdfImageWatermarkRedactionPage() {
       }
 
       const pdfBytes = await outputPdf.save()
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' })
+      const pdfBuffer = pdfBytes.buffer.slice(pdfBytes.byteOffset, pdfBytes.byteOffset + pdfBytes.byteLength)
+      const blob = new Blob([pdfBuffer], { type: 'application/pdf' })
       const url = URL.createObjectURL(blob)
       const outputName = `${stripExtension(currentFile.name)}_processed.pdf`
       setDownloadInfo({ url, name: outputName })
