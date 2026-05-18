@@ -115,5 +115,6 @@ export const DEFAULT_TOOLS = [
   { key: 'partner-equity-calculator', title: '合伙人权益计算器', desc: '支持2人/3人合伙模式，自动计算资金股/人力股比例及股权价值，支持Excel导出和打印', status: '启用', views: 0, color: 'teal', order: 31, category: 'other' },
   { key: 'sales-calc', title: '亚马逊销售额计算', desc: '智能计算亚马逊销售报表总金额，自动匹配历史汇率，支持多文件批量处理', status: '启用', views: 0, color: 'indigo', order: 32, category: 'other' },
   { key: 'image-to-pdf-batch', title: '批量图片转 PDF', desc: '批量导入图片并合并导出 PDF，支持排序、页边距、页面方向和适配方式设置', status: '启用', views: 0, color: 'blue', order: 33, category: 'other' },
-  { key: 'pdf-image-watermark-redaction', title: 'PDF / 图片 水印与打码工具', desc: '支持 PDF 与图片实时预览、水印叠加、拖拽框选打码、马赛克/模糊/遮挡和导出处理后的文件', status: '启用', views: 0, color: 'violet', order: 34, category: 'other' }
+  { key: 'pdf-image-watermark-redaction', title: 'PDF / 图片 水印与打码工具', desc: '支持 PDF 与图片实时预览、水印叠加、拖拽框选打码、马赛克/模糊/遮挡和导出处理后的文件', status: '启用', views: 0, color: 'violet', order: 34, category: 'other' },
+  { key: 'image-batch-renamer', title: '图片批量重命名工具', desc: '批量导入图片后按关键词随机/顺序命名，支持手动编辑名称并下载重命名 ZIP', status: '启用', views: 0, color: 'indigo', order: 35, category: 'other' }
 ]

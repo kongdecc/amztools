@@ -116,6 +116,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
     'image-to-pdf-batch': ImageIcon,
     'pdf-image-watermark-redaction': FileText,
     'image-info-viewer': ImageIcon,
+    'image-batch-renamer': ImageIcon,
     'amazon-global': Globe,
     'rating-sales-reverse': Star,
     'max-reserve-fee': Calculator,
