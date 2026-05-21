@@ -1,9 +1,10 @@
-'use client'
+﻿'use client'
 
 import React, { useMemo, useState } from 'react'
-import { Calculator, Info, RefreshCcw, Snowflake, Truck } from 'lucide-react'
+import { Calculator, ChevronDown, Info, RefreshCcw, Snowflake, Truck, Wallet } from 'lucide-react'
 
 type ProductType = 'normal' | 'frozen'
+type BadgeTone = 'green' | 'blue' | 'orange' | 'red'
 
 interface InputsState {
   length: string
@@ -13,6 +14,17 @@ interface InputsState {
   price: string
   type: ProductType
   autoSort: boolean
+}
+
+interface ProfitInputsState {
+  productCost: string
+  shippingCost: string
+  commissionRate: string
+  adCost: string
+  otherCost: string
+  returnRate: string
+  returnExtraCost: string
+  manualFbaFee: string
 }
 
 interface FeeTier {
@@ -30,10 +42,12 @@ interface FeeTier {
 
 interface ResultState {
   status: 'idle' | 'error' | 'limit' | 'unmatched' | 'success'
-  badges: Array<{ label: string; tone: 'green' | 'blue' | 'orange' | 'red' }>
+  badges: Array<{ label: string; tone: BadgeTone }>
   title: string
   subtitle?: string
   totalFee?: number
+  baseFee?: number
+  frozenFee?: number
   items?: Array<{ label: string; value: string }>
   message?: string
 }
@@ -105,6 +119,17 @@ const initialInputs: InputsState = {
   autoSort: true,
 }
 
+const initialProfitInputs: ProfitInputsState = {
+  productCost: '',
+  shippingCost: '',
+  commissionRate: '15',
+  adCost: '',
+  otherCost: '',
+  returnRate: '0',
+  returnExtraCost: '0',
+  manualFbaFee: '',
+}
+
 const initialResult: ResultState = {
   status: 'idle',
   badges: [{ label: '等待输入', tone: 'blue' }],
@@ -113,6 +138,7 @@ const initialResult: ResultState = {
 
 export default function AmazonJpFbaCalculatorPage() {
   const [inputs, setInputs] = useState<InputsState>(initialInputs)
+  const [profitInputs, setProfitInputs] = useState<ProfitInputsState>(initialProfitInputs)
   const [result, setResult] = useState<ResultState>(initialResult)
 
   const frozenExtraText = useMemo(
@@ -122,6 +148,10 @@ export default function AmazonJpFbaCalculatorPage() {
 
   const handleInputChange = (key: keyof InputsState, value: string | boolean) => {
     setInputs((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const handleProfitInputChange = (key: keyof ProfitInputsState, value: string) => {
+    setProfitInputs((prev) => ({ ...prev, [key]: value }))
   }
 
   const calculateFee = () => {
@@ -195,10 +225,12 @@ export default function AmazonJpFbaCalculatorPage() {
       title: formatYen(totalFee),
       subtitle: '/ 件',
       totalFee,
+      baseFee,
+      frozenFee,
       items: [
         { label: '基础配送费', value: formatYen(baseFee) },
         { label: '冷冻商品附加费', value: formatYen(frozenFee) },
-        { label: '商品售价判断', value: isLowPrice ? '≤ 1,000 日元' : '> 1,000 日元' },
+        { label: '商品售价判断', value: isLowPrice ? '<= 1,000 日元' : '> 1,000 日元' },
         { label: '排序后三边', value: `${L} × ${W} × ${H} cm` },
         { label: '尺寸合计', value: `${sum.toFixed(1)} cm` },
         { label: '商品重量', value: `${weightG} g / ${(weightG / 1000).toFixed(2)} kg` },
@@ -209,8 +241,40 @@ export default function AmazonJpFbaCalculatorPage() {
 
   const resetForm = () => {
     setInputs(initialInputs)
+    setProfitInputs(initialProfitInputs)
     setResult(initialResult)
   }
+
+  const profit = useMemo(() => {
+    const price = Number(inputs.price) || 0
+    const productCost = Number(profitInputs.productCost) || 0
+    const shippingCost = Number(profitInputs.shippingCost) || 0
+    const commissionRate = (Number(profitInputs.commissionRate) || 0) / 100
+    const adCost = Number(profitInputs.adCost) || 0
+    const otherCost = Number(profitInputs.otherCost) || 0
+    const returnRate = (Number(profitInputs.returnRate) || 0) / 100
+    const returnExtraCost = Number(profitInputs.returnExtraCost) || 0
+    const autoFbaFee = result.totalFee || 0
+    const fbaFee = profitInputs.manualFbaFee.trim() !== '' ? Number(profitInputs.manualFbaFee) || 0 : autoFbaFee
+    const referralFee = price * commissionRate
+    const amazonPayout = price - referralFee - fbaFee
+    const grossProfit = amazonPayout - productCost - shippingCost
+    const returnLoss = returnRate * (fbaFee + returnExtraCost)
+    const netProfit = grossProfit - adCost - otherCost - returnLoss
+    const profitMargin = price > 0 ? (netProfit / price) * 100 : 0
+    const breakEvenAcos = price > 0 ? ((grossProfit - otherCost - returnLoss) / price) * 100 : 0
+
+    return {
+      fbaFee,
+      referralFee,
+      amazonPayout,
+      grossProfit,
+      returnLoss,
+      netProfit,
+      profitMargin,
+      breakEvenAcos,
+    }
+  }, [inputs.price, profitInputs, result.totalFee])
 
   return (
     <div className="space-y-6">
@@ -221,7 +285,7 @@ export default function AmazonJpFbaCalculatorPage() {
           </div>
           <div>
             <h2 className="text-2xl font-bold">亚马逊 JP 站点 FBA 配送费计算器</h2>
-            <p className="mt-2 text-sm leading-6 text-teal-50">根据商品包装后的尺寸、重量、售价，自动估算日本站亚马逊物流配送费用。</p>
+            <p className="mt-2 text-sm leading-6 text-teal-50">根据商品包装后的尺寸、重量、售价，自动估算日本站亚马逊物流配送费用，并联动进行利润测算。</p>
           </div>
         </div>
       </section>
@@ -230,35 +294,46 @@ export default function AmazonJpFbaCalculatorPage() {
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-5 flex items-center gap-2">
             <Calculator className="h-5 w-5 text-teal-600" />
-            <h3 className="text-lg font-bold text-slate-900">输入商品信息</h3>
+            <h3 className="text-lg font-bold text-slate-900">配送费计算</h3>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <Field label="最长边 / 长度，厘米">
-              <input value={inputs.length} onChange={(e) => handleInputChange('length', e.target.value)} type="number" min="0" step="0.1" placeholder="例如：30" className={inputClassName} />
-            </Field>
-            <Field label="次长边 / 宽度，厘米">
-              <input value={inputs.width} onChange={(e) => handleInputChange('width', e.target.value)} type="number" min="0" step="0.1" placeholder="例如：20" className={inputClassName} />
-            </Field>
-            <Field label="最短边 / 高度，厘米">
-              <input value={inputs.height} onChange={(e) => handleInputChange('height', e.target.value)} type="number" min="0" step="0.1" placeholder="例如：10" className={inputClassName} />
-            </Field>
-            <Field label="商品重量，克">
-              <input value={inputs.weight} onChange={(e) => handleInputChange('weight', e.target.value)} type="number" min="0" step="1" placeholder="例如：800" className={inputClassName} />
-            </Field>
-            <Field label="商品售价，日元">
-              <input value={inputs.price} onChange={(e) => handleInputChange('price', e.target.value)} type="number" min="0" step="1" placeholder="例如：1500" className={inputClassName} />
-            </Field>
-            <Field label="商品类型">
-              <select value={inputs.type} onChange={(e) => handleInputChange('type', e.target.value as ProductType)} className={inputClassName}>
-                <option value="normal">非冷冻商品</option>
-                <option value="frozen">冷冻食品商品</option>
-              </select>
-            </Field>
-            <label className="md:col-span-2 flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-              <input type="checkbox" checked={inputs.autoSort} onChange={(e) => handleInputChange('autoSort', e.target.checked)} className="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500" />
-              自动将三边按从大到小排序后计算
-            </label>
+          <div className="space-y-4">
+            <div className="rounded-xl bg-slate-50 p-4">
+              <h4 className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-500">商品尺寸</h4>
+              <div className="grid gap-4 md:grid-cols-2">
+                <Field label="最长边 / 长度，厘米">
+                  <input value={inputs.length} onChange={(e) => handleInputChange('length', e.target.value)} type="number" min="0" step="0.1" placeholder="例如：30" className={inputClassName} />
+                </Field>
+                <Field label="次长边 / 宽度，厘米">
+                  <input value={inputs.width} onChange={(e) => handleInputChange('width', e.target.value)} type="number" min="0" step="0.1" placeholder="例如：20" className={inputClassName} />
+                </Field>
+                <Field label="最短边 / 高度，厘米">
+                  <input value={inputs.height} onChange={(e) => handleInputChange('height', e.target.value)} type="number" min="0" step="0.1" placeholder="例如：10" className={inputClassName} />
+                </Field>
+                <Field label="商品重量，克">
+                  <input value={inputs.weight} onChange={(e) => handleInputChange('weight', e.target.value)} type="number" min="0" step="1" placeholder="例如：800" className={inputClassName} />
+                </Field>
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-slate-50 p-4">
+              <h4 className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-500">计费设置</h4>
+              <div className="grid gap-4 md:grid-cols-2">
+                <Field label="商品售价，日元">
+                  <input value={inputs.price} onChange={(e) => handleInputChange('price', e.target.value)} type="number" min="0" step="1" placeholder="例如：1500" className={`${inputClassName} border-yellow-300 bg-yellow-50`} />
+                </Field>
+                <Field label="商品类型">
+                  <select value={inputs.type} onChange={(e) => handleInputChange('type', e.target.value as ProductType)} className={inputClassName}>
+                    <option value="normal">非冷冻商品</option>
+                    <option value="frozen">冷冻食品商品</option>
+                  </select>
+                </Field>
+                <label className="md:col-span-2 flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
+                  <input type="checkbox" checked={inputs.autoSort} onChange={(e) => handleInputChange('autoSort', e.target.checked)} className="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500" />
+                  自动将三边按从大到小排序后计算
+                </label>
+              </div>
+            </div>
           </div>
 
           <div className="mt-5 flex flex-wrap gap-3">
@@ -275,15 +350,12 @@ export default function AmazonJpFbaCalculatorPage() {
           <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800">
             如果商品成套销售，那么重量和尺寸则为套装中所有商品包装在一起之后的总重量和尺寸。
           </div>
-        </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-5 flex items-center gap-2">
-            <Info className="h-5 w-5 text-sky-600" />
-            <h3 className="text-lg font-bold text-slate-900">计算结果</h3>
-          </div>
-
-          <div className="min-h-[320px] rounded-2xl border border-slate-200 bg-slate-50 p-5">
+          <div className="mt-6 rounded-2xl border border-blue-100 bg-blue-50 p-5">
+            <div className="mb-4 flex items-center gap-2">
+              <Info className="h-5 w-5 text-sky-600" />
+              <h4 className="font-bold text-slate-900">配送费结果</h4>
+            </div>
             <div className="mb-4 flex flex-wrap gap-2">
               {result.badges.map((badge) => (
                 <span key={`${badge.label}-${badge.tone}`} className={`rounded-full px-3 py-1 text-xs font-bold ${badgeClassMap[badge.tone]}`}>
@@ -294,8 +366,8 @@ export default function AmazonJpFbaCalculatorPage() {
 
             {result.status === 'success' ? (
               <>
-                <div className="mb-4">
-                  <div className="text-4xl font-extrabold text-red-600">{result.title} <span className="text-lg font-semibold text-slate-500">{result.subtitle}</span></div>
+                <div className="mb-4 text-4xl font-extrabold text-red-600">
+                  {result.title} <span className="text-lg font-semibold text-slate-500">{result.subtitle}</span>
                 </div>
                 <div className="grid gap-3">
                   {result.items?.map((item) => (
@@ -329,11 +401,85 @@ export default function AmazonJpFbaCalculatorPage() {
             <p className="mt-1">{frozenExtraText}</p>
           </div>
         </section>
+
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="mb-5 flex items-center gap-2 border-b border-slate-100 pb-2">
+            <Wallet className="h-5 w-5 text-emerald-600" />
+            <h3 className="text-lg font-bold text-slate-900">利润计算</h3>
+          </div>
+
+          <div className="space-y-4">
+            <div className="rounded-xl bg-slate-50 p-4">
+              <h4 className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-500">核心数据</h4>
+              <div className="grid gap-4 md:grid-cols-2">
+                <Field label="售价（日元）">
+                  <input value={inputs.price} onChange={(e) => handleInputChange('price', e.target.value)} type="number" min="0" step="1" placeholder="与左侧共用" className={`${inputClassName} border-yellow-300 bg-yellow-50`} />
+                </Field>
+                <Field label="FBA 费用（日元，可选覆盖）">
+                  <input value={profitInputs.manualFbaFee} onChange={(e) => handleProfitInputChange('manualFbaFee', e.target.value)} type="number" min="0" step="1" placeholder={result.totalFee ? `自动：${result.totalFee}` : '默认取左侧计算结果'} className={inputClassName} />
+                </Field>
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-slate-50 p-4">
+              <h4 className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-500">成本与费用（日元）</h4>
+              <div className="grid gap-4 md:grid-cols-2">
+                <Field label="采购成本">
+                  <input value={profitInputs.productCost} onChange={(e) => handleProfitInputChange('productCost', e.target.value)} type="number" min="0" step="1" className={`${inputClassName} border-yellow-300 bg-yellow-50`} />
+                </Field>
+                <Field label="头程运费">
+                  <input value={profitInputs.shippingCost} onChange={(e) => handleProfitInputChange('shippingCost', e.target.value)} type="number" min="0" step="1" className={`${inputClassName} border-yellow-300 bg-yellow-50`} />
+                </Field>
+                <Field label="广告费">
+                  <input value={profitInputs.adCost} onChange={(e) => handleProfitInputChange('adCost', e.target.value)} type="number" min="0" step="1" className={inputClassName} />
+                </Field>
+                <Field label="其他杂费">
+                  <input value={profitInputs.otherCost} onChange={(e) => handleProfitInputChange('otherCost', e.target.value)} type="number" min="0" step="1" className={inputClassName} />
+                </Field>
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-slate-50 p-4">
+              <h4 className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-500">平台与退货</h4>
+              <div className="grid gap-4 md:grid-cols-2">
+                <Field label="佣金比例（%）">
+                  <input value={profitInputs.commissionRate} onChange={(e) => handleProfitInputChange('commissionRate', e.target.value)} type="number" min="0" step="0.1" className={inputClassName} />
+                </Field>
+                <Field label="退货率（%）">
+                  <input value={profitInputs.returnRate} onChange={(e) => handleProfitInputChange('returnRate', e.target.value)} type="number" min="0" step="0.1" className={inputClassName} />
+                </Field>
+                <Field label="单次退货额外损失（日元）">
+                  <input value={profitInputs.returnExtraCost} onChange={(e) => handleProfitInputChange('returnExtraCost', e.target.value)} type="number" min="0" step="1" className={inputClassName} />
+                </Field>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-5 text-sm">
+              <div className="mb-3 flex items-center justify-between border-b border-emerald-100 pb-2">
+                <span className="font-bold text-slate-900">利润结果</span>
+                <span className="text-xs text-slate-500">未手动填写 FBA 时，默认取左侧配送费</span>
+              </div>
+              <div className="space-y-2">
+                <ProfitRow label="当前 FBA 费用" value={formatYen(profit.fbaFee)} />
+                <ProfitRow label="平台佣金" value={formatYen(profit.referralFee)} />
+                <ProfitRow label="亚马逊回款" value={formatYen(profit.amazonPayout)} />
+                <ProfitRow label="毛利润" value={formatYen(profit.grossProfit)} strong valueClass={profit.grossProfit < 0 ? 'text-red-600' : 'text-slate-900'} />
+                <ProfitRow label="预计退货损失" value={formatYen(profit.returnLoss)} />
+                <ProfitRow label="净利润" value={formatYen(profit.netProfit)} strong valueClass={profit.netProfit < 0 ? 'text-red-600' : 'text-emerald-700'} />
+                <ProfitRow label="利润率" value={`${profit.profitMargin.toFixed(2)}%`} valueClass={profit.profitMargin < 0 ? 'text-red-600' : 'text-slate-900'} />
+                <ProfitRow label="保本广告占比" value={`${profit.breakEvenAcos.toFixed(2)}%`} valueClass={profit.breakEvenAcos < 0 ? 'text-red-600' : 'text-slate-900'} />
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
+              公式口径：毛利润 = 售价 - 佣金 - FBA - 采购 - 头程；净利润 = 毛利润 - 广告费 - 其他杂费 - 退货损失；保本广告占比 = (毛利润 - 其他杂费 - 退货损失) / 售价。
+            </div>
+          </div>
+        </section>
       </div>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 className="text-lg font-bold text-slate-900">完整配送费用表格</h3>
-        <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-200">
+      <CollapseCard title="完整配送费用表格" description="默认收起，需要时展开查看完整 JP 站点费率表。">
+        <div className="overflow-x-auto rounded-2xl border border-slate-200">
           <table className="min-w-[880px] w-full border-collapse text-center text-sm">
             <thead>
               <tr className="bg-slate-100 text-slate-700">
@@ -363,11 +509,10 @@ export default function AmazonJpFbaCalculatorPage() {
         </div>
         <p className="mt-3 text-sm text-slate-500">以上费用包含 10% 的消费税。</p>
         <p className="mt-1 text-sm text-slate-500">亚马逊在收取冷冻食品商品的亚马逊物流配送费用时，将针对每件产品收取 375 日元的附加费。</p>
-      </section>
+      </CollapseCard>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 className="text-lg font-bold text-slate-900">商品尺寸分段说明表格</h3>
-        <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-200">
+      <CollapseCard title="商品尺寸分段说明表格" description="默认收起，展开后可查看尺寸分段、限制说明和补充规则。">
+        <div className="overflow-x-auto rounded-2xl border border-slate-200">
           <table className="min-w-[880px] w-full border-collapse text-center text-sm">
             <thead>
               <tr className="bg-slate-100 text-slate-700">
@@ -431,7 +576,7 @@ export default function AmazonJpFbaCalculatorPage() {
             </ol>
           </div>
         </div>
-      </section>
+      </CollapseCard>
     </div>
   )
 }
@@ -453,10 +598,54 @@ function Td({ children, className = '' }: { children: React.ReactNode; className
   return <td className={`border border-slate-200 px-3 py-2 align-middle text-slate-700 ${className}`}>{children}</td>
 }
 
+function ProfitRow({
+  label,
+  value,
+  strong = false,
+  valueClass = 'text-slate-900',
+}: {
+  label: string
+  value: string
+  strong?: boolean
+  valueClass?: string
+}) {
+  return (
+    <div className={`flex items-center justify-between gap-4 border-b border-dashed border-emerald-100 pb-2 ${strong ? 'pt-2 text-base font-bold' : ''}`}>
+      <span className="text-slate-600">{label}</span>
+      <span className={`text-right font-medium ${valueClass}`}>{value}</span>
+    </div>
+  )
+}
+
+function CollapseCard({
+  title,
+  description,
+  children,
+}: {
+  title: string
+  description: string
+  children: React.ReactNode
+}) {
+  return (
+    <details className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
+        <div>
+          <h3 className="text-lg font-bold text-slate-900">{title}</h3>
+          <p className="mt-1 text-sm text-slate-500">{description}</p>
+        </div>
+        <div className="rounded-full bg-slate-100 p-2 text-slate-500 transition group-open:rotate-180">
+          <ChevronDown className="h-4 w-4" />
+        </div>
+      </summary>
+      <div className="mt-5">{children}</div>
+    </details>
+  )
+}
+
 const inputClassName =
   'h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100'
 
-const badgeClassMap = {
+const badgeClassMap: Record<BadgeTone, string> = {
   green: 'bg-green-100 text-green-700',
   blue: 'bg-blue-100 text-blue-700',
   orange: 'bg-orange-100 text-orange-700',
@@ -467,7 +656,7 @@ function formatYen(value: number) {
   return `${new Intl.NumberFormat('ja-JP').format(value)} 日元`
 }
 
-function getTone(group: string): 'green' | 'blue' | 'orange' | 'red' {
+function getTone(group: string): BadgeTone {
   if (group === '小件商品') return 'green'
   if (group === '标准尺寸') return 'blue'
   if (group === '大件') return 'orange'
