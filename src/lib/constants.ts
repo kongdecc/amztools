@@ -82,6 +82,7 @@ export const DEFAULT_TOOLS = [
   { key: 'amazon-bulk-ads-tool', title: '亚马逊广告批量处理工具', desc: '广告 Bulk 表批量创建、导入、更新和导出，纯前端处理不上传数据', status: '启用', views: 0, color: 'blue', order: 3.5, category: 'advertising' },
 
   { key: 'delivery', title: '美国站配送费计算', desc: '按2025/2026规则计算配送费用', status: '启用', views: 0, color: 'orange', order: 3, category: 'operation' },
+  { key: 'amazon-jp-fba-calculator', title: '亚马逊 JP 站点 FBA 配送费计算器', desc: '根据商品尺寸、重量、售价与冷冻附加费规则，估算日本站 FBA 配送费用', status: '启用', views: 0, color: 'orange', order: 3.05, category: 'operation' },
   { key: 'amazon-eu-fba-calculator', title: 'Amazon EU FBA 费用计算器', desc: '欧洲站配送费/仓储费/弃置退仓/多站点对比的一体化计算', status: '启用', views: 0, color: 'orange', order: 3.1, category: 'operation' },
   { key: 'storage-fee-calc', title: '亚马逊 FBA 全能仓储费计算器', desc: '集成月度仓储费、利用率附加费及超龄库存附加费（含2026新规）', status: '启用', views: 0, color: 'blue', order: 4, category: 'operation' },
   { key: 'returns-v2', title: '退货报告分析V2', desc: '上传退货报告，原因/趋势/仓库/评论多维分析', status: '启用', views: 0, color: 'red', order: 5, category: 'operation' },

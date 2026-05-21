@@ -46,6 +46,7 @@ const AmazonCalculatorPage = dynamic(() => import('@/components/AmazonCalculator
 const AmazonAdsAnalyzer = dynamic(() => import('@/components/AmazonAdsAnalyzer'), { loading: LoadingTool })
 const AmazonBulkAdsTool = dynamic(() => import('@/components/AmazonBulkAdsTool'), { loading: LoadingTool })
 const AmazonEuFbaCalculator = dynamic(() => import('@/components/AmazonEuFbaCalculator'), { loading: LoadingTool })
+const AmazonJpFbaCalculatorPage = dynamic(() => import('@/components/AmazonJpFbaCalculatorPage'), { loading: LoadingTool })
 
 const PlaceholderPage = ({ title, icon: Icon }: { title: string; icon: any }) => (
   <div className="space-y-6">
@@ -76,6 +77,7 @@ const ToolContainer = memo(({ activeTab }: { activeTab: string }) => {
       case 'word-count': return <WordCountPage />
       case 'char-count': return <CharCountPage />
       case 'delivery': return <FBACalculatorPage />
+      case 'amazon-jp-fba-calculator': return <AmazonJpFbaCalculatorPage />
       case 'returns-v2': return <ReturnsV2Page />
       case 'listing-check': return <ListingCheckerPage />
       case 'forbidden-words': return <ForbiddenWordsChecker />

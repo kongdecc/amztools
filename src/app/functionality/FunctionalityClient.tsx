@@ -106,6 +106,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
     'word-count': ListOrdered,
     'char-count': BarChart3,
     'delivery': Truck,
+    'amazon-jp-fba-calculator': Truck,
     'returns-v2': Trash2,
     'listing-check': LayoutDashboard,
     'forbidden-words': AlertCircle,
