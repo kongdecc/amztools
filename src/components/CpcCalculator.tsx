@@ -82,6 +82,8 @@ const FEE_DATA: any = {
   }
 };
 
+const FUEL_SURCHARGE_RATE = 0.035;
+
 // --- Helper Components ---
 
 const Card = ({ children, className = "" }: any) => (
@@ -190,7 +192,7 @@ export default function CpcCalculator() {
   })
 
   const [results, setResults] = useState<any>({
-    m: { tier: '--', weight: 0, fba: 0, comm: 0, commRate: '0%' },
+    m: { tier: '--', weight: 0, baseFba: 0, fuelSurcharge: 0, fba: 0, comm: 0, commRate: '0%' },
     c1: { profit: 0, margin: 0, maxClicks: 0, minCVR: 0, beAcos: 0, warn: '' },
     c2: { recCPC: 0, safeCPC: 0, beCPC: 0, netProfit: 0, netMargin: 0, tacos: 0, warn: [] }
   })
@@ -272,7 +274,7 @@ export default function CpcCalculator() {
     }
 
     // FBA
-    let fbaFee = 0, tierName = '--', shipWeight = 0
+    let baseFbaFee = 0, fuelSurcharge = 0, finalFbaFee = 0, tierName = '--', shipWeight = 0
     if (l && w && h && weight) {
       // Sort dims: L is max, H is min
       const sorted = [l, w, h].sort((a,b) => b-a)
@@ -328,22 +330,23 @@ export default function CpcCalculator() {
           const fees = table[band] || table['mid']
           let found = false
           for(let i=0; i<steps.length; i++) {
-            if (shipWeight <= steps[i]) { fbaFee = fees[i]; found = true; break }
+            if (shipWeight <= steps[i]) { baseFbaFee = fees[i]; found = true; break }
           }
           if (!found && tier === 'ls') {
              const base = table.post[band] || table.post.mid
              const excess = shipWeight - 48
              const unit = (m.type === 'apparel') ? 8 : 4
-             fbaFee = base + Math.ceil(excess / unit) * table.inc
+             baseFbaFee = base + Math.ceil(excess / unit) * table.inc
           }
         } else {
           const base = table.base[band] || table.base.mid
           const weightLb = shipWeight / 16
-          fbaFee = base + Math.ceil(Math.max(0, weightLb-1)) * table.per
+          baseFbaFee = base + Math.ceil(Math.max(0, weightLb-1)) * table.per
         }
       }
-      if (m.has_lithium && m.type !== 'danger') fbaFee += 0.11
-      fbaFee = fbaFee * 1.035
+      if (m.has_lithium && m.type !== 'danger') baseFbaFee += 0.11
+      fuelSurcharge = baseFbaFee * FUEL_SURCHARGE_RATE
+      finalFbaFee = baseFbaFee + fuelSurcharge
     }
 
     // Commission
@@ -374,7 +377,18 @@ export default function CpcCalculator() {
       if (commFee < rule.min && price > 0) commFee = rule.min
     }
 
-    setResults((prev:any) => ({ ...prev, m: { tier: tierName, weight: shipWeight/16, fba: fbaFee, comm: commFee, commRate: commRateStr } }))
+    setResults((prev:any) => ({
+      ...prev,
+      m: {
+        tier: tierName,
+        weight: shipWeight / 16,
+        baseFba: baseFbaFee,
+        fuelSurcharge,
+        fba: finalFbaFee,
+        comm: commFee,
+        commRate: commRateStr,
+      },
+    }))
 
   }, [m])
 
@@ -594,6 +608,14 @@ export default function CpcCalculator() {
                  <span className="font-mono font-bold text-gray-800">{results.m.weight.toFixed(2)} lb</span>
                </div>
                <div className="h-px bg-gray-200 my-1.5"></div>
+               <div className="flex justify-between text-xs items-center">
+                 <span className="text-gray-500 flex items-center">基础配送费:<TooltipIcon text="费率表配送费，已包含锂电池附加费（如勾选）" /></span>
+                 <span className="font-mono font-bold text-gray-800">${results.m.baseFba.toFixed(2)}</span>
+               </div>
+               <div className="flex justify-between text-xs items-center">
+                 <span className="text-gray-500 flex items-center">燃油附加费 (3.5%):<TooltipIcon text="按基础配送费 × 3.5% 计算，与 delivery 工具保持一致" /></span>
+                 <span className="font-mono font-bold text-amber-600">${results.m.fuelSurcharge.toFixed(2)}</span>
+               </div>
                <div className="flex justify-between text-xs items-center">
                 <span className="text-gray-500 flex items-center">FBA 配送费:<TooltipIcon text="基于尺寸分段、重量及当年费率表 (含锂电池费与3.5%燃油附加费)" /></span>
                  <span className="text-blue-600 font-mono font-bold text-sm">${results.m.fba.toFixed(2)}</span>
