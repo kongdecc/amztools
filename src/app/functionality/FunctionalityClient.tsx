@@ -129,6 +129,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
     'image-info-viewer': ImageIcon,
     'image-batch-renamer': ImageIcon,
     'txt-excel-batch-converter': ArrowLeftRight,
+    'certification-directory': FileText,
     'marketing-calendar-2026': FileText,
     'marketing-calendar-summary-2026': Globe,
     'china-industry-belts-entry': Box,

@@ -51,6 +51,7 @@ export default function ClientPage({
     'image-info-viewer': ImageIcon,
     'image-batch-renamer': ImageIcon,
     'txt-excel-batch-converter': FileText,
+    'certification-directory': FileText,
     'amazon-global': Globe,
     'rating-sales-reverse': Star,
     'max-reserve-fee': Calculator,
