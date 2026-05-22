@@ -21,7 +21,15 @@ interface Module {
   color: string
   order: number
   category?: string
+  href?: string
+  isExternal?: boolean
 }
+
+const OTHER_SHORTCUT_LINKS: Module[] = [
+  { key: 'marketing-calendar-2026', title: '2026年电商营销日历', desc: '查看全年重点营销节点、节日大促和选品运营节奏安排', status: '启用', views: 0, color: 'indigo', order: 36, category: 'other', href: '/marketing-calendar.html', isExternal: true },
+  { key: 'marketing-calendar-summary-2026', title: '2026年亚马逊全球营销日历', desc: '快速查看亚马逊全球站点营销节点与活动节奏汇总', status: '启用', views: 0, color: 'blue', order: 37, category: 'other', href: '/marketing-calendar-summary.html', isExternal: true },
+  { key: 'china-industry-belts-entry', title: '中国产业带', desc: '查看中国产业带分布信息，便于选品、找供应链和货源调研', status: '启用', views: 0, color: 'orange', order: 38, category: 'other', href: '/china-industry-belts.html', isExternal: true },
+]
 
 export default function FunctionalityClient({ initialNavItems, initialModules, initialCategories }: { initialNavItems: any[]; initialModules?: Module[]; initialCategories?: any[] }) {
   const router = useRouter()
@@ -78,7 +86,9 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
     'fba-label-editor': '在线编辑FBA标签PDF，支持添加文字（如批量添加Made in China)、手动拖拽调整位置和大小，自动应用到所有页面'
   }
 
-  const filtered = modules.map(m => ({
+  const allModules = [...modules, ...OTHER_SHORTCUT_LINKS]
+
+  const filtered = allModules.map(m => ({
     ...m,
     title: titleOverride[m.key] || m.title,
     desc: descOverride[m.key] || m.desc
@@ -118,6 +128,10 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
     'pdf-image-watermark-redaction': FileText,
     'image-info-viewer': ImageIcon,
     'image-batch-renamer': ImageIcon,
+    'txt-excel-batch-converter': ArrowLeftRight,
+    'marketing-calendar-2026': FileText,
+    'marketing-calendar-summary-2026': Globe,
+    'china-industry-belts-entry': Box,
     'amazon-global': Globe,
     'rating-sales-reverse': Star,
     'max-reserve-fee': Calculator,
@@ -149,6 +163,13 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
   }
 
   const handleNavigate = (key: string) => { router.push(`/functionality/${key}`) }
+  const handleOpenModule = (module: Module) => {
+    if (module.href) {
+      window.open(module.href, module.isExternal ? '_blank' : '_self', module.isExternal ? 'noopener,noreferrer' : undefined)
+      return
+    }
+    handleNavigate(module.key)
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -174,7 +195,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
                         .slice()
                         .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
                         .map(cat => {
-                        const catModules = modules
+                        const catModules = allModules
                           .filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'image-text')))
                           .slice()
                           .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
@@ -183,13 +204,25 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
                           <div key={cat.key}>
                             <div className="px-3 py-1 text-xs font-semibold text-gray-400 uppercase">{cat.label}</div>
                             {catModules.map((m: any) => (
-                              <button 
-                                key={m.key}
-                                onClick={() => handleNavigate(m.key)}
-                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer"
-                              >
-                                {titleOverride[m.key] || m.title}
-                              </button>
+                              m.href ? (
+                                <a
+                                  key={m.key}
+                                  href={m.href}
+                                  target={m.isExternal ? '_blank' : '_self'}
+                                  rel={m.isExternal ? 'noopener noreferrer' : undefined}
+                                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer"
+                                >
+                                  {titleOverride[m.key] || m.title}
+                                </a>
+                              ) : (
+                                <button 
+                                  key={m.key}
+                                  onClick={() => handleNavigate(m.key)}
+                                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer"
+                                >
+                                  {titleOverride[m.key] || m.title}
+                                </button>
+                              )
                             ))}
                           </div>
                         )
@@ -245,21 +278,6 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
           <div className="text-center mt-3 text-sm text-gray-500 font-medium flex flex-col items-center justify-center gap-2">
             <span>已经累计上传：<span className="text-indigo-600 font-bold">{modules.filter((m: any) => m.status !== '下架').length}</span> 个工具</span>
             <div className="flex flex-wrap items-center justify-center gap-4">
-              <Link href="/marketing-calendar.html" target="_blank" className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors">
-                <span>📅</span>
-                <span className="underline decoration-indigo-300 underline-offset-4 hover:decoration-indigo-600">2026年电商营销日历</span>
-              </Link>
-              <span className="text-gray-300">|</span>
-              <Link href="/marketing-calendar-summary.html" target="_blank" className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors">
-                <span>📊</span>
-                <span className="underline decoration-indigo-300 underline-offset-4 hover:decoration-indigo-600">2026年亚马逊全球营销日历</span>
-              </Link>
-              <span className="text-gray-300">|</span>
-              <Link href="/china-industry-belts.html" target="_blank" className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors">
-                <span>🏭</span>
-                <span className="underline decoration-indigo-300 underline-offset-4 hover:decoration-indigo-600">中国产业带</span>
-              </Link>
-              <span className="text-gray-300">|</span>
               <a href="https://amzlink.top/documents" target="_blank" rel="noopener noreferrer" className="text-red-600 hover:text-red-700 flex items-center gap-1 transition-colors">
                 <span>→海量免费运营资料免费下载←</span>
               </a>
@@ -271,8 +289,8 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
           </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtered.map((module) => (
-              <Link key={module.key} href={`/functionality/${module.key}`} className="block group" prefetch={false}>
+            {filtered.map((module) => {
+              const card = (
                 <Card className="h-full relative p-6 hover:shadow-xl transition-all duration-300 cursor-pointer border-transparent hover:border-gray-100 bg-white overflow-hidden">
                   <div className="flex items-start gap-4 mb-4">
                     <div className={`w-12 h-12 rounded-xl ${colorSolidMap[colorOverride[module.key] || module.color] || 'bg-blue-600'} flex items-center justify-center shadow-md shrink-0 group-hover:scale-105 transition-transform duration-300`}>
@@ -290,12 +308,22 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
                   </div>
                   <p className="text-sm text-gray-500 leading-relaxed mb-8 line-clamp-2">{module.desc}</p>
                   <div className={`absolute bottom-6 left-6 flex items-center gap-2 text-sm font-bold ${colorTextMap[colorOverride[module.key] || module.color] || 'text-blue-600'} opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300`}>
-                    <span>立即使用</span>
+                    <span>{module.href ? '打开入口' : '立即使用'}</span>
                     <ArrowLeftRight className="h-4 w-4" />
                   </div>
                 </Card>
-              </Link>
-            ))}
+              )
+
+              return module.href ? (
+                <a key={module.key} href={module.href} target={module.isExternal ? '_blank' : '_self'} rel={module.isExternal ? 'noopener noreferrer' : undefined} className="block group">
+                  {card}
+                </a>
+              ) : (
+                <Link key={module.key} href={`/functionality/${module.key}`} className="block group" prefetch={false}>
+                  {card}
+                </Link>
+              )
+            })}
           </div>
           {filtered.length === 0 && (
             <div className="text-center py-16 bg-white rounded-lg shadow-sm border border-gray-100"><p className="text-gray-500">没有找到匹配的功能</p></div>

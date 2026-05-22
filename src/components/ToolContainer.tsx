@@ -47,6 +47,7 @@ const AmazonAdsAnalyzer = dynamic(() => import('@/components/AmazonAdsAnalyzer')
 const AmazonBulkAdsTool = dynamic(() => import('@/components/AmazonBulkAdsTool'), { loading: LoadingTool })
 const AmazonEuFbaCalculator = dynamic(() => import('@/components/AmazonEuFbaCalculator'), { loading: LoadingTool })
 const AmazonJpFbaCalculatorPage = dynamic(() => import('@/components/AmazonJpFbaCalculatorPage'), { loading: LoadingTool })
+const TxtExcelBatchConverterPage = dynamic(() => import('@/components/TxtExcelBatchConverterPage'), { loading: LoadingTool })
 
 const PlaceholderPage = ({ title, icon: Icon }: { title: string; icon: any }) => (
   <div className="space-y-6">
@@ -108,6 +109,7 @@ const ToolContainer = memo(({ activeTab }: { activeTab: string }) => {
       case 'amazon-ads-analyzer': return <AmazonAdsAnalyzer />
       case 'amazon-bulk-ads-tool': return <AmazonBulkAdsTool />
       case 'amazon-eu-fba-calculator': return <AmazonEuFbaCalculator />
+      case 'txt-excel-batch-converter': return <TxtExcelBatchConverterPage />
       default: return <PlaceholderPage title="功能开发中" icon={Hammer} />
     }
   })()

@@ -20,10 +20,17 @@ const Input = ({ className = "", ...props }: any) => (
   <input className={`flex h-9 w-full rounded-md border border-gray-300 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 ${className}`} {...props} />
 )
 
+const OTHER_SHORTCUT_LINKS = [
+  { key: 'marketing-calendar-2026', title: '2026年电商营销日历', desc: '查看全年重点营销节点、节日大促和选品运营节奏安排', status: '启用', views: 0, color: 'indigo', order: 36, category: 'other', href: '/marketing-calendar.html', isExternal: true },
+  { key: 'marketing-calendar-summary-2026', title: '2026年亚马逊全球营销日历', desc: '快速查看亚马逊全球站点营销节点与活动节奏汇总', status: '启用', views: 0, color: 'blue', order: 37, category: 'other', href: '/marketing-calendar-summary.html', isExternal: true },
+  { key: 'china-industry-belts-entry', title: '中国产业带', desc: '查看中国产业带分布信息，便于选品、找供应链和货源调研', status: '启用', views: 0, color: 'orange', order: 38, category: 'other', href: '/china-industry-belts.html', isExternal: true }
+]
+
 const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: string) => void; modules: Array<any>; categories?: Array<any> }) => {
   const { settings } = useSettings()
   const router = useRouter()
   const safeOrigin = (typeof window !== 'undefined' && (window as any).location) ? (window as any).location.origin : ''
+  const allModules = useMemo(() => [...modules, ...OTHER_SHORTCUT_LINKS], [modules])
   const defaultCategories = [
     { key: 'advertising', label: '广告工具', order: 1 },
     { key: 'operation', label: '运营工具', order: 2 },
@@ -55,6 +62,10 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
     'pdf-image-watermark-redaction': FileText,
     'image-info-viewer': ImageIcon,
     'image-batch-renamer': ImageIcon,
+    'txt-excel-batch-converter': ArrowLeftRight,
+    'marketing-calendar-2026': FileText,
+    'marketing-calendar-summary-2026': Globe,
+    'china-industry-belts-entry': Warehouse,
     'amazon-global': Globe,
     'rating-sales-reverse': Star,
     'max-reserve-fee': Calculator,
@@ -76,7 +87,7 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
   }
   
   const [searchKeyword, setSearchKeyword] = useState('')
-  const visible = modules.map(m => ({
+  const visible = allModules.map(m => ({
     ...m,
     title: titleOverride[m.key] || m.title,
     desc: descOverride[m.key] || m.desc
@@ -131,6 +142,13 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
   const homeCardLimit = Number(settings.homeCardLimit || 6)
   const showMore = visible.length > homeCardLimit
   const displayedTools = showMore ? visible.slice(0, homeCardLimit) : visible
+  const handleToolOpen = (tool: any) => {
+    if (tool.href) {
+      window.open(tool.href, tool.isExternal ? '_blank' : '_self', tool.isExternal ? 'noopener,noreferrer' : undefined)
+      return
+    }
+    onNavigate(tool.key)
+  }
 
   return (
     <div className="space-y-6">
@@ -161,21 +179,6 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
           <div className="text-center mt-3 text-sm text-gray-500 font-medium flex flex-col items-center justify-center gap-2">
             <span>已经累计上传：<span className="text-indigo-600 font-bold">{modules.filter((m: any) => m.status !== '下架').length}</span> 个工具</span>
             <div className="flex flex-wrap items-center justify-center gap-4">
-              <Link href="/marketing-calendar.html" target="_blank" prefetch={false} className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors">
-                <span>📅</span>
-                <span className="underline decoration-indigo-300 underline-offset-4 hover:decoration-indigo-600">2026年电商营销日历</span>
-              </Link>
-              <span className="text-gray-300">|</span>
-              <Link href="/marketing-calendar-summary.html" target="_blank" prefetch={false} className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors">
-                <span>📊</span>
-                <span className="underline decoration-indigo-300 underline-offset-4 hover:decoration-indigo-600">2026年亚马逊全球营销日历</span>
-              </Link>
-              <span className="text-gray-300">|</span>
-              <Link href="/china-industry-belts.html" target="_blank" prefetch={false} className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors">
-                <span>🏭</span>
-                <span className="underline decoration-indigo-300 underline-offset-4 hover:decoration-indigo-600">中国产业带</span>
-              </Link>
-              <span className="text-gray-300">|</span>
               <a href="https://amzlink.top/documents" target="_blank" rel="noopener noreferrer" className="text-red-600 hover:text-red-700 flex items-center gap-1 transition-colors">
                 <span>→海量免费运营资料免费下载←</span>
               </a>
@@ -206,7 +209,7 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
                     }
           const colorKey = colorOverride[tool.key] || tool.color
           return (
-            <Card key={tool.key} className="group relative p-6 hover:shadow-xl transition-all duration-300 cursor-pointer border-transparent hover:border-gray-100 bg-white overflow-hidden" onClick={() => onNavigate(tool.key)}>
+            <Card key={tool.key} className="group relative p-6 hover:shadow-xl transition-all duration-300 cursor-pointer border-transparent hover:border-gray-100 bg-white overflow-hidden" onClick={() => handleToolOpen(tool)}>
               <div className="flex items-start gap-4 mb-4">
                 <div className={`w-12 h-12 rounded-xl ${colorSolidMap[colorKey] || 'bg-blue-600'} flex items-center justify-center shadow-md shrink-0 group-hover:scale-105 transition-transform duration-300`}>
                   {(() => {
@@ -219,7 +222,7 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
               </div>
               <p className="text-sm text-gray-500 leading-relaxed mb-8 line-clamp-2">{tool.desc}</p>
               <div className={`absolute bottom-6 left-6 flex items-center gap-2 text-sm font-bold ${colorTextMap[colorKey] || 'text-blue-600'} opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300`}>
-                <span>立即使用</span>
+                <span>{tool.href ? '打开入口' : '立即使用'}</span>
                 <ArrowLeftRight className="h-4 w-4" />
               </div>
             </Card>
@@ -286,6 +289,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
   const [modules, setModules] = useState<Array<any>>(initialModules || [])
   const [navItems, setNavItems] = useState<Array<any>>(initialNavItems || [])
   const [categories, setCategories] = useState<Array<any>>(initialCategories || [])
+  const allModules = useMemo(() => [...modules, ...OTHER_SHORTCUT_LINKS], [modules])
   
   useEffect(() => {
     const tab = searchParams.get('tab')
@@ -336,6 +340,10 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
     'content-filter': Filter,
     'image-resizer': ImageIcon,
     'image-batch-renamer': ImageIcon,
+    'txt-excel-batch-converter': ArrowLeftRight,
+    'marketing-calendar-2026': FileText,
+    'marketing-calendar-summary-2026': Globe,
+    'china-industry-belts-entry': Warehouse,
     'amazon-jp-fba-calculator': Truck,
     'amazon-global': Globe,
     'rating-sales-reverse': Star,
@@ -352,6 +360,14 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({})
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
+  const openModule = useCallback((module: any) => {
+    if (module?.href) {
+      window.open(module.href, module.isExternal ? '_blank' : '_self', module.isExternal ? 'noopener,noreferrer' : undefined)
+      return
+    }
+    handleNavigate(module.key)
+  }, [searchParams])
+
   const toggleCategory = useCallback((catKey: string) => {
     setExpandedCategories(prev => ({ ...prev, [catKey]: !prev[catKey] }))
   }, [])
@@ -364,17 +380,19 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
       .map(cat => ({
       id: cat.key,
       label: cat.label,
-      children: modules
+      children: allModules
         .filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'image-text')))
         .slice()
         .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
         .map((m: any) => ({
         id: m.key,
         label: m.status === '维护' ? `${m.title}（维护）` : m.title,
-        icon: iconMap[m.key] || Hammer
+        icon: iconMap[m.key] || Hammer,
+        href: m.href,
+        isExternal: m.isExternal
       }))
     }))
-  ], [categories, modules, iconMap])
+  ], [categories, allModules, iconMap])
 
   useEffect(() => {
     // Auto-expand category if active tab is inside it
@@ -479,7 +497,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                           .slice()
                           .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
                           .map(cat => {
-                          const catModules = modules
+                          const catModules = allModules
                             .filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'image-text')))
                             .slice()
                             .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
@@ -488,13 +506,25 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                             <div key={cat.key}>
                               <div className="px-3 py-1 text-xs font-semibold text-gray-400 uppercase">{cat.label}</div>
                               {catModules.map((m: any) => (
-                                <button 
-                                  key={m.key}
-                                  onClick={() => handleNavigate(m.key)}
-                                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer"
-                                >
-                                  {m.title}
-                                </button>
+                                m.href ? (
+                                  <a 
+                                    key={m.key}
+                                    href={m.href}
+                                    target={m.isExternal ? '_blank' : '_self'}
+                                    rel={m.isExternal ? 'noopener noreferrer' : undefined}
+                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer"
+                                  >
+                                    {m.title}
+                                  </a>
+                                ) : (
+                                  <button 
+                                    key={m.key}
+                                    onClick={() => handleNavigate(m.key)}
+                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer"
+                                  >
+                                    {m.title}
+                                  </button>
+                                )
                               ))}
                             </div>
                           )
@@ -604,15 +634,28 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                     {isExpanded && (
                       <div className="space-y-1 mt-1">
                         {item.children.map((child: any) => (
-                          <button 
-                            key={child.id} 
-                            onClick={() => handleNavigate(child.id)} 
-                            className={`w-full flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === child.id ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
-                          >
-                            <child.icon className={`h-4 w-4 ${activeTab === child.id ? 'text-blue-600' : 'text-gray-400'}`} />
-                            {child.label}
-                            {activeTab === child.id && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-600" />}
-                          </button>
+                          child.href ? (
+                            <a
+                              key={child.id}
+                              href={child.href}
+                              target={child.isExternal ? '_blank' : '_self'}
+                              rel={child.isExternal ? 'noopener noreferrer' : undefined}
+                              className="w-full flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg transition-colors text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                            >
+                              <child.icon className="h-4 w-4 text-gray-400" />
+                              {child.label}
+                            </a>
+                          ) : (
+                            <button 
+                              key={child.id} 
+                              onClick={() => handleNavigate(child.id)} 
+                              className={`w-full flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === child.id ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
+                            >
+                              <child.icon className={`h-4 w-4 ${activeTab === child.id ? 'text-blue-600' : 'text-gray-400'}`} />
+                              {child.label}
+                              {activeTab === child.id && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-600" />}
+                            </button>
+                          )
                         ))}
                       </div>
                     )}
@@ -680,7 +723,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                   <p className="text-sm text-gray-500">{String(settings.functionalitySubtitle)}</p>
                 )}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {modules.filter((m: any) => m.status !== '下架').map((m: any) => {
+                  {allModules.filter((m: any) => m.status !== '下架').map((m: any) => {
                     const colorOverride: Record<string, string> = {
                       'ad-calc': 'blue',
                       'cpc-compass': 'blue',
@@ -728,7 +771,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                       fuchsia: 'text-fuchsia-600',
                     }
                     return (
-                      <Card key={m.key} className="group relative p-6 hover:shadow-xl transition-all duration-300 cursor-pointer border-transparent hover:border-gray-100 bg-white overflow-hidden" onClick={() => handleNavigate(m.key)}>
+                      <Card key={m.key} className="group relative p-6 hover:shadow-xl transition-all duration-300 cursor-pointer border-transparent hover:border-gray-100 bg-white overflow-hidden" onClick={() => openModule(m)}>
                         <div className="flex items-start gap-4 mb-4">
                           <div className={`w-12 h-12 rounded-xl ${colorSolidMap[colorKey] || 'bg-blue-600'} flex items-center justify-center shadow-md shrink-0 group-hover:scale-105 transition-transform duration-300`}>
                             {(() => {
@@ -741,7 +784,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                         </div>
                         <p className="text-sm text-gray-500 leading-relaxed mb-8 line-clamp-2">{m.desc}</p>
                         <div className={`absolute bottom-6 left-6 flex items-center gap-2 text-sm font-bold ${colorTextMap[colorKey] || 'text-blue-600'} opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300`}>
-                          <span>立即使用</span>
+                          <span>{m.href ? '打开入口' : '立即使用'}</span>
                           <ArrowLeftRight className="h-4 w-4" />
                         </div>
                       </Card>

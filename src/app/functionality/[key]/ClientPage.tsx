@@ -50,6 +50,7 @@ export default function ClientPage({
     'pdf-image-watermark-redaction': FileText,
     'image-info-viewer': ImageIcon,
     'image-batch-renamer': ImageIcon,
+    'txt-excel-batch-converter': FileText,
     'amazon-global': Globe,
     'rating-sales-reverse': Star,
     'max-reserve-fee': Calculator,
