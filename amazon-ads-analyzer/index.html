@@ -89,6 +89,13 @@
       if (window.self !== window.top) {
         document.body.classList.add('embedded');
       }
+      window.TOP_AD_OPTIONS = {
+        insertAfterSelector: '.site-header',
+        hideWhenEmbedded: true
+      };
+      const sharedTopAdScript = document.createElement('script');
+      sharedTopAdScript.src = './shared-top-ad.js';
+      document.body.appendChild(sharedTopAdScript);
     </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
