@@ -1,0 +1,18 @@
+{
+  "enabled": true,
+  "type": "text",
+  "text": "跨境乐趣园：亚马逊卖家讨论群日报，海量运营干货资料免费下载，欢迎查看使用。",
+  "imageUrl": "",
+  "linkUrl": "https://amzlink.top/",
+  "alt": "页眉下广告位",
+  "ctaText": "点击跳转",
+  "openInNewTab": true,
+  "imageHeight": 160,
+  "notes": {
+    "recommendedWidth": "1536px",
+    "recommendedHeight": "120-180px",
+    "retinaSize": "3072x240px 到 3072x360px",
+    "safeArea": "重要文案请放在图片中间 70% 区域，方便移动端显示",
+    "alignment": "广告图宽度会与页眉内容区域对齐，容器最大宽度为 max-w-screen-2xl"
+  }
+}
