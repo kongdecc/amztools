@@ -1,6 +1,6 @@
 {
   "enabled": true,
-  "type": "text",
+  "type": "auto",
   "text": "跨境乐趣园：亚马逊卖家讨论群日报，海量运营干货资料免费下载，欢迎查看使用。",
   "imageUrl": "",
   "linkUrl": "https://amzlink.top/",
@@ -9,10 +9,14 @@
   "openInNewTab": true,
   "imageHeight": 160,
   "notes": {
+    "usage": "enabled=true 时显示。type 支持 auto、image、text。推荐日常用 auto：有 imageUrl 时优先显示图片，没有 imageUrl 时自动回退显示 text。",
+    "quickStart": "文字广告：type=text 并填写 text。图片广告：type=image 并填写 imageUrl。自动模式：type=auto，填图则显示图，不填图则显示文字。",
     "recommendedWidth": "1536px",
     "recommendedHeight": "120-180px",
     "retinaSize": "3072x240px 到 3072x360px",
     "safeArea": "重要文案请放在图片中间 70% 区域，方便移动端显示",
-    "alignment": "广告图宽度会与页眉内容区域对齐，容器最大宽度为 max-w-screen-2xl"
+    "alignment": "广告图宽度会与页眉内容区域对齐，容器最大宽度为 max-w-screen-2xl",
+    "linkTip": "如果填写 linkUrl，点击文字或图片会跳转；openInNewTab=true 时在新标签页打开。",
+    "fallbackTip": "type=image 但 imageUrl 为空时会回退到文字展示；建议优先使用 auto 便于维护。"
   }
 }

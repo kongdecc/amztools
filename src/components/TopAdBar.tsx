@@ -24,7 +24,7 @@ function getNormalizedConfig(raw: TopAdConfig) {
 
   return {
     enabled: Boolean(raw.enabled),
-    type: type === 'image' ? 'image' : 'text',
+    type: type === 'image' || type === 'text' || type === 'auto' ? type : 'auto',
     text,
     imageUrl,
     linkUrl,
@@ -40,7 +40,11 @@ export default function TopAdBar() {
 
   if (!config.enabled) return null
 
-  const isImageMode = config.type === 'image' && Boolean(config.imageUrl)
+  const hasImage = Boolean(config.imageUrl)
+  const isImageMode =
+    config.type === 'image' ? hasImage :
+    config.type === 'text' ? false :
+    hasImage
   const hasLink = Boolean(config.linkUrl)
   const target = config.openInNewTab ? '_blank' : '_self'
   const rel = config.openInNewTab ? 'noopener noreferrer' : undefined
