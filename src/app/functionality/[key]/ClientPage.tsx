@@ -9,6 +9,9 @@ import TopAdBar from '@/components/TopAdBar'
 import { ChevronDown } from 'lucide-react'
 import ToolContainer from '@/components/ToolContainer'
 import { DEFAULT_NAV_ITEMS, DEFAULT_TOOLS, DEFAULT_CATEGORIES, DEFAULT_SITE_SETTINGS, ensureNavItems } from '@/lib/constants'
+import { PERSONAL_TOP_CATEGORY_KEY, PERSONAL_TOP_CATEGORY_LABEL, PERSONAL_TOP_LIMIT, getPersonalTopModules, recordPersonalToolVisit, subscribePersonalToolUsage } from '@/lib/personal-top-tools'
+
+const TOP_CATEGORY = { key: PERSONAL_TOP_CATEGORY_KEY, label: PERSONAL_TOP_CATEGORY_LABEL, order: -1 }
 
 export default function ClientPage({ 
   initialModules = [], 
@@ -24,6 +27,13 @@ export default function ClientPage({
   const [modules, setModules] = React.useState<any[]>(initialModules.length ? initialModules : DEFAULT_TOOLS)
   const [navItems, setNavItems] = React.useState<any[]>(initialNavItems.length ? initialNavItems : DEFAULT_NAV_ITEMS)
   const [categories, setCategories] = React.useState<any[]>(initialCategories.length ? initialCategories : DEFAULT_CATEGORIES)
+  const [personalUsageVersion, setPersonalUsageVersion] = React.useState(0)
+  const personalTopModules = React.useMemo(() => getPersonalTopModules(modules, PERSONAL_TOP_LIMIT), [modules, personalUsageVersion])
+  const displayCategories = React.useMemo(() => (
+    (personalTopModules.length > 0 ? [TOP_CATEGORY, ...categories] : categories)
+      .slice()
+      .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
+  ), [categories, personalTopModules])
 
   const iconMap: Record<string, any> = {
     'ad-calc': Calculator,
@@ -65,6 +75,15 @@ export default function ClientPage({
     'amazon-promotion-stacking': Tags,
     'storage-fee-calc': Warehouse,
   }
+
+  React.useEffect(() => {
+    const safeKey = typeof key === 'string' ? key : Array.isArray(key) ? key[0] : ''
+    if (safeKey) recordPersonalToolVisit(safeKey)
+  }, [key])
+
+  React.useEffect(() => {
+    return subscribePersonalToolUsage(() => setPersonalUsageVersion((value) => value + 1))
+  }, [])
 
   React.useEffect(() => {
     const currentTool = modules.find((m: any) => m.key === key)
@@ -174,12 +193,10 @@ export default function ClientPage({
                   </Link>
                   <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 max-h-[80vh] overflow-y-auto">
                     <div className="p-2 space-y-2">
-                      {categories
-                        .slice()
-                        .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
+                      {displayCategories
                         .map(cat => {
-                        const catModules = modules
-                          .filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'image-text')))
+                        const catModules = (cat.key === PERSONAL_TOP_CATEGORY_KEY ? personalTopModules : modules
+                          .filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'image-text'))))
                           .slice()
                           .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
                         if (catModules.length === 0) return null

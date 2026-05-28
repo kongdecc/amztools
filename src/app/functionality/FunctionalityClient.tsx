@@ -7,6 +7,7 @@ import { LayoutDashboard, ChevronDown, Search, MoreHorizontal, Calculator, Type,
 import { useSettings } from '@/components/SettingsProvider'
 import TopAdBar from '@/components/TopAdBar'
 import { DEFAULT_SITE_SETTINGS } from '@/lib/constants'
+import { PERSONAL_TOP_CATEGORY_KEY, PERSONAL_TOP_CATEGORY_LABEL, PERSONAL_TOP_LIMIT, getPersonalTopModules, recordPersonalToolVisit, sortModulesWithPersonalTop, subscribePersonalToolUsage } from '@/lib/personal-top-tools'
 
 const Card = ({ children, className = '', onClick, ...props }: any) => (
   <div onClick={onClick} className={`bg-white rounded-xl border border-gray-100 shadow-sm ${className}`} {...props}>{children}</div>
@@ -31,6 +32,8 @@ const OTHER_SHORTCUT_LINKS: Module[] = [
   { key: 'china-industry-belts-entry', title: '中国产业带', desc: '查看中国产业带分布信息，便于选品、找供应链和货源调研', status: '启用', views: 0, color: 'orange', order: 38, category: 'other', href: '/china-industry-belts.html', isExternal: true },
 ]
 
+const TOP_CATEGORY = { key: PERSONAL_TOP_CATEGORY_KEY, label: PERSONAL_TOP_CATEGORY_LABEL, order: -1 }
+
 export default function FunctionalityClient({ initialNavItems, initialModules, initialCategories }: { initialNavItems: any[]; initialModules?: Module[]; initialCategories?: any[] }) {
   const router = useRouter()
   const [modules, setModules] = useState<Module[]>(initialModules || [])
@@ -39,6 +42,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
   const { settings } = useSettings()
   const [navItems, setNavItems] = useState<Array<any>>(initialNavItems || [])
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [personalUsageVersion, setPersonalUsageVersion] = useState(0)
 
   useEffect(() => {
     (async () => {
@@ -87,6 +91,12 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
   }
 
   const allModules = [...modules, ...OTHER_SHORTCUT_LINKS]
+  const personalTopModules = React.useMemo(() => getPersonalTopModules(allModules, PERSONAL_TOP_LIMIT), [allModules, personalUsageVersion])
+  const displayCategories = React.useMemo(() => (
+    (personalTopModules.length > 0 ? [TOP_CATEGORY, ...categories] : categories)
+      .slice()
+      .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
+  ), [categories, personalTopModules])
 
   const filtered = allModules.map(m => ({
     ...m,
@@ -97,6 +107,14 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
     const k = keyword.trim().toLowerCase()
     return module.title.toLowerCase().includes(k) || module.desc.toLowerCase().includes(k)
   })
+  const prioritizedFiltered = keyword.trim() ? filtered : sortModulesWithPersonalTop(filtered, PERSONAL_TOP_LIMIT)
+  const mainGridModules = React.useMemo(() => {
+    if (keyword.trim() || personalTopModules.length === 0) return prioritizedFiltered
+    const topKeys = new Set(personalTopModules.map((module) => module.key))
+    return prioritizedFiltered.filter((module) => !topKeys.has(module.key))
+  }, [keyword, personalTopModules, prioritizedFiltered])
+
+  useEffect(() => subscribePersonalToolUsage(() => setPersonalUsageVersion((value) => value + 1)), [])
 
   const colorSolidMap: Record<string, string> = {
     blue: 'bg-blue-600', indigo: 'bg-indigo-600', cyan: 'bg-cyan-600', violet: 'bg-violet-600', sky: 'bg-sky-500', purple: 'bg-indigo-500', orange: 'bg-orange-500', emerald: 'bg-emerald-600', teal: 'bg-teal-600', rose: 'bg-rose-600', red: 'bg-red-600', amber: 'bg-amber-500', lime: 'bg-lime-600', fuchsia: 'bg-fuchsia-600'
@@ -166,6 +184,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
   const handleNavigate = (key: string) => { router.push(`/functionality/${key}`) }
   const handleOpenModule = (module: Module) => {
     if (module.href) {
+      recordPersonalToolVisit(module.key)
       window.open(module.href, module.isExternal ? '_blank' : '_self', module.isExternal ? 'noopener,noreferrer' : undefined)
       return
     }
@@ -192,12 +211,12 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
                   </button>
                   <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 max-h-[80vh] overflow-y-auto">
                     <div className="p-2 space-y-2">
-                      {categories
-                        .slice()
-                        .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
+                      {displayCategories
+                          .slice()
+                          .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
                         .map(cat => {
-                        const catModules = allModules
-                          .filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'image-text')))
+                        const catModules = (cat.key === PERSONAL_TOP_CATEGORY_KEY ? personalTopModules : allModules
+                          .filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'image-text'))))
                           .slice()
                           .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
                         if (catModules.length === 0) return null
@@ -211,6 +230,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
                                   href={m.href}
                                   target={m.isExternal ? '_blank' : '_self'}
                                   rel={m.isExternal ? 'noopener noreferrer' : undefined}
+                                  onClick={() => recordPersonalToolVisit(m.key)}
                                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer"
                                 >
                                   {titleOverride[m.key] || m.title}
@@ -289,8 +309,56 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
             </div>
           </div>
           </div>
+          {!keyword.trim() && personalTopModules.length > 0 && (
+            <div className="mb-10">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">{PERSONAL_TOP_CATEGORY_LABEL}</h2>
+                  <p className="text-sm text-gray-500">按当前浏览器使用频次自动生成，最多展示 8 个你最常用的工具。</p>
+                </div>
+                <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">仅当前浏览器</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {personalTopModules.map((module) => {
+                  const card = (
+                    <Card className="h-full relative p-6 hover:shadow-xl transition-all duration-300 cursor-pointer border-transparent hover:border-gray-100 bg-white overflow-hidden">
+                      <div className="flex items-start gap-4 mb-4">
+                        <div className={`w-12 h-12 rounded-xl ${colorSolidMap[colorOverride[module.key] || module.color] || 'bg-blue-600'} flex items-center justify-center shadow-md shrink-0 group-hover:scale-105 transition-transform duration-300`}>
+                          {(() => {
+                            const I = iconMap[module.key] || Hammer
+                            return <I className="h-6 w-6 text-white" />
+                          })()}
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-800 pt-1 group-hover:text-gray-900">{module.status === '维护' ? `${module.title}（维护）` : module.title}</h3>
+                          {module.status === '维护' && (
+                            <span className="ml-auto px-2 py-0.5 text-xs rounded border bg-yellow-50 text-yellow-600 border-yellow-200">维护中</span>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-500 leading-relaxed mb-8 line-clamp-2">{module.desc}</p>
+                      <div className={`absolute bottom-6 left-6 flex items-center gap-2 text-sm font-bold ${colorTextMap[colorOverride[module.key] || module.color] || 'text-blue-600'} opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300`}>
+                        <span>{module.href ? '打开入口' : '立即使用'}</span>
+                        <ArrowLeftRight className="h-4 w-4" />
+                      </div>
+                    </Card>
+                  )
+
+                  return module.href ? (
+                    <a key={`personal-${module.key}`} href={module.href} target={module.isExternal ? '_blank' : '_self'} rel={module.isExternal ? 'noopener noreferrer' : undefined} className="block group" onClick={() => recordPersonalToolVisit(module.key)}>
+                      {card}
+                    </a>
+                  ) : (
+                    <Link key={`personal-${module.key}`} href={`/functionality/${module.key}`} className="block group" prefetch={false}>
+                      {card}
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtered.map((module) => {
+            {mainGridModules.map((module) => {
               const card = (
                 <Card className="h-full relative p-6 hover:shadow-xl transition-all duration-300 cursor-pointer border-transparent hover:border-gray-100 bg-white overflow-hidden">
                   <div className="flex items-start gap-4 mb-4">
@@ -316,7 +384,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
               )
 
               return module.href ? (
-                <a key={module.key} href={module.href} target={module.isExternal ? '_blank' : '_self'} rel={module.isExternal ? 'noopener noreferrer' : undefined} className="block group">
+                <a key={module.key} href={module.href} target={module.isExternal ? '_blank' : '_self'} rel={module.isExternal ? 'noopener noreferrer' : undefined} className="block group" onClick={() => recordPersonalToolVisit(module.key)}>
                   {card}
                 </a>
               ) : (

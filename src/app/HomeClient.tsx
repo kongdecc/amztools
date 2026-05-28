@@ -8,6 +8,7 @@ import Link from 'next/link'
 import ToolContainer from '@/components/ToolContainer'
 import TopAdBar from '@/components/TopAdBar'
 import { DEFAULT_SITE_SETTINGS } from '@/lib/constants'
+import { PERSONAL_TOP_CATEGORY_KEY, PERSONAL_TOP_CATEGORY_LABEL, PERSONAL_TOP_LIMIT, getPersonalTopModules, recordPersonalToolVisit, sortModulesWithPersonalTop, subscribePersonalToolUsage } from '@/lib/personal-top-tools'
 
 import { useRef } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
@@ -26,18 +27,27 @@ const OTHER_SHORTCUT_LINKS = [
   { key: 'china-industry-belts-entry', title: '中国产业带', desc: '查看中国产业带分布信息，便于选品、找供应链和货源调研', status: '启用', views: 0, color: 'orange', order: 38, category: 'other', href: '/china-industry-belts.html', isExternal: true }
 ]
 
+const TOP_CATEGORY = { key: PERSONAL_TOP_CATEGORY_KEY, label: PERSONAL_TOP_CATEGORY_LABEL, order: -1 }
+
 const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: string) => void; modules: Array<any>; categories?: Array<any> }) => {
   const { settings } = useSettings()
   const router = useRouter()
   const safeOrigin = (typeof window !== 'undefined' && (window as any).location) ? (window as any).location.origin : ''
   const allModules = useMemo(() => [...modules, ...OTHER_SHORTCUT_LINKS], [modules])
+  const [personalUsageVersion, setPersonalUsageVersion] = useState(0)
   const defaultCategories = [
     { key: 'advertising', label: '广告工具', order: 1 },
     { key: 'operation', label: '运营工具', order: 2 },
     { key: 'image-text', label: '图片文本', order: 3 },
     { key: 'other', label: '其他工具', order: 4 }
   ]
-  const activeCategories = (categories.length > 0 ? categories : defaultCategories).slice().sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
+  const personalTopModules = useMemo(() => getPersonalTopModules(allModules, PERSONAL_TOP_LIMIT), [allModules, personalUsageVersion])
+  const activeCategories = useMemo(() => {
+    const baseCategories = (categories.length > 0 ? categories : defaultCategories).slice().sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
+    return personalTopModules.length > 0 ? [TOP_CATEGORY, ...baseCategories] : baseCategories
+  }, [categories, personalTopModules.length])
+
+  useEffect(() => subscribePersonalToolUsage(() => setPersonalUsageVersion((value) => value + 1)), [])
 
   const iconMap: Record<string, any> = {
     'ad-calc': Calculator,
@@ -105,6 +115,7 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
     if (m.category && activeCategories.length > 0 && !activeCategories.some(c => c.key === m.category)) return false
     return true
   })
+  const prioritizedVisible = useMemo(() => searchKeyword.trim() ? visible : sortModulesWithPersonalTop(visible, PERSONAL_TOP_LIMIT), [searchKeyword, visible])
   
   const colorSolidMap: Record<string, string> = {
     blue: 'bg-blue-600',
@@ -141,10 +152,11 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
 
   // 首页显示的卡片数量，默认6个
   const homeCardLimit = Number(settings.homeCardLimit || 6)
-  const showMore = visible.length > homeCardLimit
-  const displayedTools = showMore ? visible.slice(0, homeCardLimit) : visible
+  const showMore = prioritizedVisible.length > homeCardLimit
+  const displayedTools = showMore ? prioritizedVisible.slice(0, homeCardLimit) : prioritizedVisible
   const handleToolOpen = (tool: any) => {
     if (tool.href) {
+      recordPersonalToolVisit(tool.key)
       window.open(tool.href, tool.isExternal ? '_blank' : '_self', tool.isExternal ? 'noopener,noreferrer' : undefined)
       return
     }
@@ -191,6 +203,15 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
           </div>
         </div>
       </Card>
+      {!searchKeyword.trim() && personalTopModules.length > 0 && (
+        <div className="flex items-center justify-between px-1">
+          <div>
+            <h2 className="text-lg font-bold text-gray-800">{PERSONAL_TOP_CATEGORY_LABEL}</h2>
+            <p className="text-sm text-gray-500">根据当前浏览器的使用次数自动生成，仅在你自己的电脑浏览器中生效。</p>
+          </div>
+          <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">本机个性化</span>
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {displayedTools.map((tool: any) => {
                     const colorOverride: Record<string, string> = {
@@ -291,6 +312,16 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
   const [navItems, setNavItems] = useState<Array<any>>(initialNavItems || [])
   const [categories, setCategories] = useState<Array<any>>(initialCategories || [])
   const allModules = useMemo(() => [...modules, ...OTHER_SHORTCUT_LINKS], [modules])
+  const [personalUsageVersion, setPersonalUsageVersion] = useState(0)
+  const personalTopModules = useMemo(() => getPersonalTopModules(allModules, PERSONAL_TOP_LIMIT), [allModules, personalUsageVersion])
+  const menuCategories = useMemo(() => {
+    const sorted = categories
+      .slice()
+      .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
+    return personalTopModules.length > 0 ? [TOP_CATEGORY, ...sorted] : sorted
+  }, [categories, personalTopModules.length])
+
+  useEffect(() => subscribePersonalToolUsage(() => setPersonalUsageVersion((value) => value + 1)), [])
   
   useEffect(() => {
     const tab = searchParams.get('tab')
@@ -364,11 +395,12 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
 
   const openModule = useCallback((module: any) => {
     if (module?.href) {
+      recordPersonalToolVisit(module.key)
       window.open(module.href, module.isExternal ? '_blank' : '_self', module.isExternal ? 'noopener,noreferrer' : undefined)
       return
     }
     handleNavigate(module.key)
-  }, [searchParams])
+  }, [handleNavigate])
 
   const toggleCategory = useCallback((catKey: string) => {
     setExpandedCategories(prev => ({ ...prev, [catKey]: !prev[catKey] }))
@@ -376,14 +408,12 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
 
   const menuItems = useMemo(() => [
     { id: 'home', label: '首页', icon: LayoutDashboard },
-    ...categories
-      .slice()
-      .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
+    ...menuCategories
       .map(cat => ({
       id: cat.key,
       label: cat.label,
-      children: allModules
-        .filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'image-text')))
+      children: (cat.key === PERSONAL_TOP_CATEGORY_KEY ? personalTopModules : allModules
+        .filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'image-text'))))
         .slice()
         .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
         .map((m: any) => ({
@@ -394,7 +424,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
         isExternal: m.isExternal
       }))
     }))
-  ], [categories, allModules, iconMap])
+  ], [menuCategories, personalTopModules, allModules, iconMap])
 
   useEffect(() => {
     // Auto-expand category if active tab is inside it
@@ -405,6 +435,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
   }, [activeTab])
           useEffect(() => {
             if (activeTab && activeTab !== 'home') {
+              recordPersonalToolVisit(activeTab)
               try { 
                 // Use non-blocking fetch
                 setTimeout(() => {
@@ -495,12 +526,12 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                     </button>
                     <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 max-h-[80vh] overflow-y-auto">
                       <div className="p-2 space-y-2">
-                        {categories
-                          .slice()
-                          .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
+                        {menuCategories
+                            .slice()
+                            .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
                           .map(cat => {
-                          const catModules = allModules
-                            .filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'image-text')))
+                          const catModules = (cat.key === PERSONAL_TOP_CATEGORY_KEY ? personalTopModules : allModules
+                            .filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'image-text'))))
                             .slice()
                             .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
                           if (catModules.length === 0) return null
@@ -514,6 +545,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                                     href={m.href}
                                     target={m.isExternal ? '_blank' : '_self'}
                                     rel={m.isExternal ? 'noopener noreferrer' : undefined}
+                                    onClick={() => recordPersonalToolVisit(m.key)}
                                     className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer"
                                   >
                                     {m.title}
@@ -642,6 +674,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                               href={child.href}
                               target={child.isExternal ? '_blank' : '_self'}
                               rel={child.isExternal ? 'noopener noreferrer' : undefined}
+                              onClick={() => recordPersonalToolVisit(child.id)}
                               className="w-full flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg transition-colors text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                             >
                               <child.icon className="h-4 w-4 text-gray-400" />
