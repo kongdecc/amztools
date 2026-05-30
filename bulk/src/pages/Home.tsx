@@ -26,6 +26,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 import {
   buildPortfolioRows,
@@ -63,7 +71,8 @@ import {
 import { cn } from "@/lib/utils";
 import type { WorkBook } from "xlsx";
 
-type SpUiMode = SpCampaignWizard["mode"] | "visual-batch";
+type SingleSpUiMode = SpCampaignWizard["mode"];
+type SpUiMode = SingleSpUiMode | "visual-batch";
 
 type SpStructuredImportResult = {
   rows: SpBulkRow[];
@@ -105,6 +114,43 @@ type SpBatchCampaignDraft = {
 
 type SpBatchDraft = {
   campaigns: SpBatchCampaignDraft[];
+};
+
+type PositiveKeywordMatchType = Exclude<SpMatchType, "negativeExact" | "negativePhrase">;
+type NegativeKeywordMatchType = Extract<SpMatchType, "negativeExact" | "negativePhrase">;
+type BatchBidRuleMode = "keep" | "fixed" | "list" | "step";
+type AutoTargetingType = "close-match" | "loose-match" | "substitutes" | "complements";
+type ProductTargetingExpandMode = "exact" | "expanded";
+type ProductTargetingInputMode = "asin" | "category";
+type ProductTargetingUiType = "asin" | "category" | "custom";
+type BatchBidRuleConfig = {
+  mode: BatchBidRuleMode;
+  value: number;
+  listText: string;
+  step: number;
+};
+
+type SpBatchDuplicateDialogState = {
+  open: boolean;
+  sourceIndex: number | null;
+  sourceCampaign: SpBatchCampaignDraft | null;
+  count: number;
+  startNumber: number;
+  digits: number;
+  separator: string;
+  campaignNamePrefix: string;
+  campaignIdPrefix: string;
+  adGroupNamePrefix: string;
+  adGroupIdPrefix: string;
+  adGroupBidMode: BatchBidRuleMode;
+  adGroupBidValue: number;
+  adGroupBidList: string;
+  adGroupBidStep: number;
+  primaryBidMode: BatchBidRuleMode;
+  primaryBidValue: number;
+  primaryBidList: string;
+  primaryBidStep: number;
+  autoBidRules: Record<AutoTargetingType, BatchBidRuleConfig>;
 };
 
 type SpBatchBuildResult = {
@@ -357,12 +403,13 @@ function parseNegativeMatchType(value?: string): Extract<SpMatchType, "negativeE
 }
 
 function parseSpNegativeKeywordBulk(
-  text: string
+  text: string,
+  fallbackMatchType: NegativeKeywordMatchType = "negativePhrase"
 ): {
-  rows: Array<{ text: string; matchType: Extract<SpMatchType, "negativeExact" | "negativePhrase">; state: State }>;
+  rows: Array<{ text: string; matchType: NegativeKeywordMatchType; state: State }>;
   invalidCount: number;
 } {
-  const rows: Array<{ text: string; matchType: Extract<SpMatchType, "negativeExact" | "negativePhrase">; state: State }> = [];
+  const rows: Array<{ text: string; matchType: NegativeKeywordMatchType; state: State }> = [];
   let invalidCount = 0;
 
   for (const line of text.split(/\r?\n/)) {
@@ -377,7 +424,7 @@ function parseSpNegativeKeywordBulk(
       continue;
     }
 
-    const matchType = parseNegativeMatchType(parts[1]) ?? "negativePhrase";
+    const matchType = parseNegativeMatchType(parts[1]) ?? fallbackMatchType;
     const state = parseState(parts[2]) ?? "enabled";
     rows.push({ text: keywordText, matchType, state });
   }
@@ -478,9 +525,9 @@ function parseSdTargetingBulk(
 }
 
 function parseAutoTargetingRows(text: string): Array<{ expression: string; bid: number; state: State }> {
-  const parsed = parseSpProductTargetingBulk(text, 0.75).rows;
+  const parsed = parseSpProductTargetingBulk(text, 0.75).rows.filter((row) => isAutoTargetingExpression(row.expression));
   if (parsed.length) return parsed;
-  return [{ expression: "close-match", bid: 0.75, state: "enabled" }];
+  return createDefaultAutoTargetingRows(0.75);
 }
 
 function toAutoTargetingText(rows: Array<{ expression: string; bid: number; state: State }>) {
@@ -510,10 +557,64 @@ function parseKeywordRowsForUi(
   return [{ text: "", matchType: "exact", bid: fallbackBid, state: "enabled" }];
 }
 
-function toKeywordRowsText(
-  rows: Array<{ text: string; matchType: Exclude<SpMatchType, "negativeExact" | "negativePhrase">; bid: number; state: State }>
-) {
+function toKeywordRowsText(rows: Array<{ text: string; matchType: PositiveKeywordMatchType; bid: number; state: State }>) {
   return rows.map((x) => `${x.text},${x.matchType},${x.bid},${x.state}`).join("\n");
+}
+
+function expandKeywordTextByMatchTypes(
+  text: string,
+  fallbackBid: number,
+  defaultMatchTypes: Array<PositiveKeywordMatchType>
+) {
+  const rows: Array<{ text: string; matchType: PositiveKeywordMatchType; bid: number; state: State }> = [];
+  const effectiveMatchTypes: Array<PositiveKeywordMatchType> = defaultMatchTypes.length
+    ? defaultMatchTypes
+    : ["exact"];
+  for (const line of text.split(/\r?\n/)) {
+    const raw = line.trim();
+    if (!raw) continue;
+    const parts = raw.includes("\t") ? raw.split("\t").map((x) => x.trim()) : raw.split(",").map((x) => x.trim());
+    const keywordText = parts[0] || "";
+    if (!keywordText) continue;
+    const explicitMatchType = parseKeywordMatchType(parts[1]);
+    const bidParsed = Number(parts[2]);
+    const bid = Number.isFinite(bidParsed) && bidParsed > 0 ? bidParsed : fallbackBid;
+    const state = parseState(parts[3]) ?? "enabled";
+    if (explicitMatchType) {
+      rows.push({ text: keywordText, matchType: explicitMatchType, bid, state });
+      continue;
+    }
+    effectiveMatchTypes.forEach((matchType) => {
+      rows.push({ text: keywordText, matchType, bid, state });
+    });
+  }
+  return toKeywordRowsText(rows);
+}
+
+function createBatchBidRuleConfig(value = 0.75, step = -0.05): BatchBidRuleConfig {
+  return {
+    mode: "keep",
+    value,
+    listText: "",
+    step,
+  };
+}
+
+function createDefaultAutoBidRules(value = 0.75): Record<AutoTargetingType, BatchBidRuleConfig> {
+  return {
+    "close-match": createBatchBidRuleConfig(value),
+    "loose-match": createBatchBidRuleConfig(value),
+    substitutes: createBatchBidRuleConfig(value),
+    complements: createBatchBidRuleConfig(value),
+  };
+}
+
+function getAutoTargetingBidByExpression(source: SpBatchCampaignDraft, expression: AutoTargetingType) {
+  const firstAdGroup = source.adGroups[0];
+  if (!firstAdGroup) return 0.75;
+  return parseSpProductTargetingBulk(firstAdGroup.productTargetingsText, firstAdGroup.adGroupDefaultBid).rows.find(
+    (row) => row.expression === expression
+  )?.bid ?? firstAdGroup.adGroupDefaultBid;
 }
 
 function parseNegativeKeywordRowsForUi(text: string): Array<{ text: string; matchType: Extract<SpMatchType, "negativeExact" | "negativePhrase">; state: State }> {
@@ -559,7 +660,94 @@ function toNegativeProductTargetingRowsText(rows: Array<{ expression: string; st
   return rows.map((x) => `${x.expression},${x.state}`).join("\n");
 }
 
-function parseProductTargetingRowsForUi(text: string, fallbackBid: number): Array<{ expression: string; bid: number; state: State }> {
+function buildProductTargetingExpressionFromAsin(asin: string, mode: ProductTargetingExpandMode) {
+  const normalized = asin.trim();
+  if (!normalized) return "";
+  return mode === "exact" ? `asin="${normalized}"` : `asin-expanded="${normalized}"`;
+}
+
+function buildProductTargetingExpressionFromCategory(categoryId: string) {
+  const normalized = categoryId.trim();
+  if (!normalized) return "";
+  return `category="${normalized}"`;
+}
+
+function getProductTargetingExpandModes(
+  values: Array<ProductTargetingExpandMode> | undefined,
+  fallback: Array<ProductTargetingExpandMode> = ["expanded"]
+) {
+  return values && values.length ? values : fallback;
+}
+
+function parseProductTargetingExpression(expression: string): {
+  targetType: ProductTargetingUiType;
+  value: string;
+  expandMode?: ProductTargetingExpandMode;
+} {
+  const raw = expression.trim();
+  const exactAsin = /^asin="([^"]+)"$/i.exec(raw);
+  if (exactAsin) return { targetType: "asin", value: exactAsin[1], expandMode: "exact" };
+  const expandedAsin = /^asin-expanded="([^"]+)"$/i.exec(raw);
+  if (expandedAsin) return { targetType: "asin", value: expandedAsin[1], expandMode: "expanded" };
+  const category = /^category="?([^"]+)"?$/i.exec(raw);
+  if (category) return { targetType: "category", value: category[1] };
+  return { targetType: "custom", value: raw };
+}
+
+function buildProductTargetingExpressionFromUiRow(row: {
+  targetType: ProductTargetingUiType;
+  value: string;
+  expandMode?: ProductTargetingExpandMode;
+}) {
+  if (row.targetType === "asin") return buildProductTargetingExpressionFromAsin(row.value, row.expandMode ?? "expanded");
+  if (row.targetType === "category") return buildProductTargetingExpressionFromCategory(row.value);
+  return row.value.trim();
+}
+
+function buildProductTargetingTextFromInput(
+  text: string,
+  fallbackBid: number,
+  inputMode: ProductTargetingInputMode,
+  expandModes: Array<ProductTargetingExpandMode>
+) {
+  const rows: Array<{ expression: string; bid: number; state: State }> = [];
+  const effectiveModes = getProductTargetingExpandModes(expandModes);
+  for (const line of text.split(/\r?\n/)) {
+    const raw = line.trim();
+    if (!raw) continue;
+    const parts = raw.includes("\t") ? raw.split("\t").map((x) => x.trim()) : raw.split(",").map((x) => x.trim());
+    const firstValue = parts[0] || "";
+    if (!firstValue) continue;
+    const bidParsed = Number(parts[1]);
+    const bid = Number.isFinite(bidParsed) && bidParsed > 0 ? bidParsed : fallbackBid;
+    const state = parseState(parts[2]) ?? "enabled";
+    if (/^(asin(?:-expanded)?|category)=/i.test(firstValue)) {
+      rows.push({ expression: firstValue, bid, state });
+      continue;
+    }
+    if (inputMode === "category") {
+      rows.push({
+        expression: buildProductTargetingExpressionFromCategory(firstValue),
+        bid,
+        state,
+      });
+      continue;
+    }
+    effectiveModes.forEach((mode) => {
+      rows.push({
+        expression: buildProductTargetingExpressionFromAsin(firstValue, mode),
+        bid,
+        state,
+      });
+    });
+  }
+  return toProductTargetingRowsText(rows);
+}
+
+function parseProductTargetingRowsForUi(
+  text: string,
+  fallbackBid: number
+): Array<{ targetType: ProductTargetingUiType; value: string; expandMode?: ProductTargetingExpandMode; bid: number; state: State }> {
   const rows = text
     .split(/\r?\n/)
     .map((line) => {
@@ -567,18 +755,43 @@ function parseProductTargetingRowsForUi(text: string, fallbackBid: number): Arra
       if (!raw) return null;
       const parts = raw.includes("\t") ? raw.split("\t").map((x) => x.trim()) : raw.split(",").map((x) => x.trim());
       const bidParsed = Number(parts[1]);
+      const parsed = parseProductTargetingExpression(parts[0] ?? "");
       return {
-        expression: parts[0] ?? "",
+        ...parsed,
         bid: Number.isFinite(bidParsed) && bidParsed > 0 ? bidParsed : fallbackBid,
         state: parseState(parts[2]) ?? "enabled",
       };
     })
-    .filter((x): x is { expression: string; bid: number; state: State } => !!x);
+    .filter((x): x is { targetType: ProductTargetingUiType; value: string; expandMode?: ProductTargetingExpandMode; bid: number; state: State } => !!x);
   if (rows.length) return rows;
-  return [{ expression: "", bid: fallbackBid, state: "enabled" }];
+  return [{ targetType: "asin", value: "", expandMode: "expanded", bid: fallbackBid, state: "enabled" }];
 }
 
-const autoTargetingTypeOptions = ["close-match", "loose-match", "substitutes", "complements"] as const;
+function toProductTargetingRowsText(rows: Array<{ expression: string; bid: number; state: State }>) {
+  return rows.map((x) => `${x.expression},${x.bid},${x.state}`).join("\n");
+}
+
+function toProductTargetingUiRowsText(
+  rows: Array<{ targetType: ProductTargetingUiType; value: string; expandMode?: ProductTargetingExpandMode; bid: number; state: State }>
+) {
+  return toProductTargetingRowsText(
+    rows
+      .map((row) => ({
+        expression: buildProductTargetingExpressionFromUiRow(row),
+        bid: row.bid,
+        state: row.state,
+      }))
+      .filter((row) => row.expression.trim())
+  );
+}
+
+const autoTargetingTypeOptions: AutoTargetingType[] = ["close-match", "loose-match", "substitutes", "complements"];
+const autoTargetingTypeLabels: Record<AutoTargetingType, string> = {
+  "close-match": "紧密匹配",
+  "loose-match": "宽泛匹配",
+  substitutes: "同类替代",
+  complements: "关联商品",
+};
 
 const validSpBiddingStrategies: readonly SpBiddingStrategy[] = [
   "Fixed bid",
@@ -717,6 +930,139 @@ function cloneSpBatchDraft(draft: SpBatchDraft): SpBatchDraft {
       ...campaign,
       adGroups: campaign.adGroups.map((adGroup) => ({ ...adGroup })),
     })),
+  };
+}
+
+function buildBatchSequenceSuffix(value: number, digits: number, separator: string) {
+  return `${separator}${String(value).padStart(digits, "0")}`;
+}
+
+function roundBatchBid(value: number) {
+  return Math.round(value * 10000) / 10000;
+}
+
+function parseBatchBidList(text: string) {
+  return text
+    .split(/[,\n，]+/)
+    .map((x) => Number(x.trim()))
+    .filter((x) => Number.isFinite(x) && x > 0);
+}
+
+function resolveBatchBidRuleValue(
+  mode: BatchBidRuleMode,
+  index: number,
+  originalValue: number,
+  options: { value: number; listText: string; step: number }
+) {
+  if (mode === "keep") return roundBatchBid(originalValue);
+  if (mode === "fixed") return roundBatchBid(options.value);
+  if (mode === "list") {
+    const values = parseBatchBidList(options.listText);
+    const fallback = values.length ? values[Math.min(index, values.length - 1)] : originalValue;
+    return roundBatchBid(fallback);
+  }
+  return roundBatchBid(options.value + options.step * (index + 1));
+}
+
+function getFirstPrimaryBid(source: SpBatchCampaignDraft) {
+  const firstAdGroup = source.adGroups[0];
+  if (!firstAdGroup) return 0.75;
+  if (source.mode === "manual-keyword") {
+    return parseSpKeywordBulk(firstAdGroup.keywordsText, firstAdGroup.adGroupDefaultBid).rows[0]?.bid ?? firstAdGroup.adGroupDefaultBid;
+  }
+  return parseSpProductTargetingBulk(firstAdGroup.productTargetingsText, firstAdGroup.adGroupDefaultBid).rows[0]?.bid ?? firstAdGroup.adGroupDefaultBid;
+}
+
+function resolveBatchBidRuleFromConfig(config: BatchBidRuleConfig, index: number, originalValue: number) {
+  return resolveBatchBidRuleValue(config.mode, index, originalValue, config);
+}
+
+function appendBatchSuffix(value: string, suffix: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return value;
+  return `${trimmed}${suffix}`;
+}
+
+function buildDuplicateValue(original: string, prefix: string, suffix: string) {
+  const trimmedPrefix = prefix.trim();
+  if (trimmedPrefix) return `${trimmedPrefix}${suffix}`;
+  return appendBatchSuffix(original, suffix);
+}
+
+function duplicateSpBatchCampaign(
+  source: SpBatchCampaignDraft,
+  suffix: string,
+  duplicateIndex: number,
+  overrides?: {
+    campaignNamePrefix?: string;
+    campaignIdPrefix?: string;
+    adGroupNamePrefix?: string;
+    adGroupIdPrefix?: string;
+    adGroupBidMode?: BatchBidRuleMode;
+    adGroupBidValue?: number;
+    adGroupBidList?: string;
+    adGroupBidStep?: number;
+    primaryBidMode?: BatchBidRuleMode;
+    primaryBidValue?: number;
+    primaryBidList?: string;
+    primaryBidStep?: number;
+    autoBidRules?: Record<AutoTargetingType, BatchBidRuleConfig>;
+  }
+): SpBatchCampaignDraft {
+  const firstPrimaryBid = getFirstPrimaryBid(source);
+  return {
+    ...source,
+    campaignId: buildDuplicateValue(source.campaignId, overrides?.campaignIdPrefix || "", suffix),
+    campaignName: buildDuplicateValue(source.campaignName, overrides?.campaignNamePrefix || "", suffix),
+    adGroups: source.adGroups.map((adGroup) => {
+      const nextAdGroupBid = resolveBatchBidRuleValue(
+        overrides?.adGroupBidMode ?? "keep",
+        duplicateIndex,
+        adGroup.adGroupDefaultBid,
+        {
+          value: overrides?.adGroupBidValue ?? adGroup.adGroupDefaultBid,
+          listText: overrides?.adGroupBidList ?? "",
+          step: overrides?.adGroupBidStep ?? 0,
+        }
+      );
+      const nextPrimaryBid = resolveBatchBidRuleValue(
+        overrides?.primaryBidMode ?? "keep",
+        duplicateIndex,
+        firstPrimaryBid,
+        {
+          value: overrides?.primaryBidValue ?? firstPrimaryBid,
+          listText: overrides?.primaryBidList ?? "",
+          step: overrides?.primaryBidStep ?? 0,
+        }
+      );
+      const productTargetingRows = parseSpProductTargetingBulk(adGroup.productTargetingsText, adGroup.adGroupDefaultBid).rows;
+      return {
+        ...adGroup,
+        adGroupId: buildDuplicateValue(adGroup.adGroupId, overrides?.adGroupIdPrefix || "", suffix),
+        adGroupName: buildDuplicateValue(adGroup.adGroupName, overrides?.adGroupNamePrefix || "", suffix),
+        adGroupDefaultBid: nextAdGroupBid,
+        keywordsText:
+          source.mode === "manual-keyword"
+            ? toKeywordRowsText(parseSpKeywordBulk(adGroup.keywordsText, adGroup.adGroupDefaultBid).rows.map((row) => ({ ...row, bid: nextPrimaryBid })))
+            : adGroup.keywordsText,
+        productTargetingsText:
+          source.mode === "manual-keyword"
+            ? adGroup.productTargetingsText
+            : toProductTargetingRowsText(
+                productTargetingRows.map((row) => {
+                  if (source.mode !== "auto" || !autoTargetingTypeOptions.includes(row.expression as AutoTargetingType)) {
+                    return { ...row, bid: nextPrimaryBid };
+                  }
+                  const expression = row.expression as AutoTargetingType;
+                  const config = overrides?.autoBidRules?.[expression] ?? createBatchBidRuleConfig(row.bid, 0);
+                  return {
+                    ...row,
+                    bid: resolveBatchBidRuleFromConfig(config, duplicateIndex, row.bid),
+                  };
+                })
+              ),
+      };
+    }),
   };
 }
 
@@ -1151,7 +1497,9 @@ function countPrimaryItemsForAdGroup(mode: SpCampaignWizard["mode"], adGroup: Sp
   if (mode === "manual-keyword") {
     return parseKeywordRowsForUi(adGroup.keywordsText, adGroup.adGroupDefaultBid || 0.75).filter((row) => row.text.trim()).length;
   }
-  return parseProductTargetingRowsForUi(adGroup.productTargetingsText, adGroup.adGroupDefaultBid || 0.75).filter((row) => row.expression.trim()).length;
+  return parseProductTargetingRowsForUi(adGroup.productTargetingsText, adGroup.adGroupDefaultBid || 0.75)
+    .filter((row) => buildProductTargetingExpressionFromUiRow(row).trim())
+    .length;
 }
 
 function parseSpStructuredBulkInput(text: string): SpStructuredImportResult {
@@ -1444,7 +1792,23 @@ function parseSpStructuredBulkInput(text: string): SpStructuredImportResult {
   };
 }
 
-function createInitialSpBatchAdGroup(): SpBatchAdGroupDraft {
+function createDefaultBatchProductTargetingsText(mode: SpCampaignWizard["mode"], defaultBid = 0.75) {
+  if (mode === "auto") {
+    return toAutoTargetingText(createDefaultAutoTargetingRows(defaultBid));
+  }
+  if (mode === "manual-product-targeting") {
+    return toProductTargetingRowsText(
+      createDefaultManualProductTargetings(defaultBid).map((row) => ({
+        expression: row.expression,
+        bid: row.bid ?? defaultBid,
+        state: row.state,
+      }))
+    );
+  }
+  return "";
+}
+
+function createInitialSpBatchAdGroup(mode: SpCampaignWizard["mode"] = "manual-keyword"): SpBatchAdGroupDraft {
   return {
     adGroupId: "",
     adGroupName: "",
@@ -1452,15 +1816,15 @@ function createInitialSpBatchAdGroup(): SpBatchAdGroupDraft {
     adGroupDefaultBid: 0.75,
     skusText: "",
     keywordsText: "",
-    productTargetingsText: "",
+    productTargetingsText: createDefaultBatchProductTargetingsText(mode, 0.75),
     negativeKeywordsText: "",
     negativeProductTargetingsText: "",
   };
 }
 
-function createInitialSpBatchCampaign(): SpBatchCampaignDraft {
+function createInitialSpBatchCampaign(mode: SpCampaignWizard["mode"] = "manual-keyword"): SpBatchCampaignDraft {
   return {
-    mode: "manual-keyword",
+    mode,
     campaignId: "",
     campaignName: "",
     startDate: todayYYYYMMDD(),
@@ -1472,13 +1836,93 @@ function createInitialSpBatchCampaign(): SpBatchCampaignDraft {
     placementTopPct: undefined,
     placementRestPct: undefined,
     placementProductPagePct: undefined,
-    adGroups: [createInitialSpBatchAdGroup()],
+    adGroups: [createInitialSpBatchAdGroup(mode)],
+  };
+}
+
+function isEmptySpBatchCampaign(campaign: SpBatchCampaignDraft) {
+  const firstAdGroup = campaign.adGroups[0];
+  if (!firstAdGroup) return true;
+  return (
+    !campaign.campaignId.trim() &&
+    !campaign.campaignName.trim() &&
+    !campaign.portfolioId.trim() &&
+    !firstAdGroup.adGroupId.trim() &&
+    !firstAdGroup.adGroupName.trim() &&
+    !normalizeLines(firstAdGroup.skusText).length &&
+    !normalizeLines(firstAdGroup.keywordsText).length &&
+    !normalizeLines(firstAdGroup.productTargetingsText).length &&
+    !normalizeLines(firstAdGroup.negativeKeywordsText).length &&
+    !normalizeLines(firstAdGroup.negativeProductTargetingsText).length
+  );
+}
+
+function getEffectiveSpBatchDraft(draft: SpBatchDraft): SpBatchDraft {
+  return {
+    campaigns: draft.campaigns.filter((campaign) => !isEmptySpBatchCampaign(campaign)),
+  };
+}
+
+function buildBatchCampaignFromSpWizard(w: SpCampaignWizard): SpBatchCampaignDraft {
+  const productTargetings = normalizeSpProductTargetingsForMode(w.mode, w.productTargetings, w.adGroupDefaultBid || 0.75)
+    .filter((row) => row.expression.trim());
+  return {
+    mode: w.mode,
+    campaignId: w.campaignId,
+    campaignName: w.campaignName,
+    startDate: w.startDate,
+    endDate: w.endDate || "",
+    state: w.state,
+    dailyBudget: w.dailyBudget,
+    portfolioId: w.portfolioId || "",
+    biddingStrategy: w.biddingStrategy,
+    placementTopPct: w.placementTopPct,
+    placementRestPct: w.placementRestPct,
+    placementProductPagePct: w.placementProductPagePct,
+    adGroups: [
+      {
+        adGroupId: w.adGroupId,
+        adGroupName: w.adGroupName,
+        adGroupState: w.adGroupState,
+        adGroupDefaultBid: w.adGroupDefaultBid,
+        skusText: w.skus.join("\n"),
+        keywordsText: toKeywordRowsText(
+          w.keywords
+            .filter((row) => row.text.trim())
+            .map((row) => ({ text: row.text, matchType: row.matchType, bid: row.bid, state: row.state }))
+        ),
+        productTargetingsText: toProductTargetingRowsText(
+          productTargetings.map((row) => ({
+            expression: row.expression,
+            bid: row.bid ?? (w.adGroupDefaultBid || 0.75),
+            state: row.state,
+          }))
+        ),
+        negativeKeywordsText: toNegativeKeywordRowsText(
+          w.negativeKeywords
+            .filter((row) => row.text.trim())
+            .map((row) => ({ text: row.text, matchType: row.matchType, state: row.state }))
+        ),
+        negativeProductTargetingsText: w.negativeProductTargetings
+          .filter((row) => row.expression.trim())
+          .map((row) => `${row.expression},${row.state}`)
+          .join("\n"),
+      },
+    ],
   };
 }
 
 function createInitialSpBatchDraft(): SpBatchDraft {
   return {
     campaigns: [createInitialSpBatchCampaign()],
+  };
+}
+
+function createSingleSpModeRecord<T>(factory: () => T): Record<SingleSpUiMode, T> {
+  return {
+    "manual-keyword": factory(),
+    auto: factory(),
+    "manual-product-targeting": factory(),
   };
 }
 
@@ -1579,7 +2023,7 @@ function buildSpBatchDraftFromImportedRows(rows: Record<string, any>[]): SpImpor
 
     let node = campaignNode.adGroups.get(adGroupId);
     if (!node) {
-      const initial = createInitialSpBatchAdGroup();
+      const initial = createInitialSpBatchAdGroup(campaignNode.draft.mode);
       node = {
         draft: {
           ...initial,
@@ -1742,7 +2186,7 @@ function buildSpBatchDraftFromImportedRows(rows: Record<string, any>[]): SpImpor
     draftCampaigns.push({
       ...campaignNode.draft,
       mode,
-      adGroups: adGroups.length ? adGroups : [createInitialSpBatchAdGroup()],
+      adGroups: adGroups.length ? adGroups : [createInitialSpBatchAdGroup(mode)],
     });
   }
 
@@ -2044,6 +2488,64 @@ const spBatchModeOptions: { label: string; value: SpCampaignWizard["mode"] }[] =
   { label: "商品定位", value: "manual-product-targeting" },
 ];
 
+const batchBidRuleModeOptions: { label: string; value: BatchBidRuleMode }[] = [
+  { label: "保持原始", value: "keep" },
+  { label: "固定值", value: "fixed" },
+  { label: "逗号列表", value: "list" },
+  { label: "等差变化", value: "step" },
+];
+
+function isAutoTargetingExpression(expression: string): expression is AutoTargetingType {
+  return autoTargetingTypeOptions.includes(expression.trim() as AutoTargetingType);
+}
+
+function createDefaultAutoTargetingRows(defaultBid = 0.75): Array<{ expression: string; bid: number; state: State }> {
+  return createDefaultAutoProductTargetings(defaultBid).map((row) => ({
+    expression: row.expression,
+    bid: row.bid ?? defaultBid,
+    state: row.state,
+  }));
+}
+
+function appendPreferredAutoTargetingRow(
+  rows: Array<{ expression: string; bid: number; state: State }>,
+  defaultBid = 0.75
+): Array<{ expression: string; bid: number; state: State }> {
+  const existing = new Set(rows.map((row) => row.expression));
+  const nextExpression = autoTargetingTypeOptions.find((expression) => !existing.has(expression)) ?? "close-match";
+  return [...rows, { expression: nextExpression, bid: defaultBid, state: "enabled" }];
+}
+
+function createDefaultAutoProductTargetings(defaultBid = 0.75): SpCampaignWizard["productTargetings"] {
+  return [
+    { expression: "close-match", bid: defaultBid, state: "enabled" },
+    { expression: "loose-match", bid: defaultBid, state: "enabled" },
+    { expression: "substitutes", bid: defaultBid, state: "enabled" },
+    { expression: "complements", bid: defaultBid, state: "enabled" },
+  ];
+}
+
+function createDefaultManualProductTargetings(defaultBid = 0.75): SpCampaignWizard["productTargetings"] {
+  return [{ expression: 'asin-expanded="B0XXXXXXXX"', bid: defaultBid, state: "enabled" }];
+}
+
+function normalizeSpProductTargetingsForMode(
+  mode: SpUiMode,
+  productTargetings: SpCampaignWizard["productTargetings"],
+  fallbackBid = 0.75
+): SpCampaignWizard["productTargetings"] {
+  const normalized = productTargetings.filter((row) => row.expression.trim());
+  if (mode === "auto") {
+    const autoRows = normalized.filter((row) => isAutoTargetingExpression(row.expression));
+    return autoRows.length ? autoRows : createDefaultAutoProductTargetings(fallbackBid);
+  }
+  if (mode === "manual-product-targeting") {
+    const manualRows = normalized.filter((row) => !isAutoTargetingExpression(row.expression));
+    return manualRows.length ? manualRows : createDefaultManualProductTargetings(fallbackBid);
+  }
+  return normalized;
+}
+
 function createInitialSp(): SpCampaignWizard {
   return {
     mode: "manual-keyword",
@@ -2067,12 +2569,17 @@ function createInitialSp(): SpCampaignWizard {
     keywords: [{ text: "", matchType: "exact", bid: 0.75, state: "enabled" }],
     negativeKeywords: [],
     negativeProductTargetings: [],
-    productTargetings: [
-      { expression: "close-match", bid: 0.75, state: "enabled" },
-      { expression: "loose-match", bid: 0.75, state: "paused" },
-      { expression: "substitutes", bid: 0.75, state: "paused" },
-      { expression: "complements", bid: 0.75, state: "paused" },
-    ],
+    productTargetings: createDefaultManualProductTargetings(),
+  };
+}
+
+function createInitialSpForMode(mode: SingleSpUiMode): SpCampaignWizard {
+  const initial = createInitialSp();
+  return {
+    ...initial,
+    mode,
+    targetingType: mode === "auto" ? "AUTO" : "MANUAL",
+    productTargetings: normalizeSpProductTargetingsForMode(mode, initial.productTargetings, initial.adGroupDefaultBid || 0.75),
   };
 }
 
@@ -2135,26 +2642,125 @@ function createInitialSd(): SdCampaignWizard {
 }
 
 export default function Home() {
-  const isEmbedded = typeof window !== "undefined" && window.self !== window.top;
   const [tool, setTool] = useState<"sp" | "sb" | "sd" | "portfolios">("sp");
   const [helpOpen, setHelpOpen] = useState(false);
   const [workspaceLayout, setWorkspaceLayout] = useState<"split" | "editor" | "preview">("split");
   const [previewOperationFilter, setPreviewOperationFilter] = useState<"all" | "create" | "update">("all");
   const [spMode, setSpMode] = useState<SpUiMode>("manual-keyword");
+  const [spInlineBatchEditorOpenByMode, setSpInlineBatchEditorOpenByMode] = useState<Record<SingleSpUiMode, boolean>>({
+    "manual-keyword": false,
+    auto: false,
+    "manual-product-targeting": false,
+  });
   const [spBatchDraft, setSpBatchDraft] = useState<SpBatchDraft>(() => createInitialSpBatchDraft());
+  const [spInlineBatchDraftByMode, setSpInlineBatchDraftByMode] = useState<Record<SingleSpUiMode, SpBatchDraft>>(() =>
+    createSingleSpModeRecord(() => createInitialSpBatchDraft())
+  );
   const [spOpenCampaigns, setSpOpenCampaigns] = useState<Record<string, boolean>>({ "campaign-0": true });
+  const [spInlineOpenCampaignsByMode, setSpInlineOpenCampaignsByMode] = useState<Record<SingleSpUiMode, Record<string, boolean>>>(() =>
+    createSingleSpModeRecord(() => ({ "campaign-0": true }))
+  );
   const [spSelectedCampaigns, setSpSelectedCampaigns] = useState<Record<string, boolean>>({});
+  const [spInlineSelectedCampaignsByMode, setSpInlineSelectedCampaignsByMode] = useState<Record<SingleSpUiMode, Record<string, boolean>>>(() =>
+    createSingleSpModeRecord(() => ({}))
+  );
   const [spImportedContext, setSpImportedContext] = useState<SpImportedWorkbookContext | null>(null);
+  const [spBatchDuplicateDialog, setSpBatchDuplicateDialog] = useState<SpBatchDuplicateDialogState>({
+    open: false,
+    sourceIndex: null,
+    sourceCampaign: null,
+    count: 10,
+    startNumber: 1,
+    digits: 3,
+    separator: "-",
+    campaignNamePrefix: "",
+    campaignIdPrefix: "",
+    adGroupNamePrefix: "",
+    adGroupIdPrefix: "",
+    adGroupBidMode: "keep",
+    adGroupBidValue: 0.75,
+    adGroupBidList: "",
+    adGroupBidStep: -0.05,
+    primaryBidMode: "keep",
+    primaryBidValue: 0.75,
+    primaryBidList: "",
+    primaryBidStep: -0.05,
+    autoBidRules: createDefaultAutoBidRules(),
+  });
   const importWorkbookInputRef = useRef<HTMLInputElement | null>(null);
   const spImportModeRef = useRef<"draft-create" | "history-update">("draft-create");
 
-  const [sp, setSp] = useState<SpCampaignWizard>(() => createInitialSp());
+  const [spByMode, setSpByMode] = useState<Record<SingleSpUiMode, SpCampaignWizard>>({
+    "manual-keyword": createInitialSpForMode("manual-keyword"),
+    auto: createInitialSpForMode("auto"),
+    "manual-product-targeting": createInitialSpForMode("manual-product-targeting"),
+  });
 
+  const currentSingleSpMode: SingleSpUiMode = spMode === "visual-batch" ? "manual-keyword" : spMode;
+  const spCurrentWizard = spMode === "visual-batch" ? spByMode["manual-keyword"] : spByMode[currentSingleSpMode];
+  const setSpCurrentWizard = (updater: (prev: SpCampaignWizard) => SpCampaignWizard) => {
+    if (spMode === "visual-batch") return;
+    setSpByMode((prev) => ({
+      ...prev,
+      [currentSingleSpMode]: updater(prev[currentSingleSpMode]),
+    }));
+  };
   const spWizard = useMemo<SpCampaignWizard>(() => {
     const targetingType = spMode === "auto" ? "AUTO" : "MANUAL";
-    return { ...sp, mode: spMode === "visual-batch" ? "manual-keyword" : spMode, targetingType };
-  }, [sp, spMode]);
-  const spBatch = useMemo(() => buildSpRowsFromBatchDraft(spBatchDraft), [spBatchDraft]);
+    return { ...spCurrentWizard, mode: spMode === "visual-batch" ? "manual-keyword" : spMode, targetingType };
+  }, [spCurrentWizard, spMode]);
+  const spCurrentInlineBatchEditorOpen = spMode === "visual-batch" ? false : spInlineBatchEditorOpenByMode[currentSingleSpMode];
+  const spCurrentBatchDraft = spMode === "visual-batch" ? spBatchDraft : spInlineBatchDraftByMode[currentSingleSpMode];
+  const spCurrentOpenCampaigns = spMode === "visual-batch" ? spOpenCampaigns : spInlineOpenCampaignsByMode[currentSingleSpMode];
+  const spCurrentSelectedCampaigns = spMode === "visual-batch" ? spSelectedCampaigns : spInlineSelectedCampaignsByMode[currentSingleSpMode];
+  const spCurrentImportedContext = spMode === "visual-batch" ? spImportedContext : null;
+  const setSpCurrentInlineBatchEditorOpen = (updater: SetStateAction<boolean>) => {
+    if (spMode === "visual-batch") return;
+    setSpInlineBatchEditorOpenByMode((prev) => ({
+      ...prev,
+      [currentSingleSpMode]:
+        typeof updater === "function" ? (updater as (prevState: boolean) => boolean)(prev[currentSingleSpMode]) : updater,
+    }));
+  };
+  const setSpCurrentBatchDraft = (updater: (prev: SpBatchDraft) => SpBatchDraft) => {
+    if (spMode === "visual-batch") {
+      setSpBatchDraft(updater);
+    } else {
+      setSpInlineBatchDraftByMode((prev) => ({
+        ...prev,
+        [currentSingleSpMode]: updater(prev[currentSingleSpMode]),
+      }));
+    }
+  };
+  const setSpCurrentOpenCampaigns = (updater: SetStateAction<Record<string, boolean>>) => {
+    if (spMode === "visual-batch") {
+      setSpOpenCampaigns(updater);
+    } else {
+      setSpInlineOpenCampaignsByMode((prev) => ({
+        ...prev,
+        [currentSingleSpMode]:
+          typeof updater === "function"
+            ? (updater as (prevState: Record<string, boolean>) => Record<string, boolean>)(prev[currentSingleSpMode])
+            : updater,
+      }));
+    }
+  };
+  const setSpCurrentSelectedCampaigns = (updater: SetStateAction<Record<string, boolean>>) => {
+    if (spMode === "visual-batch") {
+      setSpSelectedCampaigns(updater);
+    } else {
+      setSpInlineSelectedCampaignsByMode((prev) => ({
+        ...prev,
+        [currentSingleSpMode]:
+          typeof updater === "function"
+            ? (updater as (prevState: Record<string, boolean>) => Record<string, boolean>)(prev[currentSingleSpMode])
+            : updater,
+      }));
+    }
+  };
+  const effectiveSpBatchDraft = useMemo(() => getEffectiveSpBatchDraft(spCurrentBatchDraft), [spCurrentBatchDraft]);
+  const spUsesBatchSource = spMode === "visual-batch" || (spCurrentInlineBatchEditorOpen && effectiveSpBatchDraft.campaigns.length > 0);
+  const spBatch = useMemo(() => buildSpRowsFromBatchDraft(effectiveSpBatchDraft), [effectiveSpBatchDraft]);
 
   const [portfolio, setPortfolio] = useState<PortfolioWizard>(() => createInitialPortfolio());
 
@@ -2171,17 +2777,17 @@ export default function Home() {
   }));
 
   const spIssues = useMemo(
-    () => (spMode === "visual-batch" ? spBatch.errors : validateSpWizard(spWizard)),
-    [spMode, spBatch.errors, spWizard]
+    () => (spUsesBatchSource ? spBatch.errors : validateSpWizard(spWizard)),
+    [spUsesBatchSource, spBatch.errors, spWizard]
   );
   const sbIssues = useMemo(() => validateSbWizard(sb), [sb]);
   const sdIssues = useMemo(() => validateSdWizard(sd), [sd]);
   const portfolioIssues = useMemo(() => validatePortfolioWizard(portfolio), [portfolio]);
 
   const spWarnings = useMemo(() => {
-    if (spMode === "visual-batch") return spBatch.warnings;
+    if (spUsesBatchSource) return spBatch.warnings;
     return warnSpWizard(spWizard, { minBidSp: settings.minBidSp, keywordMaxChars: settings.keywordMaxChars });
-  }, [spMode, spBatch.warnings, spWizard, settings.minBidSp, settings.keywordMaxChars]);
+  }, [spUsesBatchSource, spBatch.warnings, spWizard, settings.minBidSp, settings.keywordMaxChars]);
   const sbWarnings = useMemo(
     () => warnSbWizard(sb, { minBidSb: settings.minBidSb, keywordMaxChars: settings.keywordMaxChars }),
     [sb, settings.minBidSb, settings.keywordMaxChars]
@@ -2191,11 +2797,11 @@ export default function Home() {
 
 
   const spRows = useMemo(() => {
-    if (spMode === "visual-batch") return spBatch.errors.length ? [] : spBatch.rows;
+    if (spUsesBatchSource) return spBatch.errors.length ? [] : spBatch.rows;
     return spIssues.length ? [] : buildSpRows(spWizard);
-  }, [spMode, spBatch.errors.length, spBatch.rows, spWizard, spIssues.length]);
+  }, [spUsesBatchSource, spBatch.errors.length, spBatch.rows, spWizard, spIssues.length]);
   const spPreviewData = useMemo(() => {
-    if (!(spMode === "visual-batch" && spImportedContext)) {
+    if (!(spUsesBatchSource && spCurrentImportedContext)) {
       return {
         rows: spRows,
         meta: spRows.map((row) =>
@@ -2204,13 +2810,15 @@ export default function Home() {
       };
     }
     const selectedDraft: SpBatchDraft = {
-      campaigns: spBatchDraft.campaigns.filter((_, index) => spSelectedCampaigns[buildCampaignKey(index)] ?? false),
+      campaigns: spCurrentBatchDraft.campaigns.filter(
+        (campaign, index) => !isEmptySpBatchCampaign(campaign) && (spCurrentSelectedCampaigns[buildCampaignKey(index)] ?? false)
+      ),
     };
     const selectedBatch = buildSpRowsFromBatchDraft(selectedDraft);
     return selectedBatch.errors.length
       ? { rows: [], meta: [] }
-      : buildSpPreviewRowsWithDiff(spImportedContext, selectedBatch.rows);
-  }, [spMode, spImportedContext, spRows, spBatchDraft, spSelectedCampaigns]);
+      : buildSpPreviewRowsWithDiff(spCurrentImportedContext, selectedBatch.rows);
+  }, [spUsesBatchSource, spCurrentImportedContext, spRows, spCurrentBatchDraft, spCurrentSelectedCampaigns]);
   const spPreviewRows = spPreviewData.rows;
   const sbRows = useMemo(() => (sbIssues.length ? [] : buildSbRows(sb)), [sb, sbIssues.length]);
   const sdRows = useMemo(() => (sdIssues.length ? [] : buildSdRows(sd)), [sd, sdIssues.length]);
@@ -2260,34 +2868,36 @@ export default function Home() {
 
       if (tool === "sp") {
         const selectedSpDraft =
-          spMode === "visual-batch" && spImportedContext
+          spUsesBatchSource && spCurrentImportedContext
             ? {
-                campaigns: spBatchDraft.campaigns.filter((_, index) => spSelectedCampaigns[buildCampaignKey(index)] ?? false),
+                campaigns: spCurrentBatchDraft.campaigns.filter(
+                  (campaign, index) => !isEmptySpBatchCampaign(campaign) && (spCurrentSelectedCampaigns[buildCampaignKey(index)] ?? false)
+                ),
               }
-            : spBatchDraft;
+            : effectiveSpBatchDraft;
         const selectedSpBatch = buildSpRowsFromBatchDraft(selectedSpDraft);
-        const issuesNow = spMode === "visual-batch" ? selectedSpBatch.errors : validateSpWizard(spWizard);
+        const issuesNow = spUsesBatchSource ? selectedSpBatch.errors : validateSpWizard(spWizard);
         if (issuesNow.length) {
           toast.error("请先修正表单问题", { description: issuesNow.slice(0, 6).join("；") });
           return;
         }
-        if (spMode === "visual-batch" && spImportedContext && !selectedSpDraft.campaigns.length) {
+        if (spUsesBatchSource && spCurrentImportedContext && !selectedSpDraft.campaigns.length) {
           toast.error("请先选择要导出的活动", { description: "导入更新模式下，至少勾选 1 个活动后再导出。" });
           return;
         }
-        const spExportRows = spMode === "visual-batch" ? selectedSpBatch.rows : buildSpRows(spWizard);
+        const spExportRows = spUsesBatchSource ? selectedSpBatch.rows : buildSpRows(spWizard);
         sheets[SHEETS.spCampaigns] = spExportRows;
-        filenameBase = spMode === "visual-batch" ? "SP批量广告-可视化批量创建" : (spWizard.campaignName || spWizard.campaignId || "SP批量广告");
+        filenameBase = spUsesBatchSource ? "SP批量广告-批量结果" : (spWizard.campaignName || spWizard.campaignId || "SP批量广告");
 
-        if (spMode === "visual-batch" && spImportedContext) {
-          const wb = cloneWorkbook(spImportedContext.workbook);
+        if (spUsesBatchSource && spCurrentImportedContext) {
+          const wb = cloneWorkbook(spCurrentImportedContext.workbook);
           const originalSheetCount = wb.SheetNames.length;
           pruneWorkbookToUploadableSheets(wb);
-          const mergedRows = mergeSpRowsWithImportedContext(spImportedContext, spExportRows);
+          const mergedRows = mergeSpRowsWithImportedContext(spCurrentImportedContext, spExportRows);
           const operationStats = countRowsByOperation(mergedRows);
           const removedSheetCount = Math.max(0, originalSheetCount - wb.SheetNames.length);
-          const headers = spImportedContext.headerRow.length ? spImportedContext.headerRow : HEADERS[SHEETS.spCampaigns];
-          replaceWorkbookSheetRows(wb, spImportedContext.sheetName, headers, mergedRows);
+          const headers = spCurrentImportedContext.headerRow.length ? spCurrentImportedContext.headerRow : HEADERS[SHEETS.spCampaigns];
+          replaceWorkbookSheetRows(wb, spCurrentImportedContext.sheetName, headers, mergedRows);
           const safeName = filenameBase.replace(/[\\/:*?\"<>|]/g, "-");
           downloadWorkbook(wb, `${safeName}.xlsx`);
           usedImportedWorkbook = true;
@@ -2433,12 +3043,20 @@ export default function Home() {
     if (!ok) return;
 
     if (tool === "sp") {
-      const init = createInitialSp();
-      setSp(init);
+      const init = createInitialSpForMode("manual-keyword");
+      setSpByMode({
+        "manual-keyword": init,
+        auto: createInitialSpForMode("auto"),
+        "manual-product-targeting": createInitialSpForMode("manual-product-targeting"),
+      });
       setSpMode(init.mode);
+      setSpInlineBatchEditorOpenByMode(createSingleSpModeRecord(() => false));
       setSpBatchDraft(createInitialSpBatchDraft());
+      setSpInlineBatchDraftByMode(createSingleSpModeRecord(() => createInitialSpBatchDraft()));
       setSpOpenCampaigns({ "campaign-0": true });
+      setSpInlineOpenCampaignsByMode(createSingleSpModeRecord(() => ({ "campaign-0": true })));
       setSpSelectedCampaigns({});
+      setSpInlineSelectedCampaignsByMode(createSingleSpModeRecord(() => ({})));
       setSpImportedContext(null);
     }
     if (tool === "sb") setSb(createInitialSb());
@@ -2523,12 +3141,32 @@ export default function Home() {
                 <div className="font-semibold text-foreground">三、推荐操作流程</div>
                 <ul className="mt-2 list-disc space-y-1 pl-5">
                   <li>先导入文件或直接新建活动，再在左侧编辑活动、广告组、SKU、关键词、否词和否定 ASIN。</li>
+                  <li>`多种类型批量创建`：适合在同一批里混合建立手动关键词、自动广告和商品定位活动；每个活动都能单独展开编辑。</li>
+                  <li>`手动关键词 / 自动广告 / 商品定位` 单独模块：适合先把一个母版活动写好，再点 `批量复制`，原地生成多个类似活动并继续在当前模块里编辑，不需要切换到别的模块。</li>
                   <li>历史更新场景下，可勾选只导出部分活动，右侧预览会同步只显示已勾选内容，并标出新增行、更新行和具体变化单元格。</li>
                   <li>导出前先看右侧“预览与校验”，优先确认没有阻断导出的报错；数据很多时可切到“专注预览”或使用顶部横向滚动条快速检查大表字段。</li>
                 </ul>
               </div>
               <div className="rounded-xl border border-border/70 bg-muted/25 p-4">
-                <div className="font-semibold text-foreground">四、注意事项</div>
+                <div className="font-semibold text-foreground">四、SP 模块怎么选</div>
+                <ul className="mt-2 list-disc space-y-1 pl-5">
+                  <li>`多种类型批量创建`：一批里要同时建多种广告类型时使用，适合整盘活动一起规划。</li>
+                  <li>`手动关键词`：适合做常规关键词活动，也适合从一个成熟母版快速复制出多套相似活动。</li>
+                  <li>`自动广告`：适合统一管理 4 种自动投放类型，默认会直接带出 4 个自动类型。</li>
+                  <li>`商品定位`：适合按 `单件商品 / 品类` 建立定位，默认值和批量导入方式都已按商品定位习惯单独处理。</li>
+                </ul>
+              </div>
+              <div className="rounded-xl border border-border/70 bg-muted/25 p-4">
+                <div className="font-semibold text-foreground">五、工作区和批量编辑说明</div>
+                <ul className="mt-2 list-disc space-y-1 pl-5">
+                  <li>`双栏`：左边录入，右边核对，适合日常使用。</li>
+                  <li>`专注编辑`：适合长时间填表、批量改 Bid、复制活动、编辑多层活动结构。</li>
+                  <li>`专注预览`：适合导出前专门检查字段顺序、Create / Update、差异高亮和最终行数。</li>
+                  <li>批量区里如果表格较宽，会在当前区域内横向滚动；这属于正常表现，不会影响右侧预览。</li>
+                </ul>
+              </div>
+              <div className="rounded-xl border border-border/70 bg-muted/25 p-4">
+                <div className="font-semibold text-foreground">六、注意事项</div>
                 <ul className="mt-2 list-disc space-y-1 pl-5">
                   <li>历史 bulk 文件里常夹带 `Search Term Report`、上传处理汇总等报告页，工具导出时会自动过滤这些不可上传工作表。</li>
                   <li>历史下载表通常带有历史 ID 和业绩列，但 `Operation` 可能为空；工具会在导出时为匹配到的历史记录自动补 `Update`。</li>
@@ -2598,6 +3236,9 @@ export default function Home() {
                   <Upload className="h-4 w-4" />
                   导入历史下载表
                 </Button>
+                <Button variant="outline" onClick={onResetCurrent}>
+                  重置当前模块
+                </Button>
                 <Button onClick={onExport} className="gap-2" disabled={currentIssues.length > 0}>
                   <Download className="h-4 w-4" />
                   导出 .xlsx
@@ -2661,17 +3302,23 @@ export default function Home() {
                   <SpWizardUI
                     mode={spMode}
                     setMode={setSpMode}
-                    w={sp}
-                    setW={setSp}
-                    batchDraft={spBatchDraft}
-                    setBatchDraft={setSpBatchDraft}
-                    openCampaigns={spOpenCampaigns}
-                    setOpenCampaigns={setSpOpenCampaigns}
-                    selectedCampaigns={spSelectedCampaigns}
-                    setSelectedCampaigns={setSpSelectedCampaigns}
+                    showInlineBatchEditor={spCurrentInlineBatchEditorOpen}
+                    setShowInlineBatchEditor={setSpCurrentInlineBatchEditorOpen}
+                    setPreviewOperationFilter={setPreviewOperationFilter}
+                    w={spCurrentWizard}
+                    setW={setSpCurrentWizard}
+                    batchDraft={spCurrentBatchDraft}
+                    setBatchDraft={setSpCurrentBatchDraft}
+                    setImportedContext={setSpImportedContext}
+                    openCampaigns={spCurrentOpenCampaigns}
+                    setOpenCampaigns={setSpCurrentOpenCampaigns}
+                    selectedCampaigns={spCurrentSelectedCampaigns}
+                    setSelectedCampaigns={setSpCurrentSelectedCampaigns}
                     batchResult={spBatch}
-                    importedContext={spImportedContext}
+                    importedContext={spCurrentImportedContext}
                     spIssues={spIssues}
+                    duplicateDialog={spBatchDuplicateDialog}
+                    setDuplicateDialog={setSpBatchDuplicateDialog}
                   />
                 </TabsContent>
 
@@ -2797,20 +3444,23 @@ export default function Home() {
           )}
         </div>
 
-        {!isEmbedded ? (
-          <footer className="mt-10 pb-6 text-center text-xs text-muted-foreground">
-            版权归 跨境乐趣园所有 | 作者：達哥 | 官网：
-            {" "}
-            <a
-              href="https://amzlink.top/"
-              target="_blank"
-              rel="noreferrer"
-              className="text-primary underline underline-offset-4"
-            >
-              https://amzlink.top/
-            </a>
-          </footer>
-        ) : null}
+        <footer className="mt-10 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span>纯前端生成，不上传你的数据到任何服务器</span>
+            <span>
+              版权归 跨境乐趣园所有 | 作者：達哥 | 官网：
+              {" "}
+              <a
+                href="https://amzlink.top/"
+                target="_blank"
+                rel="noreferrer"
+                className="text-primary underline-offset-4 hover:underline"
+              >
+                https://amzlink.top/
+              </a>
+            </span>
+          </div>
+        </footer>
       </div>
     </div>
   );
@@ -2971,23 +3621,34 @@ function PreviewTable({
 function SpWizardUI({
   mode,
   setMode,
+  showInlineBatchEditor,
+  setShowInlineBatchEditor,
+  setPreviewOperationFilter,
   w,
   setW,
   batchDraft,
   setBatchDraft,
+  setImportedContext,
   openCampaigns,
   setOpenCampaigns,
   selectedCampaigns,
   setSelectedCampaigns,
   batchResult,
   importedContext,
+  spIssues,
+  duplicateDialog,
+  setDuplicateDialog,
 }: {
   mode: SpUiMode;
   setMode: (m: SpUiMode) => void;
+  showInlineBatchEditor: boolean;
+  setShowInlineBatchEditor: Dispatch<SetStateAction<boolean>>;
+  setPreviewOperationFilter: Dispatch<SetStateAction<"all" | "create" | "update">>;
   w: SpCampaignWizard;
   setW: (updater: (prev: SpCampaignWizard) => SpCampaignWizard) => void;
   batchDraft: SpBatchDraft;
   setBatchDraft: (updater: (prev: SpBatchDraft) => SpBatchDraft) => void;
+  setImportedContext: Dispatch<SetStateAction<SpImportedWorkbookContext | null>>;
   openCampaigns: Record<string, boolean>;
   setOpenCampaigns: Dispatch<SetStateAction<Record<string, boolean>>>;
   selectedCampaigns: Record<string, boolean>;
@@ -2995,13 +3656,27 @@ function SpWizardUI({
   batchResult: SpBatchBuildResult;
   importedContext: SpImportedWorkbookContext | null;
   spIssues: string[];
+  duplicateDialog: SpBatchDuplicateDialogState;
+  setDuplicateDialog: Dispatch<SetStateAction<SpBatchDuplicateDialogState>>;
 }) {
   const [keywordBulkInput, setKeywordBulkInput] = useState("");
+  const [productTargetingBulkInput, setProductTargetingBulkInput] = useState("");
   const [negativeKeywordBulkInput, setNegativeKeywordBulkInput] = useState("");
   const [negativeProductTargetingBulkInput, setNegativeProductTargetingBulkInput] = useState("");
   const [keywordBulkBidByGroup, setKeywordBulkBidByGroup] = useState<Record<string, string>>({});
+  const [keywordDefaultMatchTypesByGroup, setKeywordDefaultMatchTypesByGroup] = useState<Record<string, Array<PositiveKeywordMatchType>>>({});
+  const [negativeKeywordDefaultMatchTypeByGroup, setNegativeKeywordDefaultMatchTypeByGroup] = useState<Record<string, NegativeKeywordMatchType>>({});
+  const [productTargetingBulkInputByGroup, setProductTargetingBulkInputByGroup] = useState<Record<string, string>>({});
+  const [productTargetingInputModeByGroup, setProductTargetingInputModeByGroup] = useState<Record<string, ProductTargetingInputMode>>({});
+  const [productTargetingExpandModesByGroup, setProductTargetingExpandModesByGroup] = useState<Record<string, Array<ProductTargetingExpandMode>>>({});
+  const [spKeywordDefaultMatchTypes, setSpKeywordDefaultMatchTypes] = useState<Array<PositiveKeywordMatchType>>(["exact"]);
+  const [spNegativeKeywordDefaultMatchType, setSpNegativeKeywordDefaultMatchType] = useState<NegativeKeywordMatchType>("negativePhrase");
+  const [spProductTargetingInputMode, setSpProductTargetingInputMode] = useState<ProductTargetingInputMode>("asin");
+  const [spProductTargetingExpandModes, setSpProductTargetingExpandModes] = useState<Array<ProductTargetingExpandMode>>(["expanded"]);
+  const [singleKeywordBulkBidInput, setSingleKeywordBulkBidInput] = useState("");
+  const [singleProductTargetingBulkBidInput, setSingleProductTargetingBulkBidInput] = useState("");
   const [campaignFilter, setCampaignFilter] = useState("");
-  const [openAdGroups, setOpenAdGroups] = useState<Record<string, boolean>>({});
+  const [openAdGroups, setOpenAdGroups] = useState<Record<string, boolean>>({ "adgroup-0-0": true });
   const importedCampaignMap = useMemo(
     () => new Map((importedContext?.baselineDraft.campaigns ?? []).map((campaign) => [campaign.campaignId, campaign])),
     [importedContext]
@@ -3032,9 +3707,368 @@ function SpWizardUI({
       .filter(({ campaign }) => Boolean(getCampaignDiffState(campaign, importedCampaignMap)))
       .map(({ index }) => buildCampaignKey(index))
   );
+  const selectedCampaignIndexes = batchDraft.campaigns
+    .map((_, index) => index)
+    .filter((index) => selectedCampaigns[buildCampaignKey(index)] ?? false);
+  const duplicateSourceCampaign =
+    duplicateDialog.sourceCampaign ?? (duplicateDialog.sourceIndex != null ? batchDraft.campaigns[duplicateDialog.sourceIndex] : null);
+  const activeDuplicateAutoExpressions = useMemo(() => {
+    if (duplicateSourceCampaign?.mode !== "auto") return autoTargetingTypeOptions;
+    const firstAdGroup = duplicateSourceCampaign.adGroups[0];
+    if (!firstAdGroup) return autoTargetingTypeOptions;
+    const found = parseAutoTargetingRows(firstAdGroup.productTargetingsText)
+      .map((row) => row.expression)
+      .filter((expression, index, array): expression is AutoTargetingType =>
+        autoTargetingTypeOptions.includes(expression as AutoTargetingType) && array.indexOf(expression) === index
+      );
+    return found.length ? found : autoTargetingTypeOptions;
+  }, [duplicateSourceCampaign]);
+
+  useEffect(() => {
+    if (mode !== "auto" && mode !== "manual-product-targeting") return;
+    const normalized = normalizeSpProductTargetingsForMode(mode, w.productTargetings, w.adGroupDefaultBid || 0.75);
+    if (JSON.stringify(normalized) === JSON.stringify(w.productTargetings)) return;
+    set("productTargetings", normalized);
+  }, [mode, w.productTargetings, w.adGroupDefaultBid]);
 
   function focusCampaign(campaignKey: string) {
     setOpenCampaigns({ [campaignKey]: true });
+  }
+
+  function openSpBatchDuplicateDialog(index: number) {
+    const source = batchDraft.campaigns[index];
+    const firstPrimaryBid = source ? getFirstPrimaryBid(source) : 0.75;
+    const autoBidRules = source
+      ? Object.fromEntries(
+          autoTargetingTypeOptions.map((expression) => [expression, createBatchBidRuleConfig(getAutoTargetingBidByExpression(source, expression))])
+        ) as Record<AutoTargetingType, BatchBidRuleConfig>
+      : createDefaultAutoBidRules();
+    setDuplicateDialog((prev) => ({
+      ...prev,
+      open: true,
+      sourceIndex: index,
+      sourceCampaign: source ?? null,
+      campaignNamePrefix: source?.campaignName.trim() || "",
+      campaignIdPrefix: source?.campaignId.trim() || "",
+      adGroupNamePrefix: source?.adGroups[0]?.adGroupName.trim() || "",
+      adGroupIdPrefix: source?.adGroups[0]?.adGroupId.trim() || "",
+      adGroupBidValue: source?.adGroups[0]?.adGroupDefaultBid ?? 0.75,
+      adGroupBidList: "",
+      primaryBidValue: firstPrimaryBid,
+      primaryBidList: "",
+      autoBidRules,
+    }));
+  }
+
+  function openSpSingleDuplicateDialog() {
+    if (spIssues.length > 0) {
+      toast.error("请先修正当前表单后再批量复制", {
+        description: spIssues.slice(0, 6).join("；"),
+      });
+      return;
+    }
+    const source = buildBatchCampaignFromSpWizard(w);
+    const firstPrimaryBid = getFirstPrimaryBid(source);
+    const autoBidRules =
+      source.mode === "auto"
+        ? Object.fromEntries(
+            autoTargetingTypeOptions.map((expression) => [expression, createBatchBidRuleConfig(getAutoTargetingBidByExpression(source, expression))])
+          ) as Record<AutoTargetingType, BatchBidRuleConfig>
+        : createDefaultAutoBidRules();
+    setDuplicateDialog((prev) => ({
+      ...prev,
+      open: true,
+      sourceIndex: null,
+      sourceCampaign: source,
+      campaignNamePrefix: source.campaignName.trim() || "",
+      campaignIdPrefix: source.campaignId.trim() || "",
+      adGroupNamePrefix: source.adGroups[0]?.adGroupName.trim() || "",
+      adGroupIdPrefix: source.adGroups[0]?.adGroupId.trim() || "",
+      adGroupBidValue: source.adGroups[0]?.adGroupDefaultBid ?? 0.75,
+      adGroupBidList: "",
+      primaryBidValue: firstPrimaryBid,
+      primaryBidList: "",
+      autoBidRules,
+    }));
+  }
+
+  function removeCampaignsByIndexes(indexes: number[]) {
+    if (!indexes.length) {
+      toast.error("请先选中要删除的活动");
+      return;
+    }
+    const removing = new Set(indexes);
+    setBatchDraft((prev) => ({
+      ...prev,
+      campaigns: prev.campaigns.filter((_, index) => !removing.has(index)),
+    }));
+    setOpenCampaigns({});
+    setOpenAdGroups({});
+    setSelectedCampaigns({});
+    toast.success(`已删除 ${indexes.length} 个活动`);
+  }
+
+  function getKeywordDefaultMatchTypes(groupKey: string) {
+    return keywordDefaultMatchTypesByGroup[groupKey] ?? ["exact"];
+  }
+
+  function getNegativeKeywordDefaultMatchType(groupKey: string): NegativeKeywordMatchType {
+    return negativeKeywordDefaultMatchTypeByGroup[groupKey] ?? "negativePhrase";
+  }
+
+  function getSelectedProductTargetingExpandModes(groupKey: string) {
+    return getProductTargetingExpandModes(productTargetingExpandModesByGroup[groupKey]);
+  }
+
+  function getProductTargetingInputMode(groupKey: string) {
+    return productTargetingInputModeByGroup[groupKey] ?? "asin";
+  }
+
+  function toggleKeywordDefaultMatchType(
+    groupKey: string,
+    matchType: PositiveKeywordMatchType
+  ) {
+    const order: Array<PositiveKeywordMatchType> = ["exact", "phrase", "broad"];
+    setKeywordDefaultMatchTypesByGroup((prev) => {
+      const current: Array<PositiveKeywordMatchType> = prev[groupKey] ?? ["exact"];
+      const exists = current.includes(matchType);
+      const next: Array<PositiveKeywordMatchType> = exists
+        ? current.filter((item) => item !== matchType)
+        : [...current, matchType];
+      const normalized: Array<PositiveKeywordMatchType> = next.length
+        ? [...next].sort((a, b) => order.indexOf(a) - order.indexOf(b))
+        : ["exact"];
+      return { ...prev, [groupKey]: normalized };
+    });
+  }
+
+  function toggleProductTargetingExpandMode(groupKey: string, mode: ProductTargetingExpandMode) {
+    const order: Array<ProductTargetingExpandMode> = ["exact", "expanded"];
+    setProductTargetingExpandModesByGroup((prev) => {
+      const current: Array<ProductTargetingExpandMode> = getProductTargetingExpandModes(prev[groupKey]);
+      const exists = current.includes(mode);
+      const next: Array<ProductTargetingExpandMode> = exists ? current.filter((item) => item !== mode) : [...current, mode];
+      const normalized: Array<ProductTargetingExpandMode> = next.length
+        ? [...next].sort((a, b) => order.indexOf(a) - order.indexOf(b))
+        : ["expanded"];
+      return { ...prev, [groupKey]: normalized };
+    });
+  }
+
+  function updateAutoBidRule(expression: AutoTargetingType, patch: Partial<BatchBidRuleConfig>) {
+    setDuplicateDialog((prev) => ({
+      ...prev,
+      autoBidRules: {
+        ...prev.autoBidRules,
+        [expression]: {
+          ...prev.autoBidRules[expression],
+          ...patch,
+        },
+      },
+    }));
+  }
+
+  function applyKeywordDefaultMatchTypes(campaignIndex: number, adGroupIndex: number, group: SpBatchAdGroupDraft) {
+    const groupKey = `${campaignIndex}-${adGroupIndex}`;
+    const selectedMatchTypes = getKeywordDefaultMatchTypes(groupKey);
+    const expandedText = expandKeywordTextByMatchTypes(group.keywordsText, group.adGroupDefaultBid || 0.75, selectedMatchTypes);
+    setBatchDraft((prev) => ({
+      ...prev,
+      campaigns: prev.campaigns.map((campaign, cIdx) =>
+        cIdx !== campaignIndex
+          ? campaign
+          : {
+              ...campaign,
+              adGroups: campaign.adGroups.map((adGroup, gIdx) =>
+                gIdx === adGroupIndex ? { ...adGroup, keywordsText: expandedText } : adGroup
+              ),
+            }
+      ),
+    }));
+    toast.success(`已按${selectedMatchTypes.join(" / ")}展开纯关键词`);
+  }
+
+  function applyProductTargetingExpandModes(campaignIndex: number, adGroupIndex: number, group: SpBatchAdGroupDraft) {
+    const groupKey = `${campaignIndex}-${adGroupIndex}`;
+    const selectedModes = getSelectedProductTargetingExpandModes(groupKey);
+    const sourceText = productTargetingBulkInputByGroup[groupKey] ?? "";
+    const expandedText = buildProductTargetingTextFromInput(
+      sourceText,
+      group.adGroupDefaultBid || 0.75,
+      getProductTargetingInputMode(groupKey),
+      selectedModes
+    );
+    const parsedRows = parseSpProductTargetingBulk(expandedText, group.adGroupDefaultBid || 0.75).rows;
+    if (!parsedRows.length) {
+      toast.error("没有可导入的商品定位", { description: "请至少输入 1 个 ASIN 或 Product Targeting Expression。" });
+      return;
+    }
+    setBatchDraft((prev) => ({
+      ...prev,
+      campaigns: prev.campaigns.map((campaign, cIdx) =>
+        cIdx !== campaignIndex
+          ? campaign
+          : {
+              ...campaign,
+              adGroups: campaign.adGroups.map((adGroup, gIdx) =>
+                gIdx === adGroupIndex
+                  ? {
+                      ...adGroup,
+                      productTargetingsText: toProductTargetingUiRowsText([
+                        ...parseProductTargetingRowsForUi(adGroup.productTargetingsText, adGroup.adGroupDefaultBid || 0.75).filter((row) =>
+                          buildProductTargetingExpressionFromUiRow(row).trim()
+                        ),
+                        ...parseProductTargetingRowsForUi(expandedText, group.adGroupDefaultBid || 0.75),
+                      ]),
+                    }
+                  : adGroup
+              ),
+            }
+      ),
+    }));
+    setProductTargetingBulkInputByGroup((prev) => ({ ...prev, [groupKey]: "" }));
+    toast.success(`已按${selectedModes.join(" / ")}导入 ${parsedRows.length} 条商品定位`);
+  }
+
+  function toggleSpProductTargetingExpandMode(mode: ProductTargetingExpandMode) {
+    const order: Array<ProductTargetingExpandMode> = ["exact", "expanded"];
+    setSpProductTargetingExpandModes((prev) => {
+      const current: Array<ProductTargetingExpandMode> = getProductTargetingExpandModes(prev);
+      const exists = current.includes(mode);
+      const next: Array<ProductTargetingExpandMode> = exists ? current.filter((item) => item !== mode) : [...current, mode];
+      const normalized: Array<ProductTargetingExpandMode> = next.length
+        ? [...next].sort((a, b) => order.indexOf(a) - order.indexOf(b))
+        : ["expanded"];
+      return normalized;
+    });
+  }
+
+  function validateBidRule(mode: BatchBidRuleMode, count: number, options: { label: string; value: number; listText: string; step: number; fallback: number }) {
+    if (mode === "keep") return null;
+    if (mode === "fixed") {
+      return options.value > 0 ? null : `${options.label}固定值必须大于 0`;
+    }
+    if (mode === "list") {
+      const values = parseBatchBidList(options.listText);
+      return values.length ? null : `${options.label}列表至少填写 1 个大于 0 的数值`;
+    }
+    for (let index = 0; index < count; index += 1) {
+      const next = resolveBatchBidRuleValue(mode, index, options.fallback, options);
+      if (!(next > 0)) return `${options.label}在第 ${index + 1} 个活动上生成了无效出价`;
+    }
+    return null;
+  }
+
+  function createDuplicatedCampaigns() {
+    const source = duplicateDialog.sourceCampaign ?? (duplicateDialog.sourceIndex != null ? batchDraft.campaigns[duplicateDialog.sourceIndex] : null);
+    if (!source) return;
+    const fromSingleWizard = duplicateDialog.sourceIndex == null;
+
+    const count = Math.max(0, Math.floor(duplicateDialog.count));
+    const startNumber = Math.max(0, Math.floor(duplicateDialog.startNumber));
+    const digits = Math.min(6, Math.max(1, Math.floor(duplicateDialog.digits)));
+
+    if (count < 1) {
+      toast.error("复制数量至少为 1");
+      return;
+    }
+
+    const adGroupBidIssue = validateBidRule(duplicateDialog.adGroupBidMode, count, {
+      label: "广告组默认竞价",
+      value: duplicateDialog.adGroupBidValue,
+      listText: duplicateDialog.adGroupBidList,
+      step: duplicateDialog.adGroupBidStep,
+      fallback: source.adGroups[0]?.adGroupDefaultBid ?? 0.75,
+    });
+    if (adGroupBidIssue) {
+      toast.error(adGroupBidIssue);
+      return;
+    }
+
+    if (source.mode === "auto") {
+      for (const expression of activeDuplicateAutoExpressions) {
+        const config = duplicateDialog.autoBidRules[expression];
+        const issue = validateBidRule(config.mode, count, {
+          label: `${autoTargetingTypeLabels[expression]}竞价`,
+          value: config.value,
+          listText: config.listText,
+          step: config.step,
+          fallback: getAutoTargetingBidByExpression(source, expression),
+        });
+        if (issue) {
+          toast.error(issue);
+          return;
+        }
+      }
+    } else {
+      const primaryBidIssue = validateBidRule(duplicateDialog.primaryBidMode, count, {
+        label: source.mode === "manual-keyword" ? "关键词竞价" : "商品投放竞价",
+        value: duplicateDialog.primaryBidValue,
+        listText: duplicateDialog.primaryBidList,
+        step: duplicateDialog.primaryBidStep,
+        fallback: getFirstPrimaryBid(source),
+      });
+      if (primaryBidIssue) {
+        toast.error(primaryBidIssue);
+        return;
+      }
+    }
+
+    const suffixes = Array.from({ length: count }, (_, index) =>
+      buildBatchSequenceSuffix(startNumber + index, digits, duplicateDialog.separator)
+    );
+    const duplicates = suffixes.map((suffix, index) =>
+      duplicateSpBatchCampaign(source, suffix, index, {
+        campaignNamePrefix: duplicateDialog.campaignNamePrefix,
+        campaignIdPrefix: duplicateDialog.campaignIdPrefix,
+        adGroupNamePrefix: duplicateDialog.adGroupNamePrefix,
+        adGroupIdPrefix: duplicateDialog.adGroupIdPrefix,
+        adGroupBidMode: duplicateDialog.adGroupBidMode,
+        adGroupBidValue: duplicateDialog.adGroupBidValue,
+        adGroupBidList: duplicateDialog.adGroupBidList,
+        adGroupBidStep: duplicateDialog.adGroupBidStep,
+        primaryBidMode: duplicateDialog.primaryBidMode,
+        primaryBidValue: duplicateDialog.primaryBidValue,
+        primaryBidList: duplicateDialog.primaryBidList,
+        primaryBidStep: duplicateDialog.primaryBidStep,
+        autoBidRules: duplicateDialog.autoBidRules,
+      })
+    );
+    const insertCampaigns = fromSingleWizard ? [source, ...duplicates] : duplicates;
+    const insertStartIndex = fromSingleWizard ? 0 : batchDraft.campaigns.length;
+    const nextCampaigns = fromSingleWizard ? insertCampaigns : [...batchDraft.campaigns, ...insertCampaigns];
+
+    setBatchDraft((prev) => ({
+      ...prev,
+      campaigns: fromSingleWizard ? insertCampaigns : [...prev.campaigns, ...insertCampaigns],
+    }));
+    setOpenCampaigns({ [buildCampaignKey(insertStartIndex)]: true });
+    setSelectedCampaigns(
+      fromSingleWizard
+        ? Object.fromEntries(nextCampaigns.map((_, index) => [buildCampaignKey(index), true]))
+        : {
+            ...selectedCampaigns,
+            ...Object.fromEntries(insertCampaigns.map((_, index) => [buildCampaignKey(insertStartIndex + index), true])),
+          }
+    );
+    setOpenAdGroups(
+      Object.fromEntries(
+        insertCampaigns
+          .filter((campaign) => campaign.adGroups.length > 0)
+          .map((_, index) => [buildAdGroupKey(insertStartIndex + index, 0), true])
+      )
+    );
+    if (fromSingleWizard) {
+      setImportedContext(null);
+      setShowInlineBatchEditor(true);
+      setPreviewOperationFilter("all");
+    }
+    setDuplicateDialog((prev) => ({ ...prev, open: false, sourceIndex: null, sourceCampaign: null }));
+    toast.success(`已生成 ${fromSingleWizard ? insertCampaigns.length : duplicates.length} 个类似活动`, {
+      description: fromSingleWizard
+        ? `已在当前版块生成母版和 ${duplicates.length} 个复制活动，下面可直接继续批量编辑。`
+        : `基于“${source.campaignName || source.campaignId || "未命名活动"}”批量复制，并自动为活动与广告组名称/ID 追加编号。`,
+    });
   }
 
   function focusAdGroup(campaignIndex: number, adGroupIndex: number, campaignKey: string, adGroups: SpBatchAdGroupDraft[]) {
@@ -3052,8 +4086,24 @@ function SpWizardUI({
     setW((prev) => ({ ...prev, [key]: value }));
   }
 
+  function handleSpModeChange(nextMode: SpUiMode) {
+    setMode(nextMode);
+    setPreviewOperationFilter("all");
+    if (nextMode === "auto" || nextMode === "manual-product-targeting") {
+      setW((prev) => ({
+        ...prev,
+        productTargetings: normalizeSpProductTargetingsForMode(nextMode, prev.productTargetings, prev.adGroupDefaultBid || 0.75),
+      }));
+    }
+  }
+
   function importKeywordsFromBulkInput() {
-    const { rows, invalidCount } = parseSpKeywordBulk(keywordBulkInput, w.adGroupDefaultBid || 0.75);
+    const expandedText = expandKeywordTextByMatchTypes(
+      keywordBulkInput,
+      w.adGroupDefaultBid || 0.75,
+      spKeywordDefaultMatchTypes
+    );
+    const { rows, invalidCount } = parseSpKeywordBulk(expandedText, w.adGroupDefaultBid || 0.75);
     if (!rows.length) {
       toast.error("没有可导入的关键词", { description: "请按行粘贴，至少包含关键词文本。" });
       return;
@@ -3067,8 +4117,104 @@ function SpWizardUI({
     });
   }
 
+  function applySingleKeywordBidToAll(bid: number) {
+    if (!(bid > 0)) {
+      toast.error("请输入有效的Bid", { description: "例如 0.75、1.2" });
+      return;
+    }
+    set(
+      "keywords",
+      w.keywords.map((row) => ({ ...row, bid }))
+    );
+    toast.success(`已把 ${w.keywords.length} 条关键词的Bid设为 ${bid}`);
+  }
+
+  function applySingleCustomKeywordBid() {
+    const bid = Number(singleKeywordBulkBidInput);
+    if (!singleKeywordBulkBidInput || !Number.isFinite(bid) || bid <= 0) {
+      toast.error("请输入有效的自定义Bid", { description: "例如 0.75、1.2" });
+      return;
+    }
+    applySingleKeywordBidToAll(bid);
+  }
+
+  function toggleSpKeywordDefaultMatchType(matchType: PositiveKeywordMatchType) {
+    const order: Array<PositiveKeywordMatchType> = ["exact", "phrase", "broad"];
+    setSpKeywordDefaultMatchTypes((prev) => {
+      const exists = prev.includes(matchType);
+      const next = exists ? prev.filter((item) => item !== matchType) : [...prev, matchType];
+      return next.length ? [...next].sort((a, b) => order.indexOf(a) - order.indexOf(b)) : ["exact"];
+    });
+  }
+
+  function applyNegativeKeywordDefaultMatchType(groupKey: string, matchType: NegativeKeywordMatchType) {
+    setNegativeKeywordDefaultMatchTypeByGroup((prev) => ({ ...prev, [groupKey]: matchType }));
+    setBatchDraft((prev) => ({
+      ...prev,
+      campaigns: prev.campaigns.map((campaign, campaignIndex) =>
+        campaignIndex !== Number(groupKey.split("-")[0])
+          ? campaign
+          : {
+              ...campaign,
+              adGroups: campaign.adGroups.map((adGroup, adGroupIndex) =>
+                adGroupIndex !== Number(groupKey.split("-")[1])
+                  ? adGroup
+                  : {
+                      ...adGroup,
+                      negativeKeywordsText: toNegativeKeywordRowsText(
+                        parseNegativeKeywordRowsForUi(adGroup.negativeKeywordsText).map((row) => ({ ...row, matchType }))
+                      ),
+                    }
+              ),
+            }
+      ),
+    }));
+  }
+
+  function importProductTargetingsFromBulkInput() {
+    const expandedText = buildProductTargetingTextFromInput(
+      productTargetingBulkInput,
+      w.adGroupDefaultBid || 0.75,
+      spProductTargetingInputMode,
+      spProductTargetingExpandModes
+    );
+    const { rows, invalidCount } = parseSpProductTargetingBulk(expandedText, w.adGroupDefaultBid || 0.75);
+    if (!rows.length) {
+      toast.error("没有可导入的商品定位", { description: "请按行粘贴 ASIN 或 Product Targeting Expression。" });
+      return;
+    }
+
+    const current = w.productTargetings.filter((x) => x.expression.trim());
+    set("productTargetings", [...current, ...rows]);
+    setProductTargetingBulkInput("");
+    toast.success(`已导入 ${rows.length} 条商品定位`, {
+      description: invalidCount > 0 ? `其中 ${invalidCount} 行格式无效已跳过。` : "你可以在下方表格继续编辑。",
+    });
+  }
+
+  function applySingleProductTargetingBidToAll(bid: number) {
+    if (!(bid > 0)) {
+      toast.error("请输入有效的Bid", { description: "例如 0.75、1.2" });
+      return;
+    }
+    set(
+      "productTargetings",
+      w.productTargetings.map((row) => ({ ...row, bid }))
+    );
+    toast.success(`已把 ${w.productTargetings.length} 条${mode === "auto" ? "自动投放" : "商品定位"}的Bid设为 ${bid}`);
+  }
+
+  function applySingleCustomProductTargetingBid() {
+    const bid = Number(singleProductTargetingBulkBidInput);
+    if (!singleProductTargetingBulkBidInput || !Number.isFinite(bid) || bid <= 0) {
+      toast.error("请输入有效的自定义Bid", { description: "例如 0.75、1.2" });
+      return;
+    }
+    applySingleProductTargetingBidToAll(bid);
+  }
+
   function importNegativeKeywordsFromBulkInput() {
-    const { rows, invalidCount } = parseSpNegativeKeywordBulk(negativeKeywordBulkInput);
+    const { rows, invalidCount } = parseSpNegativeKeywordBulk(negativeKeywordBulkInput, spNegativeKeywordDefaultMatchType);
     if (!rows.length) {
       toast.error("没有可导入的否词", { description: "请按行粘贴，至少包含关键词文本。" });
       return;
@@ -3098,21 +4244,23 @@ function SpWizardUI({
   }
 
   return (
-    <Tabs value={mode} onValueChange={(v) => setMode(v as any)}>
-      <TabsList className="grid w-full grid-cols-4">
-        <TabsTrigger value="visual-batch">可视化批量创建</TabsTrigger>
+    <Tabs value={mode} onValueChange={(v) => handleSpModeChange(v as SpUiMode)}>
+      <TabsList className="grid h-auto w-full grid-cols-2 gap-2 rounded-xl border border-border/60 bg-muted/25 p-1 md:grid-cols-4">
+        <TabsTrigger value="visual-batch">多种类型批量创建</TabsTrigger>
         <TabsTrigger value="manual-keyword">手动关键词</TabsTrigger>
         <TabsTrigger value="auto">自动广告</TabsTrigger>
         <TabsTrigger value="manual-product-targeting">商品定位</TabsTrigger>
       </TabsList>
 
       <TabsContent value={mode} className="mt-5">
-        {mode === "visual-batch" ? (
-          <section className="grid gap-4">
-            <div className="rounded-xl border border-sky-300/70 bg-sky-50/50 p-4 text-sm text-sky-900">
-              <div className="font-semibold">可视化批量创建（3步完成）</div>
-              <div className="mt-1 text-xs text-sky-800">
-                1) 添加活动并设置预算/竞价策略/广告位加价；2) 在活动下添加广告组并填写 SKU、关键词、否词、否定ASIN；3) 看右侧预览无报错后直接导出上传。
+        {mode === "visual-batch" || showInlineBatchEditor ? (
+          <section className="grid min-w-0 gap-4">
+            <div className="rounded-2xl border border-border/70 bg-gradient-to-br from-background to-muted/20 p-4 shadow-sm">
+              <div className="text-sm font-semibold text-foreground">
+                {mode === "visual-batch" ? "多种类型批量创建" : "批量创建结果"}
+              </div>
+              <div className="mt-1 text-xs text-muted-foreground">
+                按活动卡片逐个展开编辑，结构和单独版块保持一致，方便在一个页面里混合管理多种广告类型。
               </div>
             </div>
 
@@ -3137,14 +4285,14 @@ function SpWizardUI({
               </div>
             ) : null}
 
-            <div className="grid gap-3 rounded-xl border border-border/70 bg-muted/20 p-4">
+            <div className="grid gap-3 rounded-2xl border border-border/70 bg-gradient-to-br from-muted/10 to-muted/30 p-4 shadow-sm">
               <div className="flex flex-wrap items-center gap-2 text-xs">
                 <Badge variant="secondary">活动 {batchResult.campaigns}</Badge>
                 <Badge variant="secondary">广告组 {batchResult.adGroups}</Badge>
                 <Badge variant="secondary">SKU {batchResult.skus}</Badge>
                 <Badge variant="secondary">关键词/定位 {batchResult.keywords}</Badge>
                 <Badge variant="secondary">将生成 {batchResult.rows.length} 行</Badge>
-                {importedContext ? <Badge variant="outline">导出已选 {selectedCampaignCount}</Badge> : null}
+                <Badge variant="outline">已选 {selectedCampaignCount}</Badge>
               </div>
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <Input
@@ -3159,61 +4307,31 @@ function SpWizardUI({
                   </div>
                 </div>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setOpenCampaigns(
-                      Object.fromEntries(batchDraft.campaigns.map((_, index) => [`campaign-${index}`, true]))
-                    );
-                    setOpenAdGroups(
-                      Object.fromEntries(
-                        batchDraft.campaigns.flatMap((campaign, cIdx) =>
-                          campaign.adGroups.map((_, gIdx) => [`adgroup-${cIdx}-${gIdx}`, true])
-                        )
+              <div className="flex flex-wrap items-start gap-3">
+                <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border/60 bg-background/80 p-2 shadow-sm">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() =>
+                      setSelectedCampaigns(
+                        Object.fromEntries(batchDraft.campaigns.map((_, index) => [buildCampaignKey(index), true]))
                       )
-                    );
-                  }}
-                >
-                  全部展开
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setOpenCampaigns(
-                      Object.fromEntries(batchDraft.campaigns.map((_, index) => [`campaign-${index}`, false]))
-                    );
-                    setOpenAdGroups({});
-                  }}
-                >
-                  全部折叠
-                </Button>
-                {importedContext ? (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        setSelectedCampaigns(
-                          Object.fromEntries(batchDraft.campaigns.map((_, index) => [buildCampaignKey(index), true]))
-                        )
-                      }
-                    >
-                      全选导出
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        setSelectedCampaigns(
-                          Object.fromEntries(batchDraft.campaigns.map((_, index) => [buildCampaignKey(index), false]))
-                        )
-                      }
-                    >
-                      清空导出
-                    </Button>
+                    }
+                  >
+                    全选活动
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      setSelectedCampaigns(
+                        Object.fromEntries(batchDraft.campaigns.map((_, index) => [buildCampaignKey(index), false]))
+                      )
+                    }
+                  >
+                    清空选择
+                  </Button>
+                  {importedContext ? (
                     <Button
                       variant="outline"
                       size="sm"
@@ -3225,14 +4343,54 @@ function SpWizardUI({
                     >
                       仅选已修改
                     </Button>
-                  </>
-                ) : null}
-                <div className="text-xs text-muted-foreground">点击或编辑某个活动时，会自动收起其它活动；广告组也支持二级折叠。</div>
-                {importedContext ? <div className="text-xs text-amber-700">浅黄色输入框表示该字段相对导入原表已发生修改。</div> : null}
+                  ) : null}
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => removeCampaignsByIndexes(selectedCampaignIndexes)}
+                    disabled={selectedCampaignIndexes.length === 0}
+                  >
+                    删除已选
+                  </Button>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border/60 bg-background/80 p-2 shadow-sm">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setOpenCampaigns(
+                        Object.fromEntries(batchDraft.campaigns.map((_, index) => [`campaign-${index}`, true]))
+                      );
+                      setOpenAdGroups(
+                        Object.fromEntries(
+                          batchDraft.campaigns.flatMap((campaign, cIdx) =>
+                            campaign.adGroups.map((_, gIdx) => [`adgroup-${cIdx}-${gIdx}`, true])
+                          )
+                        )
+                      );
+                    }}
+                  >
+                    全部展开
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setOpenCampaigns(
+                        Object.fromEntries(batchDraft.campaigns.map((_, index) => [`campaign-${index}`, false]))
+                      );
+                      setOpenAdGroups({});
+                    }}
+                  >
+                    全部折叠
+                  </Button>
+                </div>
+                <div className="rounded-lg border border-dashed border-border/60 bg-background/70 px-3 py-2 text-xs text-muted-foreground">点击或编辑某个活动时，会自动收起其它活动；广告组也支持二级折叠。</div>
+                {importedContext ? <div className="rounded-lg border border-amber-300/60 bg-amber-50/70 px-3 py-2 text-xs text-amber-800">浅黄色输入框表示该字段相对导入原表已发生修改。</div> : null}
               </div>
             </div>
 
-            <div className="grid gap-4">
+            <div className="grid min-w-0 gap-4">
               {filteredCampaignEntries.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-border/70 bg-muted/10 p-6 text-sm text-muted-foreground">
                   没有匹配到活动，请尝试按活动名称或 Campaign ID 搜索。
@@ -3270,7 +4428,12 @@ function SpWizardUI({
                     }
                     setOpenCampaigns((prev) => ({ ...prev, [campaignKey]: false }));
                   }}
-                  className="rounded-xl border border-border/70 bg-card/40"
+                  className={cn(
+                    "min-w-0 rounded-2xl border bg-card/70 shadow-sm backdrop-blur-sm transition-colors",
+                    selectedCampaigns[campaignKey]
+                      ? "border-sky-300/80 ring-2 ring-sky-300/40 shadow-[0_18px_50px_-34px_rgba(14,165,233,0.55)]"
+                      : "border-border/70 hover:border-sky-200/60"
+                  )}
                 >
                   <div
                     className="p-4"
@@ -3282,21 +4445,21 @@ function SpWizardUI({
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          {importedContext ? (
-                            <label className="mr-1 inline-flex items-center gap-2 text-xs text-muted-foreground">
-                              <Checkbox
-                                checked={selectedCampaigns[campaignKey] ?? false}
-                                onCheckedChange={(checked) =>
-                                  setSelectedCampaigns((prev) => ({
-                                    ...prev,
-                                    [campaignKey]: checked === true,
-                                  }))
-                                }
-                              />
-                              导出
-                            </label>
-                          ) : null}
-                          <div className="font-semibold text-sky-700 dark:text-sky-300">{c.campaignName.trim() || `活动 #${cIdx + 1}`}</div>
+                          <label className="mr-1 inline-flex items-center gap-2 text-xs text-muted-foreground">
+                            <Checkbox
+                              checked={selectedCampaigns[campaignKey] ?? false}
+                              onCheckedChange={(checked) =>
+                                setSelectedCampaigns((prev) => ({
+                                  ...prev,
+                                  [campaignKey]: checked === true,
+                                }))
+                              }
+                            />
+                            选中
+                          </label>
+                          <div className="rounded-lg border border-sky-200/70 bg-sky-500/10 px-3 py-1.5 text-base font-bold tracking-tight text-sky-800 shadow-sm dark:border-sky-500/20 dark:bg-sky-500/15 dark:text-sky-200">
+                            {c.campaignName.trim() || `活动 #${cIdx + 1}`}
+                          </div>
                           <Badge variant="outline" className="font-mono text-[11px]">{c.mode}</Badge>
                           {campaignDiffState ? (
                             <Badge
@@ -3350,24 +4513,86 @@ function SpWizardUI({
                           </Button>
                         </CollapsibleTrigger>
                         <Button
+                          size="sm"
+                          className="gap-2 bg-sky-600 text-white shadow-sm hover:bg-sky-700"
+                          onClick={() => openSpBatchDuplicateDialog(cIdx)}
+                        >
+                          批量复制
+                        </Button>
+                        <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => {
-                            setBatchDraft((prev) => ({
-                              ...prev,
-                              campaigns: prev.campaigns.length > 1 ? prev.campaigns.filter((_, i) => i !== cIdx) : prev.campaigns,
-                            }));
-                            setOpenCampaigns((prev) => remapCampaignStateAfterDelete(prev, cIdx));
-                            setSelectedCampaigns((prev) => remapCampaignStateAfterDelete(prev, cIdx));
-                            setOpenAdGroups((prev) => remapAdGroupStateAfterCampaignDelete(prev, cIdx));
-                          }}
+                          onClick={() => removeCampaignsByIndexes([cIdx])}
                         >
                           删除活动
                         </Button>
                       </div>
                     </div>
-                    <CollapsibleContent className="mt-4 grid gap-4">
-                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <CollapsibleContent className="mt-4 grid min-w-0 gap-4">
+                  <div className="grid min-w-0 gap-3">
+                    <SectionTitle>A. Campaign（广告活动）</SectionTitle>
+                    <div className="mt-1 grid gap-3 sm:grid-cols-2">
+                    <Labeled label="投放类型" hint="决定本活动填写关键词还是商品定位" required labelClassName={getDiffLabelClassName(campaignModeChanged)}>
+                      <Select
+                        value={c.mode}
+                        onValueChange={(v) =>
+                          setBatchDraft((prev) => ({
+                            ...prev,
+                            campaigns: prev.campaigns.map((x, i) =>
+                              i !== cIdx
+                                ? x
+                                : {
+                                    ...x,
+                                    mode: v as SpCampaignWizard["mode"],
+                                    adGroups: x.adGroups.map((ag) =>
+                                      v === "auto"
+                                        ? {
+                                            ...ag,
+                                            productTargetingsText: toAutoTargetingText(
+                                              parseAutoTargetingRows(ag.productTargetingsText).map((row) => ({
+                                                ...row,
+                                                bid: row.bid || ag.adGroupDefaultBid || 0.75,
+                                              }))
+                                            ),
+                                          }
+                                        : v === "manual-product-targeting"
+                                          ? {
+                                              ...ag,
+                                              productTargetingsText: toProductTargetingRowsText(
+                                                parseSpProductTargetingBulk(
+                                                  ag.productTargetingsText,
+                                                  ag.adGroupDefaultBid || 0.75
+                                                ).rows.filter((row) => !isAutoTargetingExpression(row.expression)).length
+                                                  ? parseSpProductTargetingBulk(
+                                                      ag.productTargetingsText,
+                                                      ag.adGroupDefaultBid || 0.75
+                                                    ).rows
+                                                      .filter((row) => !isAutoTargetingExpression(row.expression))
+                                                      .map((row) => ({
+                                                        expression: row.expression,
+                                                        bid: row.bid || ag.adGroupDefaultBid || 0.75,
+                                                        state: row.state,
+                                                      }))
+                                                  : createDefaultManualProductTargetings(ag.adGroupDefaultBid || 0.75).map((row) => ({
+                                                      expression: row.expression,
+                                                      bid: row.bid ?? (ag.adGroupDefaultBid || 0.75),
+                                                      state: row.state,
+                                                    }))
+                                              ),
+                                            }
+                                          : { ...ag, productTargetingsText: "" }
+                                    ),
+                                  }
+                            ),
+                          }))
+                        }
+                      >
+                        <SelectTrigger className={getDiffFieldClassName(campaignModeChanged)}><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {spBatchModeOptions.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </Labeled>
                     <Labeled label="Campaign ID" required>
                       <Input value={c.campaignId} onChange={(e) => setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i === cIdx ? { ...x, campaignId: e.target.value } : x) }))} />
                     </Labeled>
@@ -3391,38 +4616,6 @@ function SpWizardUI({
                         </SelectContent>
                       </Select>
                     </Labeled>
-                    <Labeled label="投放类型" hint="决定本活动填写关键词还是商品定位" required labelClassName={getDiffLabelClassName(campaignModeChanged)}>
-                      <Select
-                        value={c.mode}
-                        onValueChange={(v) =>
-                          setBatchDraft((prev) => ({
-                            ...prev,
-                            campaigns: prev.campaigns.map((x, i) =>
-                              i !== cIdx
-                                ? x
-                                : {
-                                    ...x,
-                                    mode: v as SpCampaignWizard["mode"],
-                                    adGroups: x.adGroups.map((ag) =>
-                                      v === "auto" && !normalizeLines(ag.productTargetingsText).filter(Boolean).length
-                                        ? {
-                                            ...ag,
-                                            productTargetingsText:
-                                              "close-match,0.75,enabled\nloose-match,0.75,enabled\nsubstitutes,0.75,enabled\ncomplements,0.75,enabled",
-                                          }
-                                        : ag
-                                    ),
-                                  }
-                            ),
-                          }))
-                        }
-                      >
-                        <SelectTrigger className={getDiffFieldClassName(campaignModeChanged)}><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {spBatchModeOptions.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </Labeled>
                     <Labeled label="Bidding Strategy" required labelClassName={getDiffLabelClassName(campaignBiddingChanged)}>
                       <Select value={c.biddingStrategy} onValueChange={(v) => setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i === cIdx ? { ...x, biddingStrategy: v as SpBiddingStrategy } : x) }))}>
                         <SelectTrigger className={getDiffFieldClassName(campaignBiddingChanged)}><SelectValue /></SelectTrigger>
@@ -3434,21 +4627,28 @@ function SpWizardUI({
                     <Labeled label="Portfolio ID" hint="可选" labelClassName={getDiffLabelClassName(campaignPortfolioChanged)}>
                       <Input className={getDiffFieldClassName(campaignPortfolioChanged)} value={c.portfolioId || ""} onChange={(e) => setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i === cIdx ? { ...x, portfolioId: e.target.value } : x) }))} />
                     </Labeled>
-                    <Labeled label="placementTop %" hint="可选" labelClassName={getDiffLabelClassName(campaignPlacementTopChanged)}>
+                    </div>
+                  </div>
+
+                  <section className="grid min-w-0 gap-3">
+                    <SectionTitle tone="indigo">B. Bidding Adjustment（广告位加价，可选）</SectionTitle>
+                    <div className="grid gap-3 sm:grid-cols-3">
+                    <Labeled label="placementTop" hint="搜索结果顶部" labelClassName={getDiffLabelClassName(campaignPlacementTopChanged)}>
                       <Input className={getDiffFieldClassName(campaignPlacementTopChanged)} type="number" value={c.placementTopPct ?? ""} onChange={(e) => setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i === cIdx ? { ...x, placementTopPct: e.target.value === "" ? undefined : Number(e.target.value) } : x) }))} />
                     </Labeled>
-                    <Labeled label="placementRest %" hint="可选" labelClassName={getDiffLabelClassName(campaignPlacementRestChanged)}>
+                    <Labeled label="placementRestOfSearch" hint="搜索结果其余" labelClassName={getDiffLabelClassName(campaignPlacementRestChanged)}>
                       <Input className={getDiffFieldClassName(campaignPlacementRestChanged)} type="number" value={c.placementRestPct ?? ""} onChange={(e) => setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i === cIdx ? { ...x, placementRestPct: e.target.value === "" ? undefined : Number(e.target.value) } : x) }))} />
                     </Labeled>
-                    <Labeled label="placementProductPage %" hint="可选" labelClassName={getDiffLabelClassName(campaignPlacementProductPageChanged)}>
+                    <Labeled label="placementProductPage" hint="商品页面" labelClassName={getDiffLabelClassName(campaignPlacementProductPageChanged)}>
                       <Input className={getDiffFieldClassName(campaignPlacementProductPageChanged)} type="number" value={c.placementProductPagePct ?? ""} onChange={(e) => setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i === cIdx ? { ...x, placementProductPagePct: e.target.value === "" ? undefined : Number(e.target.value) } : x) }))} />
                     </Labeled>
-                  </div>
+                    </div>
+                  </section>
 
                   <div className="mt-4 grid gap-3">
                     {c.adGroups.map((g, gIdx) => {
                       const adGroupKey = buildAdGroupKey(cIdx, gIdx);
-                      const adGroupOpen = hasOwnState(openAdGroups, adGroupKey) ? openAdGroups[adGroupKey] : false;
+                      const adGroupOpen = hasOwnState(openAdGroups, adGroupKey) ? openAdGroups[adGroupKey] : true;
                       const adGroupSkuCount = countFilledLines(g.skusText);
                       const adGroupPrimaryCount = countPrimaryItemsForAdGroup(c.mode, g);
                       const adGroupDiffState = getAdGroupDiffState(c.campaignId, g, importedAdGroupMap);
@@ -3478,7 +4678,10 @@ function SpWizardUI({
                           }
                           setOpenAdGroups((prev) => ({ ...prev, [adGroupKey]: false }));
                         }}
-                        className="rounded-lg border border-border/70 bg-muted/25"
+                        className={cn(
+                          "min-w-0 rounded-xl border bg-background/80 shadow-sm transition-colors dark:bg-card/40",
+                          adGroupOpen ? "border-indigo-200/80 shadow-[0_14px_36px_-30px_rgba(79,70,229,0.55)]" : "border-border/70"
+                        )}
                       >
                         <div
                           className="p-3"
@@ -3490,7 +4693,9 @@ function SpWizardUI({
                         <div className="flex items-center justify-between gap-2">
                           <div>
                             <div className="flex flex-wrap items-center gap-2 text-sm font-semibold">
-                              <span className="text-indigo-700 dark:text-indigo-300">{g.adGroupName.trim() || `广告组 #${gIdx + 1}`}</span>
+                              <span className="rounded-lg border border-indigo-200/70 bg-indigo-500/10 px-3 py-1.5 text-[15px] font-bold tracking-tight text-indigo-800 shadow-sm dark:border-indigo-500/20 dark:bg-indigo-500/15 dark:text-indigo-200">
+                                {g.adGroupName.trim() || `广告组 #${gIdx + 1}`}
+                              </span>
                               {adGroupDiffState ? (
                                 <Badge
                                   variant="outline"
@@ -3564,8 +4769,10 @@ function SpWizardUI({
                             </Button>
                           </div>
                         </div>
-                        <CollapsibleContent className="mt-2 grid gap-3">
-                        <div className="grid gap-3 sm:grid-cols-2">
+                        <CollapsibleContent className="mt-2 grid min-w-0 gap-3">
+                        <section className="grid min-w-0 gap-3">
+                          <SectionTitle tone="indigo">C. Ad Group（广告组）</SectionTitle>
+                          <div className="grid gap-3 sm:grid-cols-2">
                           <Labeled label="Ad Group ID" required>
                             <Input value={g.adGroupId} onChange={(e) => setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i !== cIdx ? x : { ...x, adGroups: x.adGroups.map((a, ai) => ai === gIdx ? { ...a, adGroupId: e.target.value } : a) } ) }))} />
                           </Labeled>
@@ -3583,18 +4790,52 @@ function SpWizardUI({
                               </SelectContent>
                             </Select>
                           </Labeled>
-                        </div>
-                        <div className="grid gap-3">
-                          <Labeled label="SKU列表" hint="一行一个SKU" required labelClassName={getDiffLabelClassName(adGroupSkusChanged)}>
-                            <Textarea value={g.skusText} onChange={(e) => setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i !== cIdx ? x : { ...x, adGroups: x.adGroups.map((a, ai) => ai === gIdx ? { ...a, skusText: e.target.value } : a) } ) }))} className={cn("min-h-[90px] font-mono text-[12px]", getDiffFieldClassName(adGroupSkusChanged))} />
-                          </Labeled>
+                          </div>
+                        </section>
+                        <Separator />
+                        <section className="grid min-w-0 gap-3">
+                          <SectionTitle tone="emerald">D. Product Ad（投放商品/SKU）</SectionTitle>
+                          <div className={cn("rounded-lg border border-border/70 bg-muted/20 p-3", getDiffFieldClassName(adGroupSkusChanged))}>
+                            <Labeled label="SKU列表" hint="一行一个SKU" required labelClassName={getDiffLabelClassName(adGroupSkusChanged)}>
+                              <Textarea value={g.skusText} onChange={(e) => setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i !== cIdx ? x : { ...x, adGroups: x.adGroups.map((a, ai) => ai === gIdx ? { ...a, skusText: e.target.value } : a) } ) }))} className={cn("min-h-[90px] font-mono text-[12px]", getDiffFieldClassName(adGroupSkusChanged))} />
+                            </Labeled>
+                          </div>
 
                           {c.mode === "manual-keyword" && (
-                            <div className="grid gap-2">
+                            <div className="grid min-w-0 gap-3">
+                              <SectionTitle tone="emerald">E. Keyword（投放关键词）</SectionTitle>
                               <div className={cn("text-sm font-medium", getDiffLabelClassName(adGroupKeywordsChanged))}>关键词列表 *</div>
                               <div className={cn("rounded-lg border border-border/70 bg-muted/20 p-3", getDiffFieldClassName(adGroupKeywordsChanged))}>
                                 <div className="text-xs text-muted-foreground">
-                                  批量输入：可直接粘贴多行关键词，支持 `关键词` 或 `关键词,匹配方式,bid,state`（支持 Tab 分隔）。
+                                  批量输入：可直接粘贴多行关键词，支持 `关键词` 或 `关键词,匹配方式,bid,state`（支持 Tab 分隔）。未填写匹配方式时，可按下方已选匹配批量展开。
+                                </div>
+                                <div className="mt-2 flex flex-wrap items-center gap-2">
+                                  <span className="text-xs text-muted-foreground">默认匹配：</span>
+                                  {([
+                                    ["exact", "精准"],
+                                    ["phrase", "词组"],
+                                    ["broad", "广泛"],
+                                  ] as const).map(([value, label]) => {
+                                    const groupKey = `${cIdx}-${gIdx}`;
+                                    const active = getKeywordDefaultMatchTypes(groupKey).includes(value);
+                                    return (
+                                      <Button
+                                        key={value}
+                                        size="sm"
+                                        variant={active ? "default" : "outline"}
+                                        onClick={() => toggleKeywordDefaultMatchType(groupKey, value)}
+                                      >
+                                        {label}
+                                      </Button>
+                                    );
+                                  })}
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => applyKeywordDefaultMatchTypes(cIdx, gIdx, g)}
+                                  >
+                                    批量导入关键词
+                                  </Button>
                                 </div>
                                 <Textarea
                                   value={g.keywordsText}
@@ -3705,8 +4946,8 @@ function SpWizardUI({
                                   </Button>
                                 </div>
                               </div>
-                              <div className={cn("overflow-auto rounded-lg border border-border/70", getDiffFieldClassName(adGroupKeywordsChanged))}>
-                                <Table>
+                              <div className={cn("mt-1 min-w-0 overflow-auto rounded-lg border border-border/70", getDiffFieldClassName(adGroupKeywordsChanged))}>
+                                <Table className="min-w-[760px]">
                                   <TableHeader>
                                     <TableRow>
                                       <TableHead className="min-w-[260px]">Keyword Text</TableHead>
@@ -3800,10 +5041,11 @@ function SpWizardUI({
                           )}
 
                           {c.mode === "auto" ? (
-                            <div className="grid gap-2">
+                            <div className="grid min-w-0 gap-3">
+                              <SectionTitle tone="indigo">E. Product Targeting（自动投放类型）</SectionTitle>
                               <div className={cn("text-sm font-medium", getDiffLabelClassName(adGroupTargetingsChanged))}>自动投放类型列表 *</div>
-                              <div className={cn("overflow-auto rounded-lg border border-border/70", getDiffFieldClassName(adGroupTargetingsChanged))}>
-                                <Table>
+                              <div className={cn("mt-1 min-w-0 overflow-auto rounded-lg border border-border/70", getDiffFieldClassName(adGroupTargetingsChanged))}>
+                                <Table className="min-w-[620px]">
                                   <TableHeader>
                                     <TableRow>
                                       <TableHead className="min-w-[220px]">类型</TableHead>
@@ -3850,7 +5092,7 @@ function SpWizardUI({
                                             const list = old.filter((_, i) => i !== rIdx);
                                             const next: Array<{ expression: string; bid: number; state: State }> = list.length
                                               ? list
-                                              : [{ expression: "close-match", bid: 0.75, state: "enabled" as State }];
+                                              : createDefaultAutoTargetingRows(0.75);
                                             setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i !== cIdx ? x : { ...x, adGroups: x.adGroups.map((a, ai) => ai === gIdx ? { ...a, productTargetingsText: toAutoTargetingText(next) } : a) } ) }));
                                           }}>
                                             <Trash2 className="h-4 w-4" />
@@ -3866,10 +5108,10 @@ function SpWizardUI({
                                 size="sm"
                                 className="w-fit"
                                 onClick={() => {
-                                  const list: Array<{ expression: string; bid: number; state: State }> = [
-                                    ...parseAutoTargetingRows(g.productTargetingsText),
-                                    { expression: "close-match", bid: 0.75, state: "enabled" as State },
-                                  ];
+                                  const list = appendPreferredAutoTargetingRow(
+                                    parseAutoTargetingRows(g.productTargetingsText),
+                                    g.adGroupDefaultBid || 0.75
+                                  );
                                   setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i !== cIdx ? x : { ...x, adGroups: x.adGroups.map((a, ai) => ai === gIdx ? { ...a, productTargetingsText: toAutoTargetingText(list) } : a) } ) }));
                                 }}
                               >
@@ -3877,13 +5119,82 @@ function SpWizardUI({
                               </Button>
                             </div>
                           ) : c.mode === "manual-product-targeting" ? (
-                            <div className="grid gap-2">
+                            <div className="grid min-w-0 gap-3">
+                              <SectionTitle tone="indigo">E. Product Targeting（商品定位）</SectionTitle>
                               <div className={cn("text-sm font-medium", getDiffLabelClassName(adGroupTargetingsChanged))}>商品定位列表 *</div>
-                              <div className={cn("overflow-auto rounded-lg border border-border/70", getDiffFieldClassName(adGroupTargetingsChanged))}>
-                                <Table>
+                              <div className={cn("rounded-lg border border-border/70 bg-muted/20 p-3", getDiffFieldClassName(adGroupTargetingsChanged))}>
+                                <div className="text-xs text-muted-foreground">
+                                  当前支持两种业务化输入：`单件商品` 和 `品类`。导入时会自动转换成 bulk 所需的 `Product Targeting Expression`。
+                                </div>
+                                <div className="mt-2 flex flex-wrap items-center gap-2">
+                                  <span className="text-xs text-muted-foreground">输入方式：</span>
+                                  {([
+                                    ["asin", "单件商品"],
+                                    ["category", "品类"],
+                                  ] as const).map(([value, label]) => {
+                                    const groupKey = `${cIdx}-${gIdx}`;
+                                    const active = getProductTargetingInputMode(groupKey) === value;
+                                    return (
+                                      <Button
+                                        key={value}
+                                        size="sm"
+                                        variant={active ? "default" : "outline"}
+                                        onClick={() => setProductTargetingInputModeByGroup((prev) => ({ ...prev, [groupKey]: value }))}
+                                      >
+                                        {label}
+                                      </Button>
+                                    );
+                                  })}
+                                </div>
+                                {getProductTargetingInputMode(`${cIdx}-${gIdx}`) === "asin" ? (
+                                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                                    <span className="text-xs text-muted-foreground">匹配范围：</span>
+                                    {([
+                                      ["exact", "精准"],
+                                      ["expanded", "已扩展"],
+                                    ] as const).map(([value, label]) => {
+                                      const groupKey = `${cIdx}-${gIdx}`;
+                                      const active = getSelectedProductTargetingExpandModes(groupKey).includes(value);
+                                      return (
+                                        <Button
+                                          key={value}
+                                          size="sm"
+                                          variant={active ? "default" : "outline"}
+                                          onClick={() => toggleProductTargetingExpandMode(groupKey, value)}
+                                        >
+                                          {label}
+                                        </Button>
+                                      );
+                                    })}
+                                  </div>
+                                ) : null}
+                                <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
+                                  <Textarea
+                                    value={productTargetingBulkInputByGroup[`${cIdx}-${gIdx}`] ?? ""}
+                                    onChange={(e) =>
+                                      setProductTargetingBulkInputByGroup((prev) => ({ ...prev, [`${cIdx}-${gIdx}`]: e.target.value }))
+                                    }
+                                    className="min-h-[84px] font-mono text-[12px]"
+                                    placeholder={
+                                      getProductTargetingInputMode(`${cIdx}-${gIdx}`) === "asin"
+                                        ? "B0XXXXXXXX\nB0YYYYYYYY,0.75,enabled"
+                                        : "123456789\n987654321,0.45,enabled"
+                                    }
+                                  />
+                                  <Button
+                                    className="h-fit bg-sky-600 text-white hover:bg-sky-700 sm:self-end"
+                                    onClick={() => applyProductTargetingExpandModes(cIdx, gIdx, g)}
+                                  >
+                                    {getProductTargetingInputMode(`${cIdx}-${gIdx}`) === "asin" ? "导入商品定位" : "导入品类定位"}
+                                  </Button>
+                                </div>
+                              </div>
+                              <div className={cn("mt-1 min-w-0 overflow-auto rounded-lg border border-border/70", getDiffFieldClassName(adGroupTargetingsChanged))}>
+                                <Table className="min-w-[760px]">
                                   <TableHeader>
                                     <TableRow>
-                                      <TableHead className="min-w-[320px]">Product Targeting Expression</TableHead>
+                                      <TableHead className="min-w-[240px]">目标值</TableHead>
+                                      <TableHead className="min-w-[160px]">范围/说明</TableHead>
                                       <TableHead className="min-w-[120px]">Bid</TableHead>
                                       <TableHead className="min-w-[140px]">State</TableHead>
                                       <TableHead className="w-[1%]"></TableHead>
@@ -3893,21 +5204,37 @@ function SpWizardUI({
                                     {parseProductTargetingRowsForUi(g.productTargetingsText, g.adGroupDefaultBid || 0.75).map((row, rIdx) => (
                                       <TableRow key={rIdx}>
                                         <TableCell>
-                                          <Input value={row.expression} onChange={(e) => {
-                                            const list = parseProductTargetingRowsForUi(g.productTargetingsText, g.adGroupDefaultBid || 0.75).map((x, i) => i === rIdx ? { ...x, expression: e.target.value } : x);
-                                            setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i !== cIdx ? x : { ...x, adGroups: x.adGroups.map((a, ai) => ai === gIdx ? { ...a, productTargetingsText: toAutoTargetingText(list) } : a) } ) }));
-                                          }} />
+                                          <Input value={row.value} onChange={(e) => {
+                                            const list = parseProductTargetingRowsForUi(g.productTargetingsText, g.adGroupDefaultBid || 0.75).map((x, i) => i === rIdx ? { ...x, value: e.target.value } : x);
+                                            setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i !== cIdx ? x : { ...x, adGroups: x.adGroups.map((a, ai) => ai === gIdx ? { ...a, productTargetingsText: toProductTargetingUiRowsText(list) } : a) } ) }));
+                                          }} placeholder={row.targetType === "category" ? "品类ID" : row.targetType === "custom" ? "原始表达式" : "ASIN"} />
+                                        </TableCell>
+                                        <TableCell>
+                                          {row.targetType === "asin" ? (
+                                            <Select value={row.expandMode ?? "expanded"} onValueChange={(v) => {
+                                              const list = parseProductTargetingRowsForUi(g.productTargetingsText, g.adGroupDefaultBid || 0.75).map((x, i) => i === rIdx ? { ...x, expandMode: v as ProductTargetingExpandMode } : x);
+                                              setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i !== cIdx ? x : { ...x, adGroups: x.adGroups.map((a, ai) => ai === gIdx ? { ...a, productTargetingsText: toProductTargetingUiRowsText(list) } : a) } ) }));
+                                            }}>
+                                              <SelectTrigger><SelectValue /></SelectTrigger>
+                                              <SelectContent>
+                                                <SelectItem value="exact">精准</SelectItem>
+                                                <SelectItem value="expanded">已扩展</SelectItem>
+                                              </SelectContent>
+                                            </Select>
+                                          ) : (
+                                            <div className="text-sm text-muted-foreground">{row.targetType === "category" ? "品类定位" : "原始表达式"}</div>
+                                          )}
                                         </TableCell>
                                         <TableCell>
                                           <Input type="number" value={row.bid} onChange={(e) => {
                                             const list = parseProductTargetingRowsForUi(g.productTargetingsText, g.adGroupDefaultBid || 0.75).map((x, i) => i === rIdx ? { ...x, bid: Number(e.target.value || 0) } : x);
-                                            setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i !== cIdx ? x : { ...x, adGroups: x.adGroups.map((a, ai) => ai === gIdx ? { ...a, productTargetingsText: toAutoTargetingText(list) } : a) } ) }));
+                                            setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i !== cIdx ? x : { ...x, adGroups: x.adGroups.map((a, ai) => ai === gIdx ? { ...a, productTargetingsText: toProductTargetingUiRowsText(list) } : a) } ) }));
                                           }} />
                                         </TableCell>
                                         <TableCell>
                                           <Select value={row.state} onValueChange={(v) => {
                                             const list = parseProductTargetingRowsForUi(g.productTargetingsText, g.adGroupDefaultBid || 0.75).map((x, i) => i === rIdx ? { ...x, state: v as State } : x);
-                                            setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i !== cIdx ? x : { ...x, adGroups: x.adGroups.map((a, ai) => ai === gIdx ? { ...a, productTargetingsText: toAutoTargetingText(list) } : a) } ) }));
+                                            setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i !== cIdx ? x : { ...x, adGroups: x.adGroups.map((a, ai) => ai === gIdx ? { ...a, productTargetingsText: toProductTargetingUiRowsText(list) } : a) } ) }));
                                           }}>
                                             <SelectTrigger><SelectValue /></SelectTrigger>
                                             <SelectContent>{stateOptions.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
@@ -3917,10 +5244,10 @@ function SpWizardUI({
                                           <Button variant="ghost" size="icon" onClick={() => {
                                             const old = parseProductTargetingRowsForUi(g.productTargetingsText, g.adGroupDefaultBid || 0.75);
                                             const list = old.filter((_, i) => i !== rIdx);
-                                            const next: Array<{ expression: string; bid: number; state: State }> = list.length
+                                            const next = list.length
                                               ? list
-                                              : [{ expression: "", bid: g.adGroupDefaultBid || 0.75, state: "enabled" as State }];
-                                            setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i !== cIdx ? x : { ...x, adGroups: x.adGroups.map((a, ai) => ai === gIdx ? { ...a, productTargetingsText: toAutoTargetingText(next) } : a) } ) }));
+                                              : [{ targetType: "asin" as ProductTargetingUiType, value: "", expandMode: "expanded" as ProductTargetingExpandMode, bid: g.adGroupDefaultBid || 0.75, state: "enabled" as State }];
+                                            setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i !== cIdx ? x : { ...x, adGroups: x.adGroups.map((a, ai) => ai === gIdx ? { ...a, productTargetingsText: toProductTargetingUiRowsText(next) } : a) } ) }));
                                           }}>
                                             <Trash2 className="h-4 w-4" />
                                           </Button>
@@ -3931,22 +5258,43 @@ function SpWizardUI({
                                 </Table>
                               </div>
                               <Button variant="outline" size="sm" className="w-fit" onClick={() => {
-                                const list: Array<{ expression: string; bid: number; state: State }> = [
+                                const list = [
                                   ...parseProductTargetingRowsForUi(g.productTargetingsText, g.adGroupDefaultBid || 0.75),
-                                  { expression: "", bid: g.adGroupDefaultBid || 0.75, state: "enabled" as State },
+                                  { targetType: "asin" as ProductTargetingUiType, value: "", expandMode: "expanded" as ProductTargetingExpandMode, bid: g.adGroupDefaultBid || 0.75, state: "enabled" as State },
                                 ];
-                                setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i !== cIdx ? x : { ...x, adGroups: x.adGroups.map((a, ai) => ai === gIdx ? { ...a, productTargetingsText: toAutoTargetingText(list) } : a) } ) }));
+                                setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i !== cIdx ? x : { ...x, adGroups: x.adGroups.map((a, ai) => ai === gIdx ? { ...a, productTargetingsText: toProductTargetingUiRowsText(list) } : a) } ) }));
                               }}>
                                 <Plus className="h-4 w-4" /> 添加商品定位
                               </Button>
                             </div>
                           ) : null}
 
-                          <div className="grid gap-2">
+                          <div className="grid min-w-0 gap-3">
+                            <SectionTitle tone="amber">F. Negative Keyword（否词，可选）</SectionTitle>
                             <div className={cn("text-sm font-medium", getDiffLabelClassName(adGroupNegativeKeywordsChanged))}>否词列表（可选）</div>
                             <div className={cn("rounded-lg border border-border/70 bg-muted/20 p-3", getDiffFieldClassName(adGroupNegativeKeywordsChanged))}>
                               <div className="text-xs text-muted-foreground">
-                                批量输入：可直接粘贴多行否词，支持 `否词` 或 `否词,匹配方式,state`（支持 Tab 分隔）。
+                                批量输入：可直接粘贴多行否词，支持 `否词` 或 `否词,匹配方式,state`（支持 Tab 分隔）。未填写匹配方式时，按下方已选类型处理。
+                              </div>
+                              <div className="mt-2 flex flex-wrap items-center gap-2">
+                                <span className="text-xs text-muted-foreground">默认类型：</span>
+                                {([
+                                  ["negativeExact", "精准"],
+                                  ["negativePhrase", "词组"],
+                                ] as const).map(([value, label]) => {
+                                  const groupKey = `${cIdx}-${gIdx}`;
+                                  const active = getNegativeKeywordDefaultMatchType(groupKey) === value;
+                                  return (
+                                    <Button
+                                      key={value}
+                                      size="sm"
+                                      variant={active ? "default" : "outline"}
+                                      onClick={() => applyNegativeKeywordDefaultMatchType(groupKey, value)}
+                                    >
+                                      {label}
+                                    </Button>
+                                  );
+                                })}
                               </div>
                               <Textarea
                                 value={g.negativeKeywordsText}
@@ -3971,26 +5319,6 @@ function SpWizardUI({
                                   size="sm"
                                   variant="outline"
                                   onClick={() => {
-                                    const list = parseNegativeKeywordRowsForUi(g.negativeKeywordsText).map((x) => ({ ...x, matchType: "negativeExact" as const }));
-                                    setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i !== cIdx ? x : { ...x, adGroups: x.adGroups.map((a, ai) => ai === gIdx ? { ...a, negativeKeywordsText: toNegativeKeywordRowsText(list) } : a) } ) }));
-                                  }}
-                                >
-                                  全部设为否定精准
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => {
-                                    const list = parseNegativeKeywordRowsForUi(g.negativeKeywordsText).map((x) => ({ ...x, matchType: "negativePhrase" as const }));
-                                    setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i !== cIdx ? x : { ...x, adGroups: x.adGroups.map((a, ai) => ai === gIdx ? { ...a, negativeKeywordsText: toNegativeKeywordRowsText(list) } : a) } ) }));
-                                  }}
-                                >
-                                  全部设为否定词组
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => {
                                     const list = parseNegativeKeywordRowsForUi(g.negativeKeywordsText).map((x) => ({ ...x, state: "enabled" as const }));
                                     setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i !== cIdx ? x : { ...x, adGroups: x.adGroups.map((a, ai) => ai === gIdx ? { ...a, negativeKeywordsText: toNegativeKeywordRowsText(list) } : a) } ) }));
                                   }}
@@ -4009,8 +5337,8 @@ function SpWizardUI({
                                 </Button>
                               </div>
                             </div>
-                            <div className={cn("overflow-auto rounded-lg border border-border/70", getDiffFieldClassName(adGroupNegativeKeywordsChanged))}>
-                              <Table>
+                            <div className={cn("mt-1 min-w-0 overflow-auto rounded-lg border border-border/70", getDiffFieldClassName(adGroupNegativeKeywordsChanged))}>
+                              <Table className="min-w-[700px]">
                                 <TableHeader>
                                   <TableRow>
                                     <TableHead className="min-w-[260px]">Keyword Text</TableHead>
@@ -4067,7 +5395,8 @@ function SpWizardUI({
                             </Button>
                           </div>
 
-                          <div className="grid gap-2">
+                          <div className="grid min-w-0 gap-3">
+                            <SectionTitle tone="amber">G. Negative Product Targeting（否定ASIN/类目，可选）</SectionTitle>
                             <div className={cn("text-sm font-medium", getDiffLabelClassName(adGroupNegativeTargetingsChanged))}>否定ASIN列表（可选）</div>
                             <div className={cn("rounded-lg border border-border/70 bg-muted/20 p-3", getDiffFieldClassName(adGroupNegativeTargetingsChanged))}>
                               <div className="text-xs text-muted-foreground">
@@ -4114,8 +5443,8 @@ function SpWizardUI({
                                 </Button>
                               </div>
                             </div>
-                            <div className={cn("overflow-auto rounded-lg border border-border/70", getDiffFieldClassName(adGroupNegativeTargetingsChanged))}>
-                              <Table>
+                            <div className={cn("mt-1 min-w-0 overflow-auto rounded-lg border border-border/70", getDiffFieldClassName(adGroupNegativeTargetingsChanged))}>
+                              <Table className="min-w-[720px]">
                                 <TableHeader>
                                   <TableRow>
                                     <TableHead className="min-w-[360px]">Product Targeting Expression</TableHead>
@@ -4161,9 +5490,9 @@ function SpWizardUI({
                               <Plus className="h-4 w-4" /> 添加否定ASIN
                             </Button>
                           </div>
-                        </div>
+                        </section>
                         {c.mode === "auto" && (
-                          <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-dashed border-indigo-200/70 bg-indigo-50/60 px-3 py-2 text-xs text-indigo-900 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-100">
                             <Button
                               variant="outline"
                               size="sm"
@@ -4180,8 +5509,7 @@ function SpWizardUI({
                                               ? a
                                               : {
                                                   ...a,
-                                                  productTargetingsText:
-                                                    "close-match,0.75,enabled\nloose-match,0.75,enabled\nsubstitutes,0.75,enabled\ncomplements,0.75,enabled",
+                                                  productTargetingsText: createDefaultBatchProductTargetingsText("auto", a.adGroupDefaultBid || 0.75),
                                                 }
                                           ),
                                         }
@@ -4191,7 +5519,7 @@ function SpWizardUI({
                             >
                               一键填充4种自动投放
                             </Button>
-                            <span className="text-xs text-muted-foreground">可按需把不需要的类型改为 paused 或删除行。</span>
+                            <span>可按需把不需要的类型改为 paused 或删除行。</span>
                           </div>
                         )}
                         </CollapsibleContent>
@@ -4205,7 +5533,7 @@ function SpWizardUI({
                         focusCampaign(campaignKey);
                         setBatchDraft((prev) => ({
                           ...prev,
-                          campaigns: prev.campaigns.map((x, i) => (i === cIdx ? { ...x, adGroups: [...x.adGroups, createInitialSpBatchAdGroup()] } : x)),
+                          campaigns: prev.campaigns.map((x, i) => (i === cIdx ? { ...x, adGroups: [...x.adGroups, createInitialSpBatchAdGroup(c.mode)] } : x)),
                         }));
                         setOpenAdGroups((prev) => ({
                           ...prev,
@@ -4235,17 +5563,314 @@ function SpWizardUI({
               </Button>
               <div className="text-xs text-muted-foreground">提示：活动级设置（预算、竞价策略、广告位加价）会应用到该活动下所有广告组。</div>
             </div>
+            <Dialog
+              open={duplicateDialog.open}
+              onOpenChange={(open) => setDuplicateDialog((prev) => ({ ...prev, open }))}
+            >
+              <DialogContent className="max-h-[88vh] overflow-hidden border border-border/70 bg-background/95 p-0 shadow-2xl sm:max-w-3xl">
+                <div className="flex max-h-[88vh] flex-col">
+                  <DialogHeader className="border-b px-5 pt-5 pb-3">
+                    <DialogTitle>批量复制多个类似活动</DialogTitle>
+                    <DialogDescription className="text-xs leading-5">
+                      基于当前活动模板，一次性追加多个相似活动，并自动给活动与广告组名称/ID 添加递增编号后缀。
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="overflow-y-auto px-5 py-4">
+                    <div className="grid gap-3 sm:grid-cols-2">
+                  <Labeled label="活动名称前缀" hint="留空则沿用当前活动名">
+                    <Input
+                      value={duplicateDialog.campaignNamePrefix}
+                      onChange={(e) => setDuplicateDialog((prev) => ({ ...prev, campaignNamePrefix: e.target.value }))}
+                      placeholder="如：RES-SP-AUTO"
+                    />
+                  </Labeled>
+                  <Labeled label="活动 ID 前缀" hint="留空则沿用当前 Campaign ID">
+                    <Input
+                      value={duplicateDialog.campaignIdPrefix}
+                      onChange={(e) => setDuplicateDialog((prev) => ({ ...prev, campaignIdPrefix: e.target.value }))}
+                      placeholder="如：RES-SP-AUTO"
+                    />
+                  </Labeled>
+                  <Labeled label="广告组名称前缀" hint="留空则沿用首个广告组名">
+                    <Input
+                      value={duplicateDialog.adGroupNamePrefix}
+                      onChange={(e) => setDuplicateDialog((prev) => ({ ...prev, adGroupNamePrefix: e.target.value }))}
+                      placeholder="如：RES-SP-AUTO-AG"
+                    />
+                  </Labeled>
+                  <Labeled label="广告组 ID 前缀" hint="留空则沿用首个广告组 ID">
+                    <Input
+                      value={duplicateDialog.adGroupIdPrefix}
+                      onChange={(e) => setDuplicateDialog((prev) => ({ ...prev, adGroupIdPrefix: e.target.value }))}
+                      placeholder="如：RES-SP-AUTO-AG"
+                    />
+                  </Labeled>
+                  <Labeled label="复制数量" required hint="至少 1 个">
+                    <Input
+                      type="number"
+                      min={1}
+                      value={duplicateDialog.count}
+                      onChange={(e) =>
+                        setDuplicateDialog((prev) => ({ ...prev, count: Number(e.target.value || 0) }))
+                      }
+                    />
+                  </Labeled>
+                  <Labeled label="起始编号" required hint="如 1">
+                    <Input
+                      type="number"
+                      min={0}
+                      value={duplicateDialog.startNumber}
+                      onChange={(e) =>
+                        setDuplicateDialog((prev) => ({ ...prev, startNumber: Number(e.target.value || 0) }))
+                      }
+                    />
+                  </Labeled>
+                  <Labeled label="编号位数" required hint="如 3 => 001">
+                    <Input
+                      type="number"
+                      min={1}
+                      max={6}
+                      value={duplicateDialog.digits}
+                      onChange={(e) =>
+                        setDuplicateDialog((prev) => ({ ...prev, digits: Number(e.target.value || 0) }))
+                      }
+                    />
+                  </Labeled>
+                  <Labeled label="分隔符" hint="默认使用 -">
+                    <Input
+                      value={duplicateDialog.separator}
+                      onChange={(e) => setDuplicateDialog((prev) => ({ ...prev, separator: e.target.value }))}
+                      placeholder="-"
+                    />
+                  </Labeled>
+                    </div>
+                    <div className="mt-4 grid gap-4 rounded-xl border border-border/60 bg-muted/15 p-4 shadow-sm">
+                      <div className="font-medium text-sm">竞价规则</div>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <Labeled label="广告组默认竞价规则" hint="固定值 / 列表 / 等差">
+                          <Select value={duplicateDialog.adGroupBidMode} onValueChange={(value) => setDuplicateDialog((prev) => ({ ...prev, adGroupBidMode: value as BatchBidRuleMode }))}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {batchBidRuleModeOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </Labeled>
+                        {duplicateDialog.adGroupBidMode === "fixed" || duplicateDialog.adGroupBidMode === "step" ? (
+                          <Labeled label={duplicateDialog.adGroupBidMode === "fixed" ? "广告组默认竞价固定值" : "广告组默认竞价基准值"} hint="等差模式下，001 会在此基础上加减一步">
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={duplicateDialog.adGroupBidValue}
+                              onChange={(e) => setDuplicateDialog((prev) => ({ ...prev, adGroupBidValue: Number(e.target.value || 0) }))}
+                            />
+                          </Labeled>
+                        ) : null}
+                        {duplicateDialog.adGroupBidMode === "list" ? (
+                          <Labeled label="广告组默认竞价列表" hint="如 1,0.9,0.8">
+                            <Input
+                              value={duplicateDialog.adGroupBidList}
+                              onChange={(e) => setDuplicateDialog((prev) => ({ ...prev, adGroupBidList: e.target.value }))}
+                              placeholder="1,0.9,0.8"
+                            />
+                          </Labeled>
+                        ) : null}
+                        {duplicateDialog.adGroupBidMode === "step" ? (
+                          <Labeled label="广告组默认竞价步长" hint="可填负数，如每个 -0.05">
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={duplicateDialog.adGroupBidStep}
+                              onChange={(e) => setDuplicateDialog((prev) => ({ ...prev, adGroupBidStep: Number(e.target.value || 0) }))}
+                            />
+                          </Labeled>
+                        ) : null}
+                      </div>
+                      {duplicateSourceCampaign?.mode === "auto" ? (
+                        <div className="grid gap-3">
+                          <div className="text-xs text-muted-foreground">自动广告支持 4 种匹配分别独立控价，规则会应用到复制出来的每个活动。</div>
+                          <div className="grid gap-3 md:grid-cols-2">
+                            {activeDuplicateAutoExpressions.map((expression) => {
+                              const config = duplicateDialog.autoBidRules[expression];
+                              return (
+                                <div key={expression} className="grid gap-3 rounded-lg border border-border/60 bg-background/80 p-3">
+                                  <div className="font-medium text-sm">{autoTargetingTypeLabels[expression]}</div>
+                                  <Labeled label="竞价规则">
+                                    <Select value={config.mode} onValueChange={(value) => updateAutoBidRule(expression, { mode: value as BatchBidRuleMode })}>
+                                      <SelectTrigger><SelectValue /></SelectTrigger>
+                                      <SelectContent>
+                                        {batchBidRuleModeOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                                      </SelectContent>
+                                    </Select>
+                                  </Labeled>
+                                  {config.mode === "fixed" || config.mode === "step" ? (
+                                    <Labeled label={config.mode === "fixed" ? "固定竞价" : "竞价基准值"} hint="等差模式下，001 会在此基础上加减一步">
+                                      <Input
+                                        type="number"
+                                        step="0.01"
+                                        value={config.value}
+                                        onChange={(e) => updateAutoBidRule(expression, { value: Number(e.target.value || 0) })}
+                                      />
+                                    </Labeled>
+                                  ) : null}
+                                  {config.mode === "list" ? (
+                                    <Labeled label="竞价列表" hint="如 0.8,0.7,0.6">
+                                      <Input
+                                        value={config.listText}
+                                        onChange={(e) => updateAutoBidRule(expression, { listText: e.target.value })}
+                                        placeholder="0.8,0.7,0.6"
+                                      />
+                                    </Labeled>
+                                  ) : null}
+                                  {config.mode === "step" ? (
+                                    <Labeled label="竞价步长" hint="可填负数，如每个 -0.05">
+                                      <Input
+                                        type="number"
+                                        step="0.01"
+                                        value={config.step}
+                                        onChange={(e) => updateAutoBidRule(expression, { step: Number(e.target.value || 0) })}
+                                      />
+                                    </Labeled>
+                                  ) : null}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <Labeled
+                            label={duplicateSourceCampaign?.mode === "manual-keyword" ? "关键词竞价规则" : "商品投放竞价规则"}
+                            hint="会统一作用于该活动内的主投放项"
+                          >
+                            <Select value={duplicateDialog.primaryBidMode} onValueChange={(value) => setDuplicateDialog((prev) => ({ ...prev, primaryBidMode: value as BatchBidRuleMode }))}>
+                              <SelectTrigger><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                {batchBidRuleModeOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
+                          </Labeled>
+                          {duplicateDialog.primaryBidMode === "fixed" || duplicateDialog.primaryBidMode === "step" ? (
+                            <Labeled label={duplicateDialog.primaryBidMode === "fixed" ? "主投放固定竞价" : "主投放竞价基准值"} hint="等差模式下，001 会在此基础上加减一步">
+                              <Input
+                                type="number"
+                                step="0.01"
+                                value={duplicateDialog.primaryBidValue}
+                                onChange={(e) => setDuplicateDialog((prev) => ({ ...prev, primaryBidValue: Number(e.target.value || 0) }))}
+                              />
+                            </Labeled>
+                          ) : null}
+                          {duplicateDialog.primaryBidMode === "list" ? (
+                            <Labeled label="主投放竞价列表" hint="如 0.8,0.7,0.6">
+                              <Input
+                                value={duplicateDialog.primaryBidList}
+                                onChange={(e) => setDuplicateDialog((prev) => ({ ...prev, primaryBidList: e.target.value }))}
+                                placeholder="0.8,0.7,0.6"
+                              />
+                            </Labeled>
+                          ) : null}
+                          {duplicateDialog.primaryBidMode === "step" ? (
+                            <Labeled label="主投放竞价步长" hint="可填负数，如每个 -0.05">
+                              <Input
+                                type="number"
+                                step="0.01"
+                                value={duplicateDialog.primaryBidStep}
+                                onChange={(e) => setDuplicateDialog((prev) => ({ ...prev, primaryBidStep: Number(e.target.value || 0) }))}
+                              />
+                            </Labeled>
+                          ) : null}
+                        </div>
+                      )}
+                    </div>
+                    <div className="mt-4 rounded-lg border border-border/60 bg-muted/20 p-3 text-xs text-muted-foreground">
+                      {(() => {
+                        const source = duplicateSourceCampaign;
+                        const suffix = buildBatchSequenceSuffix(
+                          Math.max(0, Math.floor(duplicateDialog.startNumber)),
+                          Math.min(6, Math.max(1, Math.floor(duplicateDialog.digits || 1))),
+                          duplicateDialog.separator
+                        );
+                        const previewCampaignName = buildDuplicateValue(source?.campaignName || "活动", duplicateDialog.campaignNamePrefix, suffix);
+                        const previewCampaignId = buildDuplicateValue(source?.campaignId || "Campaign", duplicateDialog.campaignIdPrefix, suffix);
+                        const previewAdGroupName = buildDuplicateValue(source?.adGroups[0]?.adGroupName || "广告组", duplicateDialog.adGroupNamePrefix, suffix);
+                        const previewAdGroupId = buildDuplicateValue(source?.adGroups[0]?.adGroupId || "AG", duplicateDialog.adGroupIdPrefix, suffix);
+                        const previewCount = Math.min(Math.max(duplicateDialog.count, 0), 5);
+                        return (
+                          <div className="grid gap-1.5">
+                            <div>活动名：{previewCampaignName}</div>
+                            <div>活动 ID：{previewCampaignId}</div>
+                            <div>广告组名：{previewAdGroupName}</div>
+                            <div>广告组 ID：{previewAdGroupId}</div>
+                            {source ? (
+                              <>
+                                <div className="pt-1 font-medium text-foreground">前 {previewCount} 个活动竞价预览</div>
+                                {Array.from({ length: previewCount }, (_, index) => {
+                                  const adGroupBid = resolveBatchBidRuleValue(duplicateDialog.adGroupBidMode, index, source.adGroups[0]?.adGroupDefaultBid ?? 0.75, {
+                                    value: duplicateDialog.adGroupBidValue,
+                                    listText: duplicateDialog.adGroupBidList,
+                                    step: duplicateDialog.adGroupBidStep,
+                                  });
+                                  const primaryBid = resolveBatchBidRuleValue(duplicateDialog.primaryBidMode, index, getFirstPrimaryBid(source), {
+                                    value: duplicateDialog.primaryBidValue,
+                                    listText: duplicateDialog.primaryBidList,
+                                    step: duplicateDialog.primaryBidStep,
+                                  });
+                                  return (
+                                    <div key={index} className="grid gap-1 rounded-lg border border-border/40 bg-background/60 p-2">
+                                      <div>#{index + 1} 广告组默认竞价 {adGroupBid}</div>
+                                      {source.mode === "auto" ? (
+                                        <div>
+                                          {activeDuplicateAutoExpressions.map((expression) => {
+                                            const config = duplicateDialog.autoBidRules[expression];
+                                            const nextBid = resolveBatchBidRuleFromConfig(
+                                              config,
+                                              index,
+                                              getAutoTargetingBidByExpression(source, expression)
+                                            );
+                                            return `${autoTargetingTypeLabels[expression]} ${nextBid}`;
+                                          }).join(" | ")}
+                                        </div>
+                                      ) : (
+                                        <div>{source.mode === "manual-keyword" ? "关键词" : "商品投放"}竞价 {primaryBid}</div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </>
+                            ) : null}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                <DialogFooter className="border-t px-5 py-3">
+                  <Button variant="outline" onClick={() => setDuplicateDialog((prev) => ({ ...prev, open: false, sourceIndex: null, sourceCampaign: null }))}>
+                    取消
+                  </Button>
+                  <Button onClick={createDuplicatedCampaigns}>立即生成</Button>
+                </DialogFooter>
+                </div>
+              </DialogContent>
+            </Dialog>
           </section>
         ) : (
         <div className="grid gap-5">
           <section className="grid gap-3">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold">A. Campaign（广告活动）</h3>
-              <Badge variant="outline" className="font-mono text-[11px]">
-                Entity: Campaign
-              </Badge>
+              <SectionTitle className="min-w-0 flex-1">A. Campaign（广告活动）</SectionTitle>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="font-mono text-[11px]">
+                  Entity: Campaign
+                </Badge>
+                <Button
+                  size="sm"
+                  className="gap-2 bg-sky-600 text-white shadow-sm hover:bg-sky-700"
+                  onClick={openSpSingleDuplicateDialog}
+                >
+                  批量复制
+                </Button>
+              </div>
             </div>
-            <div className="text-xs text-muted-foreground">说明：导出时会自动填充 Operation=Create；Campaign ID 是关联键，不是 Campaign Name。</div>
+            <div className="text-xs text-muted-foreground">说明：导出时会自动填充 Operation=Create；Campaign ID 是关联键，不是 Campaign Name。点击“批量复制”后，会把当前表单作为母版带入复制弹窗。</div>
 
             <div className="grid gap-3 sm:grid-cols-2">
               <Labeled label="Campaign ID" hint="广告活动关联ID（不是名称）；同一活动下所有行保持一致" required>
@@ -4301,7 +5926,7 @@ function SpWizardUI({
 
           <section className="grid gap-3">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold">B. Bidding Adjustment（广告位加价，可选）</h3>
+              <SectionTitle className="min-w-0 flex-1" tone="indigo">B. Bidding Adjustment（广告位加价，可选）</SectionTitle>
               <Badge variant="outline" className="font-mono text-[11px]">
                 Entity: Bidding Adjustment
               </Badge>
@@ -4324,7 +5949,7 @@ function SpWizardUI({
 
           <section className="grid gap-3">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold">C. Ad Group（广告组）</h3>
+              <SectionTitle className="min-w-0 flex-1" tone="indigo">C. Ad Group（广告组）</SectionTitle>
               <Badge variant="outline" className="font-mono text-[11px]">
                 Entity: Ad Group
               </Badge>
@@ -4360,20 +5985,22 @@ function SpWizardUI({
 
           <section className="grid gap-3">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold">D. Product Ad（投放SKU）</h3>
+              <SectionTitle className="min-w-0 flex-1" tone="emerald">D. Product Ad（投放SKU）</SectionTitle>
               <Badge variant="outline" className="font-mono text-[11px]">
                 Entity: Product Ad
               </Badge>
             </div>
-            <Labeled label="SKU列表" hint="一行一个SKU" required>
-              <Textarea
-                value={w.skus.join("\n")}
-                onChange={(e) => set("skus", normalizeLines(e.target.value))}
-                className="min-h-[96px] font-mono text-[13px]"
-                placeholder="SKU-1\nSKU-2"
-              />
-            </Labeled>
-            <p className="text-xs text-muted-foreground">支持批量粘贴：可直接从Excel复制整列SKU到此输入框。</p>
+            <div className="rounded-lg border border-border/70 bg-muted/20 p-3">
+              <Labeled label="SKU列表" hint="一行一个SKU" required>
+                <Textarea
+                  value={w.skus.join("\n")}
+                  onChange={(e) => set("skus", normalizeLines(e.target.value))}
+                  className="min-h-[96px] font-mono text-[13px]"
+                  placeholder="SKU-1\nSKU-2"
+                />
+              </Labeled>
+              <p className="mt-2 text-xs text-muted-foreground">支持批量粘贴：可直接从Excel复制整列SKU到此输入框。</p>
+            </div>
           </section>
 
           <Separator />
@@ -4381,7 +6008,7 @@ function SpWizardUI({
           {mode === "manual-keyword" && (
             <section className="grid gap-3">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold">E. Keyword（投放关键词）</h3>
+                <SectionTitle className="min-w-0 flex-1" tone="emerald">E. Keyword（投放关键词）</SectionTitle>
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="font-mono text-[11px]">
                     Entity: Keyword
@@ -4403,7 +6030,27 @@ function SpWizardUI({
               <div className="overflow-auto rounded-lg border border-border/70">
                 <div className="border-b border-border/70 bg-muted/30 p-3">
                   <div className="text-xs text-muted-foreground">
-                    批量导入格式：`关键词` 或 `关键词,匹配方式,bid,state`（也支持Tab分隔；匹配方式支持 broad/phrase/exact 或 广泛/词组/精准）。
+                    批量导入格式：`关键词` 或 `关键词,匹配方式,bid,state`（也支持Tab分隔；匹配方式支持 broad/phrase/exact 或 广泛/词组/精准）。未填写匹配方式时，会按下方已选匹配批量展开。
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <span className="text-xs text-muted-foreground">默认匹配：</span>
+                    {([
+                      ["exact", "精准"],
+                      ["phrase", "词组"],
+                      ["broad", "广泛"],
+                    ] as const).map(([value, label]) => {
+                      const active = spKeywordDefaultMatchTypes.includes(value);
+                      return (
+                        <Button
+                          key={value}
+                          size="sm"
+                          variant={active ? "default" : "outline"}
+                          onClick={() => toggleSpKeywordDefaultMatchType(value)}
+                        >
+                          {label}
+                        </Button>
+                      );
+                    })}
                   </div>
                   <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
                     <Textarea
@@ -4414,6 +6061,21 @@ function SpWizardUI({
                     />
                     <Button className="h-fit bg-sky-600 text-white hover:bg-sky-700 sm:self-end" onClick={importKeywordsFromBulkInput}>
                       批量导入关键词
+                    </Button>
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <Button size="sm" variant="outline" onClick={() => applySingleKeywordBidToAll(w.adGroupDefaultBid || 0.75)}>
+                      全部Bid=默认出价
+                    </Button>
+                    <Input
+                      type="number"
+                      className="h-8 w-[140px]"
+                      placeholder="自定义Bid"
+                      value={singleKeywordBulkBidInput}
+                      onChange={(e) => setSingleKeywordBulkBidInput(e.target.value)}
+                    />
+                    <Button size="sm" variant="outline" onClick={applySingleCustomKeywordBid}>
+                      应用自定义Bid
                     </Button>
                   </div>
                 </div>
@@ -4525,7 +6187,7 @@ function SpWizardUI({
           {(mode === "auto" || mode === "manual-product-targeting") && (
             <section className="grid gap-3">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold">E. Product Targeting（{mode === "auto" ? "自动投放类型" : "商品定位"}）</h3>
+                <SectionTitle className="min-w-0 flex-1" tone="indigo">E. Product Targeting（{mode === "auto" ? "自动投放类型" : "商品定位"}）</SectionTitle>
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="font-mono text-[11px]">
                     Entity: Product Targeting
@@ -4535,7 +6197,19 @@ function SpWizardUI({
                     size="sm"
                     className="gap-2"
                     onClick={() =>
-                      set("productTargetings", [...w.productTargetings, { expression: 'asin="B0XXXXXXXX"', bid: 0.75, state: "enabled" }])
+                      set(
+                        "productTargetings",
+                        mode === "auto"
+                          ? appendPreferredAutoTargetingRow(
+                              w.productTargetings.map((row) => ({
+                                expression: row.expression,
+                                bid: row.bid ?? (w.adGroupDefaultBid || 0.75),
+                                state: row.state,
+                              })),
+                              w.adGroupDefaultBid || 0.75
+                            )
+                          : [...w.productTargetings, { expression: 'asin-expanded="B0XXXXXXXX"', bid: 0.75, state: "enabled" }]
+                      )
                     }
                   >
                     <Plus className="h-4 w-4" />
@@ -4544,84 +6218,206 @@ function SpWizardUI({
                 </div>
               </div>
 
+              {mode === "manual-product-targeting" ? (
+                <div className="rounded-lg border border-border/70 bg-muted/20 p-3">
+                  <div className="text-xs text-muted-foreground">
+                    当前支持两种业务化输入：`单件商品` 和 `品类`。导入时会自动转换成 bulk 所需的 `Product Targeting Expression`。
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <span className="text-xs text-muted-foreground">输入方式：</span>
+                    {([
+                      ["asin", "单件商品"],
+                      ["category", "品类"],
+                    ] as const).map(([value, label]) => {
+                      const active = spProductTargetingInputMode === value;
+                      return (
+                        <Button
+                          key={value}
+                          size="sm"
+                          variant={active ? "default" : "outline"}
+                          onClick={() => setSpProductTargetingInputMode(value)}
+                        >
+                          {label}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                  {spProductTargetingInputMode === "asin" ? (
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <span className="text-xs text-muted-foreground">匹配范围：</span>
+                      {([
+                        ["exact", "精准"],
+                        ["expanded", "已扩展"],
+                      ] as const).map(([value, label]) => {
+                        const active = spProductTargetingExpandModes.includes(value);
+                        return (
+                          <Button
+                            key={value}
+                            size="sm"
+                            variant={active ? "default" : "outline"}
+                            onClick={() => toggleSpProductTargetingExpandMode(value)}
+                          >
+                            {label}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  ) : null}
+                  <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
+                    <Textarea
+                      value={productTargetingBulkInput}
+                      onChange={(e) => setProductTargetingBulkInput(e.target.value)}
+                      className="min-h-[84px] font-mono text-[12px]"
+                      placeholder={spProductTargetingInputMode === "asin" ? "B0XXXXXXXX\nB0YYYYYYYY,0.75,enabled" : "123456789\n987654321,0.45,enabled"}
+                    />
+                    <Button className="h-fit bg-sky-600 text-white hover:bg-sky-700 sm:self-end" onClick={importProductTargetingsFromBulkInput}>
+                      {spProductTargetingInputMode === "asin" ? "导入商品定位" : "导入品类定位"}
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
+
+              <div className="flex flex-wrap items-center gap-2">
+                <Button size="sm" variant="outline" onClick={() => applySingleProductTargetingBidToAll(w.adGroupDefaultBid || 0.75)}>
+                  全部Bid=默认出价
+                </Button>
+                <Input
+                  type="number"
+                  className="h-8 w-[140px]"
+                  placeholder="自定义Bid"
+                  value={singleProductTargetingBulkBidInput}
+                  onChange={(e) => setSingleProductTargetingBulkBidInput(e.target.value)}
+                />
+                <Button size="sm" variant="outline" onClick={applySingleCustomProductTargetingBid}>
+                  应用自定义Bid
+                </Button>
+              </div>
+
               <div className="overflow-auto rounded-lg border border-border/70">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="min-w-[320px]">Product Targeting Expression</TableHead>
-                      <TableHead className="min-w-[120px]">Bid（可选）</TableHead>
+                      {mode === "auto" ? (
+                        <>
+                          <TableHead className="min-w-[240px]">Product Targeting Expression</TableHead>
+                          <TableHead className="min-w-[160px]">Target Value</TableHead>
+                          <TableHead className="min-w-[160px]">Range</TableHead>
+                          <TableHead className="min-w-[120px]">Bid *</TableHead>
+                        </>
+                      ) : (
+                        <>
+                          <TableHead className="min-w-[240px]">目标值</TableHead>
+                          <TableHead className="min-w-[160px]">范围/说明</TableHead>
+                          <TableHead className="min-w-[120px]">Bid *</TableHead>
+                        </>
+                      )}
                       <TableHead className="min-w-[160px]">State</TableHead>
                       <TableHead className="w-[1%]"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {w.productTargetings.map((t, idx) => (
-                      <TableRow key={idx}>
-                        <TableCell>
-                          <Input
-                            value={t.expression}
-                            onChange={(e) =>
-                              set(
-                                "productTargetings",
-                                w.productTargetings.map((x, i) => (i === idx ? { ...x, expression: e.target.value } : x))
-                              )
-                            }
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            type="number"
-                            value={t.bid ?? ""}
-                            onChange={(e) =>
-                              set(
-                                "productTargetings",
-                                w.productTargetings.map((x, i) =>
-                                  i === idx ? { ...x, bid: e.target.value === "" ? undefined : Number(e.target.value) } : x
-                                )
-                              )
-                            }
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Select
-                            value={t.state}
-                            onValueChange={(v) =>
-                              set(
-                                "productTargetings",
-                                w.productTargetings.map((x, i) => (i === idx ? { ...x, state: v as State } : x))
-                              )
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {stateOptions.map((o) => (
-                                <SelectItem key={o.value} value={o.value}>
-                                  {o.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() =>
-                              set(
-                                "productTargetings",
-                                w.productTargetings.filter((_, i) => i !== idx).length
-                                  ? w.productTargetings.filter((_, i) => i !== idx)
-                                  : [{ expression: "close-match", bid: 0.75, state: "enabled" }]
-                              )
-                            }
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {mode === "auto"
+                      ? w.productTargetings.map((t, idx) => (
+                          <TableRow key={idx}>
+                            <TableCell>
+                              <Input value={t.expression} onChange={(e) => set("productTargetings", w.productTargetings.map((x, i) => (i === idx ? { ...x, expression: e.target.value } : x)))} />
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm text-muted-foreground">自动投放</div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm text-muted-foreground">固定类型</div>
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                type="number"
+                                value={t.bid ?? (w.adGroupDefaultBid || 0.75)}
+                                onChange={(e) =>
+                                  set(
+                                    "productTargetings",
+                                    w.productTargetings.map((x, i) => (i === idx ? { ...x, bid: Number(e.target.value || 0) } : x))
+                                  )
+                                }
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Select value={t.state} onValueChange={(v) => set("productTargetings", w.productTargetings.map((x, i) => (i === idx ? { ...x, state: v as State } : x)))}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>{stateOptions.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
+                              </Select>
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() =>
+                                  set(
+                                    "productTargetings",
+                                    w.productTargetings.filter((_, i) => i !== idx).length
+                                      ? w.productTargetings.filter((_, i) => i !== idx)
+                                      : createDefaultAutoProductTargetings(0.75)
+                                  )
+                                }
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      : parseProductTargetingRowsForUi(toProductTargetingRowsText(w.productTargetings.map((x) => ({ expression: x.expression, bid: x.bid ?? 0.75, state: x.state }))), w.adGroupDefaultBid || 0.75).map((row, idx) => (
+                          <TableRow key={idx}>
+                            <TableCell>
+                              <Input value={row.value} placeholder={row.targetType === "category" ? "品类ID" : row.targetType === "custom" ? "原始表达式" : "ASIN"} onChange={(e) => {
+                                const list = parseProductTargetingRowsForUi(toProductTargetingRowsText(w.productTargetings.map((x) => ({ expression: x.expression, bid: x.bid ?? 0.75, state: x.state }))), w.adGroupDefaultBid || 0.75).map((x, i) => i === idx ? { ...x, value: e.target.value } : x);
+                                set("productTargetings", parseSpProductTargetingBulk(toProductTargetingUiRowsText(list), w.adGroupDefaultBid || 0.75).rows);
+                              }} />
+                            </TableCell>
+                            <TableCell>
+                              {row.targetType === "asin" ? (
+                                <Select value={row.expandMode ?? "expanded"} onValueChange={(v) => {
+                                  const list = parseProductTargetingRowsForUi(toProductTargetingRowsText(w.productTargetings.map((x) => ({ expression: x.expression, bid: x.bid ?? 0.75, state: x.state }))), w.adGroupDefaultBid || 0.75).map((x, i) => i === idx ? { ...x, expandMode: v as ProductTargetingExpandMode } : x);
+                                  set("productTargetings", parseSpProductTargetingBulk(toProductTargetingUiRowsText(list), w.adGroupDefaultBid || 0.75).rows);
+                                }}>
+                                  <SelectTrigger><SelectValue /></SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="exact">精准</SelectItem>
+                                    <SelectItem value="expanded">已扩展</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              ) : (
+                                <div className="text-sm text-muted-foreground">{row.targetType === "category" ? "品类定位" : "原始表达式"}</div>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Input type="number" value={row.bid} onChange={(e) => {
+                                const list = parseProductTargetingRowsForUi(toProductTargetingRowsText(w.productTargetings.map((x) => ({ expression: x.expression, bid: x.bid ?? 0.75, state: x.state }))), w.adGroupDefaultBid || 0.75).map((x, i) => i === idx ? { ...x, bid: Number(e.target.value || 0) } : x);
+                                set("productTargetings", parseSpProductTargetingBulk(toProductTargetingUiRowsText(list), w.adGroupDefaultBid || 0.75).rows);
+                              }} />
+                            </TableCell>
+                            <TableCell>
+                              <Select value={row.state} onValueChange={(v) => {
+                                const list = parseProductTargetingRowsForUi(toProductTargetingRowsText(w.productTargetings.map((x) => ({ expression: x.expression, bid: x.bid ?? 0.75, state: x.state }))), w.adGroupDefaultBid || 0.75).map((x, i) => i === idx ? { ...x, state: v as State } : x);
+                                set("productTargetings", parseSpProductTargetingBulk(toProductTargetingUiRowsText(list), w.adGroupDefaultBid || 0.75).rows);
+                              }}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>{stateOptions.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
+                              </Select>
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                  const list = parseProductTargetingRowsForUi(toProductTargetingRowsText(w.productTargetings.map((x) => ({ expression: x.expression, bid: x.bid ?? 0.75, state: x.state }))), w.adGroupDefaultBid || 0.75).filter((_, i) => i !== idx);
+                                  const next = list.length ? list : [{ targetType: "asin" as ProductTargetingUiType, value: "", expandMode: "expanded" as ProductTargetingExpandMode, bid: 0.75, state: "enabled" as State }];
+                                  set("productTargetings", parseSpProductTargetingBulk(toProductTargetingUiRowsText(next), w.adGroupDefaultBid || 0.75).rows);
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
                   </TableBody>
                 </Table>
               </div>
@@ -4636,7 +6432,7 @@ function SpWizardUI({
 
           <section className="grid gap-3">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold">F. Negative Keyword（否词，可选）</h3>
+              <SectionTitle className="min-w-0 flex-1" tone="amber">F. Negative Keyword（否词，可选）</SectionTitle>
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="font-mono text-[11px]">
                   Entity: Negative Keyword
@@ -4655,7 +6451,26 @@ function SpWizardUI({
 
             <div className="rounded-lg border border-border/70 bg-muted/25 p-3">
               <div className="text-xs text-muted-foreground">
-                批量导入格式：`否词` 或 `否词,匹配方式,state`（也支持Tab分隔；匹配方式支持 negativePhrase/negativeExact 或 否定词组/否定精准）。
+                批量导入格式：`否词` 或 `否词,匹配方式,state`（也支持Tab分隔；匹配方式支持 negativePhrase/negativeExact 或 否定词组/否定精准）。未填写匹配方式时，按下方已选类型导入。
+              </div>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <span className="text-xs text-muted-foreground">默认类型：</span>
+                {([
+                  ["negativeExact", "精准"],
+                  ["negativePhrase", "词组"],
+                ] as const).map(([value, label]) => {
+                  const active = spNegativeKeywordDefaultMatchType === value;
+                  return (
+                    <Button
+                      key={value}
+                      size="sm"
+                      variant={active ? "default" : "outline"}
+                      onClick={() => setSpNegativeKeywordDefaultMatchType(value)}
+                    >
+                      {label}
+                    </Button>
+                  );
+                })}
               </div>
               <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
                 <Textarea
@@ -4667,6 +6482,9 @@ function SpWizardUI({
                 <Button className="h-fit bg-sky-600 text-white hover:bg-sky-700 sm:self-end" onClick={importNegativeKeywordsFromBulkInput}>
                   批量导入否词
                 </Button>
+              </div>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <div className="text-xs text-muted-foreground">模板里有 `Match Type` 字段，否词支持 `negativeExact` 和 `negativePhrase`。</div>
               </div>
             </div>
 
@@ -4746,7 +6564,7 @@ function SpWizardUI({
 
           <section className="grid gap-3">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold">G. Negative Product Targeting（否定ASIN/类目，可选）</h3>
+              <SectionTitle className="min-w-0 flex-1" tone="amber">G. Negative Product Targeting（否定ASIN/类目，可选）</SectionTitle>
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="font-mono text-[11px]">
                   Entity: Negative Product Targeting
@@ -4850,6 +6668,296 @@ function SpWizardUI({
           </section>
         </div>
         )}
+        {mode !== "visual-batch" ? (
+          <Dialog
+            open={duplicateDialog.open}
+            onOpenChange={(open) => setDuplicateDialog((prev) => ({ ...prev, open }))}
+          >
+            <DialogContent className="max-h-[90vh] overflow-hidden p-0 sm:max-w-3xl">
+              <div className="flex max-h-[90vh] flex-col">
+                <DialogHeader className="border-b px-6 pt-6 pb-4">
+                  <DialogTitle>批量复制多个类似活动</DialogTitle>
+                  <DialogDescription>
+                    基于当前活动模板，一次性追加多个相似活动，并自动给活动与广告组名称/ID 添加递增编号后缀。
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="overflow-y-auto px-6 py-4">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Labeled label="活动名称前缀" hint="留空则沿用当前活动名">
+                      <Input
+                        value={duplicateDialog.campaignNamePrefix}
+                        onChange={(e) => setDuplicateDialog((prev) => ({ ...prev, campaignNamePrefix: e.target.value }))}
+                        placeholder="如：RES-SP-AUTO"
+                      />
+                    </Labeled>
+                    <Labeled label="活动 ID 前缀" hint="留空则沿用当前 Campaign ID">
+                      <Input
+                        value={duplicateDialog.campaignIdPrefix}
+                        onChange={(e) => setDuplicateDialog((prev) => ({ ...prev, campaignIdPrefix: e.target.value }))}
+                        placeholder="如：RES-SP-AUTO"
+                      />
+                    </Labeled>
+                    <Labeled label="广告组名称前缀" hint="留空则沿用首个广告组名">
+                      <Input
+                        value={duplicateDialog.adGroupNamePrefix}
+                        onChange={(e) => setDuplicateDialog((prev) => ({ ...prev, adGroupNamePrefix: e.target.value }))}
+                        placeholder="如：RES-SP-AUTO-AG"
+                      />
+                    </Labeled>
+                    <Labeled label="广告组 ID 前缀" hint="留空则沿用首个广告组 ID">
+                      <Input
+                        value={duplicateDialog.adGroupIdPrefix}
+                        onChange={(e) => setDuplicateDialog((prev) => ({ ...prev, adGroupIdPrefix: e.target.value }))}
+                        placeholder="如：RES-SP-AUTO-AG"
+                      />
+                    </Labeled>
+                    <Labeled label="复制数量" required hint="至少 1 个">
+                      <Input
+                        type="number"
+                        min={1}
+                        value={duplicateDialog.count}
+                        onChange={(e) =>
+                          setDuplicateDialog((prev) => ({ ...prev, count: Number(e.target.value || 0) }))
+                        }
+                      />
+                    </Labeled>
+                    <Labeled label="起始编号" required hint="如 1">
+                      <Input
+                        type="number"
+                        min={0}
+                        value={duplicateDialog.startNumber}
+                        onChange={(e) =>
+                          setDuplicateDialog((prev) => ({ ...prev, startNumber: Number(e.target.value || 0) }))
+                        }
+                      />
+                    </Labeled>
+                    <Labeled label="编号位数" required hint="如 3 => 001">
+                      <Input
+                        type="number"
+                        min={1}
+                        max={6}
+                        value={duplicateDialog.digits}
+                        onChange={(e) =>
+                          setDuplicateDialog((prev) => ({ ...prev, digits: Number(e.target.value || 0) }))
+                        }
+                      />
+                    </Labeled>
+                    <Labeled label="分隔符" hint="默认使用 -">
+                      <Input
+                        value={duplicateDialog.separator}
+                        onChange={(e) => setDuplicateDialog((prev) => ({ ...prev, separator: e.target.value }))}
+                        placeholder="-"
+                      />
+                    </Labeled>
+                  </div>
+                  <div className="mt-4 grid gap-4 rounded-lg border border-border/60 bg-muted/15 p-4">
+                    <div className="font-medium text-sm">竞价规则</div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <Labeled label="广告组默认竞价规则" hint="固定值 / 列表 / 等差">
+                        <Select value={duplicateDialog.adGroupBidMode} onValueChange={(value) => setDuplicateDialog((prev) => ({ ...prev, adGroupBidMode: value as BatchBidRuleMode }))}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {batchBidRuleModeOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </Labeled>
+                      {duplicateDialog.adGroupBidMode === "fixed" || duplicateDialog.adGroupBidMode === "step" ? (
+                        <Labeled label={duplicateDialog.adGroupBidMode === "fixed" ? "广告组默认竞价固定值" : "广告组默认竞价基准值"} hint="等差模式下，001 会在此基础上加减一步">
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={duplicateDialog.adGroupBidValue}
+                            onChange={(e) => setDuplicateDialog((prev) => ({ ...prev, adGroupBidValue: Number(e.target.value || 0) }))}
+                          />
+                        </Labeled>
+                      ) : null}
+                      {duplicateDialog.adGroupBidMode === "list" ? (
+                        <Labeled label="广告组默认竞价列表" hint="如 1,0.9,0.8">
+                          <Input
+                            value={duplicateDialog.adGroupBidList}
+                            onChange={(e) => setDuplicateDialog((prev) => ({ ...prev, adGroupBidList: e.target.value }))}
+                            placeholder="1,0.9,0.8"
+                          />
+                        </Labeled>
+                      ) : null}
+                      {duplicateDialog.adGroupBidMode === "step" ? (
+                        <Labeled label="广告组默认竞价步长" hint="可填负数，如每个 -0.05">
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={duplicateDialog.adGroupBidStep}
+                            onChange={(e) => setDuplicateDialog((prev) => ({ ...prev, adGroupBidStep: Number(e.target.value || 0) }))}
+                          />
+                        </Labeled>
+                      ) : null}
+                    </div>
+                    {duplicateSourceCampaign?.mode === "auto" ? (
+                      <div className="grid gap-3">
+                        <div className="text-xs text-muted-foreground">自动广告支持 4 种匹配分别独立控价，规则会应用到复制出来的每个活动。</div>
+                        <div className="grid gap-3 md:grid-cols-2">
+                          {activeDuplicateAutoExpressions.map((expression) => {
+                            const config = duplicateDialog.autoBidRules[expression];
+                            return (
+                              <div key={expression} className="grid gap-3 rounded-lg border border-border/60 bg-background/80 p-3">
+                                <div className="font-medium text-sm">{autoTargetingTypeLabels[expression]}</div>
+                                <Labeled label="竞价规则">
+                                  <Select value={config.mode} onValueChange={(value) => updateAutoBidRule(expression, { mode: value as BatchBidRuleMode })}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                      {batchBidRuleModeOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                                    </SelectContent>
+                                  </Select>
+                                </Labeled>
+                                {config.mode === "fixed" || config.mode === "step" ? (
+                                  <Labeled label={config.mode === "fixed" ? "固定竞价" : "竞价基准值"} hint="等差模式下，001 会在此基础上加减一步">
+                                    <Input
+                                      type="number"
+                                      step="0.01"
+                                      value={config.value}
+                                      onChange={(e) => updateAutoBidRule(expression, { value: Number(e.target.value || 0) })}
+                                    />
+                                  </Labeled>
+                                ) : null}
+                                {config.mode === "list" ? (
+                                  <Labeled label="竞价列表" hint="如 0.8,0.7,0.6">
+                                    <Input
+                                      value={config.listText}
+                                      onChange={(e) => updateAutoBidRule(expression, { listText: e.target.value })}
+                                      placeholder="0.8,0.7,0.6"
+                                    />
+                                  </Labeled>
+                                ) : null}
+                                {config.mode === "step" ? (
+                                  <Labeled label="竞价步长" hint="可填负数，如每个 -0.05">
+                                    <Input
+                                      type="number"
+                                      step="0.01"
+                                      value={config.step}
+                                      onChange={(e) => updateAutoBidRule(expression, { step: Number(e.target.value || 0) })}
+                                    />
+                                  </Labeled>
+                                ) : null}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <Labeled
+                          label={duplicateSourceCampaign?.mode === "manual-keyword" ? "关键词竞价规则" : "商品投放竞价规则"}
+                          hint="会统一作用于该活动内的主投放项"
+                        >
+                          <Select value={duplicateDialog.primaryBidMode} onValueChange={(value) => setDuplicateDialog((prev) => ({ ...prev, primaryBidMode: value as BatchBidRuleMode }))}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {batchBidRuleModeOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </Labeled>
+                        {duplicateDialog.primaryBidMode === "fixed" || duplicateDialog.primaryBidMode === "step" ? (
+                          <Labeled label={duplicateDialog.primaryBidMode === "fixed" ? "主投放固定竞价" : "主投放竞价基准值"} hint="等差模式下，001 会在此基础上加减一步">
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={duplicateDialog.primaryBidValue}
+                              onChange={(e) => setDuplicateDialog((prev) => ({ ...prev, primaryBidValue: Number(e.target.value || 0) }))}
+                            />
+                          </Labeled>
+                        ) : null}
+                        {duplicateDialog.primaryBidMode === "list" ? (
+                          <Labeled label="主投放竞价列表" hint="如 0.8,0.7,0.6">
+                            <Input
+                              value={duplicateDialog.primaryBidList}
+                              onChange={(e) => setDuplicateDialog((prev) => ({ ...prev, primaryBidList: e.target.value }))}
+                              placeholder="0.8,0.7,0.6"
+                            />
+                          </Labeled>
+                        ) : null}
+                        {duplicateDialog.primaryBidMode === "step" ? (
+                          <Labeled label="主投放竞价步长" hint="可填负数，如每个 -0.05">
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={duplicateDialog.primaryBidStep}
+                              onChange={(e) => setDuplicateDialog((prev) => ({ ...prev, primaryBidStep: Number(e.target.value || 0) }))}
+                            />
+                          </Labeled>
+                        ) : null}
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-4 rounded-lg border border-border/60 bg-muted/20 p-3 text-xs text-muted-foreground">
+                    {(() => {
+                      const source = duplicateSourceCampaign;
+                      const suffix = buildBatchSequenceSuffix(
+                        Math.max(0, Math.floor(duplicateDialog.startNumber)),
+                        Math.min(6, Math.max(1, Math.floor(duplicateDialog.digits || 1))),
+                        duplicateDialog.separator
+                      );
+                      const previewCampaignName = buildDuplicateValue(source?.campaignName || "活动", duplicateDialog.campaignNamePrefix, suffix);
+                      const previewCampaignId = buildDuplicateValue(source?.campaignId || "Campaign", duplicateDialog.campaignIdPrefix, suffix);
+                      const previewAdGroupName = buildDuplicateValue(source?.adGroups[0]?.adGroupName || "广告组", duplicateDialog.adGroupNamePrefix, suffix);
+                      const previewAdGroupId = buildDuplicateValue(source?.adGroups[0]?.adGroupId || "AG", duplicateDialog.adGroupIdPrefix, suffix);
+                      const previewCount = Math.min(Math.max(duplicateDialog.count, 0), 5);
+                      return (
+                        <div className="grid gap-1.5">
+                          <div>活动名：{previewCampaignName}</div>
+                          <div>活动 ID：{previewCampaignId}</div>
+                          <div>广告组名：{previewAdGroupName}</div>
+                          <div>广告组 ID：{previewAdGroupId}</div>
+                          {source ? (
+                            <>
+                              <div className="pt-1 font-medium text-foreground">前 {previewCount} 个活动竞价预览</div>
+                              {Array.from({ length: previewCount }, (_, index) => {
+                                const adGroupBid = resolveBatchBidRuleValue(duplicateDialog.adGroupBidMode, index, source.adGroups[0]?.adGroupDefaultBid ?? 0.75, {
+                                  value: duplicateDialog.adGroupBidValue,
+                                  listText: duplicateDialog.adGroupBidList,
+                                  step: duplicateDialog.adGroupBidStep,
+                                });
+                                const primaryBid = resolveBatchBidRuleValue(duplicateDialog.primaryBidMode, index, getFirstPrimaryBid(source), {
+                                  value: duplicateDialog.primaryBidValue,
+                                  listText: duplicateDialog.primaryBidList,
+                                  step: duplicateDialog.primaryBidStep,
+                                });
+                                return (
+                                  <div key={index} className="grid gap-1 rounded-lg border border-border/40 bg-background/60 p-2">
+                                    <div>#{index + 1} 广告组默认竞价 {adGroupBid}</div>
+                                    {source.mode === "auto" ? (
+                                      <div>
+                                        {activeDuplicateAutoExpressions.map((expression) => {
+                                          const config = duplicateDialog.autoBidRules[expression];
+                                          const nextBid = resolveBatchBidRuleFromConfig(
+                                            config,
+                                            index,
+                                            getAutoTargetingBidByExpression(source, expression)
+                                          );
+                                          return `${autoTargetingTypeLabels[expression]} ${nextBid}`;
+                                        }).join(" | ")}
+                                      </div>
+                                    ) : (
+                                      <div>{source.mode === "manual-keyword" ? "关键词" : "商品投放"}竞价 {primaryBid}</div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </>
+                          ) : null}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+                <DialogFooter className="border-t px-6 py-4">
+                  <Button variant="outline" onClick={() => setDuplicateDialog((prev) => ({ ...prev, open: false, sourceIndex: null, sourceCampaign: null }))}>
+                    取消
+                  </Button>
+                  <Button onClick={createDuplicatedCampaigns}>立即生成</Button>
+                </DialogFooter>
+              </div>
+            </DialogContent>
+          </Dialog>
+        ) : null}
       </TabsContent>
     </Tabs>
   );
@@ -5460,14 +7568,42 @@ function Labeled({
 }) {
   return (
     <div className="grid gap-1.5">
-      <div className="flex items-center gap-2">
-        <div className={cn("text-sm font-medium", labelClassName)}>
+      <div className="grid gap-0.5">
+        <div className={cn("text-sm font-medium leading-5", labelClassName)}>
           {label}
           {required && <span className="text-destructive"> *</span>}
         </div>
-        {hint && <div className="text-xs text-muted-foreground">{hint}</div>}
+        {hint && <div className="text-xs leading-5 text-muted-foreground">{hint}</div>}
       </div>
       {children}
+    </div>
+  );
+}
+
+function SectionTitle({
+  children,
+  tone = "sky",
+  className,
+}: {
+  children: ReactNode;
+  tone?: "sky" | "indigo" | "emerald" | "amber";
+  className?: string;
+}) {
+  const toneClassName =
+    tone === "indigo"
+      ? "border-indigo-200/80 bg-indigo-50/80 text-indigo-900 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-100"
+      : tone === "emerald"
+        ? "border-emerald-200/80 bg-emerald-50/80 text-emerald-900 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-100"
+        : tone === "amber"
+          ? "border-amber-200/80 bg-amber-50/80 text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100"
+          : "border-sky-200/80 bg-sky-50/80 text-sky-900 dark:border-sky-500/30 dark:bg-sky-500/10 dark:text-sky-100";
+
+  return (
+    <div className={cn("flex items-center gap-3", className)}>
+      <h3 className={cn("inline-flex items-center rounded-lg border px-3 py-1.5 text-sm font-semibold tracking-tight shadow-sm", toneClassName)}>
+        {children}
+      </h3>
+      <div className="hidden h-px flex-1 border-t border-dashed border-border/60 sm:block" />
     </div>
   );
 }

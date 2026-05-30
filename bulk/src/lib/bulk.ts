@@ -367,11 +367,16 @@ export function validateSpWizard(w: SpCampaignWizard): string[] {
     if (!w.productTargetings.length) issues.push("商品定位模式：至少填写1条Product Targeting Expression");
     for (const [i, t] of w.productTargetings.entries()) {
       if (!t.expression.trim()) issues.push(`商品定位第${i + 1}行：Expression 不能为空`);
+      if (!(Number(t.bid) > 0)) issues.push(`商品定位第${i + 1}行：Bid 必须大于0`);
     }
   }
 
   if (w.mode === "auto") {
     if (!w.productTargetings.length) issues.push("自动广告模式：建议填写4种自动投放（close/loose/substitutes/complements）并按需暂停其余");
+    for (const [i, t] of w.productTargetings.entries()) {
+      if (!t.expression.trim()) issues.push(`自动投放第${i + 1}行：Expression 不能为空`);
+      if (!(Number(t.bid) > 0)) issues.push(`自动投放第${i + 1}行：Bid 必须大于0`);
+    }
   }
 
   for (const [i, nk] of w.negativeKeywords.entries()) {
@@ -605,7 +610,7 @@ export function buildSpRows(w: SpCampaignWizard): SpBulkRow[] {
         ...spBaseRow(w),
         Entity: "Product Targeting",
         State: t.state,
-        Bid: t.bid ?? "",
+        Bid: t.bid ?? w.adGroupDefaultBid,
         "Product Targeting Expression": t.expression,
       });
     }
