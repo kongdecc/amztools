@@ -208,6 +208,69 @@
         flex: 1;
       }
 
+      .top-ad-wrap {
+        width: min(1280px, calc(100% - 24px));
+        margin: 14px auto 0;
+      }
+
+      .top-ad-strip {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 12px 16px;
+        border: 1px solid #dbeafe;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
+        box-shadow: 0 8px 24px rgba(59, 130, 246, 0.08);
+      }
+
+      .top-ad-copy {
+        min-width: 0;
+      }
+
+      .top-ad-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #1e3a8a;
+        line-height: 1.5;
+      }
+
+      .top-ad-subtitle {
+        margin-top: 4px;
+        color: var(--shell-muted);
+        font-size: 12px;
+        line-height: 1.6;
+      }
+
+      .top-ad-links {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .top-ad-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: #ffffff;
+        border: 1px solid #bfdbfe;
+        color: #1d4ed8;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      .top-ad-link:hover {
+        background: #dbeafe;
+        border-color: #93c5fd;
+      }
+
       #root {
         min-height: calc(100vh - 3.5rem);
       }
@@ -227,6 +290,7 @@
       }
 
       body.embedded .tb-header,
+      body.embedded .top-ad-wrap,
       body.embedded .tb-mobile-overlay,
       body.embedded .tb-mobile-menu {
         display: none !important;
@@ -238,6 +302,23 @@
 
       body.embedded #root {
         min-height: 100vh;
+      }
+
+      @media (max-width: 768px) {
+        .top-ad-wrap {
+          width: min(100% - 16px, 1280px);
+          margin-top: 10px;
+        }
+
+        .top-ad-strip {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .top-ad-links {
+          width: 100%;
+          justify-content: flex-start;
+        }
       }
     </style>
   </head>
@@ -328,6 +409,20 @@
     </div>
 
     <div class="page-shell">
+      <div class="top-ad-wrap" aria-label="页眉下方广告区">
+        <div class="top-ad-strip">
+          <div class="top-ad-copy">
+            <div class="top-ad-title">工具推荐：广告批量表、营销日历、费用测算可搭配使用</div>
+            <div class="top-ad-subtitle">在新页面展示顶部推广位；嵌入 iframe 时会自动隐藏，不影响工具内嵌体验。</div>
+          </div>
+          <div class="top-ad-links">
+            <a class="top-ad-link" href="/marketing-calendar.html">营销日历</a>
+            <a class="top-ad-link" href="/amazon-eu-fba-calculator.html">FBA 计算器</a>
+            <a class="top-ad-link" href="/functionality">更多工具</a>
+          </div>
+        </div>
+      </div>
+
       <main class="tool-stage">
         <div id="root"></div>
       </main>
