@@ -208,58 +208,6 @@
         flex: 1;
       }
 
-      .top-ad-wrap {
-        width: min(100%, calc(100% - 24px));
-        margin: 0 auto;
-        padding: 0 12px;
-      }
-
-      .top-ad-strip {
-        min-height: 68px;
-        margin-top: 2px;
-        border: 5px solid #e24b12;
-        border-radius: 10px;
-        background: #efe8df;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 10px 16px;
-      }
-
-      .top-ad-inner {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 14px;
-        flex-wrap: wrap;
-        text-align: center;
-      }
-
-      .top-ad-text {
-        color: #d9480f;
-        font-size: 13px;
-        line-height: 1.7;
-      }
-
-      .top-ad-link {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        height: 28px;
-        padding: 0 12px;
-        border-radius: 8px;
-        background: #f7d8b5;
-        color: #c2410c;
-        text-decoration: none;
-        font-size: 12px;
-        font-weight: 600;
-        white-space: nowrap;
-      }
-
-      .top-ad-link:hover {
-        background: #f4c99b;
-      }
-
       #root {
         min-height: calc(100vh - 3.5rem);
       }
@@ -279,7 +227,6 @@
       }
 
       body.embedded .tb-header,
-      body.embedded .top-ad-wrap,
       body.embedded .tb-mobile-overlay,
       body.embedded .tb-mobile-menu {
         display: none !important;
@@ -293,25 +240,6 @@
         min-height: 100vh;
       }
 
-      @media (max-width: 768px) {
-        .top-ad-wrap {
-          width: min(100%, calc(100% - 12px));
-          padding: 0 6px;
-        }
-
-        .top-ad-strip {
-          min-height: 60px;
-          padding: 8px 10px;
-        }
-
-        .top-ad-inner {
-          gap: 8px;
-        }
-
-        .top-ad-text {
-          font-size: 12px;
-        }
-      }
     </style>
   </head>
   <body>
@@ -401,17 +329,6 @@
     </div>
 
     <div class="page-shell">
-      <div class="top-ad-wrap" aria-label="页眉下方广告区">
-        <div class="top-ad-strip">
-          <div class="top-ad-inner">
-            <div class="top-ad-text">
-              跨境乐趣园：亚马逊卖家讨论群日报，海量运营干货资料免费下载，欢迎查看使用。
-            </div>
-            <a class="top-ad-link" href="/marketing-calendar.html">点击跳转 ↗</a>
-          </div>
-        </div>
-      </div>
-
       <main class="tool-stage">
         <div id="root"></div>
       </main>
@@ -449,6 +366,12 @@
         mobileOverlay.addEventListener("click", () => setMobileMenuOpen(false));
       }
     </script>
+    <script>
+      window.TOP_AD_OPTIONS = {
+        hideWhenEmbedded: true,
+      };
+    </script>
+    <script type="module" src="/shared-top-ad.js"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
