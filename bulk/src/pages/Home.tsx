@@ -153,6 +153,8 @@ type SpBatchDuplicateDialogState = {
   autoBidRules: Record<AutoTargetingType, BatchBidRuleConfig>;
 };
 
+type DuplicateDialogStepField = "adGroupBidStep" | "primaryBidStep" | `autoBidRules.${AutoTargetingType}.step`;
+
 type SpBatchBuildResult = {
   rows: SpBulkRow[];
   errors: string[];
@@ -3675,6 +3677,7 @@ function SpWizardUI({
   const [spProductTargetingExpandModes, setSpProductTargetingExpandModes] = useState<Array<ProductTargetingExpandMode>>(["expanded"]);
   const [singleKeywordBulkBidInput, setSingleKeywordBulkBidInput] = useState("");
   const [singleProductTargetingBulkBidInput, setSingleProductTargetingBulkBidInput] = useState("");
+  const [duplicateDialogStepDrafts, setDuplicateDialogStepDrafts] = useState<Partial<Record<DuplicateDialogStepField, string>>>({});
   const [campaignFilter, setCampaignFilter] = useState("");
   const [openAdGroups, setOpenAdGroups] = useState<Record<string, boolean>>({ "adgroup-0-0": true });
   const importedCampaignMap = useMemo(
@@ -3743,6 +3746,7 @@ function SpWizardUI({
           autoTargetingTypeOptions.map((expression) => [expression, createBatchBidRuleConfig(getAutoTargetingBidByExpression(source, expression))])
         ) as Record<AutoTargetingType, BatchBidRuleConfig>
       : createDefaultAutoBidRules();
+    setDuplicateDialogStepDrafts({});
     setDuplicateDialog((prev) => ({
       ...prev,
       open: true,
@@ -3775,6 +3779,7 @@ function SpWizardUI({
             autoTargetingTypeOptions.map((expression) => [expression, createBatchBidRuleConfig(getAutoTargetingBidByExpression(source, expression))])
           ) as Record<AutoTargetingType, BatchBidRuleConfig>
         : createDefaultAutoBidRules();
+    setDuplicateDialogStepDrafts({});
     setDuplicateDialog((prev) => ({
       ...prev,
       open: true,
@@ -3868,6 +3873,33 @@ function SpWizardUI({
     }));
   }
 
+  function getDuplicateDialogStepInputValue(field: DuplicateDialogStepField, value: number) {
+    return duplicateDialogStepDrafts[field] ?? String(value);
+  }
+
+  function updateDuplicateDialogStepInput(
+    field: DuplicateDialogStepField,
+    rawValue: string,
+    applyValue: (value: number) => void
+  ) {
+    setDuplicateDialogStepDrafts((prev) => ({ ...prev, [field]: rawValue }));
+    if (rawValue.trim() === "") return;
+    const nextValue = Number(rawValue);
+    if (!Number.isFinite(nextValue)) return;
+    applyValue(nextValue);
+  }
+
+  function clearDuplicateDialogStepDrafts(fields?: DuplicateDialogStepField[]) {
+    setDuplicateDialogStepDrafts((prev) => {
+      if (!fields || fields.length === 0) return {};
+      const next = { ...prev };
+      fields.forEach((field) => {
+        delete next[field];
+      });
+      return next;
+    });
+  }
+
   function syncAutoBidRuleToOtherExpressions(sourceExpression: AutoTargetingType) {
     if (activeDuplicateAutoExpressions.length < 2) return;
     setDuplicateDialog((prev) => {
@@ -3882,6 +3914,9 @@ function SpWizardUI({
         autoBidRules: nextRules,
       };
     });
+    clearDuplicateDialogStepDrafts(
+      activeDuplicateAutoExpressions.map((expression) => `autoBidRules.${expression}.step` as DuplicateDialogStepField)
+    );
     toast.success(`已将${autoTargetingTypeLabels[sourceExpression]}的竞价规则同步到其他自动投放类型`);
   }
 
@@ -4118,6 +4153,7 @@ function SpWizardUI({
       setShowInlineBatchEditor(true);
       setPreviewOperationFilter("all");
     }
+    clearDuplicateDialogStepDrafts();
     setDuplicateDialog((prev) => ({ ...prev, open: false, sourceIndex: null, sourceCampaign: null }));
     toast.success(`已生成 ${insertCampaigns.length} 个按编号排序的活动`, {
       description: fromSingleWizard
@@ -5620,7 +5656,10 @@ function SpWizardUI({
             </div>
             <Dialog
               open={duplicateDialog.open}
-              onOpenChange={(open) => setDuplicateDialog((prev) => ({ ...prev, open }))}
+              onOpenChange={(open) => {
+                if (!open) clearDuplicateDialogStepDrafts();
+                setDuplicateDialog((prev) => ({ ...prev, open }));
+              }}
             >
               <DialogContent className="max-h-[88vh] overflow-hidden border border-border/70 bg-background/95 p-0 shadow-2xl sm:max-w-3xl">
                 <div className="flex max-h-[88vh] flex-col">
@@ -5734,8 +5773,13 @@ function SpWizardUI({
                             <Input
                               type="number"
                               step="0.01"
-                              value={duplicateDialog.adGroupBidStep}
-                              onChange={(e) => setDuplicateDialog((prev) => ({ ...prev, adGroupBidStep: Number(e.target.value || 0) }))}
+                              value={getDuplicateDialogStepInputValue("adGroupBidStep", duplicateDialog.adGroupBidStep)}
+                              onChange={(e) =>
+                                updateDuplicateDialogStepInput("adGroupBidStep", e.target.value, (value) =>
+                                  setDuplicateDialog((prev) => ({ ...prev, adGroupBidStep: value }))
+                                )
+                              }
+                              onBlur={() => clearDuplicateDialogStepDrafts(["adGroupBidStep"])}
                             />
                           </Labeled>
                         ) : null}
@@ -5788,8 +5832,13 @@ function SpWizardUI({
                                       <Input
                                         type="number"
                                         step="0.01"
-                                        value={config.step}
-                                        onChange={(e) => updateAutoBidRule(expression, { step: Number(e.target.value || 0) })}
+                                        value={getDuplicateDialogStepInputValue(`autoBidRules.${expression}.step`, config.step)}
+                                        onChange={(e) =>
+                                          updateDuplicateDialogStepInput(`autoBidRules.${expression}.step`, e.target.value, (value) =>
+                                            updateAutoBidRule(expression, { step: value })
+                                          )
+                                        }
+                                        onBlur={() => clearDuplicateDialogStepDrafts([`autoBidRules.${expression}.step` as DuplicateDialogStepField])}
                                       />
                                     </Labeled>
                                   ) : null}
@@ -5835,8 +5884,13 @@ function SpWizardUI({
                               <Input
                                 type="number"
                                 step="0.01"
-                                value={duplicateDialog.primaryBidStep}
-                                onChange={(e) => setDuplicateDialog((prev) => ({ ...prev, primaryBidStep: Number(e.target.value || 0) }))}
+                                value={getDuplicateDialogStepInputValue("primaryBidStep", duplicateDialog.primaryBidStep)}
+                                onChange={(e) =>
+                                  updateDuplicateDialogStepInput("primaryBidStep", e.target.value, (value) =>
+                                    setDuplicateDialog((prev) => ({ ...prev, primaryBidStep: value }))
+                                  )
+                                }
+                                onBlur={() => clearDuplicateDialogStepDrafts(["primaryBidStep"])}
                               />
                             </Labeled>
                           ) : null}
@@ -5905,7 +5959,13 @@ function SpWizardUI({
                     </div>
                   </div>
                 <DialogFooter className="border-t px-5 py-3">
-                  <Button variant="outline" onClick={() => setDuplicateDialog((prev) => ({ ...prev, open: false, sourceIndex: null, sourceCampaign: null }))}>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      clearDuplicateDialogStepDrafts();
+                      setDuplicateDialog((prev) => ({ ...prev, open: false, sourceIndex: null, sourceCampaign: null }));
+                    }}
+                  >
                     取消
                   </Button>
                   <Button onClick={createDuplicatedCampaigns}>立即生成</Button>
@@ -6733,7 +6793,10 @@ function SpWizardUI({
         {mode !== "visual-batch" ? (
           <Dialog
             open={duplicateDialog.open}
-            onOpenChange={(open) => setDuplicateDialog((prev) => ({ ...prev, open }))}
+            onOpenChange={(open) => {
+              if (!open) clearDuplicateDialogStepDrafts();
+              setDuplicateDialog((prev) => ({ ...prev, open }));
+            }}
           >
             <DialogContent className="max-h-[90vh] overflow-hidden p-0 sm:max-w-3xl">
               <div className="flex max-h-[90vh] flex-col">
@@ -6847,8 +6910,13 @@ function SpWizardUI({
                           <Input
                             type="number"
                             step="0.01"
-                            value={duplicateDialog.adGroupBidStep}
-                            onChange={(e) => setDuplicateDialog((prev) => ({ ...prev, adGroupBidStep: Number(e.target.value || 0) }))}
+                            value={getDuplicateDialogStepInputValue("adGroupBidStep", duplicateDialog.adGroupBidStep)}
+                            onChange={(e) =>
+                              updateDuplicateDialogStepInput("adGroupBidStep", e.target.value, (value) =>
+                                setDuplicateDialog((prev) => ({ ...prev, adGroupBidStep: value }))
+                              )
+                            }
+                            onBlur={() => clearDuplicateDialogStepDrafts(["adGroupBidStep"])}
                           />
                         </Labeled>
                       ) : null}
@@ -6901,8 +6969,13 @@ function SpWizardUI({
                                     <Input
                                       type="number"
                                       step="0.01"
-                                      value={config.step}
-                                      onChange={(e) => updateAutoBidRule(expression, { step: Number(e.target.value || 0) })}
+                                      value={getDuplicateDialogStepInputValue(`autoBidRules.${expression}.step`, config.step)}
+                                      onChange={(e) =>
+                                        updateDuplicateDialogStepInput(`autoBidRules.${expression}.step`, e.target.value, (value) =>
+                                          updateAutoBidRule(expression, { step: value })
+                                        )
+                                      }
+                                      onBlur={() => clearDuplicateDialogStepDrafts([`autoBidRules.${expression}.step` as DuplicateDialogStepField])}
                                     />
                                   </Labeled>
                                 ) : null}
@@ -6948,8 +7021,13 @@ function SpWizardUI({
                             <Input
                               type="number"
                               step="0.01"
-                              value={duplicateDialog.primaryBidStep}
-                              onChange={(e) => setDuplicateDialog((prev) => ({ ...prev, primaryBidStep: Number(e.target.value || 0) }))}
+                              value={getDuplicateDialogStepInputValue("primaryBidStep", duplicateDialog.primaryBidStep)}
+                              onChange={(e) =>
+                                updateDuplicateDialogStepInput("primaryBidStep", e.target.value, (value) =>
+                                  setDuplicateDialog((prev) => ({ ...prev, primaryBidStep: value }))
+                                )
+                              }
+                              onBlur={() => clearDuplicateDialogStepDrafts(["primaryBidStep"])}
                             />
                           </Labeled>
                         ) : null}
@@ -7018,7 +7096,13 @@ function SpWizardUI({
                   </div>
                 </div>
                 <DialogFooter className="border-t px-6 py-4">
-                  <Button variant="outline" onClick={() => setDuplicateDialog((prev) => ({ ...prev, open: false, sourceIndex: null, sourceCampaign: null }))}>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      clearDuplicateDialogStepDrafts();
+                      setDuplicateDialog((prev) => ({ ...prev, open: false, sourceIndex: null, sourceCampaign: null }));
+                    }}
+                  >
                     取消
                   </Button>
                   <Button onClick={createDuplicatedCampaigns}>立即生成</Button>
