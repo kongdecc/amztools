@@ -3868,6 +3868,23 @@ function SpWizardUI({
     }));
   }
 
+  function syncAutoBidRuleToOtherExpressions(sourceExpression: AutoTargetingType) {
+    if (activeDuplicateAutoExpressions.length < 2) return;
+    setDuplicateDialog((prev) => {
+      const sourceRule = prev.autoBidRules[sourceExpression];
+      const nextRules = { ...prev.autoBidRules };
+      activeDuplicateAutoExpressions.forEach((expression) => {
+        if (expression === sourceExpression) return;
+        nextRules[expression] = { ...sourceRule };
+      });
+      return {
+        ...prev,
+        autoBidRules: nextRules,
+      };
+    });
+    toast.success(`已将${autoTargetingTypeLabels[sourceExpression]}的竞价规则同步到其他自动投放类型`);
+  }
+
   function applyKeywordDefaultMatchTypes(campaignIndex: number, adGroupIndex: number, group: SpBatchAdGroupDraft) {
     const groupKey = `${campaignIndex}-${adGroupIndex}`;
     const selectedMatchTypes = getKeywordDefaultMatchTypes(groupKey);
@@ -3973,7 +3990,9 @@ function SpWizardUI({
       return;
     }
 
-    const adGroupBidIssue = validateBidRule(duplicateDialog.adGroupBidMode, count, {
+    const sequenceCount = count + 1;
+
+    const adGroupBidIssue = validateBidRule(duplicateDialog.adGroupBidMode, sequenceCount, {
       label: "广告组默认竞价",
       value: duplicateDialog.adGroupBidValue,
       listText: duplicateDialog.adGroupBidList,
@@ -3988,7 +4007,7 @@ function SpWizardUI({
     if (source.mode === "auto") {
       for (const expression of activeDuplicateAutoExpressions) {
         const config = duplicateDialog.autoBidRules[expression];
-        const issue = validateBidRule(config.mode, count, {
+        const issue = validateBidRule(config.mode, sequenceCount, {
           label: `${autoTargetingTypeLabels[expression]}竞价`,
           value: config.value,
           listText: config.listText,
@@ -4001,7 +4020,7 @@ function SpWizardUI({
         }
       }
     } else {
-      const primaryBidIssue = validateBidRule(duplicateDialog.primaryBidMode, count, {
+      const primaryBidIssue = validateBidRule(duplicateDialog.primaryBidMode, sequenceCount, {
         label: source.mode === "manual-keyword" ? "关键词竞价" : "商品投放竞价",
         value: duplicateDialog.primaryBidValue,
         listText: duplicateDialog.primaryBidList,
@@ -4014,11 +4033,31 @@ function SpWizardUI({
       }
     }
 
+    const sourceCampaign = duplicateSpBatchCampaign(
+      source,
+      buildBatchSequenceSuffix(startNumber, digits, duplicateDialog.separator),
+      0,
+      {
+        campaignNamePrefix: duplicateDialog.campaignNamePrefix,
+        campaignIdPrefix: duplicateDialog.campaignIdPrefix,
+        adGroupNamePrefix: duplicateDialog.adGroupNamePrefix,
+        adGroupIdPrefix: duplicateDialog.adGroupIdPrefix,
+        adGroupBidMode: duplicateDialog.adGroupBidMode,
+        adGroupBidValue: duplicateDialog.adGroupBidValue,
+        adGroupBidList: duplicateDialog.adGroupBidList,
+        adGroupBidStep: duplicateDialog.adGroupBidStep,
+        primaryBidMode: duplicateDialog.primaryBidMode,
+        primaryBidValue: duplicateDialog.primaryBidValue,
+        primaryBidList: duplicateDialog.primaryBidList,
+        primaryBidStep: duplicateDialog.primaryBidStep,
+        autoBidRules: duplicateDialog.autoBidRules,
+      }
+    );
     const suffixes = Array.from({ length: count }, (_, index) =>
-      buildBatchSequenceSuffix(startNumber + index, digits, duplicateDialog.separator)
+      buildBatchSequenceSuffix(startNumber + index + 1, digits, duplicateDialog.separator)
     );
     const duplicates = suffixes.map((suffix, index) =>
-      duplicateSpBatchCampaign(source, suffix, index, {
+      duplicateSpBatchCampaign(source, suffix, index + 1, {
         campaignNamePrefix: duplicateDialog.campaignNamePrefix,
         campaignIdPrefix: duplicateDialog.campaignIdPrefix,
         adGroupNamePrefix: duplicateDialog.adGroupNamePrefix,
@@ -4034,28 +4073,44 @@ function SpWizardUI({
         autoBidRules: duplicateDialog.autoBidRules,
       })
     );
-    const insertCampaigns = fromSingleWizard ? [source, ...duplicates] : duplicates;
+    const sourceIndex = duplicateDialog.sourceIndex;
+    const insertCampaigns = [sourceCampaign, ...duplicates];
     const insertStartIndex = fromSingleWizard ? 0 : batchDraft.campaigns.length;
-    const nextCampaigns = fromSingleWizard ? insertCampaigns : [...batchDraft.campaigns, ...insertCampaigns];
+    const nextCampaigns = fromSingleWizard
+      ? insertCampaigns
+      : [
+          ...batchDraft.campaigns.map((campaign, index) => (index === sourceIndex ? sourceCampaign : campaign)),
+          ...duplicates,
+        ];
 
     setBatchDraft((prev) => ({
       ...prev,
-      campaigns: fromSingleWizard ? insertCampaigns : [...prev.campaigns, ...insertCampaigns],
+      campaigns: fromSingleWizard
+        ? insertCampaigns
+        : [...prev.campaigns.map((campaign, index) => (index === sourceIndex ? sourceCampaign : campaign)), ...duplicates],
     }));
-    setOpenCampaigns({ [buildCampaignKey(insertStartIndex)]: true });
+    const selectedEntries = fromSingleWizard
+      ? Object.fromEntries(nextCampaigns.map((_, index) => [buildCampaignKey(index), true]))
+      : {
+          ...selectedCampaigns,
+          ...(sourceIndex != null ? { [buildCampaignKey(sourceIndex)]: true } : {}),
+          ...Object.fromEntries(duplicates.map((_, index) => [buildCampaignKey(insertStartIndex + index), true])),
+        };
+    const firstFocusIndex = fromSingleWizard ? 0 : sourceIndex ?? insertStartIndex;
+    setOpenCampaigns({ [buildCampaignKey(firstFocusIndex)]: true });
     setSelectedCampaigns(
-      fromSingleWizard
-        ? Object.fromEntries(nextCampaigns.map((_, index) => [buildCampaignKey(index), true]))
-        : {
-            ...selectedCampaigns,
-            ...Object.fromEntries(insertCampaigns.map((_, index) => [buildCampaignKey(insertStartIndex + index), true])),
-          }
+      selectedEntries
     );
     setOpenAdGroups(
       Object.fromEntries(
-        insertCampaigns
-          .filter((campaign) => campaign.adGroups.length > 0)
-          .map((_, index) => [buildAdGroupKey(insertStartIndex + index, 0), true])
+        (fromSingleWizard
+          ? insertCampaigns.map((campaign, index) => ({ campaign, index }))
+          : [
+              ...(sourceIndex != null ? [{ campaign: sourceCampaign, index: sourceIndex }] : []),
+              ...duplicates.map((campaign, index) => ({ campaign, index: insertStartIndex + index })),
+            ])
+          .filter(({ campaign }) => campaign.adGroups.length > 0)
+          .map(({ index }) => [buildAdGroupKey(index, 0), true])
       )
     );
     if (fromSingleWizard) {
@@ -4064,10 +4119,10 @@ function SpWizardUI({
       setPreviewOperationFilter("all");
     }
     setDuplicateDialog((prev) => ({ ...prev, open: false, sourceIndex: null, sourceCampaign: null }));
-    toast.success(`已生成 ${fromSingleWizard ? insertCampaigns.length : duplicates.length} 个类似活动`, {
+    toast.success(`已生成 ${insertCampaigns.length} 个按编号排序的活动`, {
       description: fromSingleWizard
-        ? `已在当前版块生成母版和 ${duplicates.length} 个复制活动，下面可直接继续批量编辑。`
-        : `基于“${source.campaignName || source.campaignId || "未命名活动"}”批量复制，并自动为活动与广告组名称/ID 追加编号。`,
+        ? `母版已从第 ${startNumber} 个编号开始，下面可直接继续批量编辑。`
+        : `母版也会占用第一个编号，其余复制活动继续顺延编号。`,
     });
   }
 
@@ -5605,7 +5660,7 @@ function SpWizardUI({
                       placeholder="如：RES-SP-AUTO-AG"
                     />
                   </Labeled>
-                  <Labeled label="复制数量" required hint="至少 1 个">
+                          <Labeled label="复制数量" required hint="额外复制数量（母版也会编号）">
                     <Input
                       type="number"
                       min={1}
@@ -5693,7 +5748,14 @@ function SpWizardUI({
                               const config = duplicateDialog.autoBidRules[expression];
                               return (
                                 <div key={expression} className="grid gap-3 rounded-lg border border-border/60 bg-background/80 p-3">
-                                  <div className="font-medium text-sm">{autoTargetingTypeLabels[expression]}</div>
+                                  <div className="flex items-center justify-between gap-2">
+                                    <div className="font-medium text-sm">{autoTargetingTypeLabels[expression]}</div>
+                                    {activeDuplicateAutoExpressions.length > 1 ? (
+                                      <Button size="sm" variant="ghost" onClick={() => syncAutoBidRuleToOtherExpressions(expression)}>
+                                        同步到其他类型
+                                      </Button>
+                                    ) : null}
+                                  </div>
                                   <Labeled label="竞价规则">
                                     <Select value={config.mode} onValueChange={(value) => updateAutoBidRule(expression, { mode: value as BatchBidRuleMode })}>
                                       <SelectTrigger><SelectValue /></SelectTrigger>
@@ -5750,7 +5812,7 @@ function SpWizardUI({
                             </Select>
                           </Labeled>
                           {duplicateDialog.primaryBidMode === "fixed" || duplicateDialog.primaryBidMode === "step" ? (
-                            <Labeled label={duplicateDialog.primaryBidMode === "fixed" ? "主投放固定竞价" : "主投放竞价基准值"} hint="等差模式下，001 会在此基础上加减一步">
+                            <Labeled label={duplicateDialog.primaryBidMode === "fixed" ? "主投放固定竞价" : "主投放竞价基准值"} hint="等差模式下，母版对应第 1 个编号">
                               <Input
                                 type="number"
                                 step="0.01"
@@ -5793,7 +5855,7 @@ function SpWizardUI({
                         const previewCampaignId = buildDuplicateValue(source?.campaignId || "Campaign", duplicateDialog.campaignIdPrefix, suffix);
                         const previewAdGroupName = buildDuplicateValue(source?.adGroups[0]?.adGroupName || "广告组", duplicateDialog.adGroupNamePrefix, suffix);
                         const previewAdGroupId = buildDuplicateValue(source?.adGroups[0]?.adGroupId || "AG", duplicateDialog.adGroupIdPrefix, suffix);
-                        const previewCount = Math.min(Math.max(duplicateDialog.count, 0), 5);
+                        const previewCount = Math.min(Math.max(duplicateDialog.count + 1, 0), 5);
                         return (
                           <div className="grid gap-1.5">
                             <div>活动名：{previewCampaignName}</div>
@@ -6711,7 +6773,7 @@ function SpWizardUI({
                         placeholder="如：RES-SP-AUTO-AG"
                       />
                     </Labeled>
-                    <Labeled label="复制数量" required hint="至少 1 个">
+                    <Labeled label="复制数量" required hint="额外复制数量（母版也会编号）">
                       <Input
                         type="number"
                         min={1}
@@ -6799,7 +6861,14 @@ function SpWizardUI({
                             const config = duplicateDialog.autoBidRules[expression];
                             return (
                               <div key={expression} className="grid gap-3 rounded-lg border border-border/60 bg-background/80 p-3">
-                                <div className="font-medium text-sm">{autoTargetingTypeLabels[expression]}</div>
+                                <div className="flex items-center justify-between gap-2">
+                                  <div className="font-medium text-sm">{autoTargetingTypeLabels[expression]}</div>
+                                  {activeDuplicateAutoExpressions.length > 1 ? (
+                                    <Button size="sm" variant="ghost" onClick={() => syncAutoBidRuleToOtherExpressions(expression)}>
+                                      同步到其他类型
+                                    </Button>
+                                  ) : null}
+                                </div>
                                 <Labeled label="竞价规则">
                                   <Select value={config.mode} onValueChange={(value) => updateAutoBidRule(expression, { mode: value as BatchBidRuleMode })}>
                                     <SelectTrigger><SelectValue /></SelectTrigger>
@@ -6856,7 +6925,7 @@ function SpWizardUI({
                           </Select>
                         </Labeled>
                         {duplicateDialog.primaryBidMode === "fixed" || duplicateDialog.primaryBidMode === "step" ? (
-                          <Labeled label={duplicateDialog.primaryBidMode === "fixed" ? "主投放固定竞价" : "主投放竞价基准值"} hint="等差模式下，001 会在此基础上加减一步">
+                          <Labeled label={duplicateDialog.primaryBidMode === "fixed" ? "主投放固定竞价" : "主投放竞价基准值"} hint="等差模式下，母版对应第 1 个编号">
                             <Input
                               type="number"
                               step="0.01"
@@ -6899,7 +6968,7 @@ function SpWizardUI({
                       const previewCampaignId = buildDuplicateValue(source?.campaignId || "Campaign", duplicateDialog.campaignIdPrefix, suffix);
                       const previewAdGroupName = buildDuplicateValue(source?.adGroups[0]?.adGroupName || "广告组", duplicateDialog.adGroupNamePrefix, suffix);
                       const previewAdGroupId = buildDuplicateValue(source?.adGroups[0]?.adGroupId || "AG", duplicateDialog.adGroupIdPrefix, suffix);
-                      const previewCount = Math.min(Math.max(duplicateDialog.count, 0), 5);
+                      const previewCount = Math.min(Math.max(duplicateDialog.count + 1, 0), 5);
                       return (
                         <div className="grid gap-1.5">
                           <div>活动名：{previewCampaignName}</div>
