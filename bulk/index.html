@@ -368,10 +368,13 @@
     </script>
     <script>
       window.TOP_AD_OPTIONS = {
+        insertAfterSelector: "#site-header-container",
         hideWhenEmbedded: true,
       };
+      const sharedTopAdScript = document.createElement("script");
+      sharedTopAdScript.src = "./shared-top-ad.js";
+      document.body.appendChild(sharedTopAdScript);
     </script>
-    <script type="module" src="/shared-top-ad.js"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
