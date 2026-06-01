@@ -37,6 +37,7 @@
         min-height: 100vh;
         background: linear-gradient(180deg, #f8fbff 0%, #f4f7fb 100%);
         color: var(--shell-text);
+        padding-top: 3.5rem;
         font-family:
           "IBM Plex Sans",
           -apple-system,
@@ -200,7 +201,6 @@
         min-height: 100vh;
         display: flex;
         flex-direction: column;
-        padding-top: 3.5rem;
       }
 
       .tool-stage {
@@ -233,6 +233,10 @@
       }
 
       body.embedded .page-shell {
+        min-height: 100vh;
+      }
+
+      body.embedded {
         padding-top: 0;
       }
 
