@@ -5,6 +5,27 @@ import { Plus, Search, Edit3, Trash2, Save, Ban, CheckCircle, Link as LinkIcon, 
 
 type NavItem = { id: string; label: string; href: string; order: number; isExternal?: boolean; active?: boolean }
 
+function normalizeNavList(items: NavItem[]) {
+  return items
+    .map((x, index) => ({
+      id: String(x.id || '').trim(),
+      label: String(x.label || '').trim(),
+      href: String(x.href || '').trim(),
+      order: Number.isFinite(Number(x.order)) && Number(x.order) > 0 ? Number(x.order) : index + 1,
+      isExternal: x.isExternal === true,
+      active: x.active === false ? false : true,
+    }))
+    .sort((a, b) => {
+      const byOrder = Number(a.order || 0) - Number(b.order || 0)
+      return byOrder !== 0 ? byOrder : String(a.id).localeCompare(String(b.id))
+    })
+    .map((x, index) => ({ ...x, order: index + 1 }))
+}
+
+function serializeNavList(items: NavItem[]) {
+  return JSON.stringify(normalizeNavList(items))
+}
+
 export default function AdminNavigation() {
   const [list, setList] = useState<NavItem[]>([])
   const [editingId, setEditingId] = useState<string>('')
@@ -15,6 +36,7 @@ export default function AdminNavigation() {
   const [serverSnap, setServerSnap] = useState<NavItem[]>([])
   const [draggingId, setDraggingId] = useState<string>('')
   const [dragOverId, setDragOverId] = useState<string>('')
+  const isSavingRef = useRef(false)
 
   // 拖拽开始
   const handleDragStart = (e: React.DragEvent, id: string) => {
@@ -71,11 +93,38 @@ export default function AdminNavigation() {
       const r = await fetch('/api/navigation?includeInactive=true', { cache: 'no-store' })
       const d = await r.json()
       const arr: NavItem[] = Array.isArray(d) ? d : []
-      const mapped = arr.map((x, i) => ({ ...x, order: typeof x.order === 'number' && x.order > 0 ? x.order : i + 1, active: x.active === false ? false : true, isExternal: x.isExternal === true }))
+      const mapped = normalizeNavList(arr)
       setList(mapped)
       setServerSnap(mapped.map(x => ({ ...x })))
     })()
   }, [])
+
+  async function persistNavigation(items: NavItem[], successHint: string) {
+    const payload = normalizeNavList(items)
+    setSaving(true)
+    setSavedHint('')
+    isSavingRef.current = true
+    try {
+      const r = await fetch('/api/navigation', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        credentials: 'include',
+      })
+      if (!r.ok) throw new Error('保存失败')
+      setList(payload)
+      setServerSnap(payload.map(x => ({ ...x })))
+      setSavedHint(successHint)
+      return true
+    } catch {
+      setSavedHint('保存失败')
+      return false
+    } finally {
+      isSavingRef.current = false
+      setSaving(false)
+      setTimeout(() => setSavedHint(''), 2000)
+    }
+  }
 
   const filtered = useMemo(() => {
     if (!keyword.trim()) return list
@@ -85,45 +134,19 @@ export default function AdminNavigation() {
 
   // 自动保存逻辑
   useEffect(() => {
-    if (JSON.stringify(list) === JSON.stringify(serverSnap)) return
+    if (editingId) return
+    if (isSavingRef.current) return
+    if (serializeNavList(list) === serializeNavList(serverSnap)) return
     
     const saveTimeout = setTimeout(async () => {
-      setSaving(true)
-      setSavedHint('')
-      try {
-        // 确保order值唯一且连续
-        const sorted = list.slice().sort((a, b) => a.order - b.order)
-        const payload = sorted.map((x, index) => ({
-          id: x.id, 
-          label: x.label, 
-          href: x.href, 
-          order: index + 1, 
-          isExternal: Boolean(x.isExternal), 
-          active: x.active === false ? false : true 
-        }))
-        const r = await fetch('/api/navigation', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), credentials: 'include' })
-        if (!r.ok) throw new Error('保存失败')
-        const rr = await fetch('/api/navigation?includeInactive=true', { cache: 'no-store' })
-        const d = await rr.json()
-        const mapped = (Array.isArray(d) ? d : []).map((x: any, i: number) => ({ ...x, order: typeof x.order === 'number' && x.order > 0 ? x.order : i + 1, active: x.active === false ? false : true, isExternal: x.isExternal === true }))
-        setServerSnap(mapped.map((x: any) => ({ ...x })))
-        setSavedHint('已自动保存')
-      } catch {
-        setSavedHint('保存失败')
-      } finally {
-        setSaving(false)
-        setTimeout(() => setSavedHint(''), 2000)
-      }
+      await persistNavigation(list, '已自动保存')
     }, 500) // 500ms防抖
 
     return () => clearTimeout(saveTimeout)
-  }, [list, serverSnap])
+  }, [editingId, list, serverSnap])
 
   const isDirty = useMemo(() => {
-    const norm = (arr: NavItem[]) => arr.map(x => ({ id: x.id, label: x.label, href: x.href, order: Number(x.order || 0), isExternal: Boolean(x.isExternal), active: x.active === false ? false : true })).sort((a, b) => a.id.localeCompare(b.id))
-    const a = JSON.stringify(norm(serverSnap))
-    const b = JSON.stringify(norm(list))
-    return a !== b
+    return serializeNavList(serverSnap) !== serializeNavList(list)
   }, [list, serverSnap])
 
   return (
@@ -147,34 +170,8 @@ export default function AdminNavigation() {
               setEditingId(id)
             }} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm flex items-center gap-1 transition-colors shadow-sm font-medium"><Plus size={16} /> 新建菜单</button>
             <button onClick={async () => {
-              setSaving(true)
-              setSavedHint('')
-              try {
-                // 确保order值唯一且连续
-                const sorted = list.slice().sort((a, b) => a.order - b.order)
-                const payload = sorted.map((x, index) => ({
-                  id: x.id, 
-                  label: x.label, 
-                  href: x.href, 
-                  order: index + 1, 
-                  isExternal: Boolean(x.isExternal), 
-                  active: x.active === false ? false : true 
-                }))
-                const r = await fetch('/api/navigation', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), credentials: 'include' })
-                if (!r.ok) throw new Error('保存失败')
-                const rr = await fetch('/api/navigation?includeInactive=true', { cache: 'no-store' })
-                const d = await rr.json()
-                const mapped = (Array.isArray(d) ? d : []).map((x: any, i: number) => ({ ...x, order: typeof x.order === 'number' && x.order > 0 ? x.order : i + 1, active: x.active === false ? false : true, isExternal: x.isExternal === true }))
-                setList(mapped)
-                setServerSnap(mapped.map((x: any) => ({ ...x })))
-                setSelected({})
-                setSavedHint('已保存全部')
-              } catch {
-                setSavedHint('保存失败')
-              } finally {
-                setSaving(false)
-                setTimeout(() => setSavedHint(''), 2000)
-              }
+              const ok = await persistNavigation(list, '已保存全部')
+              if (ok) setSelected({})
             }} className={`bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm flex items-center gap-1 transition-colors shadow-sm font-medium ${saving ? 'opacity-70 cursor-not-allowed' : ''}`}><Save size={16} /> 保存全部{savedHint ? `（${savedHint}）` : ''}</button>
           </div>
         </div>
@@ -293,9 +290,9 @@ export default function AdminNavigation() {
                               if (!r.ok) throw new Error('保存失败')
                               setEditingId('')
                               setSavedHint('已保存此项')
-                              const rr = await fetch('/api/navigation?includeInactive=true', { cache: 'no-store' })
-                              const d = await rr.json()
-                              const mapped = (Array.isArray(d) ? d : []).map((x: any, i: number) => ({ ...x, order: typeof x.order === 'number' && x.order > 0 ? x.order : i + 1, active: x.active === false ? false : true, isExternal: x.isExternal === true }))
+                              const mapped = normalizeNavList(
+                                list.map((x) => (x.id === row.id ? { ...x, ...payload } : x))
+                              )
                               setList(mapped)
                               setServerSnap(mapped.map((x: any) => ({ ...x })))
                             } catch {
