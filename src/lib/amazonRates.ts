@@ -1,4 +1,4 @@
-export const PRESET_RATES = [
+export const PRESET_RATES: ReadonlyArray<Record<string, string | number>> = [
   {
     "日期": "2026-06-02",
     "USD/CNY": 6.8187,
@@ -6355,4 +6355,4 @@ export const PRESET_RATES = [
     "CNY/MXN": 2.6505,
     "CNY/THB": 4.5544
   }
-] as const
+]
