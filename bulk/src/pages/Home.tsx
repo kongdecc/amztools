@@ -118,6 +118,12 @@ type SpBatchDraft = {
 
 type PositiveKeywordMatchType = Exclude<SpMatchType, "negativeExact" | "negativePhrase">;
 type NegativeKeywordMatchType = Extract<SpMatchType, "negativeExact" | "negativePhrase">;
+type SpKeywordUiRow = {
+  text: string;
+  matchType: PositiveKeywordMatchType;
+  bid: number;
+  state: State;
+};
 type BatchBidRuleMode = "keep" | "fixed" | "list" | "step";
 type AutoTargetingType = "close-match" | "loose-match" | "substitutes" | "complements";
 type ProductTargetingExpandMode = "exact" | "expanded";
@@ -331,6 +337,67 @@ function Trash2({ className }: { className?: string }) {
   );
 }
 
+function Crosshair({ className }: { className?: string }) {
+  return (
+    <IconBase className={className}>
+      <circle cx="12" cy="12" r="6" />
+      <path d="M12 2v3" />
+      <path d="M12 19v3" />
+      <path d="M2 12h3" />
+      <path d="M19 12h3" />
+    </IconBase>
+  );
+}
+
+function SplitTree({ className }: { className?: string }) {
+  return (
+    <IconBase className={className}>
+      <path d="M12 4v6" />
+      <path d="M6 20v-4" />
+      <path d="M18 20v-4" />
+      <path d="M12 10v3" />
+      <path d="M12 13H6v3" />
+      <path d="M12 13h6v3" />
+      <circle cx="12" cy="4" r="1.5" />
+      <circle cx="6" cy="20" r="1.5" />
+      <circle cx="18" cy="20" r="1.5" />
+    </IconBase>
+  );
+}
+
+function KeywordGenerationButton({
+  icon,
+  label,
+  hint,
+  className,
+  onClick,
+  disabled,
+}: {
+  icon: ReactNode;
+  label: string;
+  hint: string;
+  className?: string;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <Button
+      size="sm"
+      className={cn("h-auto min-h-[46px] justify-start px-3 py-2 text-left whitespace-normal", className)}
+      onClick={onClick}
+      disabled={disabled}
+    >
+      <span className="flex items-start gap-2">
+        <span className="mt-0.5 shrink-0">{icon}</span>
+        <span className="block">
+          <span className="block text-sm font-semibold leading-none">{label}</span>
+          <span className="mt-1 block text-[10px] leading-tight opacity-90">{hint}</span>
+        </span>
+      </span>
+    </Button>
+  );
+}
+
 function todayYYYYMMDD() {
   const d = new Date();
   const y = d.getFullYear();
@@ -539,7 +606,7 @@ function toAutoTargetingText(rows: Array<{ expression: string; bid: number; stat
 function parseKeywordRowsForUi(
   text: string,
   fallbackBid: number
-): Array<{ text: string; matchType: Exclude<SpMatchType, "negativeExact" | "negativePhrase">; bid: number; state: State }> {
+): SpKeywordUiRow[] {
   const lines = text.split(/\r?\n/);
   const rows = lines
     .map((line) => {
@@ -554,12 +621,12 @@ function parseKeywordRowsForUi(
         state: parseState(parts[3]) ?? "enabled",
       };
     })
-    .filter((x): x is { text: string; matchType: Exclude<SpMatchType, "negativeExact" | "negativePhrase">; bid: number; state: State } => !!x);
+    .filter((x): x is SpKeywordUiRow => !!x);
   if (rows.length) return rows;
   return [{ text: "", matchType: "exact", bid: fallbackBid, state: "enabled" }];
 }
 
-function toKeywordRowsText(rows: Array<{ text: string; matchType: PositiveKeywordMatchType; bid: number; state: State }>) {
+function toKeywordRowsText(rows: SpKeywordUiRow[]) {
   return rows.map((x) => `${x.text},${x.matchType},${x.bid},${x.state}`).join("\n");
 }
 
@@ -1914,6 +1981,112 @@ function buildBatchCampaignFromSpWizard(w: SpCampaignWizard): SpBatchCampaignDra
   };
 }
 
+function sanitizeSkagSegment(value: string, maxLength = 32) {
+  return value
+    .trim()
+    .replace(/[\s/\\,:*?"<>|#]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, maxLength);
+}
+
+function buildKeywordSplitAdGroupValue(base: string, keywordText: string, index: number, fallbackPrefix: string) {
+  const prefix = base.trim() || fallbackPrefix;
+  const suffixParts = [String(index + 1).padStart(3, "0")];
+  const keywordSegment = sanitizeSkagSegment(keywordText);
+  if (keywordSegment) suffixParts.push(keywordSegment);
+  return `${prefix}-${suffixParts.join("-")}`;
+}
+
+function buildSingleKeywordEntityValue(
+  base: string,
+  row: SpKeywordUiRow,
+  index: number,
+  fallbackPrefix: string
+) {
+  const prefix = base.trim() || fallbackPrefix;
+  const suffixParts = [String(index + 1).padStart(3, "0")];
+  const keywordSegment = sanitizeSkagSegment(row.text);
+  const matchSegment = sanitizeSkagSegment(row.matchType, 16);
+  if (keywordSegment) suffixParts.push(keywordSegment);
+  if (matchSegment) suffixParts.push(matchSegment);
+  return `${prefix}-${suffixParts.join("-")}`;
+}
+
+function groupKeywordRowsByText(rows: SpKeywordUiRow[]) {
+  const groups: Array<{ text: string; rows: SpKeywordUiRow[] }> = [];
+  const lookup = new Map<string, { text: string; rows: SpKeywordUiRow[] }>();
+
+  rows.forEach((row) => {
+    const keywordText = row.text.trim();
+    if (!keywordText) return;
+    const key = keywordText.toLowerCase();
+    let group = lookup.get(key);
+    if (!group) {
+      group = { text: keywordText, rows: [] };
+      lookup.set(key, group);
+      groups.push(group);
+    }
+    group.rows.push({ ...row, text: keywordText });
+  });
+
+  return groups;
+}
+
+function buildKeywordSplitAdGroupsFromDraft(adGroup: SpBatchAdGroupDraft) {
+  const keywordGroups = groupKeywordRowsByText(parseKeywordRowsForUi(adGroup.keywordsText, adGroup.adGroupDefaultBid || 0.75));
+  return keywordGroups.map((keywordGroup, index) => ({
+    ...adGroup,
+    adGroupId: buildKeywordSplitAdGroupValue(adGroup.adGroupId, keywordGroup.text, index, "AG"),
+    adGroupName: buildKeywordSplitAdGroupValue(adGroup.adGroupName, keywordGroup.text, index, "AG"),
+    keywordsText: toKeywordRowsText(keywordGroup.rows),
+  }));
+}
+
+function buildKeywordSplitBatchDraftFromSpWizard(w: SpCampaignWizard): SpBatchDraft {
+  const sourceCampaign = buildBatchCampaignFromSpWizard(w);
+  const baseAdGroup = sourceCampaign.adGroups[0] ?? createInitialSpBatchAdGroup("manual-keyword");
+  return {
+    campaigns: [
+      {
+        ...sourceCampaign,
+        adGroups: buildKeywordSplitAdGroupsFromDraft(baseAdGroup),
+      },
+    ],
+  };
+}
+
+function buildSingleKeywordCampaignsFromDraft(campaign: SpBatchCampaignDraft, adGroup: SpBatchAdGroupDraft) {
+  const keywordRows = parseKeywordRowsForUi(adGroup.keywordsText, adGroup.adGroupDefaultBid || 0.75).filter((row) => row.text.trim());
+  return keywordRows.map((row, index) => {
+    const nextCampaignId = buildSingleKeywordEntityValue(campaign.campaignId, row, index, "SP");
+    const nextCampaignName = buildSingleKeywordEntityValue(campaign.campaignName, row, index, "SP");
+    const nextAdGroupId = buildSingleKeywordEntityValue(adGroup.adGroupId, row, index, "AG");
+    const nextAdGroupName = buildSingleKeywordEntityValue(adGroup.adGroupName, row, index, "AG");
+    return {
+      ...campaign,
+      campaignId: nextCampaignId,
+      campaignName: nextCampaignName,
+      adGroups: [
+        {
+          ...adGroup,
+          adGroupId: nextAdGroupId,
+          adGroupName: nextAdGroupName,
+          keywordsText: toKeywordRowsText([row]),
+        },
+      ],
+    };
+  });
+}
+
+function buildSingleKeywordCampaignBatchDraftFromSpWizard(w: SpCampaignWizard): SpBatchDraft {
+  const sourceCampaign = buildBatchCampaignFromSpWizard(w);
+  const baseAdGroup = sourceCampaign.adGroups[0] ?? createInitialSpBatchAdGroup("manual-keyword");
+  return {
+    campaigns: buildSingleKeywordCampaignsFromDraft(sourceCampaign, baseAdGroup),
+  };
+}
+
 function createInitialSpBatchDraft(): SpBatchDraft {
   return {
     campaigns: [createInitialSpBatchCampaign()],
@@ -3145,6 +3318,8 @@ export default function Home() {
                   <li>先导入文件或直接新建活动，再在左侧编辑活动、广告组、SKU、关键词、否词和否定 ASIN。</li>
                   <li>`多种类型批量创建`：适合在同一批里混合建立手动关键词、自动广告和商品定位活动；每个活动都能单独展开编辑。</li>
                   <li>`手动关键词 / 自动广告 / 商品定位` 单独模块：适合先把一个母版活动写好，再点 `批量复制`，原地生成多个类似活动并继续在当前模块里编辑，不需要切换到别的模块。</li>
+                  <li>`手动关键词` 里新增了两个快捷动作：`一键生成SKAG` 会生成 `1活动 + 1广告组 + 1关键词`；`一键按词拆成多广告组` 会生成 `单活动 + 多广告组`。</li>
+                  <li>`多种类型批量创建` 的手动关键词活动里，也可以直接使用 `拆成SKAG` 和 `按词拆成多广告组`，生成后会默认折叠，方便继续批量检查。</li>
                   <li>历史更新场景下，可勾选只导出部分活动，右侧预览会同步只显示已勾选内容，并标出新增行、更新行和具体变化单元格。</li>
                   <li>导出前先看右侧“预览与校验”，优先确认没有阻断导出的报错；数据很多时可切到“专注预览”或使用顶部横向滚动条快速检查大表字段。</li>
                 </ul>
@@ -3164,6 +3339,8 @@ export default function Home() {
                   <li>`双栏`：左边录入，右边核对，适合日常使用。</li>
                   <li>`专注编辑`：适合长时间填表、批量改 Bid、复制活动、编辑多层活动结构。</li>
                   <li>`专注预览`：适合导出前专门检查字段顺序、Create / Update、差异高亮和最终行数。</li>
+                  <li>凡是通过 `批量复制`、`一键生成SKAG`、`一键按词拆成多广告组`、`拆成SKAG`、`按词拆成多广告组` 生成出来的记录，进入批量区后默认都会折叠。</li>
+                  <li>批量区顶部支持 `删除选中` 和 `删除全部`；如果只是想看结构，可先保持折叠再按需展开局部活动。</li>
                   <li>批量区里如果表格较宽，会在当前区域内横向滚动；这属于正常表现，不会影响右侧预览。</li>
                 </ul>
               </div>
@@ -3203,7 +3380,7 @@ export default function Home() {
           className={cn(
             "grid gap-6",
             workspaceLayout === "split"
-              ? "lg:grid-cols-[minmax(0,0.98fr)_minmax(0,1.02fr)] xl:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]"
+              ? "lg:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.92fr)] xl:grid-cols-[minmax(0,1.12fr)_minmax(380px,0.88fr)]"
               : "grid-cols-1"
           )}
         >
@@ -3738,6 +3915,11 @@ function SpWizardUI({
     setOpenCampaigns({ [campaignKey]: true });
   }
 
+  function collapseBatchResults() {
+    setOpenCampaigns({});
+    setOpenAdGroups({});
+  }
+
   function openSpBatchDuplicateDialog(index: number) {
     const source = batchDraft.campaigns[index];
     const firstPrimaryBid = source ? getFirstPrimaryBid(source) : 0.75;
@@ -3811,6 +3993,18 @@ function SpWizardUI({
     setOpenAdGroups({});
     setSelectedCampaigns({});
     toast.success(`已删除 ${indexes.length} 个活动`);
+  }
+
+  function removeAllBatchCampaigns() {
+    if (!batchDraft.campaigns.length) {
+      toast.error("当前没有可删除的活动");
+      return;
+    }
+    setBatchDraft((prev) => ({ ...prev, campaigns: [] }));
+    setOpenCampaigns({});
+    setOpenAdGroups({});
+    setSelectedCampaigns({});
+    toast.success(`已删除全部 ${batchDraft.campaigns.length} 个活动`);
   }
 
   function getKeywordDefaultMatchTypes(groupKey: string) {
@@ -3938,6 +4132,74 @@ function SpWizardUI({
       ),
     }));
     toast.success(`已按${selectedMatchTypes.join(" / ")}展开纯关键词`);
+  }
+
+  function splitBatchAdGroupByKeyword(campaignIndex: number, adGroupIndex: number, group: SpBatchAdGroupDraft) {
+    const splitAdGroups = buildKeywordSplitAdGroupsFromDraft(group);
+    if (!splitAdGroups.length) {
+      toast.error("没有可拆分的广告组", { description: "请先在当前广告组中填写至少 1 个有效关键词。" });
+      return;
+    }
+
+    const filledKeywordRows = parseKeywordRowsForUi(group.keywordsText, group.adGroupDefaultBid || 0.75).filter((row) => row.text.trim()).length;
+    setBatchDraft((prev) => ({
+      ...prev,
+      campaigns: prev.campaigns.map((campaign, cIdx) =>
+        cIdx !== campaignIndex
+          ? campaign
+          : {
+              ...campaign,
+              adGroups: [
+                ...campaign.adGroups.slice(0, adGroupIndex),
+                ...splitAdGroups,
+                ...campaign.adGroups.slice(adGroupIndex + 1),
+              ],
+            }
+      ),
+    }));
+    collapseBatchResults();
+    toast.success(`已拆成 ${splitAdGroups.length} 个按词广告组`, {
+      description:
+        splitAdGroups.length < filledKeywordRows
+          ? "相同关键词的不同匹配已自动归并到同一广告组。"
+          : "当前广告组里的 SKU、否词和否定 ASIN 已同步复制到每个广告组。",
+    });
+  }
+
+  function splitBatchCampaignIntoSingleKeywordCampaigns(campaignIndex: number, campaign: SpBatchCampaignDraft) {
+    if (campaign.mode !== "manual-keyword") {
+      toast.error("当前只有手动关键词活动支持这个操作");
+      return;
+    }
+    if (campaign.adGroups.length !== 1) {
+      toast.error("请先保证当前活动只有 1 个广告组", {
+        description: "这个模式会拆成“1活动1组1词”，多广告组活动建议先在单页母版里生成，或先整理成单组。",
+      });
+      return;
+    }
+
+    const singleKeywordCampaigns = buildSingleKeywordCampaignsFromDraft(campaign, campaign.adGroups[0]);
+    if (!singleKeywordCampaigns.length) {
+      toast.error("没有可拆分的 SKAG", { description: "请先填写至少 1 个有效关键词。" });
+      return;
+    }
+
+    setBatchDraft((prev) => ({
+      ...prev,
+      campaigns: [
+        ...prev.campaigns.slice(0, campaignIndex),
+        ...singleKeywordCampaigns,
+        ...prev.campaigns.slice(campaignIndex + 1),
+      ],
+    }));
+    collapseBatchResults();
+    setSelectedCampaigns((prev) => ({
+      ...Object.fromEntries(singleKeywordCampaigns.map((_, index) => [buildCampaignKey(campaignIndex + index), true])),
+      ...prev,
+    }));
+    toast.success(`已拆成 ${singleKeywordCampaigns.length} 个 SKAG`, {
+      description: "每个新活动都只有 1 个活动、1 个广告组和 1 条关键词。",
+    });
   }
 
   function applyProductTargetingExpandModes(campaignIndex: number, adGroupIndex: number, group: SpBatchAdGroupDraft) {
@@ -4131,22 +4393,9 @@ function SpWizardUI({
           ...(sourceIndex != null ? { [buildCampaignKey(sourceIndex)]: true } : {}),
           ...Object.fromEntries(duplicates.map((_, index) => [buildCampaignKey(insertStartIndex + index), true])),
         };
-    const firstFocusIndex = fromSingleWizard ? 0 : sourceIndex ?? insertStartIndex;
-    setOpenCampaigns({ [buildCampaignKey(firstFocusIndex)]: true });
+    collapseBatchResults();
     setSelectedCampaigns(
       selectedEntries
-    );
-    setOpenAdGroups(
-      Object.fromEntries(
-        (fromSingleWizard
-          ? insertCampaigns.map((campaign, index) => ({ campaign, index }))
-          : [
-              ...(sourceIndex != null ? [{ campaign: sourceCampaign, index: sourceIndex }] : []),
-              ...duplicates.map((campaign, index) => ({ campaign, index: insertStartIndex + index })),
-            ])
-          .filter(({ campaign }) => campaign.adGroups.length > 0)
-          .map(({ index }) => [buildAdGroupKey(index, 0), true])
-      )
     );
     if (fromSingleWizard) {
       setImportedContext(null);
@@ -4227,6 +4476,48 @@ function SpWizardUI({
       return;
     }
     applySingleKeywordBidToAll(bid);
+  }
+
+  function generateKeywordSplitBatch() {
+    const splitDraft = buildKeywordSplitBatchDraftFromSpWizard(w);
+    const adGroupCount = splitDraft.campaigns[0]?.adGroups.length ?? 0;
+    if (!adGroupCount) {
+      toast.error("没有可生成的广告组拆分结果", { description: "请先至少填写 1 个有效关键词。" });
+      return;
+    }
+
+    const filledKeywordRows = w.keywords.filter((row) => row.text.trim()).length;
+    setBatchDraft(() => splitDraft);
+    setImportedContext(null);
+    setShowInlineBatchEditor(true);
+    setPreviewOperationFilter("all");
+    collapseBatchResults();
+    setSelectedCampaigns({ [buildCampaignKey(0)]: true });
+    toast.success(`已生成 ${adGroupCount} 个按词拆分广告组`, {
+      description:
+        adGroupCount < filledKeywordRows
+          ? "相同关键词的不同匹配已自动归并到同一广告组，已切换到批量编辑视图。"
+          : "已切换到批量编辑视图，你可以继续微调广告组名称、SKU、否词和出价。",
+    });
+  }
+
+  function generateSingleKeywordCampaignBatch() {
+    const singleKeywordDraft = buildSingleKeywordCampaignBatchDraftFromSpWizard(w);
+    const campaignCount = singleKeywordDraft.campaigns.length;
+    if (!campaignCount) {
+      toast.error("没有可生成的 SKAG", { description: "请先至少填写 1 个有效关键词。" });
+      return;
+    }
+
+    setBatchDraft(() => singleKeywordDraft);
+    setImportedContext(null);
+    setShowInlineBatchEditor(true);
+    setPreviewOperationFilter("all");
+    collapseBatchResults();
+    setSelectedCampaigns(Object.fromEntries(singleKeywordDraft.campaigns.map((_, index) => [buildCampaignKey(index), true])));
+    toast.success(`已生成 ${campaignCount} 个 SKAG`, {
+      description: "每个活动都只保留 1 个广告组和 1 条关键词，SKU、否词和否定 ASIN 已同步复制。",
+    });
   }
 
   function toggleSpKeywordDefaultMatchType(matchType: PositiveKeywordMatchType) {
@@ -4441,7 +4732,16 @@ function SpWizardUI({
                     onClick={() => removeCampaignsByIndexes(selectedCampaignIndexes)}
                     disabled={selectedCampaignIndexes.length === 0}
                   >
-                    删除已选
+                    删除选中
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="bg-red-700 text-white hover:bg-red-800"
+                    onClick={removeAllBatchCampaigns}
+                    disabled={batchDraft.campaigns.length === 0}
+                  >
+                    删除全部
                   </Button>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border/60 bg-background/80 p-2 shadow-sm">
@@ -4596,7 +4896,7 @@ function SpWizardUI({
                           </div>
                         ) : null}
                       </div>
-                      <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex flex-wrap items-center justify-end gap-2">
                         <CollapsibleTrigger asChild>
                           <Button variant="outline" size="sm" className="gap-2">
                             <ChevronRight className={cn("h-4 w-4 transition-transform", campaignOpen && "rotate-90")} />
@@ -4894,7 +5194,29 @@ function SpWizardUI({
 
                           {c.mode === "manual-keyword" && (
                             <div className="grid min-w-0 gap-3">
-                              <SectionTitle tone="emerald">E. Keyword（投放关键词）</SectionTitle>
+                              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                                <SectionTitle tone="emerald" className="min-w-0 flex-1">E. Keyword（投放关键词）</SectionTitle>
+                                <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
+                                  <Badge variant="outline" className="font-mono text-[11px]">
+                                    Entity: Keyword
+                                  </Badge>
+                                  <KeywordGenerationButton
+                                    icon={<Crosshair className="h-4 w-4" />}
+                                    label="拆成SKAG"
+                                    hint="整活动：1活动1组1词"
+                                    className="bg-emerald-600 text-white shadow-sm hover:bg-emerald-700"
+                                    onClick={() => splitBatchCampaignIntoSingleKeywordCampaigns(cIdx, c)}
+                                  />
+                                  <KeywordGenerationButton
+                                    icon={<SplitTree className="h-4 w-4" />}
+                                    label="按词拆成多广告组"
+                                    hint="当前组：单活动多组"
+                                    className="bg-violet-600 text-white shadow-sm hover:bg-violet-700"
+                                    onClick={() => splitBatchAdGroupByKeyword(cIdx, gIdx, g)}
+                                    disabled={!parseKeywordRowsForUi(g.keywordsText, g.adGroupDefaultBid || 0.75).some((row) => row.text.trim())}
+                                  />
+                                </div>
+                              </div>
                               <div className={cn("text-sm font-medium", getDiffLabelClassName(adGroupKeywordsChanged))}>关键词列表 *</div>
                               <div className={cn("rounded-lg border border-border/70 bg-muted/20 p-3", getDiffFieldClassName(adGroupKeywordsChanged))}>
                                 <div className="text-xs text-muted-foreground">
@@ -6129,12 +6451,28 @@ function SpWizardUI({
 
           {mode === "manual-keyword" && (
             <section className="grid gap-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <SectionTitle className="min-w-0 flex-1" tone="emerald">E. Keyword（投放关键词）</SectionTitle>
-                <div className="flex items-center gap-2">
+                <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
                   <Badge variant="outline" className="font-mono text-[11px]">
                     Entity: Keyword
                   </Badge>
+                  <KeywordGenerationButton
+                    icon={<Crosshair className="h-4 w-4" />}
+                    label="一键生成SKAG"
+                    hint="1活动1组1词"
+                    className="bg-emerald-600 text-white shadow-sm hover:bg-emerald-700"
+                    onClick={generateSingleKeywordCampaignBatch}
+                    disabled={!w.keywords.some((row) => row.text.trim())}
+                  />
+                  <KeywordGenerationButton
+                    icon={<SplitTree className="h-4 w-4" />}
+                    label="一键按词拆成多广告组"
+                    hint="单活动多组"
+                    className="bg-violet-600 text-white shadow-sm hover:bg-violet-700"
+                    onClick={generateKeywordSplitBatch}
+                    disabled={!w.keywords.some((row) => row.text.trim())}
+                  />
                   <Button
                     variant="outline"
                     size="sm"

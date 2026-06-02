@@ -27,13 +27,30 @@ function isFunctionalityNavItem(item: any) {
   return id === 'functionality' || label.includes('功能分类') || href === '/functionality'
 }
 
+function isRewardNavItem(item: any) {
+  const id = String(item?.id || '').trim().toLowerCase()
+  const label = String(item?.label || '').trim()
+  const href = String(item?.href || '').trim().toLowerCase()
+  return (
+    id === 'reward' ||
+    href === '/reward' ||
+    label.includes('打赏') ||
+    label.includes('支持打赏') ||
+    label.includes('赞赏')
+  )
+}
+
 export function ensureNavItems(items: any[]) {
   const list = Array.isArray(items) ? items.filter(Boolean) : []
   const byId: Record<string, any> = {}
 
   for (const item of list) {
     const raw = item as any
-    const id = isFunctionalityNavItem(raw) ? 'functionality' : String(raw?.id || '').trim()
+    const id = isFunctionalityNavItem(raw)
+      ? 'functionality'
+      : isRewardNavItem(raw)
+        ? 'reward'
+        : String(raw?.id || '').trim()
     if (id) byId[id] = item
   }
 
@@ -51,6 +68,11 @@ export function ensureNavItems(items: any[]) {
       merged.href = undefined
       merged.isExternal = false
       merged.active = true
+    } else if (def.id === 'reward') {
+      merged.label = def.label
+      merged.href = def.href
+      merged.isExternal = false
+      merged.active = existing.active === false ? false : true
     } else {
       const href = typeof existing.href === 'string' ? existing.href : ''
       if (!href || href === '/adout' || (!Boolean(existing.isExternal) && !href.startsWith('/'))) {
