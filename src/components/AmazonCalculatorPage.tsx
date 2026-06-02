@@ -524,7 +524,7 @@ const AmazonCalculatorPage = () => {
                 上传自定义汇率表 (可选)
               </label>
               <div className="text-xs text-gray-500 mb-1">
-                 默认使用内置数据：从2025年6月25日-2026年1月16日
+                 默认使用内置数据：从2025年6月25日-2026年6月2日
               </div>
               <div className="relative">
                 <Input
