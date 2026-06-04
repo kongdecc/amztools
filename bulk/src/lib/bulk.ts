@@ -228,6 +228,12 @@ export type SpCampaignWizard = {
   placementTopPct?: number;
   placementRestPct?: number;
   placementProductPagePct?: number;
+  placementAmazonBusinessPct?: number;
+
+  audienceId?: string;
+  shopperCohortPercentage?: number;
+  shopperCohortType?: string;
+  sites?: string[];
 
   adGroupId: string;
   adGroupName: string;
@@ -390,6 +396,7 @@ export function validateSpWizard(w: SpCampaignWizard): string[] {
     ["placementTop", w.placementTopPct],
     ["placementRestOfSearch", w.placementRestPct],
     ["placementProductPage", w.placementProductPagePct],
+    ["placementAmazonBusiness", w.placementAmazonBusinessPct],
   ];
   for (const [name, pct] of pctFields) {
     if (pct == null) continue;
@@ -488,6 +495,7 @@ export function warnSpWizard(w: SpCampaignWizard, opts?: { minBidSp?: number; ke
     ["placementTop", w.placementTopPct],
     ["placementRestOfSearch", w.placementRestPct],
     ["placementProductPage", w.placementProductPagePct],
+    ["placementAmazonBusiness", w.placementAmazonBusinessPct],
   ];
   for (const [name, pct] of pctFields) {
     if (pct == null) continue;
@@ -543,6 +551,10 @@ function spBaseRow(w: SpCampaignWizard): SpBulkRow {
     State: w.state,
     "Daily Budget": w.dailyBudget,
     "Bidding Strategy": w.biddingStrategy,
+    "Audience ID": w.audienceId || "",
+    "Shopper Cohort Percentage": w.shopperCohortPercentage,
+    "Shopper Cohort Type": w.shopperCohortType || "",
+    Sites: w.sites?.filter(Boolean).join("|") || "",
   };
 }
 
@@ -561,6 +573,7 @@ export function buildSpRows(w: SpCampaignWizard): SpBulkRow[] {
     ["placementTop", w.placementTopPct],
     ["placementRestOfSearch", w.placementRestPct],
     ["placementProductPage", w.placementProductPagePct],
+    ["placementAmazonBusiness", w.placementAmazonBusinessPct],
   ];
   for (const [placement, pct] of placements) {
     if (pct == null) continue;

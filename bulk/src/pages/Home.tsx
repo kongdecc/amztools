@@ -109,6 +109,11 @@ type SpBatchCampaignDraft = {
   placementTopPct?: number;
   placementRestPct?: number;
   placementProductPagePct?: number;
+  placementAmazonBusinessPct?: number;
+  audienceId: string;
+  shopperCohortPercentage?: number;
+  shopperCohortType: string;
+  sites: string[];
   adGroups: SpBatchAdGroupDraft[];
 };
 
@@ -213,6 +218,10 @@ const previewHeaderLabels: Record<string, string> = {
   "Bidding Strategy": "竞价策略",
   Placement: "广告位",
   Percentage: "加价比例",
+  "Audience ID": "受众ID",
+  "Shopper Cohort Percentage": "受众比例",
+  "Shopper Cohort Type": "受众类型",
+  Sites: "站点限制",
   "Ad Group Default Bid": "广告组默认竞价",
   SKU: "SKU",
   Bid: "竞价",
@@ -235,6 +244,10 @@ const previewHeaderOrder = [
   "Bidding Strategy",
   "Placement",
   "Percentage",
+  "Audience ID",
+  "Shopper Cohort Percentage",
+  "Shopper Cohort Type",
+  "Sites",
   "Ad Group Name",
   "Ad Group Default Bid",
   "Bid",
@@ -708,6 +721,22 @@ function toNegativeKeywordRowsText(rows: Array<{ text: string; matchType: Extrac
   return rows.map((x) => `${x.text},${x.matchType},${x.state}`).join("\n");
 }
 
+function mergeNegativeKeywordRowsText(
+  baseText: string,
+  incomingRows: Array<{ text: string; matchType: Extract<SpMatchType, "negativeExact" | "negativePhrase">; state: State }>
+) {
+  const merged = new Map<string, { text: string; matchType: Extract<SpMatchType, "negativeExact" | "negativePhrase">; state: State }>();
+  for (const row of parseNegativeKeywordRowsForUi(baseText)) {
+    if (!row.text.trim()) continue;
+    merged.set(`${row.text.trim().toLowerCase()}::${row.matchType}`, row);
+  }
+  for (const row of incomingRows) {
+    if (!row.text.trim()) continue;
+    merged.set(`${row.text.trim().toLowerCase()}::${row.matchType}`, row);
+  }
+  return toNegativeKeywordRowsText(Array.from(merged.values()));
+}
+
 function parseNegativeProductTargetingRowsForUi(text: string): Array<{ expression: string; state: State }> {
   const rows = text
     .split(/\r?\n/)
@@ -925,6 +954,14 @@ const spImportHeaderAliases: Record<string, string> = {
   "producttargetingexpression": "Product Targeting Expression",
   "拓展商品投放名称": "Product Targeting Expression",
   "拓展商品投放名称仅供参考": "Product Targeting Expression",
+  audienceid: "Audience ID",
+  "受众id": "Audience ID",
+  shoppercohortpercentage: "Shopper Cohort Percentage",
+  "受众比例": "Shopper Cohort Percentage",
+  shoppercohorttype: "Shopper Cohort Type",
+  "受众类型": "Shopper Cohort Type",
+  sites: "Sites",
+  "站点限制": "Sites",
 };
 
 function normalizeImportLabel(value: unknown) {
@@ -932,6 +969,13 @@ function normalizeImportLabel(value: unknown) {
     .trim()
     .replace(/\s+/g, "")
     .replace(/[()（）]/g, "");
+}
+
+function parseSitesCell(value: string) {
+  return value
+    .split(/[|,;，；]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 function hasOwnState(record: Record<string, boolean>, key: string) {
@@ -1182,10 +1226,18 @@ function parseImportedPlacement(value: string) {
   if (!normalized) return null;
   if (normalized.includes("首页首位")) return "placementTop";
   if (normalized.includes("商品页面")) return "placementProductPage";
-  if (normalized.includes("其余位置") || normalized.includes("亚马逊企业购") || normalized === "placementRestOfSearch") {
+  if (normalized.includes("亚马逊企业购") || normalized === "placementAmazonBusiness") {
+    return "placementAmazonBusiness";
+  }
+  if (normalized.includes("其余位置") || normalized === "placementRestOfSearch") {
     return "placementRestOfSearch";
   }
-  if (normalized === "placementTop" || normalized === "placementProductPage" || normalized === "placementRestOfSearch") {
+  if (
+    normalized === "placementTop" ||
+    normalized === "placementProductPage" ||
+    normalized === "placementRestOfSearch" ||
+    normalized === "placementAmazonBusiness"
+  ) {
     return normalized;
   }
   return null;
@@ -1447,6 +1499,11 @@ function getCampaignDiffState(
     placementTopPct: current.placementTopPct ?? null,
     placementRestPct: current.placementRestPct ?? null,
     placementProductPagePct: current.placementProductPagePct ?? null,
+    placementAmazonBusinessPct: current.placementAmazonBusinessPct ?? null,
+    audienceId: current.audienceId.trim(),
+    shopperCohortPercentage: current.shopperCohortPercentage ?? null,
+    shopperCohortType: current.shopperCohortType.trim(),
+    sites: current.sites,
   });
   const baselineComparable = JSON.stringify({
     mode: baseline.mode,
@@ -1461,6 +1518,11 @@ function getCampaignDiffState(
     placementTopPct: baseline.placementTopPct ?? null,
     placementRestPct: baseline.placementRestPct ?? null,
     placementProductPagePct: baseline.placementProductPagePct ?? null,
+    placementAmazonBusinessPct: baseline.placementAmazonBusinessPct ?? null,
+    audienceId: baseline.audienceId.trim(),
+    shopperCohortPercentage: baseline.shopperCohortPercentage ?? null,
+    shopperCohortType: baseline.shopperCohortType.trim(),
+    sites: baseline.sites,
   });
   return currentComparable === baselineComparable ? null : "modified";
 }
@@ -1488,6 +1550,11 @@ function getCampaignDiffFields(
   compare("首页顶部加价", current.placementTopPct ?? null, baseline.placementTopPct ?? null);
   compare("其余位置加价", current.placementRestPct ?? null, baseline.placementRestPct ?? null);
   compare("商品页加价", current.placementProductPagePct ?? null, baseline.placementProductPagePct ?? null);
+  compare("亚马逊企业购加价", current.placementAmazonBusinessPct ?? null, baseline.placementAmazonBusinessPct ?? null);
+  compare("受众ID", current.audienceId.trim(), baseline.audienceId.trim());
+  compare("受众比例", current.shopperCohortPercentage ?? null, baseline.shopperCohortPercentage ?? null);
+  compare("受众类型", current.shopperCohortType.trim(), baseline.shopperCohortType.trim());
+  compare("站点限制", current.sites, baseline.sites);
 
   return changed;
 }
@@ -1905,6 +1972,11 @@ function createInitialSpBatchCampaign(mode: SpCampaignWizard["mode"] = "manual-k
     placementTopPct: undefined,
     placementRestPct: undefined,
     placementProductPagePct: undefined,
+    placementAmazonBusinessPct: undefined,
+    audienceId: "",
+    shopperCohortPercentage: undefined,
+    shopperCohortType: "",
+    sites: [],
     adGroups: [createInitialSpBatchAdGroup(mode)],
   };
 }
@@ -1948,6 +2020,11 @@ function buildBatchCampaignFromSpWizard(w: SpCampaignWizard): SpBatchCampaignDra
     placementTopPct: w.placementTopPct,
     placementRestPct: w.placementRestPct,
     placementProductPagePct: w.placementProductPagePct,
+    placementAmazonBusinessPct: w.placementAmazonBusinessPct,
+    audienceId: w.audienceId || "",
+    shopperCohortPercentage: w.shopperCohortPercentage,
+    shopperCohortType: w.shopperCohortType || "",
+    sites: [...(w.sites || [])],
     adGroups: [
       {
         adGroupId: w.adGroupId,
@@ -2158,6 +2235,10 @@ function buildSpBatchDraftFromImportedRows(rows: Record<string, any>[]): SpImpor
           dailyBudget: parsePositiveNumber(row["Daily Budget"], initial.dailyBudget),
           portfolioId: stringifyCell(row["Portfolio ID"]),
           biddingStrategy: parseImportedSpBiddingStrategy(stringifyCell(row["Bidding Strategy"])) ?? initial.biddingStrategy,
+          audienceId: stringifyCell(row["Audience ID"]),
+          shopperCohortPercentage: parsePositiveNumber(row["Shopper Cohort Percentage"], initial.shopperCohortPercentage ?? 0) || undefined,
+          shopperCohortType: stringifyCell(row["Shopper Cohort Type"]),
+          sites: parseSitesCell(stringifyCell(row["Sites"])),
           mode:
             stringifyCell(row["Targeting Type"]).toUpperCase() === "AUTO" || stringifyCell(row["Targeting Type"]) === "自动"
               ? "auto"
@@ -2178,6 +2259,12 @@ function buildSpBatchDraftFromImportedRows(rows: Record<string, any>[]): SpImpor
     const strategy = parseImportedSpBiddingStrategy(stringifyCell(row["Bidding Strategy"]));
     const targetingType = stringifyCell(row["Targeting Type"]).toUpperCase();
     const state = parseState(stringifyCell(row["State"]));
+    const audienceId = stringifyCell(row["Audience ID"]);
+    const shopperCohortPercentageRaw = stringifyCell(row["Shopper Cohort Percentage"]);
+    const shopperCohortPercentage =
+      shopperCohortPercentageRaw === "" ? undefined : parsePositiveNumber(row["Shopper Cohort Percentage"], node.draft.shopperCohortPercentage ?? 0);
+    const shopperCohortType = stringifyCell(row["Shopper Cohort Type"]);
+    const sites = parseSitesCell(stringifyCell(row["Sites"]));
     if (campaignName) node.draft.campaignName = campaignName;
     if (/^\d{8}$/.test(startDate)) node.draft.startDate = startDate;
     if (!endDate || /^\d{8}$/.test(endDate)) node.draft.endDate = endDate;
@@ -2185,6 +2272,10 @@ function buildSpBatchDraftFromImportedRows(rows: Record<string, any>[]): SpImpor
     if (portfolioId) node.draft.portfolioId = portfolioId;
     node.draft.dailyBudget = parsePositiveNumber(row["Daily Budget"], node.draft.dailyBudget);
     if (strategy) node.draft.biddingStrategy = strategy;
+    if (audienceId) node.draft.audienceId = audienceId;
+    if (shopperCohortPercentage != null) node.draft.shopperCohortPercentage = shopperCohortPercentage;
+    if (shopperCohortType) node.draft.shopperCohortType = shopperCohortType;
+    if (sites.length) node.draft.sites = sites;
     if (targetingType === "AUTO" || stringifyCell(row["Targeting Type"]) === "自动") node.draft.mode = "auto";
     return node;
   }
@@ -2243,6 +2334,7 @@ function buildSpBatchDraftFromImportedRows(rows: Record<string, any>[]): SpImpor
       if (placement === "placementTop") campaignNode.draft.placementTopPct = percentage;
       if (placement === "placementRestOfSearch") campaignNode.draft.placementRestPct = percentage;
       if (placement === "placementProductPage") campaignNode.draft.placementProductPagePct = percentage;
+      if (placement === "placementAmazonBusiness") campaignNode.draft.placementAmazonBusinessPct = percentage;
       continue;
     }
 
@@ -2423,12 +2515,17 @@ function buildSpRowsFromBatchDraft(draft: SpBatchDraft): SpBatchBuildResult {
       State: c.state,
       "Daily Budget": c.dailyBudget,
       "Bidding Strategy": c.biddingStrategy,
+      "Audience ID": c.audienceId || "",
+      "Shopper Cohort Percentage": c.shopperCohortPercentage,
+      "Shopper Cohort Type": c.shopperCohortType || "",
+      Sites: c.sites.filter(Boolean).join("|"),
     });
 
     const placements: Array<{ placement: string; pct?: number }> = [
       { placement: "placementTop", pct: c.placementTopPct },
       { placement: "placementRestOfSearch", pct: c.placementRestPct },
       { placement: "placementProductPage", pct: c.placementProductPagePct },
+      { placement: "placementAmazonBusiness", pct: c.placementAmazonBusinessPct },
     ];
     for (const p of placements) {
       if (p.pct == null) continue;
@@ -2736,6 +2833,11 @@ function createInitialSp(): SpCampaignWizard {
     placementTopPct: undefined,
     placementRestPct: undefined,
     placementProductPagePct: undefined,
+    placementAmazonBusinessPct: undefined,
+    audienceId: "",
+    shopperCohortPercentage: undefined,
+    shopperCohortType: "",
+    sites: [],
     adGroupId: "",
     adGroupName: "",
     adGroupState: "enabled",
@@ -3320,6 +3422,8 @@ export default function Home() {
                   <li>`手动关键词 / 自动广告 / 商品定位` 单独模块：适合先把一个母版活动写好，再点 `批量复制`，原地生成多个类似活动并继续在当前模块里编辑，不需要切换到别的模块。</li>
                   <li>`手动关键词` 里新增了两个快捷动作：`一键生成SKAG` 会生成 `1活动 + 1广告组 + 1关键词`；`一键按词拆成多广告组` 会生成 `单活动 + 多广告组`。</li>
                   <li>`多种类型批量创建` 的手动关键词活动里，也可以直接使用 `拆成SKAG` 和 `按词拆成多广告组`，生成后会默认折叠，方便继续批量检查。</li>
+                  <li>SP 活动现在补齐了模板字段：`placementAmazonBusiness`、`Audience ID`、`Shopper Cohort Percentage`、`Shopper Cohort Type`；导出时会按原始 bulk 模板列写入。</li>
+                  <li>如果你做 `单词单活动 / SKAG`，先在否词区或批量结果顶部粘贴一套否词库，再用 `否词库到选中 / 全部`，即可把同一套否词一键铺到整批结果。</li>
                   <li>历史更新场景下，可勾选只导出部分活动，右侧预览会同步只显示已勾选内容，并标出新增行、更新行和具体变化单元格。</li>
                   <li>导出前先看右侧“预览与校验”，优先确认没有阻断导出的报错；数据很多时可切到“专注预览”或使用顶部横向滚动条快速检查大表字段。</li>
                 </ul>
@@ -3341,6 +3445,7 @@ export default function Home() {
                   <li>`专注预览`：适合导出前专门检查字段顺序、Create / Update、差异高亮和最终行数。</li>
                   <li>凡是通过 `批量复制`、`一键生成SKAG`、`一键按词拆成多广告组`、`拆成SKAG`、`按词拆成多广告组` 生成出来的记录，进入批量区后默认都会折叠。</li>
                   <li>批量区顶部支持 `删除选中` 和 `删除全部`；如果只是想看结构，可先保持折叠再按需展开局部活动。</li>
+                  <li>批量区顶部支持 `否词库到选中 / 全部`，适合批量生成 SKAG 后再统一补整批否词。</li>
                   <li>批量区里如果表格较宽，会在当前区域内横向滚动；这属于正常表现，不会影响右侧预览。</li>
                 </ul>
               </div>
@@ -4625,6 +4730,47 @@ function SpWizardUI({
     });
   }
 
+  function applyNegativeKeywordLibraryToBatch(scope: "selected" | "all") {
+    const { rows, invalidCount } = parseSpNegativeKeywordBulk(negativeKeywordBulkInput, spNegativeKeywordDefaultMatchType);
+    if (!rows.length) {
+      toast.error("没有可应用的否词库", { description: "请先在上方粘贴否词库内容。" });
+      return;
+    }
+    const targetIndexes =
+      scope === "selected"
+        ? batchDraft.campaigns
+            .map((_, index) => index)
+            .filter((index) => selectedCampaigns[buildCampaignKey(index)])
+        : batchDraft.campaigns.map((_, index) => index);
+    if (!targetIndexes.length) {
+      toast.error(scope === "selected" ? "请先选中活动" : "当前没有可应用的活动");
+      return;
+    }
+
+    let affectedCampaigns = 0;
+    let affectedAdGroups = 0;
+    setBatchDraft((prev) => ({
+      ...prev,
+      campaigns: prev.campaigns.map((campaign, index) => {
+        if (!targetIndexes.includes(index) || campaign.mode !== "manual-keyword") return campaign;
+        affectedCampaigns += 1;
+        return {
+          ...campaign,
+          adGroups: campaign.adGroups.map((adGroup) => {
+            affectedAdGroups += 1;
+            return {
+              ...adGroup,
+              negativeKeywordsText: mergeNegativeKeywordRowsText(adGroup.negativeKeywordsText, rows),
+            };
+          }),
+        };
+      }),
+    }));
+    toast.success(`已把否词库应用到 ${affectedCampaigns} 个活动 / ${affectedAdGroups} 个广告组`, {
+      description: invalidCount > 0 ? `另有 ${invalidCount} 行格式无效已跳过。` : "同词同匹配会自动去重覆盖。",
+    });
+  }
+
   return (
     <Tabs value={mode} onValueChange={(v) => handleSpModeChange(v as SpUiMode)}>
       <TabsList className="grid h-auto w-full grid-cols-2 gap-2 rounded-xl border border-border/60 bg-muted/25 p-1 md:grid-cols-4">
@@ -4776,6 +4922,26 @@ function SpWizardUI({
                     全部折叠
                   </Button>
                 </div>
+                <div className="grid gap-3 rounded-xl border border-emerald-300/60 bg-emerald-50/70 p-3 shadow-sm">
+                  <div className="text-xs font-medium text-emerald-900">批量结果快捷应用</div>
+                  <div className="grid gap-2 lg:grid-cols-[minmax(220px,1fr)_auto]">
+                    <Textarea
+                      value={negativeKeywordBulkInput}
+                      onChange={(e) => setNegativeKeywordBulkInput(e.target.value)}
+                      className="min-h-[84px] bg-white font-mono text-[12px]"
+                      placeholder={"否词库粘贴到这里，再点右侧按钮应用到批量结果\nbad keyword,negativePhrase,enabled\nanother keyword\tnegativeExact\tpaused"}
+                    />
+                    <div className="flex flex-wrap items-start gap-2 lg:flex-col lg:items-stretch">
+                      <Button variant="outline" size="sm" onClick={() => applyNegativeKeywordLibraryToBatch("selected")}>
+                        否词库到选中
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => applyNegativeKeywordLibraryToBatch("all")}>
+                        否词库到全部
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="text-[11px] text-emerald-800">这里专门用于批量生成 SKAG 后，统一补否词库。</div>
+                </div>
                 <div className="rounded-lg border border-dashed border-border/60 bg-background/70 px-3 py-2 text-xs text-muted-foreground">点击或编辑某个活动时，会自动收起其它活动；广告组也支持二级折叠。</div>
                 {importedContext ? <div className="rounded-lg border border-amber-300/60 bg-amber-50/70 px-3 py-2 text-xs text-amber-800">浅黄色输入框表示该字段相对导入原表已发生修改。</div> : null}
               </div>
@@ -4807,6 +4973,13 @@ function SpWizardUI({
                 const campaignPlacementRestChanged = campaignBaseline ? isDiffValue(c.placementRestPct ?? null, campaignBaseline.placementRestPct ?? null) : false;
                 const campaignPlacementProductPageChanged =
                   campaignBaseline ? isDiffValue(c.placementProductPagePct ?? null, campaignBaseline.placementProductPagePct ?? null) : false;
+                const campaignPlacementAmazonBusinessChanged =
+                  campaignBaseline ? isDiffValue(c.placementAmazonBusinessPct ?? null, campaignBaseline.placementAmazonBusinessPct ?? null) : false;
+                const campaignAudienceIdChanged = campaignBaseline ? isDiffValue(c.audienceId || "", campaignBaseline.audienceId || "") : false;
+                const campaignAudiencePctChanged =
+                  campaignBaseline ? isDiffValue(c.shopperCohortPercentage ?? null, campaignBaseline.shopperCohortPercentage ?? null) : false;
+                const campaignAudienceTypeChanged =
+                  campaignBaseline ? isDiffValue(c.shopperCohortType || "", campaignBaseline.shopperCohortType || "") : false;
 
                 return (
                 <Collapsible
@@ -5023,7 +5196,7 @@ function SpWizardUI({
 
                   <section className="grid min-w-0 gap-3">
                     <SectionTitle tone="indigo">B. Bidding Adjustment（广告位加价，可选）</SectionTitle>
-                    <div className="grid gap-3 sm:grid-cols-3">
+                    <div className="grid gap-3 sm:grid-cols-4">
                     <Labeled label="placementTop" hint="搜索结果顶部" labelClassName={getDiffLabelClassName(campaignPlacementTopChanged)}>
                       <Input className={getDiffFieldClassName(campaignPlacementTopChanged)} type="number" value={c.placementTopPct ?? ""} onChange={(e) => setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i === cIdx ? { ...x, placementTopPct: e.target.value === "" ? undefined : Number(e.target.value) } : x) }))} />
                     </Labeled>
@@ -5033,6 +5206,26 @@ function SpWizardUI({
                     <Labeled label="placementProductPage" hint="商品页面" labelClassName={getDiffLabelClassName(campaignPlacementProductPageChanged)}>
                       <Input className={getDiffFieldClassName(campaignPlacementProductPageChanged)} type="number" value={c.placementProductPagePct ?? ""} onChange={(e) => setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i === cIdx ? { ...x, placementProductPagePct: e.target.value === "" ? undefined : Number(e.target.value) } : x) }))} />
                     </Labeled>
+                    <Labeled label="placementAmazonBusiness" hint="亚马逊企业购" labelClassName={getDiffLabelClassName(campaignPlacementAmazonBusinessChanged)}>
+                      <Input className={getDiffFieldClassName(campaignPlacementAmazonBusinessChanged)} type="number" value={c.placementAmazonBusinessPct ?? ""} onChange={(e) => setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i === cIdx ? { ...x, placementAmazonBusinessPct: e.target.value === "" ? undefined : Number(e.target.value) } : x) }))} />
+                    </Labeled>
+                    </div>
+                  </section>
+
+                  <section className="grid min-w-0 gap-3">
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                      <SectionTitle tone="indigo" className="min-w-0 flex-1">B2. Audience（受众，可选）</SectionTitle>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      <Labeled label="Audience ID" hint="模板列存在，可按账户支持填写" labelClassName={getDiffLabelClassName(campaignAudienceIdChanged)}>
+                        <Input className={getDiffFieldClassName(campaignAudienceIdChanged)} value={c.audienceId || ""} onChange={(e) => setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i === cIdx ? { ...x, audienceId: e.target.value } : x) }))} placeholder="可不填" />
+                      </Labeled>
+                      <Labeled label="Shopper Cohort Percentage" hint="受众比例" labelClassName={getDiffLabelClassName(campaignAudiencePctChanged)}>
+                        <Input className={getDiffFieldClassName(campaignAudiencePctChanged)} type="number" value={c.shopperCohortPercentage ?? ""} onChange={(e) => setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i === cIdx ? { ...x, shopperCohortPercentage: e.target.value === "" ? undefined : Number(e.target.value) } : x) }))} placeholder="如 20" />
+                      </Labeled>
+                      <Labeled label="Shopper Cohort Type" hint="受众类型" labelClassName={getDiffLabelClassName(campaignAudienceTypeChanged)}>
+                        <Input className={getDiffFieldClassName(campaignAudienceTypeChanged)} value={c.shopperCohortType || ""} onChange={(e) => setBatchDraft((prev) => ({ ...prev, campaigns: prev.campaigns.map((x, i) => i === cIdx ? { ...x, shopperCohortType: e.target.value } : x) }))} placeholder="可不填" />
+                      </Labeled>
                     </div>
                   </section>
 
@@ -6375,7 +6568,7 @@ function SpWizardUI({
                 Entity: Bidding Adjustment
               </Badge>
             </div>
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-4">
               <Labeled label="placementTop" hint="搜索结果顶部">
                 <Input type="number" value={w.placementTopPct ?? 0} onChange={(e) => set("placementTopPct", Number(e.target.value || 0))} />
               </Labeled>
@@ -6385,8 +6578,30 @@ function SpWizardUI({
               <Labeled label="placementProductPage" hint="商品页面">
                 <Input type="number" value={w.placementProductPagePct ?? 0} onChange={(e) => set("placementProductPagePct", Number(e.target.value || 0))} />
               </Labeled>
+              <Labeled label="placementAmazonBusiness" hint="亚马逊企业购">
+                <Input type="number" value={w.placementAmazonBusinessPct ?? 0} onChange={(e) => set("placementAmazonBusinessPct", Number(e.target.value || 0))} />
+              </Labeled>
             </div>
             <p className="text-xs text-muted-foreground">范围 0-900；不想设置也可以保持0（或后续删掉该行）。</p>
+          </section>
+
+          <Separator />
+
+          <section className="grid gap-3">
+            <div className="flex items-center justify-between">
+              <SectionTitle className="min-w-0 flex-1" tone="indigo">B2. Audience（受众，可选）</SectionTitle>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Labeled label="Audience ID" hint="模板支持字段，可按账户需要填写">
+                <Input value={w.audienceId || ""} onChange={(e) => set("audienceId", e.target.value)} placeholder="可不填" />
+              </Labeled>
+              <Labeled label="Shopper Cohort Percentage" hint="受众比例">
+                <Input type="number" value={w.shopperCohortPercentage ?? ""} onChange={(e) => set("shopperCohortPercentage", e.target.value === "" ? undefined : Number(e.target.value))} placeholder="如 20" />
+              </Labeled>
+              <Labeled label="Shopper Cohort Type" hint="受众类型">
+                <Input value={w.shopperCohortType || ""} onChange={(e) => set("shopperCohortType", e.target.value)} placeholder="可不填" />
+              </Labeled>
+            </div>
           </section>
 
           <Separator />
@@ -6939,12 +7154,24 @@ function SpWizardUI({
                   className="min-h-[84px] font-mono text-[12px]"
                   placeholder={"bad keyword,negativePhrase,enabled\nanother keyword\tnegativeExact\tpaused"}
                 />
-                <Button className="h-fit bg-sky-600 text-white hover:bg-sky-700 sm:self-end" onClick={importNegativeKeywordsFromBulkInput}>
-                  批量导入否词
-                </Button>
+                <div className="flex flex-wrap items-start gap-2 sm:flex-col sm:items-stretch">
+                  <Button className="h-fit bg-sky-600 text-white hover:bg-sky-700" onClick={importNegativeKeywordsFromBulkInput}>
+                    导入到当前活动
+                  </Button>
+                  {showInlineBatchEditor ? (
+                    <>
+                      <Button variant="outline" className="h-fit" onClick={() => applyNegativeKeywordLibraryToBatch("selected")}>
+                        应用到已选批量活动
+                      </Button>
+                      <Button variant="outline" className="h-fit" onClick={() => applyNegativeKeywordLibraryToBatch("all")}>
+                        应用到全部批量活动
+                      </Button>
+                    </>
+                  ) : null}
+                </div>
               </div>
               <div className="mt-2 flex flex-wrap items-center gap-2">
-                <div className="text-xs text-muted-foreground">模板里有 `Match Type` 字段，否词支持 `negativeExact` 和 `negativePhrase`。</div>
+                <div className="text-xs text-muted-foreground">模板里有 `Match Type` 字段，否词支持 `negativeExact` 和 `negativePhrase`。批量应用按钮会在生成批量结果后显示，并自动去重。</div>
               </div>
             </div>
 
