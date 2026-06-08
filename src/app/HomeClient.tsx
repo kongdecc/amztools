@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState, useMemo, useCallback, Suspense } from 'react'
+import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { LayoutDashboard, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Search, ChevronDown, Hammer, ArrowLeftRight, Copy, Trash2, Eraser, Download, AlertCircle, CheckCircle, Filter, LayoutGrid, Maximize2, Minimize2, Image as ImageIcon, MoreHorizontal, Crosshair, Globe, Star, Activity, Users, FileText, Warehouse, Languages, Shuffle } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 import Head from 'next/head'
@@ -11,7 +11,7 @@ import { DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 import { PERSONAL_TOP_CATEGORY_KEY, PERSONAL_TOP_CATEGORY_LABEL, PERSONAL_TOP_LIMIT, getPersonalTopModules, recordPersonalToolVisit, sortModulesWithPersonalTop, subscribePersonalToolUsage } from '@/lib/personal-top-tools'
 
 import { useRef } from 'react'
-import { useSearchParams, useRouter, usePathname } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 
 const Card = ({ children, className = "", onClick, ...props }: any) => (
   <div onClick={onClick} className={`bg-white rounded-xl border border-gray-100 shadow-sm ${className}`} {...props}>{children}</div>
@@ -28,6 +28,25 @@ const OTHER_SHORTCUT_LINKS = [
 ]
 
 const TOP_CATEGORY = { key: PERSONAL_TOP_CATEGORY_KEY, label: PERSONAL_TOP_CATEGORY_LABEL, order: -1 }
+
+function readHomeViewState(search: string, hash = '') {
+  const params = new URLSearchParams(search)
+  const tab = params.get('tab') || (hash ? hash.replace('#', '') : '') || 'home'
+  const full = params.get('full') === '1' || (tab !== 'home' && !params.has('full'))
+  return { tab, full }
+}
+
+function buildHomeUrl(pathname: string, tab: string, full: boolean) {
+  const params = new URLSearchParams()
+  if (tab && tab !== 'home') {
+    params.set('tab', tab)
+  }
+  if (tab !== 'home' && full) {
+    params.set('full', '1')
+  }
+  const query = params.toString()
+  return query ? `${pathname}?${query}` : pathname
+}
 
 const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: string) => void; modules: Array<any>; categories?: Array<any> }) => {
   const { settings } = useSettings()
@@ -280,16 +299,13 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
 
 
 export default function HomeLayoutClient({ initialModules, initialNavItems, initialActiveTab, initialFull, initialCategories }: { initialModules: any[]; initialNavItems: any[]; initialActiveTab?: string; initialFull?: boolean; initialCategories?: any[] }) {
-  const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
   const [activeTab, setActiveTab] = useState<string>(() => {
     if (initialActiveTab && String(initialActiveTab).trim()) return String(initialActiveTab)
     if (typeof window !== 'undefined') {
       try {
-        const qs = new URLSearchParams(window.location.search)
-        const tab = qs.get('tab') || (window.location.hash ? window.location.hash.replace('#','') : '')
-        return tab || 'home'
+        return readHomeViewState(window.location.search, window.location.hash).tab
       } catch {}
     }
     return 'home'
@@ -298,12 +314,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
     if (typeof initialFull === 'boolean') return Boolean(initialFull)
     if (typeof window !== 'undefined') {
       try {
-        const qs = new URLSearchParams(window.location.search)
-        const fullParam = qs.get('full')
-        if (fullParam === '1') return true
-        if (fullParam === '0') return false
-        const tab = qs.get('tab') || (window.location.hash ? window.location.hash.replace('#','') : '')
-        return Boolean(tab && tab !== 'home')
+        return readHomeViewState(window.location.search, window.location.hash).full
       } catch {}
     }
     return false
@@ -322,35 +333,21 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
   }, [categories, personalTopModules.length])
 
   useEffect(() => subscribePersonalToolUsage(() => setPersonalUsageVersion((value) => value + 1)), [])
-  
-  useEffect(() => {
-    const tab = searchParams.get('tab')
-    if (tab) {
-      setActiveTab(tab)
-    } else {
-      // Only reset to home if we are on the home path and no tab is specified. 
-      // But here we are always on home page component.
-      // If user navigates to '/' without params, we should probably show home.
-      if (!window.location.hash) setActiveTab('home')
-    }
-    
-    const full = searchParams.get('full')
-    if (full === '1') setIsFull(true)
-    else if (full === '0') setIsFull(false)
-  }, [searchParams])
 
   const mainRef = useRef<HTMLDivElement>(null)
 
+  const updateHomeUrl = useCallback((tab: string, full: boolean) => {
+    if (typeof window === 'undefined') return
+    const nextUrl = buildHomeUrl(pathname || '/', tab, full)
+    window.history.replaceState(window.history.state, '', nextUrl)
+  }, [pathname])
+
   const handleNavigate = (tab: string) => {
-    if (tab === 'home') {
-      // 使用 replace 而不是 push，避免历史记录堆积导致后退困难
-      router.replace('/')
-    } else {
-      const params = new URLSearchParams(searchParams.toString())
-      params.set('tab', tab)
-      // 使用 replace 切换 tab，提高响应速度并避免页面重新加载
-      router.replace(`/?${params.toString()}`, { scroll: false })
-    }
+    const nextTab = tab || 'home'
+    const nextFull = nextTab === 'home' ? false : isFull
+    setActiveTab(nextTab)
+    setIsFull(nextFull)
+    updateHomeUrl(nextTab, nextFull)
   }
   
   const iconMap: Record<string, any> = useMemo(() => ({
@@ -406,6 +403,12 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
     setExpandedCategories(prev => ({ ...prev, [catKey]: !prev[catKey] }))
   }, [])
 
+  const handleToggleFull = useCallback(() => {
+    const nextFull = !isFull
+    setIsFull(nextFull)
+    updateHomeUrl(activeTab, nextFull)
+  }, [activeTab, isFull, updateHomeUrl])
+
   const menuItems = useMemo(() => [
     { id: 'home', label: '首页', icon: LayoutDashboard },
     ...menuCategories
@@ -433,6 +436,18 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
       setExpandedCategories(prev => ({ ...prev, [activeCat.id]: true }))
     }
   }, [activeTab])
+  useEffect(() => {
+    const syncFromLocation = () => {
+      try {
+        const { tab, full } = readHomeViewState(window.location.search, window.location.hash)
+        setActiveTab(tab)
+        setIsFull(full)
+      } catch {}
+    }
+
+    window.addEventListener('popstate', syncFromLocation)
+    return () => window.removeEventListener('popstate', syncFromLocation)
+  }, [])
           useEffect(() => {
             if (activeTab && activeTab !== 'home') {
               recordPersonalToolVisit(activeTab)
@@ -725,7 +740,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
             <div className="flex items-center justify-between mb-4 bg-white p-3 rounded-lg border border-gray-100 shadow-sm md:hidden">
                <span className="text-sm font-bold text-gray-700">功能详情</span>
                <button
-                onClick={() => setIsFull(!isFull)}
+                onClick={handleToggleFull}
                 className="flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded hover:bg-blue-100 transition-colors"
               >
                 {isFull ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
@@ -737,7 +752,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
             <div className="hidden md:flex items-center justify-end mb-4 gap-2">
                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">点击切换全屏模式</span>
                <button
-                onClick={() => setIsFull(!isFull)}
+                onClick={handleToggleFull}
                 className="group p-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 text-gray-600 transition-all hover:text-blue-600"
                 title={isFull ? "退出全屏" : "最大化页面"}
               >
