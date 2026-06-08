@@ -35,11 +35,17 @@ const NaturalTrafficTool = dynamic(() => import('@/components/NaturalTrafficTool
 const AmazonPromotionStackingCalculator = dynamic(() => import('@/components/AmazonPromotionStackingCalculator'), { loading: LoadingTool })
 const KeywordCombiner = dynamic(() => import('@/components/KeywordCombiner'), { loading: LoadingTool })
 const FBAWarehouses = dynamic(() => import('@/components/FBAWarehouses'), { loading: LoadingTool })
-const FBALabelEditor = dynamic(() => import('@/components/FBALabelEditor'), { loading: LoadingTool })
+const FBALabelEditor = dynamic(() => import('@/components/FBALabelEditor'), {
+  loading: LoadingTool,
+  ssr: false,
+})
 const ImageCompressionPage = dynamic(() => import('@/components/ImageCompressionPage'), { loading: LoadingTool })
 const ImageToPdfBatchPage = dynamic(() => import('@/components/ImageToPdfBatchPage'), { loading: LoadingTool })
 const ImageInfoViewerPage = dynamic(() => import('@/components/ImageInfoViewerPage'), { loading: LoadingTool })
-const PdfImageWatermarkRedactionPage = dynamic(() => import('@/components/PdfImageWatermarkRedactionPage'), { loading: LoadingTool })
+const PdfImageWatermarkRedactionPage = dynamic(() => import('@/components/PdfImageWatermarkRedactionPage'), {
+  loading: LoadingTool,
+  ssr: false,
+})
 const ImageBatchRenamerPage = dynamic(() => import('@/components/ImageBatchRenamerPage'), { loading: LoadingTool })
 const StorageFeeCalculatorPage = dynamic(() => import('@/components/StorageFeeCalculatorPage'), { loading: LoadingTool })
 const AmazonCalculatorPage = dynamic(() => import('@/components/AmazonCalculatorPage'), { loading: LoadingTool })
