@@ -54,6 +54,13 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
   const router = useRouter()
   const safeOrigin = (typeof window !== 'undefined' && (window as any).location) ? (window as any).location.origin : ''
   const allModules = useMemo(() => [...modules, ...OTHER_SHORTCUT_LINKS], [modules])
+  const totalToolCount = useMemo(() => (
+    new Set(
+      allModules
+        .filter((m: any) => m.status !== '下架')
+        .map((m: any) => String(m.key))
+    ).size
+  ), [allModules])
   const [personalUsageVersion, setPersonalUsageVersion] = useState(0)
   const defaultCategories = [
     { key: 'advertising', label: '广告工具', order: 1 },
@@ -211,7 +218,7 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
             onChange={(e) => setSearchKeyword(e.target.value)}
           />
           <div className="text-center mt-3 text-sm text-gray-500 font-medium flex flex-col items-center justify-center gap-2">
-            <span>已经累计上传：<span className="text-indigo-600 font-bold">{modules.filter((m: any) => m.status !== '下架').length}</span> 个工具</span>
+            <span>已经累计上传：<span className="text-indigo-600 font-bold">{totalToolCount}</span> 个工具</span>
             <div className="flex flex-wrap items-center justify-center gap-4">
               <a href="https://amzlink.top/documents" target="_blank" rel="noopener noreferrer" className="text-red-600 hover:text-red-700 flex items-center gap-1 transition-colors">
                 <span>→海量免费运营资料免费下载←</span>
