@@ -24,7 +24,8 @@ const Input = ({ className = "", ...props }: any) => (
 const OTHER_SHORTCUT_LINKS = [
   { key: 'marketing-calendar-2026', title: '2026年电商营销日历', desc: '查看全年重点营销节点、节日大促和选品运营节奏安排', status: '启用', views: 0, color: 'indigo', order: 36, category: 'other', href: '/marketing-calendar.html', isExternal: true },
   { key: 'marketing-calendar-summary-2026', title: '2026年亚马逊全球营销日历', desc: '快速查看亚马逊全球站点营销节点与活动节奏汇总', status: '启用', views: 0, color: 'blue', order: 37, category: 'other', href: '/marketing-calendar-summary.html', isExternal: true },
-  { key: 'china-industry-belts-entry', title: '中国产业带', desc: '查看中国产业带分布信息，便于选品、找供应链和货源调研', status: '启用', views: 0, color: 'orange', order: 38, category: 'other', href: '/china-industry-belts.html', isExternal: true }
+  { key: 'china-industry-belts-entry', title: '中国产业带', desc: '查看中国产业带分布信息，便于选品、找供应链和货源调研', status: '启用', views: 0, color: 'orange', order: 38, category: 'other', href: '/china-industry-belts.html', isExternal: true },
+  { key: 'cpsc-efiling-screening-tool-entry', title: 'CPSC 合规与 eFiling 筛查工具', desc: '根据品类、年龄段、材料和申报场景快速筛查 CPSC 与 eFiling 相关要求，辅助美国站合规判断', status: '启用', views: 0, color: 'red', order: 39, category: 'other', href: '/cpsc_efiling_screening_tool.html', isExternal: true }
 ]
 
 const TOP_CATEGORY = { key: PERSONAL_TOP_CATEGORY_KEY, label: PERSONAL_TOP_CATEGORY_LABEL, order: -1 }
@@ -96,6 +97,7 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
     'marketing-calendar-2026': FileText,
     'marketing-calendar-summary-2026': Globe,
     'china-industry-belts-entry': Warehouse,
+    'cpsc-efiling-screening-tool-entry': AlertCircle,
     'amazon-global': Globe,
     'rating-sales-reverse': Star,
     'max-reserve-fee': Calculator,
@@ -374,6 +376,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
     'marketing-calendar-2026': FileText,
     'marketing-calendar-summary-2026': Globe,
     'china-industry-belts-entry': Warehouse,
+    'cpsc-efiling-screening-tool-entry': AlertCircle,
     'amazon-jp-fba-calculator': Truck,
     'amazon-global': Globe,
     'rating-sales-reverse': Star,
