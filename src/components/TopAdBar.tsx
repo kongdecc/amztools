@@ -31,7 +31,7 @@ function getNormalizedConfig(raw: TopAdConfig) {
     alt: String(raw.alt || '页眉下广告位').trim() || '页眉下广告位',
     ctaText: ctaText || '点击跳转',
     openInNewTab: raw.openInNewTab !== false,
-    imageHeight: Number.isFinite(imageHeight) && imageHeight >= 80 ? imageHeight : 160
+    imageHeight: Number.isFinite(imageHeight) && imageHeight >= 80 ? imageHeight : 200
   }
 }
 
@@ -52,8 +52,8 @@ export default function TopAdBar() {
     <img
       src={config.imageUrl}
       alt={config.alt}
-      className="block h-auto w-full rounded-md object-cover"
-      style={{ maxHeight: `${config.imageHeight}px` }}
+      className="block w-full rounded-md bg-white object-contain"
+      style={{ height: `${config.imageHeight}px` }}
       loading="eager"
     />
   )
