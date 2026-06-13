@@ -11,7 +11,7 @@
   "notes": {
     "usage": "enabled=true 时显示。type 支持 auto、image、text。推荐日常用 auto：有 imageUrl 时优先显示图片，没有 imageUrl 时自动回退显示 text。",
     "quickStart": "文字广告：type=text 并填写 text。图片广告：type=image 或 auto，并填写 imageUrl。自动模式下填图则显示图，不填图则显示文字。",
-    "imageDisplay": "图片模式默认完整显示，不再上下裁切。当前按固定高度盒子展示，图片使用 contain 方式缩放。",
+    "imageDisplay": "图片模式默认完整显示，不再上下裁切。当前按最大高度限制展示，图片使用 contain 方式缩放。",
     "recommendedWidth": "1536px",
     "recommendedHeight": "180-210px",
     "retinaSize": "3072x240px 到 3072x360px",
