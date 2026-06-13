@@ -2,21 +2,23 @@
   "enabled": true,
   "type": "auto",
   "text": "跨境乐趣园：亚马逊卖家讨论群日报，海量运营干货资料免费下载，欢迎查看使用。",
-  "imageUrl": "",
+  "imageUrl": "https://pub-2a43946b555a4a1d8c9fcabbb581ed41.r2.dev/amzlink.jpg",
   "linkUrl": "https://amzlink.top/",
   "alt": "页眉下广告位",
   "ctaText": "点击跳转",
   "openInNewTab": true,
-  "imageHeight": 160,
+  "imageHeight": 200,
   "notes": {
     "usage": "enabled=true 时显示。type 支持 auto、image、text。推荐日常用 auto：有 imageUrl 时优先显示图片，没有 imageUrl 时自动回退显示 text。",
-    "quickStart": "文字广告：type=text 并填写 text。图片广告：type=image 并填写 imageUrl。自动模式：type=auto，填图则显示图，不填图则显示文字。",
+    "quickStart": "文字广告：type=text 并填写 text。图片广告：type=image 或 auto，并填写 imageUrl。自动模式下填图则显示图，不填图则显示文字。",
+    "imageDisplay": "图片模式默认完整显示，不再上下裁切。当前按固定高度盒子展示，图片使用 contain 方式缩放。",
     "recommendedWidth": "1536px",
-    "recommendedHeight": "120-180px",
+    "recommendedHeight": "180-210px",
     "retinaSize": "3072x240px 到 3072x360px",
-    "safeArea": "重要文案请放在图片中间 70% 区域，方便移动端显示",
+    "safeArea": "重要文案建议放在图片中间 70% 区域，兼顾不同屏宽下的安全显示范围",
     "alignment": "广告图宽度会与页眉内容区域对齐，容器最大宽度为 max-w-screen-2xl",
     "linkTip": "如果填写 linkUrl，点击文字或图片会跳转；openInNewTab=true 时在新标签页打开。",
-    "fallbackTip": "type=image 但 imageUrl 为空时会回退到文字展示；建议优先使用 auto 便于维护。"
+    "fallbackTip": "type=image 但 imageUrl 为空时会回退到文字展示；建议优先使用 auto 便于维护。",
+    "currentImage": "当前广告图：1500x200，建议 imageHeight 使用 200；如果仍想更贴满宽度，可尝试 205-210。"
   }
 }
