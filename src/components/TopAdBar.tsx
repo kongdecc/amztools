@@ -53,7 +53,7 @@ export default function TopAdBar() {
       src={config.imageUrl}
       alt={config.alt}
       className="block w-full rounded-md bg-white object-contain"
-      style={{ height: `${config.imageHeight}px` }}
+      style={{ maxHeight: `${config.imageHeight}px` }}
       loading="eager"
     />
   )
