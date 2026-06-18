@@ -33,6 +33,13 @@ function normalizeModules(rows: any[]) {
       if (item.key === 'word-count' && item.status === '维护') {
         return { ...item, status: '启用' }
       }
+      if (item.key === 'listing-check') {
+        return {
+          ...item,
+          title: 'Listing自检工具（新规）',
+          desc: item.desc || '标题/五点/ST/长描述合规与关键词埋入检查，含2026标题与商品亮点新规自检'
+        }
+      }
       return item
     })
 }

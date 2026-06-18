@@ -111,7 +111,7 @@ export const DEFAULT_TOOLS = [
   { key: 'forbidden-words', title: '亚马逊文案违禁词检测', desc: '检测亚马逊文案中的违禁词，支持自定义词库和批量替换', status: '启用', views: 0, color: 'red', order: 6, category: 'operation' },
   { key: 'unit', title: '单位换算', desc: '长度、重量、体积等多维度单位快速换算', status: '启用', views: 0, color: 'emerald', order: 7, category: 'operation' },
   { key: 'amazon-promotion-stacking', title: '亚马逊促销叠加计算器', desc: '自动计算促销叠加或互斥，基于2025版《各类促销叠加情况》矩阵表逻辑', status: '启用', views: 0, color: 'blue', order: 8, category: 'operation' },
-  { key: 'listing-check', title: 'Listing自检工具', desc: '标题/五点/ST/长描述合规与关键词埋入检查', status: '启用', views: 0, color: 'teal', order: 9, category: 'operation' },
+  { key: 'listing-check', title: 'Listing自检工具（新规）', desc: '标题/五点/ST/长描述合规与关键词埋入检查，含2026标题与商品亮点新规自检', status: '启用', views: 0, color: 'teal', order: 9, category: 'operation' },
   { key: 'fba-warehouses', title: 'FBA仓库查询', desc: '查询FBA仓库地址、邮编等信息，支持国家、地区筛选和偏远地区查询', status: '启用', views: 0, color: 'indigo', order: 10, category: 'operation' },
   { key: 'fba-label-editor', title: 'FBA标签编辑器', desc: '在线编辑FBA标签PDF，支持添加文字（如批量添加Made in China)、手动拖拽调整位置和大小，自动应用到所有页面', status: '启用', views: 0, color: 'red', order: 11, category: 'operation' },
   { key: 'keyword-combiner', title: '关键词组合工具', desc: '多维度关键词组合，支持去重和多种分隔符', status: '启用', views: 0, color: 'blue', order: 12, category: 'operation' },
