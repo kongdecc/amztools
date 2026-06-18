@@ -532,6 +532,8 @@
     .tb-mobile-menu { position: fixed; top: 0; right: 0; bottom: 0; width: 16rem; background: white; z-index: 2001; transform: translateX(100%); transition: transform 0.3s ease-in-out; padding: 1.5rem; overflow-y: auto; color: #1f2937; }
     .tb-mobile-menu.open { transform: translateX(0); }
     .tb-mobile-nav-item { display: block; padding: 0.75rem 0; font-size: 1rem; font-weight: 500; color: #374151; text-decoration: none; border-bottom: 1px solid #f3f4f6; }
+    .tool-footer { border-top: 1px solid var(--line); padding: 18px 0; color: var(--muted); font-size: 13px; background: #fff; }
+    .tool-footer .wrap { width: min(1280px, calc(100% - 32px)); margin: 0 auto; }
     .site-footer { text-align: center; padding: 1.5rem 0; font-size: 0.75rem; color: #9ca3af; background-color: #f8fafc; border-top: 1px solid #e2e8f0; margin-top: auto; }
     .site-footer a { color: inherit; text-decoration: none; }
     .site-footer a:hover { color: #2563eb; }
@@ -591,6 +593,7 @@
       #site-header-container,
       #shared-top-ad-root,
       .site-footer,
+      .tool-footer,
       .tool-header,
       .side,
       .quick-row,
@@ -626,18 +629,18 @@
         <div class="tb-logo-icon">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
         </div>
-        <span>璺ㄥ宸ュ叿榄旀柟 AmzToolBox</span>
+        <span>跨境工具魔方 AmzToolBox</span>
       </div>
       <nav class="tb-nav-desktop">
-        <a href="/" class="tb-nav-link">棣栭〉</a>
-        <a href="/functionality" class="tb-nav-link">鍔熻兘鍒嗙被</a>
-        <a href="/about" class="tb-nav-link">鍏充簬</a>
-        <a href="/blog" class="tb-nav-link">鍗氬</a>
+        <a href="/" class="tb-nav-link">首页</a>
+        <a href="/functionality" class="tb-nav-link">功能分类</a>
+        <a href="/about" class="tb-nav-link">关于</a>
+        <a href="/blog" class="tb-nav-link">博客</a>
         <a href="/suggest" class="tb-nav-link">提需求</a>
-        <a href="/reward" class="tb-nav-link">鎵撹祻鏀寔</a>
+        <a href="/reward" class="tb-nav-link">打赏支持</a>
       </nav>
       <div class="tb-mobile-toggle">
-        <button id="mobileMenuBtn" class="tb-btn-icon" type="button" aria-label="鎵撳紑鑿滃崟">
+        <button id="mobileMenuBtn" class="tb-btn-icon" type="button" aria-label="打开菜单">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
         </button>
       </div>
@@ -645,17 +648,17 @@
     <div class="tb-mobile-overlay" id="mobileOverlay"></div>
     <div class="tb-mobile-menu" id="mobileMenu">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-        <span style="font-weight: 700; font-size: 1.25rem;">璺ㄥ宸ュ叿榄旀柟 AmzToolBox</span>
+        <span style="font-weight: 700; font-size: 1.25rem;">跨境工具魔方 AmzToolBox</span>
         <button id="closeMobileBtn" type="button" style="background: none; border: none; padding: 0.5rem; cursor: pointer;">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
         </button>
       </div>
-      <a href="/" class="tb-mobile-nav-item">棣栭〉</a>
-      <a href="/functionality" class="tb-mobile-nav-item">鍔熻兘鍒嗙被</a>
-      <a href="/about" class="tb-mobile-nav-item">鍏充簬</a>
-      <a href="/blog" class="tb-mobile-nav-item">鍗氬</a>
+      <a href="/" class="tb-mobile-nav-item">首页</a>
+      <a href="/functionality" class="tb-mobile-nav-item">功能分类</a>
+      <a href="/about" class="tb-mobile-nav-item">关于</a>
+      <a href="/blog" class="tb-mobile-nav-item">博客</a>
       <a href="/suggest" class="tb-mobile-nav-item">提需求</a>
-      <a href="/reward" class="tb-mobile-nav-item">鎵撹祻鏀寔</a>
+      <a href="/reward" class="tb-mobile-nav-item">打赏支持</a>
     </div>
   </div>
 
@@ -673,8 +676,6 @@
         </div>
       </div>
     </header>
-
-    <div id="shared-top-ad-root"></div>
 
     <main>
       <div class="layout">
@@ -954,10 +955,13 @@
     </main>
   </div>
 
+  <footer class="tool-footer">
+    <div class="wrap">本工具用于亚马逊标题与商品亮点的内部初筛和优化辅助，不替代平台官方规则、类目要求或人工合规审核。</div>
+  </footer>
   <footer class="site-footer">
-    漏 2025 璺ㄥ宸ュ叿榄旀柟 AmzToolBox. All rights reserved.
+    © 2025 跨境工具魔方 AmzToolBox. All rights reserved.
     <span style="margin: 0 0.5rem;">|</span>
-    <a href="/privacy">闅愮璇存槑</a>
+    <a href="/privacy">隐私说明</a>
   </footer>
 
   <script>
