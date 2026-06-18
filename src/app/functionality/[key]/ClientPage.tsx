@@ -76,6 +76,10 @@ export default function ClientPage({
     'storage-fee-calc': Warehouse,
   }
 
+  const titleOverride: Record<string, string> = {
+    'listing-check': 'Listing自检工具（新规）'
+  }
+
   React.useEffect(() => {
     const safeKey = typeof key === 'string' ? key : Array.isArray(key) ? key[0] : ''
     if (safeKey) recordPersonalToolVisit(safeKey)
@@ -89,7 +93,7 @@ export default function ClientPage({
     const currentTool = modules.find((m: any) => m.key === key)
     if (currentTool) {
       const siteName = settings?.siteName || DEFAULT_SITE_SETTINGS.siteName
-      const newTitle = `${currentTool.title} - ${siteName}`
+      const newTitle = `${titleOverride[currentTool.key] || currentTool.title} - ${siteName}`
       
       // Immediate update
       if (document.title !== newTitle) {
@@ -205,7 +209,7 @@ export default function ClientPage({
                             <div className="px-3 py-1 text-xs font-semibold text-gray-400 uppercase">{cat.label}</div>
                             {catModules.map((m: any) => {
                               const I = iconMap[m.key] || Hammer
-                              const label = m.title
+                              const label = titleOverride[m.key] || m.title
                               return (
                                 <Link key={m.key} href={`/functionality/${m.key}`} className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer">
                                   <I className="h-4 w-4" />
