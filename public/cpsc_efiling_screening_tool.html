@@ -46,6 +46,23 @@
     }
     h1 { margin: 0; font-size: 32px; line-height: 1.15; letter-spacing: 0; }
     .subtitle { margin: 10px 0 0; color: var(--muted); max-width: 780px; }
+    .concept-brief {
+      margin-top: 14px;
+      max-width: 980px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .concept-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .78);
+      padding: 12px 13px;
+      box-shadow: 0 6px 18px rgba(21, 45, 32, .05);
+    }
+    .concept-card strong { display: block; margin-bottom: 5px; color: var(--ink); font-size: 14px; }
+    .concept-card p { margin: 0; color: #405147; font-size: 13px; line-height: 1.55; }
+    .concept-note { margin: 10px 0 0; color: var(--muted); font-size: 13px; max-width: 980px; }
     .tabs {
       display: flex;
       gap: 8px;
@@ -233,6 +250,7 @@
     .tb-mobile-nav-item { display: block; padding: 0.75rem 0; font-size: 1rem; font-weight: 500; color: #374151; text-decoration: none; border-bottom: 1px solid #f3f4f6; }
     @media (max-width: 860px) {
       .topbar, .grid, .ref-grid, .guide-grid, .status-grid, .filter-grid { grid-template-columns: 1fr; }
+      .concept-brief { grid-template-columns: 1fr; }
       .searchbar { grid-template-columns: 1fr; }
       .inline { grid-template-columns: 1fr; }
       h1 { font-size: 26px; }
@@ -293,6 +311,12 @@
         <div>
           <h1>CPSC 合规与 eFiling 筛查工具</h1>
           <p class="subtitle">基于 HS 强制申报清单、CPSC/GCC 规则库和 2026 eFiling 生效规则，快速判断证书类型、测试项目、实验室要求和进口申报提示。</p>
+          <div class="concept-brief" aria-label="CPSC CPC GCC eFiling relationship">
+            <div class="concept-card"><strong>CPSC&#65306;&#30417;&#31649;&#26426;&#26500;</strong><p>&#32654;&#22269;&#28040;&#36153;&#21697;&#23433;&#20840;&#22996;&#21592;&#20250;&#65292;&#36127;&#36131;&#21046;&#23450;&#21644;&#25191;&#34892;&#28040;&#36153;&#21697;&#23433;&#20840;&#27861;&#35268;&#65307;&#24120;&#35828;&#30340;&#8220;CPSC &#35748;&#35777;&#8221;&#36890;&#24120;&#26159;&#25351;&#38656;&#35201;&#25552;&#20379;&#21512;&#35268;&#35777;&#20070;&#12290;</p></div>
+            <div class="concept-card"><strong>CPC&#65306;&#20799;&#31461;&#20135;&#21697;&#35777;&#20070;</strong><p>&#38754;&#21521; 12 &#23681;&#21450;&#20197;&#19979;&#20799;&#31461;&#35774;&#35745;&#25110;&#33829;&#38144;&#30340;&#20135;&#21697;&#65292;&#22914;&#29609;&#20855;&#12289;&#23156;&#31461;&#29992;&#21697;&#12289;&#20799;&#31461;&#23478;&#20855;&#12289;&#31461;&#35013;&#31561;&#65292;&#36890;&#24120;&#38656;&#31532;&#19977;&#26041;&#26816;&#27979;&#21644; CPC&#12290;</p></div>
+            <div class="concept-card"><strong>GCC&#65306;&#19968;&#33324;&#21512;&#26684;&#35777;&#20070;</strong><p>&#38754;&#21521;&#38750;&#20799;&#31461;&#20135;&#21697;&#65292;&#20294;&#21463; CPSC &#24378;&#21046;&#35268;&#21017;&#30417;&#31649;&#30340;&#20135;&#21697;&#65292;&#22914;&#37096;&#20998;&#25104;&#20154;&#26381;&#35013;&#12289;&#22320;&#27631;&#12289;&#25171;&#28779;&#26426;&#12289;&#23478;&#23621;&#29992;&#21697;&#31561;&#65292;&#36890;&#24120;&#23545;&#24212; GCC&#12290;</p></div>
+          </div>
+          <p class="concept-note">&#20851;&#31995;&#21487;&#20197;&#36825;&#26679;&#29702;&#35299;&#65306;CPSC &#31649;&#35268;&#21017;&#65292;CPC/GCC &#26159;&#35777;&#26126;&#20135;&#21697;&#31526;&#21512;&#35268;&#21017;&#30340;&#35777;&#20070;&#65307;eFiling &#21017;&#26159;&#22312;&#36827;&#21475;&#28165;&#20851;&#26102;&#65292;&#25226; CPC &#25110; GCC &#30340;&#20851;&#38190;&#35777;&#20070;&#25968;&#25454;&#36890;&#36807; CBP/CPSC &#31995;&#32479;&#30005;&#23376;&#25552;&#20132;&#25110;&#24341;&#29992;&#12290;</p>
         </div>
       </div>
       <nav class="tabs" role="tablist">
