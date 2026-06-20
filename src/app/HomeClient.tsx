@@ -113,6 +113,7 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
     'partner-equity-calculator': Users,
     'natural-traffic-tool': BarChart3,
     'fba-label-editor': FileText,
+    'freight-rate-radar': Truck,
     'fba-warehouses': Warehouse,
     'storage-fee-calc': Warehouse,
     'pinyin-converter': Languages,

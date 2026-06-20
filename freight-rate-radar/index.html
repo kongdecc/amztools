@@ -1,0 +1,250 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>头程比价工具</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+  <div id="site-header-container">
+    <header class="tb-header">
+      <div class="tb-logo-area">
+        <div class="tb-logo-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+        </div>
+        <span>跨境工具魔方 AmzToolBox</span>
+      </div>
+      <nav class="tb-nav-desktop">
+        <a href="/" class="tb-nav-link">首页</a>
+        <a href="/functionality" class="tb-nav-link">功能分类</a>
+        <a href="/about" class="tb-nav-link">关于</a>
+        <a href="/blog" class="tb-nav-link">博客</a>
+        <a href="/suggest" class="tb-nav-link">提需求</a>
+        <a href="/reward" class="tb-nav-link">打赏支持</a>
+      </nav>
+    </header>
+  </div>
+    <main class="radar-shell">
+      <section class="hero-band">
+        <div class="hero-copy-wrap">
+          <p class="eyebrow">Freight Rate Radar</p>
+          <h1>头程比价工具</h1>
+          <p class="hero-copy">直接在浏览器里解析货代报价 Excel，按 FBA 仓库代码快速查看最低价、价差范围、渠道和货代来源。</p>
+          <details class="help-card">
+            <summary>使用说明</summary>
+            <div class="help-body">
+              <ol>
+<li>点击“报价文件库”，上传一个或多个货代 Excel 报价表，页面会在浏览器本地解析。</li>
+                <li>输入 FBA 仓库代码，例如 <code>LAS1</code>，可选重量和货代公司，然后点击“开始比价”。</li>
+                <li>报价索引会保存在当前浏览器本地，刷新页面后会自动恢复；不会上传到服务器。</li>
+              </ol>
+</div>
+          </details>
+        </div>
+        <div class="status-grid" aria-live="polite">
+          <div class="metric">
+            <span>报价记录</span>
+            <strong id="recordCount">-</strong>
+          </div>
+          <div class="metric">
+            <span>覆盖仓库</span>
+            <strong id="warehouseCount">-</strong>
+          </div>
+          <div class="metric">
+            <span>货代数量</span>
+            <strong id="companyCount">-</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="tool-grid">
+        <aside class="query-panel" aria-label="查询条件">
+          <div class="panel-heading">
+            <span class="step">01</span>
+            <div>
+              <h2>查价</h2>
+              <p>输入仓库代码后横向比较已上传报价。</p>
+            </div>
+          </div>
+
+          <label class="field">
+            <span>FBA 仓库代码</span>
+            <input id="warehouseCode" list="warehouseList" autocomplete="off" placeholder="例如 LAS1" />
+            <datalist id="warehouseList"></datalist>
+          </label>
+
+          <label class="field">
+            <span>重量 KG（可选）</span>
+            <input id="weightKg" type="number" min="0" step="0.01" placeholder="例如 25" />
+          </label>
+
+          <label class="field">
+            <span>货代公司（可选）</span>
+            <input id="companyFilter" list="companyList" placeholder="输入名称筛选" />
+            <datalist id="companyList"></datalist>
+          </label>
+
+          <label class="field">
+            <span>价格上限（可选）</span>
+            <input id="priceMax" type="number" min="0" step="0.01" placeholder="例如 12.5" />
+          </label>
+
+          <label class="field">
+            <span>时效上限（天）</span>
+            <input id="transitMax" type="number" min="0" step="1" placeholder="例如 7" />
+          </label>
+
+          <label class="field">
+            <span>税别</span>
+            <select id="taxFilter">
+              <option value="">全部税别</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>单位</span>
+            <select id="unitFilter">
+              <option value="">全部单位</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>结果视图</span>
+            <select id="viewMode">
+              <option value="price">按价格排序</option>
+              <option value="fastest">按时效最快</option>
+              <option value="balanced">综合推荐</option>
+              <option value="company">按货代分组</option>
+              <option value="channel">按渠道分组</option>
+            </select>
+          </label>
+
+          <label class="check-field">
+            <input id="uniqueCompany" type="checkbox" />
+            <span>每家只看最低</span>
+          </label>
+
+          <button id="searchBtn" class="primary-action">开始比价</button>
+          <button id="clearBtn" class="ghost-action">清空条件</button>
+
+          <div class="side-note">
+            <strong>本地模式</strong>
+            <span>报价文件只在当前浏览器解析，不需要后端，也不会把文件传到服务器。</span>
+          </div>
+        </aside>
+
+        <section class="results-panel" aria-live="polite">
+          <div class="results-toolbar">
+            <div>
+              <p class="eyebrow">Quote Board</p>
+              <h2 id="resultTitle">等待查询</h2>
+            </div>
+            <div class="toolbar-actions">
+              <button id="copyBestBtn" class="ghost-action" disabled>复制最低价</button>
+              <button id="exportBtn" class="ghost-action" disabled>导出 CSV</button>
+              <button id="manageToggle" class="ghost-action">报价文件库</button>
+            </div>
+          </div>
+
+          <div id="messageBox" class="message is-muted">先进入“报价文件库”上传 Excel，再输入仓库代码比价。</div>
+
+          <div id="summaryStrip" class="summary-strip" hidden>
+            <div>
+              <span>最低报价</span>
+              <strong id="bestPrice">-</strong>
+            </div>
+            <div>
+              <span>报价条数</span>
+              <strong id="quoteCount">-</strong>
+            </div>
+            <div>
+              <span>价差范围</span>
+              <strong id="priceRange">-</strong>
+            </div>
+          </div>
+
+          <div id="cardDeck" class="quote-deck"></div>
+
+          <details class="table-details" id="tableWrap" hidden>
+            <summary>查看完整表格</summary>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>货代</th>
+                    <th>渠道</th>
+                    <th>税别</th>
+                    <th>起运地</th>
+                    <th>档位</th>
+                    <th>单位</th>
+                    <th>价格</th>
+                    <th>时效</th>
+                    <th>生效日期</th>
+                    <th>来源</th>
+                  </tr>
+                </thead>
+                <tbody id="resultRows"></tbody>
+              </table>
+            </div>
+          </details>
+        </section>
+      </section>
+
+      <section id="managePanel" class="manage-panel" hidden>
+        <div class="panel-heading">
+          <span class="step">02</span>
+          <div>
+            <h2>报价文件库</h2>
+            <p>选择货代 Excel 报价表，浏览器会立即解析并建立本地索引。</p>
+          </div>
+        </div>
+
+        <div class="upload-layout">
+          <label id="dropZone" class="drop-zone">
+            <input id="fileInput" type="file" accept=".xls,.xlsx" multiple />
+            <span class="drop-icon">XLS</span>
+            <strong>拖入或选择报价文件</strong>
+            <small>支持 .xls / .xlsx，可一次上传多个文件</small>
+          </label>
+
+          <div class="upload-options">
+            <label class="field">
+              <span>默认货代公司（可选）</span>
+              <input id="uploadCompany" placeholder="例如 跨境乐趣园" />
+            </label>
+            <label class="field">
+              <span>市场（可选）</span>
+              <input id="uploadMarket" placeholder="例如 美国" />
+            </label>
+            <button id="exportLibraryBtn" class="ghost-action">导出报价库</button>
+            <label class="ghost-action file-import-action">导入报价库<input id="importLibraryInput" type="file" accept=".json,application/json" /></label>
+            <button id="rebuildBtn" class="ghost-action danger-action">清空本地报价</button>
+          </div>
+        </div>
+
+        <div id="uploadMessage" class="message is-muted">报价文件会在浏览器本地解析并保存索引；刷新页面后不用再次上传。</div>
+        <div id="fileList" class="file-list"></div>
+      </section>
+    </main>
+    <footer class="site-footer">
+      © 2025 跨境工具魔方 AmzToolBox. All rights reserved.
+      <span style="margin: 0 0.5rem;">|</span>
+      <a href="/privacy">隐私说明</a>
+    </footer>
+
+    <script type="module" src="/shared-top-ad.js"></script>    <script src="./xlsx.full.min.js"></script>
+    <script src="./warehouse-data.js"></script>
+    <script src="./app.js" defer></script>
+  </body>
+</html>
+
+
+
+
+
+
+
+
+
+
