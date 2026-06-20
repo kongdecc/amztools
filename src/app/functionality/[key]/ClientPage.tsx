@@ -211,7 +211,18 @@ export default function ClientPage({
                             {catModules.map((m: any) => {
                               const I = iconMap[m.key] || Hammer
                               const label = titleOverride[m.key] || m.title
-                              return (
+                              return m.href ? (
+                                <a
+                                  key={m.key}
+                                  href={m.href}
+                                  target={m.isExternal ? '_blank' : '_self'}
+                                  rel={m.isExternal ? 'noopener noreferrer' : undefined}
+                                  className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer"
+                                >
+                                  <I className="h-4 w-4" />
+                                  <span>{label}</span>
+                                </a>
+                              ) : (
                                 <Link key={m.key} href={`/functionality/${m.key}`} className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors cursor-pointer">
                                   <I className="h-4 w-4" />
                                   <span>{label}</span>
