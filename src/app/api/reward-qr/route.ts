@@ -5,65 +5,57 @@ import { FALLBACK_REWARD_QR_URL } from '@/config/reward'
 
 export const dynamic = 'force-dynamic'
 
-async function buildImageResponse(method: 'GET' | 'HEAD') {
-  try {
-    // Try to get from DB
-    const row = await (db as any).siteSettings.findUnique({ where: { key: 'reward_qr_data' } })
-    if (row && row.value) {
-      // Value format: "data:image/png;base64,..."
-      const parts = row.value.split(',')
-      if (parts.length !== 2) {
-        return NextResponse.json({ error: 'invalid_data' }, { status: 500 })
+function fallbackImageResponse(method: 'GET' | 'HEAD') {
+  if (method === 'HEAD') {
+    return new NextResponse(null, {
+      headers: {
+        'Content-Type': 'image/jpeg',
+        'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=604800',
+        'X-Reward-Source': 'fallback'
       }
-
-      const header = parts[0]
-      const base64Data = parts[1]
-      
-      // Extract mime type
-      const match = header.match(/:(.*?);/)
-      const contentType = match ? match[1] : 'image/png'
-      const headers = {
-        'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=3600',
-        'X-Reward-Source': 'db'
-      }
-
-      if (method === 'HEAD') {
-        return new NextResponse(null, { headers })
-      }
-
-      const buf = Buffer.from(base64Data, 'base64')
-
-      return new NextResponse(buf, { headers })
-    }
-
-    const fallbackResponse = await fetch(FALLBACK_REWARD_QR_URL, {
-      cache: 'no-store'
     })
+  }
 
-    if (!fallbackResponse.ok) {
-      return NextResponse.json({ error: 'not_found' }, { status: 404 })
+  const response = NextResponse.redirect(FALLBACK_REWARD_QR_URL, 307)
+  response.headers.set('Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=604800')
+  response.headers.set('X-Reward-Source', 'fallback')
+  return response
+}
+
+async function buildImageResponse(method: 'GET' | 'HEAD') {
+  let row: any = null
+  try {
+    row = await (db as any).siteSettings.findUnique({ where: { key: 'reward_qr_data' } })
+  } catch (e) {
+    console.error('Reward QR DB lookup failed, using fallback:', e)
+  }
+
+  if (row && row.value) {
+    // Value format: "data:image/png;base64,..."
+    const parts = row.value.split(',')
+    if (parts.length !== 2) {
+      return fallbackImageResponse(method)
     }
 
-    const contentType = fallbackResponse.headers.get('content-type') || 'image/jpeg'
+    const header = parts[0]
+    const base64Data = parts[1]
+    const match = header.match(/:(.*?);/)
+    const contentType = match ? match[1] : 'image/png'
     const headers = {
       'Content-Type': contentType,
-      'Cache-Control': 'public, max-age=3600',
-      'X-Reward-Source': 'fallback'
+      'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=604800',
+      'X-Reward-Source': 'db'
     }
 
     if (method === 'HEAD') {
       return new NextResponse(null, { headers })
     }
 
-    const arrayBuffer = await fallbackResponse.arrayBuffer()
-    return new NextResponse(Buffer.from(arrayBuffer), {
-      headers
-    })
-  } catch (e) {
-    console.error('GET QR error:', e)
-    return NextResponse.json({ error: 'failed' }, { status: 500 })
+    const buf = Buffer.from(base64Data, 'base64')
+    return new NextResponse(buf, { headers })
   }
+
+  return fallbackImageResponse(method)
 }
 
 export async function GET() {
