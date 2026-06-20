@@ -3,7 +3,7 @@ import FunctionalityClient from './FunctionalityClient'
 import { Metadata } from 'next'
 import { getEnabledFunctionalityShellData, getFunctionalityMetadataSettings } from '@/lib/functionality-data'
 
-export const revalidate = 60
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata(): Promise<Metadata> {
   const { siteName, functionalityTitle, functionalitySubtitle } = await getFunctionalityMetadataSettings()

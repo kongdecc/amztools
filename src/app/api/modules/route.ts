@@ -32,26 +32,19 @@ function saveLocalData(data: Array<any>) {
   } catch {}
 }
 
-
 export async function GET() {
   try {
     let rows = await (db as any).toolModule.findMany({ orderBy: { order: 'asc' } })
-    const blocked = rows.filter((r: any) => blockedKeys.has(r.key)).map((r: any) => r.key)
-    if (blocked.length) {
-      await (db as any).toolModule.deleteMany({ where: { key: { in: blocked } } })
-      rows = rows.filter((r: any) => !blockedKeys.has(r.key))
-    }
+    rows = rows.filter((r: any) => !blockedKeys.has(r.key))
     const existing = new Set(rows.map((r: any) => r.key))
     const missing = defaults.filter(d => !existing.has(d.key))
     if (missing.length) {
-      await db.$transaction(missing.map(d => (db as any).toolModule.upsert({
-        where: { key: d.key },
-        update: d,
-        create: d
-      })))
-      rows = await (db as any).toolModule.findMany({ orderBy: { order: 'asc' } })
+      rows = rows.concat(missing)
     }
-    return NextResponse.json(rows.filter((r: any) => !blockedKeys.has(r.key)))
+    rows = rows
+      .filter((r: any) => !blockedKeys.has(r.key))
+      .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
+    return NextResponse.json(rows)
   } catch {
     const local = getLocalData()
     const data = (local || defaults).slice().filter((r: any) => !blockedKeys.has(r.key)).sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
@@ -110,6 +103,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'bad_request' }, { status: 400 })
   }
 }
+
 export async function PATCH(request: Request) {
   const cookie = request.headers.get('cookie') || ''
   const token = cookie.match(/admin_session=([^;]+)/)?.[1]

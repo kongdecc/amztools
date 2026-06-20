@@ -3,7 +3,7 @@ import HomeLayoutClient from './HomeClient'
 import { Suspense } from 'react'
 import { getEnabledFunctionalityShellData } from '@/lib/functionality-data'
 
-export const revalidate = 60
+export const dynamic = 'force-dynamic'
 
 export default async function Page({ searchParams }: { searchParams?: Record<string, string> }) {
   const {

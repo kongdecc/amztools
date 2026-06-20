@@ -4,12 +4,7 @@ import ClientPage from './ClientPage'
 import { SettingsProvider } from '@/components/SettingsProvider'
 import { getFunctionalityShellData } from '@/lib/functionality-data'
 
-export const revalidate = 60
-
-export async function generateStaticParams() {
-  const { modules } = await getFunctionalityShellData()
-  return modules.map((m: any) => ({ key: m.key }))
-}
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }: { params: Promise<{ key: string }> }): Promise<Metadata> {
   const { key } = await params
