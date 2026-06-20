@@ -112,6 +112,7 @@ export const DEFAULT_TOOLS = [
   { key: 'unit', title: '单位换算', desc: '长度、重量、体积等多维度单位快速换算', status: '启用', views: 0, color: 'emerald', order: 7, category: 'operation' },
   { key: 'amazon-promotion-stacking', title: '亚马逊促销叠加计算器', desc: '自动计算促销叠加或互斥，基于2025版《各类促销叠加情况》矩阵表逻辑', status: '启用', views: 0, color: 'blue', order: 8, category: 'operation' },
   { key: 'listing-check', title: 'Listing自检工具（新规）', desc: '标题/五点/ST/长描述合规与关键词埋入检查，含2026标题与商品亮点新规自检', status: '启用', views: 0, color: 'teal', order: 9, category: 'operation' },
+  { key: 'freight-rate-radar', title: '\u5934\u7a0b\u6bd4\u4ef7\u5de5\u5177', desc: '\u4e0a\u4f20\u8d27\u4ee3 Excel \u62a5\u4ef7\u8868\uff0c\u6309 FBA \u4ed3\u5e93\u3001\u91cd\u91cf\u3001\u7a0e\u522b\u548c\u65f6\u6548\u5feb\u901f\u7b5b\u9009\u6700\u4f4e\u5934\u7a0b\u62a5\u4ef7', status: '\u542f\u7528', views: 0, color: 'teal', order: 9.5, category: 'operation' },
   { key: 'fba-warehouses', title: 'FBA仓库查询', desc: '查询FBA仓库地址、邮编等信息，支持国家、地区筛选和偏远地区查询', status: '启用', views: 0, color: 'indigo', order: 10, category: 'operation' },
   { key: 'fba-label-editor', title: 'FBA标签编辑器', desc: '在线编辑FBA标签PDF，支持添加文字（如批量添加Made in China)、手动拖拽调整位置和大小，自动应用到所有页面', status: '启用', views: 0, color: 'red', order: 11, category: 'operation' },
   { key: 'keyword-combiner', title: '关键词组合工具', desc: '多维度关键词组合，支持去重和多种分隔符', status: '启用', views: 0, color: 'blue', order: 12, category: 'operation' },

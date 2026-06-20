@@ -168,6 +168,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
     'search-term-volatility': Activity,
     'partner-equity-calculator': Users,
     'natural-traffic-tool': BarChart3,
+    'freight-rate-radar': Truck,
     'fba-warehouses': Warehouse,
     'fba-label-editor': FileText,
     'pinyin-converter': Languages,
