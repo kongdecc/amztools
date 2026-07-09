@@ -55,6 +55,7 @@ const AmazonEuFbaCalculator = dynamic(() => import('@/components/AmazonEuFbaCalc
 const AmazonJpFbaCalculatorPage = dynamic(() => import('@/components/AmazonJpFbaCalculatorPage'), { loading: LoadingTool })
 const TxtExcelBatchConverterPage = dynamic(() => import('@/components/TxtExcelBatchConverterPage'), { loading: LoadingTool })
 const CertificationDirectoryPage = dynamic(() => import('@/components/CertificationDirectoryPage'), { loading: LoadingTool })
+const FreightRateRadar = dynamic(() => import('@/components/FreightRateRadar'), { loading: LoadingTool })
 
 const PlaceholderPage = ({ title, icon: Icon }: { title: string; icon: any }) => (
   <div className="space-y-6">
@@ -73,7 +74,7 @@ const PlaceholderPage = ({ title, icon: Icon }: { title: string; icon: any }) =>
 )
 
 const ToolContainer = memo(({ activeTab }: { activeTab: string }) => {
-  const isFullWidth = activeTab === 'amazon-ads-analyzer' || activeTab === 'amazon-bulk-ads-tool'
+  const isFullWidth = activeTab === 'amazon-ads-analyzer' || activeTab === 'amazon-bulk-ads-tool' || activeTab === 'freight-rate-radar'
   
   const content = (() => {
     switch (activeTab) {
@@ -118,6 +119,7 @@ const ToolContainer = memo(({ activeTab }: { activeTab: string }) => {
       case 'amazon-eu-fba-calculator': return <AmazonEuFbaCalculator />
       case 'txt-excel-batch-converter': return <TxtExcelBatchConverterPage />
       case 'certification-directory': return <CertificationDirectoryPage />
+      case 'freight-rate-radar': return <FreightRateRadar />
       default: return <PlaceholderPage title="功能开发中" icon={Hammer} />
     }
   })()

@@ -11,6 +11,11 @@ import {
 
 const blockedKeys = new Set(BLOCKED_TOOL_KEYS)
 
+function mergeWithDefaultModule(item: any) {
+  const fallback = DEFAULT_TOOLS.find((tool: any) => tool.key === item?.key)
+  return fallback ? { ...fallback, ...item } : item
+}
+
 function normalizeModules(rows: any[]) {
   let modules = Array.isArray(rows)
     ? rows.filter((item: any) => item.status !== '下架' && !blockedKeys.has(item.key))
@@ -29,6 +34,7 @@ function normalizeModules(rows: any[]) {
 
   return modules
     .filter((item: any) => !blockedKeys.has(item.key))
+    .map((item: any) => mergeWithDefaultModule(item))
     .map((item: any) => {
       if (item.key === 'word-count' && item.status === '维护') {
         return { ...item, status: '启用' }

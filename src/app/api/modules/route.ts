@@ -12,6 +12,11 @@ const defaults = (DEFAULT_TOOLS as any[]).map((t: any) => ({
   views: Number(t.views || 0)
 }))
 
+function mergeWithDefaultModule(item: any) {
+  const fallback = defaults.find((tool: any) => tool.key === item?.key)
+  return fallback ? { ...fallback, ...item } : item
+}
+
 function getLocalData() {
   try {
     if (fs.existsSync(DATA_FILE)) {
@@ -43,11 +48,16 @@ export async function GET() {
     }
     rows = rows
       .filter((r: any) => !blockedKeys.has(r.key))
+      .map((r: any) => mergeWithDefaultModule(r))
       .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
     return NextResponse.json(rows)
   } catch {
     const local = getLocalData()
-    const data = (local || defaults).slice().filter((r: any) => !blockedKeys.has(r.key)).sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
+    const data = (local || defaults)
+      .slice()
+      .filter((r: any) => !blockedKeys.has(r.key))
+      .map((r: any) => mergeWithDefaultModule(r))
+      .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
     return NextResponse.json(data)
   }
 }
