@@ -411,6 +411,14 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
     handleNavigate(module.key)
   }, [handleNavigate])
 
+  useEffect(() => {
+    if (!activeTab || activeTab === 'home') return
+    const tool = allModules.find((module: any) => module.key === activeTab)
+    if (tool?.href) {
+      window.location.href = tool.href
+    }
+  }, [activeTab, allModules])
+
   const toggleCategory = useCallback((catKey: string) => {
     setExpandedCategories(prev => ({ ...prev, [catKey]: !prev[catKey] }))
   }, [])

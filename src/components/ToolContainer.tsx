@@ -49,13 +49,10 @@ const PdfImageWatermarkRedactionPage = dynamic(() => import('@/components/PdfIma
 const ImageBatchRenamerPage = dynamic(() => import('@/components/ImageBatchRenamerPage'), { loading: LoadingTool })
 const StorageFeeCalculatorPage = dynamic(() => import('@/components/StorageFeeCalculatorPage'), { loading: LoadingTool })
 const AmazonCalculatorPage = dynamic(() => import('@/components/AmazonCalculatorPage'), { loading: LoadingTool })
-const AmazonAdsAnalyzer = dynamic(() => import('@/components/AmazonAdsAnalyzer'), { loading: LoadingTool })
-const AmazonBulkAdsTool = dynamic(() => import('@/components/AmazonBulkAdsTool'), { loading: LoadingTool })
 const AmazonEuFbaCalculator = dynamic(() => import('@/components/AmazonEuFbaCalculator'), { loading: LoadingTool })
 const AmazonJpFbaCalculatorPage = dynamic(() => import('@/components/AmazonJpFbaCalculatorPage'), { loading: LoadingTool })
 const TxtExcelBatchConverterPage = dynamic(() => import('@/components/TxtExcelBatchConverterPage'), { loading: LoadingTool })
 const CertificationDirectoryPage = dynamic(() => import('@/components/CertificationDirectoryPage'), { loading: LoadingTool })
-const FreightRateRadar = dynamic(() => import('@/components/FreightRateRadar'), { loading: LoadingTool })
 
 const PlaceholderPage = ({ title, icon: Icon }: { title: string; icon: any }) => (
   <div className="space-y-6">
@@ -74,8 +71,6 @@ const PlaceholderPage = ({ title, icon: Icon }: { title: string; icon: any }) =>
 )
 
 const ToolContainer = memo(({ activeTab }: { activeTab: string }) => {
-  const isFullWidth = activeTab === 'amazon-ads-analyzer' || activeTab === 'amazon-bulk-ads-tool' || activeTab === 'freight-rate-radar'
-  
   const content = (() => {
     switch (activeTab) {
       case 'ad-calc': return <AdCalculatorPage />
@@ -114,24 +109,12 @@ const ToolContainer = memo(({ activeTab }: { activeTab: string }) => {
       case 'amazon-promotion-stacking': return <AmazonPromotionStackingCalculator />
       case 'storage-fee-calc': return <StorageFeeCalculatorPage />
       case 'sales-calc': return <AmazonCalculatorPage />
-      case 'amazon-ads-analyzer': return <AmazonAdsAnalyzer />
-      case 'amazon-bulk-ads-tool': return <AmazonBulkAdsTool />
       case 'amazon-eu-fba-calculator': return <AmazonEuFbaCalculator />
       case 'txt-excel-batch-converter': return <TxtExcelBatchConverterPage />
       case 'certification-directory': return <CertificationDirectoryPage />
-      case 'freight-rate-radar': return <FreightRateRadar />
       default: return <PlaceholderPage title="功能开发中" icon={Hammer} />
     }
   })()
-
-  // For iframe based tools like AmazonAdsAnalyzer, we might want to skip the container padding
-  if (isFullWidth) {
-    return (
-      <div className="bg-white rounded-lg shadow-sm min-h-[600px] overflow-hidden">
-        {content}
-      </div>
-    )
-  }
 
   return (
     <div className="bg-white rounded-lg shadow-sm min-h-[600px] p-6">

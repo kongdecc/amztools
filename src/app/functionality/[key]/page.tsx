@@ -1,4 +1,5 @@
 import { Metadata } from 'next'
+import { redirect } from 'next/navigation'
 import { DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 import ClientPage from './ClientPage'
 import { SettingsProvider } from '@/components/SettingsProvider'
@@ -48,6 +49,10 @@ export default async function Page({ params }: { params: Promise<{ key: string }
   const { key } = await params
   const { settings, categories, modules, navItems } = await getFunctionalityShellData()
   const tool = modules.find((m: any) => m.key === key)
+
+  if (tool?.href) {
+    redirect(tool.href)
+  }
   
   const safeOrigin = (process.env.NEXT_PUBLIC_SITE_URL || '').replace(/\/$/, '')
   
