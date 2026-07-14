@@ -28,6 +28,7 @@ export default function ClientPage({
   const [navItems, setNavItems] = React.useState<any[]>(initialNavItems.length ? initialNavItems : DEFAULT_NAV_ITEMS)
   const [categories, setCategories] = React.useState<any[]>(initialCategories.length ? initialCategories : DEFAULT_CATEGORIES)
   const [personalUsageVersion, setPersonalUsageVersion] = React.useState(0)
+  const safeKey = typeof key === 'string' ? key : Array.isArray(key) ? key[0] : ''
   const personalTopModules = React.useMemo(() => getPersonalTopModules(modules, PERSONAL_TOP_LIMIT), [modules, personalUsageVersion])
   const displayCategories = React.useMemo(() => (
     (personalTopModules.length > 0 ? [TOP_CATEGORY, ...categories] : categories)
@@ -82,9 +83,14 @@ export default function ClientPage({
   }
 
   React.useEffect(() => {
-    const safeKey = typeof key === 'string' ? key : Array.isArray(key) ? key[0] : ''
     if (safeKey) recordPersonalToolVisit(safeKey)
   }, [key])
+
+  React.useEffect(() => {
+    if (safeKey === 'amazon-category-selection-center') {
+      window.location.replace('/amazon-category-selection-center.html')
+    }
+  }, [safeKey])
 
   React.useEffect(() => {
     return subscribePersonalToolUsage(() => setPersonalUsageVersion((value) => value + 1))
@@ -174,7 +180,23 @@ export default function ClientPage({
   }, [settings, initialNavItems])
 
   const renderTool = () => {
-    const safeKey = typeof key === 'string' ? key : Array.isArray(key) ? key[0] : ''
+    if (safeKey === 'amazon-category-selection-center') {
+      return (
+        <div className="max-w-3xl mx-auto bg-white border border-slate-200 rounded-2xl p-8 text-center shadow-sm">
+          <h1 className="text-2xl font-bold text-slate-900">正在打开 Amazon 类目选品管理中心</h1>
+          <p className="mt-3 text-slate-600">如果没有自动跳转，请直接打开独立页面。</p>
+          <a
+            href="/amazon-category-selection-center.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex mt-5 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
+          >
+            新窗口打开
+          </a>
+        </div>
+      )
+    }
+
     return <ToolContainer activeTab={safeKey} />
   }
 
