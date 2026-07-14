@@ -1179,6 +1179,25 @@ function duplicateSpBatchCampaign(
   };
 }
 
+function duplicateSbCampaignWizard(
+  source: SbCampaignWizard,
+  suffix: string,
+  overrides?: { campaignNamePrefix?: string; campaignIdPrefix?: string; adGroupIdPrefix?: string }
+): SbCampaignWizard {
+  return {
+    ...source,
+    campaignId: buildDuplicateValue(source.campaignId, overrides?.campaignIdPrefix || "", suffix),
+    campaignName: buildDuplicateValue(source.campaignName, overrides?.campaignNamePrefix || "", suffix),
+    adGroupId: buildDuplicateValue(source.adGroupId, overrides?.adGroupIdPrefix || "", suffix),
+    landingPageAsins: [...source.landingPageAsins],
+    creativeAsins: [...source.creativeAsins],
+    keywords: source.keywords.map((row) => ({ ...row })),
+    negativeKeywords: source.negativeKeywords.map((row) => ({ ...row })),
+    negativeProductTargetings: source.negativeProductTargetings.map((row) => ({ ...row })),
+    batchCopies: [],
+  };
+}
+
 function normalizeSpImportedRow(row: Record<string, any>) {
   const next: Record<string, any> = {};
   for (const [key, value] of Object.entries(row)) {
@@ -2894,6 +2913,11 @@ function createInitialSb(): SbCampaignWizard {
     brandLogoAssetId: "",
     customImageAssetId: "",
     keywords: [{ text: "", matchType: "exact", bid: 0.1, state: "enabled" }],
+    negativeKeywords: [],
+    negativeProductTargetings: [],
+    batchCopies: [],
+    splitSkag: false,
+    skagScope: "adGroups",
   };
 }
 
@@ -7689,13 +7713,58 @@ function SbWizardUI({
   setW: (updater: (prev: SbCampaignWizard) => SbCampaignWizard) => void;
 }) {
   const [keywordBulkInput, setKeywordBulkInput] = useState("");
+  const [sbKeywordDefaultMatchTypes, setSbKeywordDefaultMatchTypes] = useState<PositiveKeywordMatchType[]>(["exact", "phrase", "broad"]);
+  const [sbKeywordBulkBidInput, setSbKeywordBulkBidInput] = useState("");
+  const [sbNegativeKeywordBulkInput, setSbNegativeKeywordBulkInput] = useState("");
+  const [sbNegativeProductTargetingBulkInput, setSbNegativeProductTargetingBulkInput] = useState("");
+  const [sbNegativeKeywordDefaultMatchType, setSbNegativeKeywordDefaultMatchType] = useState<NegativeKeywordMatchType>("negativePhrase");
+  const [sbDuplicateOpen, setSbDuplicateOpen] = useState(false);
+  const [sbDuplicateCount, setSbDuplicateCount] = useState(3);
+  const [sbDuplicateStartNumber, setSbDuplicateStartNumber] = useState(1);
+  const [sbDuplicateDigits, setSbDuplicateDigits] = useState(3);
+  const [sbDuplicateSeparator, setSbDuplicateSeparator] = useState("-");
+  const [sbDuplicateCampaignNamePrefix, setSbDuplicateCampaignNamePrefix] = useState("");
+  const [sbDuplicateCampaignIdPrefix, setSbDuplicateCampaignIdPrefix] = useState("");
+  const [sbDuplicateAdGroupIdPrefix, setSbDuplicateAdGroupIdPrefix] = useState("");
 
   function set<K extends keyof SbCampaignWizard>(key: K, value: SbCampaignWizard[K]) {
     setW((prev) => ({ ...prev, [key]: value }));
   }
 
+  function toggleSbKeywordDefaultMatchType(matchType: PositiveKeywordMatchType) {
+    setSbKeywordDefaultMatchTypes((prev) => {
+      if (prev.includes(matchType)) {
+        const next = prev.filter((item) => item !== matchType);
+        return next.length ? next : prev;
+      }
+      return [...prev, matchType];
+    });
+  }
+
+  function parseSbKeywordBulkInput() {
+    const rows: SbCampaignWizard["keywords"] = [];
+    let invalidCount = 0;
+    for (const line of keywordBulkInput.split(/\r?\n/)) {
+      const raw = line.trim();
+      if (!raw) continue;
+      const parts = raw.includes("\t") ? raw.split("\t").map((x) => x.trim()) : raw.split(",").map((x) => x.trim());
+      const keywordText = parts[0] || "";
+      if (!keywordText) {
+        invalidCount += 1;
+        continue;
+      }
+      const explicitMatchType = parseKeywordMatchType(parts[1]);
+      const bidParsed = Number(parts[2]);
+      const bid = Number.isFinite(bidParsed) && bidParsed > 0 ? bidParsed : 0.1;
+      const state = parseState(parts[3]) ?? "enabled";
+      const matchTypes = explicitMatchType ? [explicitMatchType] : sbKeywordDefaultMatchTypes;
+      for (const matchType of matchTypes) rows.push({ text: keywordText, matchType, bid, state });
+    }
+    return { rows, invalidCount };
+  }
+
   function importSbKeywordsFromBulkInput() {
-    const { rows, invalidCount } = parseSpKeywordBulk(keywordBulkInput, 0.1);
+    const { rows, invalidCount } = parseSbKeywordBulkInput();
     if (!rows.length) {
       toast.error("没有可导入的关键词", { description: "请按行粘贴，至少包含关键词文本。" });
       return;
@@ -7709,16 +7778,118 @@ function SbWizardUI({
     });
   }
 
+  function activateSbCampaignSkag() {
+    setW((prev) => ({ ...prev, splitSkag: true, skagScope: "campaigns" }));
+    toast.success("SB 已设置为：一键生成SKAG（1活动1组1词）");
+  }
+
+  function activateSbAdGroupSplit() {
+    setW((prev) => ({ ...prev, splitSkag: true, skagScope: "adGroups" }));
+    toast.success("SB 已设置为：一键按词拆成多广告组（单活动多组）");
+  }
+
+  function applySbCustomKeywordBid() {
+    const bid = Number(sbKeywordBulkBidInput);
+    if (!(bid > 0)) {
+      toast.error("请输入有效的自定义Bid");
+      return;
+    }
+    set("keywords", w.keywords.map((row) => ({ ...row, bid })));
+    toast.success(`已把 ${w.keywords.length} 条关键词的Bid设为 ${bid}`);
+  }
+
+  function importSbNegativeKeywordsFromBulkInput() {
+    const { rows, invalidCount } = parseSpNegativeKeywordBulk(sbNegativeKeywordBulkInput, sbNegativeKeywordDefaultMatchType);
+    if (!rows.length) {
+      toast.error("没有可导入的否词", { description: "请按行粘贴，至少包含否定关键词文本。" });
+      return;
+    }
+    const current = w.negativeKeywords.filter((k) => k.text.trim());
+    set("negativeKeywords", [...current, ...rows]);
+    setSbNegativeKeywordBulkInput("");
+    toast.success(`已导入 ${rows.length} 条否词`, {
+      description: invalidCount > 0 ? `其中 ${invalidCount} 行格式无效已跳过。` : "你可以在下方表格继续编辑。",
+    });
+  }
+
+  function importSbNegativeProductTargetingsFromBulkInput() {
+    const parsed = parseSpNegativeProductTargetingBulk(sbNegativeProductTargetingBulkInput);
+    const rows = parsed.rows.map((row) => ({
+      ...row,
+      expression: /^B[A-Z0-9]{8,}$/i.test(row.expression.trim()) ? `asin="${row.expression.trim()}"` : row.expression,
+    }));
+    if (!rows.length) {
+      toast.error("没有可导入的否定商品", { description: "请按行粘贴 ASIN 或 Product Targeting Expression。" });
+      return;
+    }
+    const current = w.negativeProductTargetings.filter((x) => x.expression.trim());
+    set("negativeProductTargetings", [...current, ...rows]);
+    setSbNegativeProductTargetingBulkInput("");
+    toast.success(`已导入 ${rows.length} 条否定商品`, {
+      description: parsed.invalidCount > 0 ? `其中 ${parsed.invalidCount} 行格式无效已跳过。` : "你可以在下方表格继续编辑。",
+    });
+  }
+
+  function openSbBatchDuplicateDialog() {
+    const issues = validateSbWizard({ ...w, batchCopies: [] });
+    if (issues.length) {
+      toast.error("请先填写一个完整的SB母版后再批量复制", { description: issues.slice(0, 6).join("；") });
+      return;
+    }
+    setSbDuplicateCampaignNamePrefix(w.campaignName.trim() || "");
+    setSbDuplicateCampaignIdPrefix(w.campaignId.trim() || "");
+    setSbDuplicateAdGroupIdPrefix(w.adGroupId.trim() || "");
+    setSbDuplicateOpen(true);
+  }
+
+  function applySbBatchDuplicate() {
+    const issues = validateSbWizard({ ...w, batchCopies: [] });
+    if (issues.length) {
+      toast.error("请先修正当前SB表单后再批量复制", { description: issues[0] });
+      return;
+    }
+    const count = Math.max(0, Math.floor(sbDuplicateCount));
+    if (count < 1) {
+      toast.error("复制数量至少为 1");
+      return;
+    }
+    const startNumber = Math.max(0, Math.floor(sbDuplicateStartNumber));
+    const digits = Math.min(6, Math.max(1, Math.floor(sbDuplicateDigits || 1)));
+    const source = { ...w, batchCopies: [] };
+    const overrides = {
+      campaignNamePrefix: sbDuplicateCampaignNamePrefix,
+      campaignIdPrefix: sbDuplicateCampaignIdPrefix,
+      adGroupIdPrefix: sbDuplicateAdGroupIdPrefix,
+    };
+    const sourceSuffix = buildBatchSequenceSuffix(startNumber, digits, sbDuplicateSeparator);
+    const numberedSource = duplicateSbCampaignWizard(source, sourceSuffix, overrides);
+    const copies = Array.from({ length: count }, (_, index) =>
+      duplicateSbCampaignWizard(source, buildBatchSequenceSuffix(startNumber + index + 1, digits, sbDuplicateSeparator), overrides)
+    );
+    setW(() => ({ ...numberedSource, batchCopies: copies }));
+    setSbDuplicateOpen(false);
+    toast.success(`已生成 ${count + 1} 个SB活动`, { description: "母版也会占用第一个编号，导出时会一起写入SB表。" });
+  }
   return (
     <div className="grid gap-5">
       <section className="grid gap-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <h3 className="font-semibold">A. Campaign（品牌推广广告活动）</h3>
-          <Badge variant="outline" className="font-mono text-[11px]">
-            Sheet: Sponsored Brands Campaigns
-          </Badge>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <Badge variant="outline" className="font-mono text-[11px]">
+              Sheet: Sponsored Brands Campaigns
+            </Badge>
+            <Button size="sm" className="bg-slate-900 text-white hover:bg-slate-800" onClick={openSbBatchDuplicateDialog}>
+              批量复制
+            </Button>
+          </div>
         </div>
         <div className="text-xs text-muted-foreground">说明：导出时会自动填充 Entity 与 Operation=Create，ID字段用于层级关联，不是名称字段。</div>
+        {(w.batchCopies?.length ?? 0) > 0 ? (
+          <div className="rounded-lg border border-sky-200 bg-sky-50 p-3 text-xs text-sky-800">
+            已生成 {1 + (w.batchCopies?.length ?? 0)} 个SB活动；导出时会把母版和复制活动一起写入。继续调整母版后，建议重新点一次“批量复制”刷新编号结果。
+          </div>
+        ) : null}
 
         <div className="grid gap-3 sm:grid-cols-2">
           <Labeled label="Campaign ID" hint="广告活动关联ID（不是名称）；同一活动下所有行保持一致" required>
@@ -7838,38 +8009,43 @@ function SbWizardUI({
       <Separator />
 
       <section className="grid gap-3">
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold">D. Keyword（投放关键词）</h3>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="font-mono text-[11px]">
-              Entity: Keyword
-            </Badge>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              onClick={() => set("keywords", [...w.keywords, { text: "", matchType: "phrase", bid: 0.1, state: "enabled" }])}
-            >
-              <Plus className="h-4 w-4" />
-              添加
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <SectionTitle className="min-w-0 flex-1" tone="emerald">D. Keyword（投放关键词）</SectionTitle>
+          <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
+            <Badge variant="outline" className="font-mono text-[11px]">Entity: Keyword</Badge>
+            <KeywordGenerationButton icon={<Crosshair className="h-4 w-4" />} label="一键生成SKAG" hint="1活动1组1词" className="bg-emerald-600 text-white shadow-sm hover:bg-emerald-700" onClick={activateSbCampaignSkag} disabled={!w.keywords.some((row) => row.text.trim())} />
+            <KeywordGenerationButton icon={<SplitTree className="h-4 w-4" />} label="一键按词拆成多广告组" hint="单活动多组" className="bg-violet-600 text-white shadow-sm hover:bg-violet-700" onClick={activateSbAdGroupSplit} disabled={!w.keywords.some((row) => row.text.trim())} />
+            {w.splitSkag ? <Button variant="outline" size="sm" onClick={() => setW((prev) => ({ ...prev, splitSkag: false }))}>关闭拆分</Button> : null}
+            <Button variant="outline" size="sm" className="gap-2" onClick={() => set("keywords", [...w.keywords, { text: "", matchType: "phrase", bid: 0.1, state: "enabled" }])}>
+              <Plus className="h-4 w-4" />添加
             </Button>
           </div>
         </div>
 
         <div className="rounded-lg border border-border/70 bg-muted/20 p-3">
           <div className="text-xs text-muted-foreground">
-            批量输入：可直接粘贴多行关键词，支持 `关键词` 或 `关键词,匹配方式,bid,state`（支持 Tab 分隔）。
+            批量输入：可直接粘贴多行关键词，支持 `关键词` 或 `关键词,匹配方式,bid,state`（支持 Tab 分隔）。未填写匹配方式时，会按下方已选匹配批量展开。
+          </div>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <span className="text-xs text-muted-foreground">默认匹配：</span>
+            {([ ["exact", "精准"], ["phrase", "词组"], ["broad", "广泛"] ] as const).map(([value, label]) => {
+              const active = sbKeywordDefaultMatchTypes.includes(value);
+              return <Button key={value} size="sm" variant={active ? "default" : "outline"} onClick={() => toggleSbKeywordDefaultMatchType(value)}>{label}</Button>;
+            })}
           </div>
           <Textarea
             value={keywordBulkInput}
             onChange={(e) => setKeywordBulkInput(e.target.value)}
             className="mt-2 min-h-[84px] font-mono text-[12px]"
-            placeholder={"running shoes\nbrand keyword,phrase,0.1,enabled"}
+            placeholder={"running shoes\nbrand keyword,phrase,0.1,enabled\nhiking boots\texact\t0.12\tpaused"}
           />
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <Button size="sm" variant="outline" onClick={importSbKeywordsFromBulkInput}>
               批量导入关键词
             </Button>
+            <Input type="number" className="h-8 w-[140px]" placeholder="自定义Bid" value={sbKeywordBulkBidInput} onChange={(e) => setSbKeywordBulkBidInput(e.target.value)} />
+            <Button size="sm" variant="outline" onClick={applySbCustomKeywordBid}>应用自定义Bid</Button>
+            {w.splitSkag ? <Badge variant="secondary">{w.skagScope === "campaigns" ? "当前：1活动1组1词" : "当前：单活动多广告组"}</Badge> : null}
           </div>
         </div>
 
@@ -7954,11 +8130,141 @@ function SbWizardUI({
             </TableBody>
           </Table>
         </div>
+      </section>
+
+      <Separator />
+
+      <section className="grid gap-3">
+        <div className="flex items-center justify-between">
+          <SectionTitle className="min-w-0 flex-1" tone="amber">E. Negative Keyword（否词，可选）</SectionTitle>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="font-mono text-[11px]">Entity: Negative Keyword</Badge>
+            <Button variant="outline" size="sm" className="gap-2" onClick={() => set("negativeKeywords", [...w.negativeKeywords, { text: "", matchType: "negativePhrase", state: "enabled" }])}>
+              <Plus className="h-4 w-4" />添加
+            </Button>
+          </div>
+        </div>
+        <div className="rounded-lg border border-border/70 bg-muted/20 p-3">
+          <div className="text-xs text-muted-foreground">批量导入格式：`否词` 或 `否词,匹配方式,state`（支持 Tab 分隔；匹配方式支持 negativePhrase/negativeExact 或 否定词组/否定精准）。</div>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <span className="text-xs text-muted-foreground">默认类型：</span>
+            {([ ["negativeExact", "精准"], ["negativePhrase", "词组"] ] as const).map(([value, label]) => {
+              const active = sbNegativeKeywordDefaultMatchType === value;
+              return <Button key={value} size="sm" variant={active ? "default" : "outline"} onClick={() => setSbNegativeKeywordDefaultMatchType(value)}>{label}</Button>;
+            })}
+          </div>
+          <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
+            <Textarea value={sbNegativeKeywordBulkInput} onChange={(e) => setSbNegativeKeywordBulkInput(e.target.value)} className="min-h-[84px] font-mono text-[12px]" placeholder={"bad keyword,negativePhrase,enabled\nanother keyword\tnegativeExact\tpaused"} />
+            <Button className="h-fit bg-sky-600 text-white hover:bg-sky-700 sm:self-end" onClick={importSbNegativeKeywordsFromBulkInput}>批量导入否词</Button>
+          </div>
+        </div>
+        {w.negativeKeywords.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-border/70 p-4 text-sm text-muted-foreground">还没有否词。需要的话点“添加”。</div>
+        ) : (
+          <div className="overflow-auto rounded-lg border border-border/70">
+            <Table>
+              <TableHeader><TableRow><TableHead className="min-w-[260px]">Keyword Text</TableHead><TableHead className="min-w-[220px]">Match Type</TableHead><TableHead className="min-w-[160px]">State</TableHead><TableHead className="w-[1%]"></TableHead></TableRow></TableHeader>
+              <TableBody>{w.negativeKeywords.map((nk, idx) => (
+                <TableRow key={idx}>
+                  <TableCell><Input value={nk.text} onChange={(e) => set("negativeKeywords", w.negativeKeywords.map((x, i) => (i === idx ? { ...x, text: e.target.value } : x)))} placeholder="negative keyword" /></TableCell>
+                  <TableCell><Select value={nk.matchType} onValueChange={(v) => set("negativeKeywords", w.negativeKeywords.map((x, i) => (i === idx ? { ...x, matchType: v as any } : x)))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{negMatchOptions.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent></Select></TableCell>
+                  <TableCell><Select value={nk.state} onValueChange={(v) => set("negativeKeywords", w.negativeKeywords.map((x, i) => (i === idx ? { ...x, state: v as State } : x)))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{stateOptions.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent></Select></TableCell>
+                  <TableCell><Button variant="ghost" size="icon" onClick={() => set("negativeKeywords", w.negativeKeywords.filter((_, i) => i !== idx))}><Trash2 className="h-4 w-4" /></Button></TableCell>
+                </TableRow>
+              ))}</TableBody>
+            </Table>
+          </div>
+        )}
+        <p className="text-xs text-muted-foreground">否词建议：词组否定不超过4个单词；精准否定不超过10个单词。导出时写入 SB 表的 `Negative Keyword` 行。</p>
+      </section>
+
+      <Separator />
+
+      <section className="grid gap-3">
+        <div className="flex items-center justify-between">
+          <SectionTitle className="min-w-0 flex-1" tone="amber">F. Negative Product Targeting（否定ASIN/类目，可选）</SectionTitle>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="font-mono text-[11px]">Entity: Negative Product Targeting</Badge>
+            <Button variant="outline" size="sm" className="gap-2" onClick={() => set("negativeProductTargetings", [...w.negativeProductTargetings, { expression: 'asin="B0XXXXXXXX"', state: "enabled" }])}>
+              <Plus className="h-4 w-4" />添加
+            </Button>
+          </div>
+        </div>
+        <div className="rounded-lg border border-border/70 bg-muted/20 p-3">
+          <div className="text-xs text-muted-foreground">批量导入格式：`ASIN`、`Product Targeting Expression` 或 `Product Targeting Expression,state`（支持 Tab 分隔）。直接粘贴 ASIN 会自动转成 `asin="..."`。</div>
+          <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
+            <Textarea value={sbNegativeProductTargetingBulkInput} onChange={(e) => setSbNegativeProductTargetingBulkInput(e.target.value)} className="min-h-[84px] font-mono text-[12px]" placeholder={'B0XXXXXXXX\nasin="B0YYYYYYYY",enabled'} />
+            <Button className="h-fit bg-sky-600 text-white hover:bg-sky-700 sm:self-end" onClick={importSbNegativeProductTargetingsFromBulkInput}>批量导入否定商品</Button>
+          </div>
+        </div>
+        {w.negativeProductTargetings.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-border/70 p-4 text-sm text-muted-foreground">还没有否定商品。需要的话点“添加”。</div>
+        ) : (
+          <div className="overflow-auto rounded-lg border border-border/70">
+            <Table>
+              <TableHeader><TableRow><TableHead className="min-w-[360px]">Product Targeting Expression</TableHead><TableHead className="min-w-[160px]">State</TableHead><TableHead className="w-[1%]"></TableHead></TableRow></TableHeader>
+              <TableBody>{w.negativeProductTargetings.map((npt, idx) => (
+                <TableRow key={idx}>
+                  <TableCell><Input value={npt.expression} onChange={(e) => set("negativeProductTargetings", w.negativeProductTargetings.map((x, i) => (i === idx ? { ...x, expression: e.target.value } : x)))} placeholder={'asin="B0XXXXXXXX"'} /></TableCell>
+                  <TableCell><Select value={npt.state} onValueChange={(v) => set("negativeProductTargetings", w.negativeProductTargetings.map((x, i) => (i === idx ? { ...x, state: v as State } : x)))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{stateOptions.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent></Select></TableCell>
+                  <TableCell><Button variant="ghost" size="icon" onClick={() => set("negativeProductTargetings", w.negativeProductTargetings.filter((_, i) => i !== idx))}><Trash2 className="h-4 w-4" /></Button></TableCell>
+                </TableRow>
+              ))}</TableBody>
+            </Table>
+          </div>
+        )}
+      </section>
+
+      <Separator />
 
         <div className="rounded-lg border border-border/70 bg-muted/30 p-3 text-xs text-muted-foreground">
           提示：SB的字段（Ad Format、品牌资产ID等）会随账户与广告类型变化；如上传报错，请依据报错信息补齐对应字段或调整取值规则。
         </div>
-      </section>
+
+      <Dialog open={sbDuplicateOpen} onOpenChange={setSbDuplicateOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>批量复制多个类似SB活动</DialogTitle>
+            <DialogDescription>
+              当前SB表单会作为母版，生成编号后的 Campaign ID / Campaign Name / Ad Group ID；关键词、否词、否定商品和创意字段会同步复制。
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4">
+            <div className="grid gap-3 sm:grid-cols-4">
+              <Labeled label="复制数量" required hint="额外复制数量；母版也会编号">
+                <Input type="number" min={1} value={sbDuplicateCount} onChange={(e) => setSbDuplicateCount(Number(e.target.value || 0))} />
+              </Labeled>
+              <Labeled label="起始编号" required>
+                <Input type="number" min={0} value={sbDuplicateStartNumber} onChange={(e) => setSbDuplicateStartNumber(Number(e.target.value || 0))} />
+              </Labeled>
+              <Labeled label="编号位数" required>
+                <Input type="number" min={1} max={6} value={sbDuplicateDigits} onChange={(e) => setSbDuplicateDigits(Number(e.target.value || 1))} />
+              </Labeled>
+              <Labeled label="分隔符">
+                <Input value={sbDuplicateSeparator} onChange={(e) => setSbDuplicateSeparator(e.target.value)} placeholder="-" />
+              </Labeled>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Labeled label="Campaign Name 前缀" hint="留空则在原值后追加编号">
+                <Input value={sbDuplicateCampaignNamePrefix} onChange={(e) => setSbDuplicateCampaignNamePrefix(e.target.value)} placeholder="SB-Brand-" />
+              </Labeled>
+              <Labeled label="Campaign ID 前缀" hint="留空则在原值后追加编号">
+                <Input value={sbDuplicateCampaignIdPrefix} onChange={(e) => setSbDuplicateCampaignIdPrefix(e.target.value)} placeholder="SB-C-" />
+              </Labeled>
+              <Labeled label="Ad Group ID 前缀" hint="留空则在原值后追加编号">
+                <Input value={sbDuplicateAdGroupIdPrefix} onChange={(e) => setSbDuplicateAdGroupIdPrefix(e.target.value)} placeholder="SB-AG-" />
+              </Labeled>
+            </div>
+            <div className="rounded-lg border border-border/70 bg-muted/30 p-3 text-xs text-muted-foreground">
+              预览：{buildDuplicateValue(w.campaignName || "Campaign", sbDuplicateCampaignNamePrefix, buildBatchSequenceSuffix(Math.max(0, Math.floor(sbDuplicateStartNumber)), Math.min(6, Math.max(1, Math.floor(sbDuplicateDigits || 1))), sbDuplicateSeparator))}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSbDuplicateOpen(false)}>取消</Button>
+            <Button onClick={applySbBatchDuplicate}>立即生成</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

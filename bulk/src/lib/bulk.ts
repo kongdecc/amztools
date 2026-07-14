@@ -291,6 +291,11 @@ export type SbCampaignWizard = {
   customImageAssetId?: string;
 
   keywords: Array<{ text: string; matchType: SbMatchType; bid: number; state: State }>;
+  negativeKeywords: Array<{ text: string; matchType: Extract<SpMatchType, "negativeExact" | "negativePhrase">; state: State }>;
+  negativeProductTargetings: Array<{ expression: string; state: State }>;
+  batchCopies?: SbCampaignWizard[];
+  splitSkag: boolean;
+  skagScope: "campaigns" | "adGroups";
 };
 
 export type SdCampaignWizard = {
@@ -434,6 +439,12 @@ export function validateSbWizard(w: SbCampaignWizard): string[] {
     if (!k.text.trim()) issues.push(`关键词第${i + 1}行：Keyword Text 不能为空`);
     if (!(k.bid > 0)) issues.push(`关键词第${i + 1}行：Bid 必须大于0`);
   }
+  for (const [i, nk] of w.negativeKeywords.entries()) {
+    if (!nk.text.trim()) issues.push(`否词第${i + 1}行：Keyword Text 不能为空`);
+  }
+  for (const [i, npt] of w.negativeProductTargetings.entries()) {
+    if (!npt.expression.trim()) issues.push(`否定商品第${i + 1}行：Product Targeting Expression 不能为空`);
+  }
   return issues;
 }
 
@@ -517,6 +528,14 @@ export function warnSbWizard(w: SbCampaignWizard, opts?: { minBidSb?: number; ke
     const words = countWords(text);
     if (words > 10) warnings.push(`关键词第${i + 1}行：包含${words}个单词，可能过长（建议≤10）`);
     if (k.bid != null && Number(k.bid) < minBid) warnings.push(`关键词第${i + 1}行：Bid ${k.bid} 低于最低建议出价 ${minBid}`);
+  }
+
+  for (const [i, nk] of w.negativeKeywords.entries()) {
+    const text = (nk.text || "").trim();
+    if (!text) continue;
+    const words = countWords(text);
+    if (nk.matchType === "negativePhrase" && words > 4) warnings.push(`否词第${i + 1}行：词组否定含${words}个单词，可能会报错（经验值≤4）`);
+    if (nk.matchType === "negativeExact" && words > 10) warnings.push(`否词第${i + 1}行：精准否定含${words}个单词，可能会报错（经验值≤10）`);
   }
 
   return warnings;
@@ -697,36 +716,107 @@ function sbBaseRow(w: SbCampaignWizard): SbBulkRow {
   };
 }
 
-export function buildSbRows(w: SbCampaignWizard): SbBulkRow[] {
+
+function sbSuffixValue(value: string, suffix: string) {
+  const trimmed = value.trim();
+  return trimmed ? `${trimmed}${suffix}` : trimmed;
+}
+
+function sbKeywordSegment(value: string, maxLength = 32) {
+  return value
+    .trim()
+    .replace(/[\s/\\,:*?"<>|#]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, maxLength);
+}
+
+function sbSkagGroups(w: SbCampaignWizard) {
+  if (!w.splitSkag) return [{ w, keywords: w.keywords }];
+  const keywordRows = w.keywords.filter((row) => row.text.trim());
+  if (!keywordRows.length) return [{ w, keywords: w.keywords }];
+  return keywordRows.map((keyword, index) => {
+    const keywordSegment = sbKeywordSegment(keyword.text);
+    const suffix = `-${String(index + 1).padStart(3, "0")}${keywordSegment ? `-${keywordSegment}` : ""}`;
+    const splitCampaign = w.skagScope === "campaigns";
+    return {
+      w: {
+        ...w,
+        campaignId: splitCampaign ? sbSuffixValue(w.campaignId, suffix) : w.campaignId,
+        campaignName: splitCampaign ? sbSuffixValue(w.campaignName, suffix) : w.campaignName,
+        adGroupId: sbSuffixValue(w.adGroupId, suffix),
+      },
+      keywords: [keyword],
+    };
+  });
+}
+function buildSingleSbRows(w: SbCampaignWizard): SbBulkRow[] {
   const rows: SbBulkRow[] = [];
+  const groups = sbSkagGroups(w);
+  const campaignPerKeyword = w.splitSkag && w.skagScope === "campaigns";
 
-  // Campaign
-  rows.push({
-    ...sbBaseRow(w),
-    Entity: "Campaign",
-  });
-
-  // Ad Group
-  rows.push({
-    ...sbBaseRow(w),
-    Entity: "Ad Group",
-  });
-
-  // Keywords
-  for (const k of w.keywords) {
+  if (!campaignPerKeyword) {
     rows.push({
       ...sbBaseRow(w),
-      Entity: "Keyword",
-      State: k.state,
-      Bid: k.bid,
-      "Keyword Text": k.text,
-      "Match Type": k.matchType,
+      Entity: "Campaign",
     });
+  }
+
+  for (const group of groups) {
+    if (campaignPerKeyword) {
+      rows.push({
+        ...sbBaseRow(group.w),
+        Entity: "Campaign",
+      });
+    }
+
+    rows.push({
+      ...sbBaseRow(group.w),
+      Entity: "Ad Group",
+    });
+
+    for (const k of group.keywords) {
+      rows.push({
+        ...sbBaseRow(group.w),
+        Entity: "Keyword",
+        State: k.state,
+        Bid: k.bid,
+        "Keyword Text": k.text,
+        "Match Type": k.matchType,
+      });
+    }
+
+    for (const nk of group.w.negativeKeywords) {
+      rows.push({
+        ...sbBaseRow(group.w),
+        Entity: "Negative Keyword",
+        State: nk.state,
+        "Keyword Text": nk.text,
+        "Match Type": nk.matchType,
+      });
+    }
+
+    for (const npt of group.w.negativeProductTargetings) {
+      rows.push({
+        ...sbBaseRow(group.w),
+        Entity: "Negative Product Targeting",
+        State: npt.state,
+        "Product Targeting Expression": npt.expression,
+      });
+    }
   }
 
   return rows;
 }
 
+function stripSbBatchCopies(w: SbCampaignWizard): SbCampaignWizard {
+  return { ...w, batchCopies: [] };
+}
+
+export function buildSbRows(w: SbCampaignWizard): SbBulkRow[] {
+  const campaigns = [stripSbBatchCopies(w), ...(w.batchCopies ?? []).map(stripSbBatchCopies)];
+  return campaigns.flatMap((campaign) => buildSingleSbRows(campaign));
+}
 function sdBaseRow(w: SdCampaignWizard): SdBulkRow {
   return {
     Product: "Sponsored Display",
