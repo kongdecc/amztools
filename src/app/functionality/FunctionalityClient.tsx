@@ -166,6 +166,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
     'max-reserve-fee': Calculator,
     'keyword-strategy': Filter,
     'search-term-volatility': Activity,
+    'amazon-category-selection-center': LayoutDashboard,
     'partner-equity-calculator': Users,
     'natural-traffic-tool': BarChart3,
     'freight-rate-radar': Truck,
