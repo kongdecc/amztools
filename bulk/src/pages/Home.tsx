@@ -1189,6 +1189,8 @@ function duplicateSbCampaignWizard(
     campaignId: buildDuplicateValue(source.campaignId, overrides?.campaignIdPrefix || "", suffix),
     campaignName: buildDuplicateValue(source.campaignName, overrides?.campaignNamePrefix || "", suffix),
     adGroupId: buildDuplicateValue(source.adGroupId, overrides?.adGroupIdPrefix || "", suffix),
+    adGroupName: buildDuplicateValue(source.adGroupName, overrides?.adGroupIdPrefix || "", suffix),
+    adName: buildDuplicateValue(source.adName, overrides?.adGroupIdPrefix || "", suffix),
     landingPageAsins: [...source.landingPageAsins],
     creativeAsins: [...source.creativeAsins],
     keywords: source.keywords.map((row) => ({ ...row })),
@@ -2903,6 +2905,8 @@ function createInitialSb(): SbCampaignWizard {
     budget: 20,
     portfolioId: "",
     adGroupId: "",
+    adGroupName: "",
+    adName: "",
     adFormat: "productCollection",
     landingPageUrl: "",
     landingPageAsins: [],
@@ -3216,7 +3220,7 @@ export default function Home() {
           toast.error("请先修正表单问题", { description: issuesNow.slice(0, 6).join("；") });
           return;
         }
-        sheets[SHEETS.sbCampaigns] = buildSbRows(sb);
+        sheets[SHEETS.sbMultiAdGroup] = buildSbRows(sb);
         filenameBase = sb.campaignName || sb.campaignId || "SB批量广告";
       }
 
@@ -3741,7 +3745,7 @@ export default function Home() {
                 rowMeta={filteredPreviewMeta}
               />
             )}
-            {tool === "sb" && <PreviewTable title="Sponsored Brands Campaigns" headers={HEADERS[SHEETS.sbCampaigns]} rows={filteredPreviewRows} />}
+            {tool === "sb" && <PreviewTable title="SB Multi Ad Group Campaigns" headers={HEADERS[SHEETS.sbMultiAdGroup]} rows={filteredPreviewRows} />}
             {tool === "sd" && <PreviewTable title="Sponsored Display Campaigns" headers={HEADERS[SHEETS.sdCampaigns]} rows={filteredPreviewRows} />}
             {tool === "portfolios" && <PreviewTable title="Portfolios" headers={HEADERS[SHEETS.portfolios]} rows={filteredPreviewRows} />}
 
@@ -6670,7 +6674,7 @@ function SpWizardUI({
             <div className="flex items-center justify-between">
               <SectionTitle className="min-w-0 flex-1" tone="emerald">D. Product Ad（投放SKU）</SectionTitle>
               <Badge variant="outline" className="font-mono text-[11px]">
-                Entity: Product Ad
+                Entity: Product Collection Ad
               </Badge>
             </div>
             <div className="rounded-lg border border-border/70 bg-muted/20 p-3">
@@ -7877,7 +7881,7 @@ function SbWizardUI({
           <h3 className="font-semibold">A. Campaign（品牌推广广告活动）</h3>
           <div className="flex flex-wrap items-center justify-end gap-2">
             <Badge variant="outline" className="font-mono text-[11px]">
-              Sheet: Sponsored Brands Campaigns
+              Sheet: SB Multi Ad Group Campaigns
             </Badge>
             <Button size="sm" className="bg-slate-900 text-white hover:bg-slate-800" onClick={openSbBatchDuplicateDialog}>
               批量复制
@@ -7951,7 +7955,12 @@ function SbWizardUI({
           <Labeled label="Ad Group ID" hint="广告组关联ID（不是名称）；同一广告组下所有行保持一致" required>
             <Input value={w.adGroupId} onChange={(e) => set("adGroupId", e.target.value)} placeholder="如：SB-KW-XXX" />
           </Labeled>
-          <div />
+          <Labeled label="Ad Group Name" hint="后台要求的广告组名称；可与ID相同或更易读" required>
+            <Input value={w.adGroupName} onChange={(e) => set("adGroupName", e.target.value)} placeholder="如：SB-KW-XXX" />
+          </Labeled>
+          <Labeled label="Ad Name" hint="SB广告组下必须有广告实体；商品集会自动导出为 Product Collection Ad" required>
+            <Input value={w.adName} onChange={(e) => set("adName", e.target.value)} placeholder="如：SB-KW-XXX-Ad" />
+          </Labeled>
         </div>
       </section>
 
@@ -7961,12 +7970,12 @@ function SbWizardUI({
         <div className="flex items-center justify-between">
           <h3 className="font-semibold">C. 创意与落地页</h3>
           <Badge variant="outline" className="font-mono text-[11px]">
-            Ad Format / Landing Page / Creative
+            Landing Page / Brand / Creative
           </Badge>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <Labeled label="Ad Format" hint="不同SB类型会不同" required>
+          <Labeled label="Landing Page Type" hint="对应模板列；常见值如 productCollection，以账户后台支持为准" required>
             <Input value={w.adFormat} onChange={(e) => set("adFormat", e.target.value)} placeholder="例如：productCollection" />
           </Labeled>
           <Labeled label="Landing Page URL" hint="可选（与ASIN二选一或都填）">
@@ -7991,8 +8000,8 @@ function SbWizardUI({
               placeholder="B0XXXXXXX\nB0YYYYYYY"
             />
           </Labeled>
-          <Labeled label="Brand Entity ID" hint="可选">
-            <Input value={w.brandEntityId || ""} onChange={(e) => set("brandEntityId", e.target.value)} />
+          <Labeled label="Brand Entity ID" hint="必填。不是品牌名；需填写后台/品牌资料中的品牌实体ID" required>
+            <Input value={w.brandEntityId || ""} onChange={(e) => set("brandEntityId", e.target.value)} placeholder="例如：amzn1.brand..." />
           </Labeled>
           <Labeled label="Brand Name" hint="可选">
             <Input value={w.brandName || ""} onChange={(e) => set("brandName", e.target.value)} />
@@ -8218,7 +8227,7 @@ function SbWizardUI({
       <Separator />
 
         <div className="rounded-lg border border-border/70 bg-muted/30 p-3 text-xs text-muted-foreground">
-          提示：SB的字段（Ad Format、品牌资产ID等）会随账户与广告类型变化；如上传报错，请依据报错信息补齐对应字段或调整取值规则。
+          提示：SB上传通常要求 Brand Entity ID；它不是品牌名称。如后台报 brandEntityId 为空，请先补齐品牌实体ID后再导出。
         </div>
 
       <Dialog open={sbDuplicateOpen} onOpenChange={setSbDuplicateOpen}>
@@ -8226,7 +8235,7 @@ function SbWizardUI({
           <DialogHeader>
             <DialogTitle>批量复制多个类似SB活动</DialogTitle>
             <DialogDescription>
-              当前SB表单会作为母版，生成编号后的 Campaign ID / Campaign Name / Ad Group ID；关键词、否词、否定商品和创意字段会同步复制。
+              当前SB表单会作为母版，生成编号后的 Campaign ID / Campaign Name / Ad Group ID；广告实体、关键词、否词、否定商品和创意字段会同步复制。
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4">
@@ -8251,7 +8260,7 @@ function SbWizardUI({
               <Labeled label="Campaign ID 前缀" hint="留空则在原值后追加编号">
                 <Input value={sbDuplicateCampaignIdPrefix} onChange={(e) => setSbDuplicateCampaignIdPrefix(e.target.value)} placeholder="SB-C-" />
               </Labeled>
-              <Labeled label="Ad Group ID 前缀" hint="留空则在原值后追加编号">
+              <Labeled label="广告组/广告前缀" hint="用于 Ad Group ID、Ad Group Name、Ad Name；留空则在原值后追加编号">
                 <Input value={sbDuplicateAdGroupIdPrefix} onChange={(e) => setSbDuplicateAdGroupIdPrefix(e.target.value)} placeholder="SB-AG-" />
               </Labeled>
             </div>
@@ -8388,7 +8397,7 @@ function SdWizardUI({
         <div className="flex items-center justify-between">
           <h3 className="font-semibold">C. Ad（投放SKU）</h3>
           <Badge variant="outline" className="font-mono text-[11px]">
-            Entity: Ad
+            Entity: Product Collection Ad
           </Badge>
         </div>
         <Labeled label="SKU列表" hint="一行一个SKU" required>

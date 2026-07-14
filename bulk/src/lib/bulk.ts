@@ -276,6 +276,8 @@ export type SbCampaignWizard = {
 
   // SB常见结构：Campaign / Ad Group / Keyword（或Product Targeting）
   adGroupId: string;
+  adGroupName: string;
+  adName: string;
 
   // 创意/落地页
   adFormat: string; // 例如 productCollection / video / storeSpotlight（以账户支持为准）
@@ -327,7 +329,7 @@ export type SdCampaignWizard = {
 };
 
 export type SpBulkRow = Partial<Record<(typeof HEADERS)[typeof SHEETS.spCampaigns][number], string | number | undefined>>;
-export type SbBulkRow = Partial<Record<(typeof HEADERS)[typeof SHEETS.sbCampaigns][number], string | number | undefined>>;
+export type SbBulkRow = Partial<Record<(typeof HEADERS)[typeof SHEETS.sbMultiAdGroup][number], string | number | undefined>>;
 export type SdBulkRow = Partial<Record<(typeof HEADERS)[typeof SHEETS.sdCampaigns][number], string | number | undefined>>;
 export type PortfolioBulkRow = Partial<Record<(typeof HEADERS)[typeof SHEETS.portfolios][number], string | number | undefined>>;
 
@@ -430,7 +432,10 @@ export function validateSbWizard(w: SbCampaignWizard): string[] {
   if (w.endDate && !yyyymmdd(w.endDate)) issues.push("End Date 必须是YYYYMMDD");
   if (!(w.budget > 0)) issues.push("Budget 必须大于0");
   if (!w.adGroupId.trim()) issues.push("Ad Group ID 不能为空");
-  if (!w.adFormat.trim()) issues.push("Ad Format 不能为空（不同SB类型会不同）");
+  if (!w.adGroupName.trim()) issues.push("Ad Group Name 不能为空");
+  if (!w.adName.trim()) issues.push("Ad Name 不能为空（SB广告组下必须先有广告实体）");
+  if (!w.adFormat.trim()) issues.push("Landing Page Type 不能为空（不同SB类型会不同）");
+  if (!w.brandEntityId?.trim()) issues.push("Brand Entity ID 不能为空（SB上传要求品牌实体ID）");
   if (!landingPageAsins.length && !w.landingPageUrl) issues.push("Landing Page ASINs 或 Landing Page URL 至少填写一个");
   if (!w.creativeHeadline.trim()) issues.push("Creative Headline 不能为空");
   if (!creativeAsins.length) issues.push("Creative ASINs 至少填写1个");
@@ -699,18 +704,20 @@ function sbBaseRow(w: SbCampaignWizard): SbBulkRow {
     "Portfolio ID": w.portfolioId || "",
     "Ad Group ID": w.adGroupId,
     "Campaign Name": w.campaignName,
+    "Ad Group Name": w.adGroupName,
+    "Ad Name": w.adName,
     "Start Date": w.startDate,
     "End Date": w.endDate || "",
     State: w.state,
     "Budget Type": w.budgetType,
     Budget: w.budget,
-    "Ad Format": w.adFormat,
     "Landing Page URL": w.landingPageUrl || "",
     "Landing Page ASINs": landingPageAsins.join(","),
+    "Landing Page Type": w.adFormat,
     "Brand Entity ID": w.brandEntityId || "",
     "Brand Name": w.brandName || "",
     "Brand Logo Asset ID": w.brandLogoAssetId || "",
-    "Custom Image Asset ID": w.customImageAssetId || "",
+    "Custom Images": w.customImageAssetId || "",
     "Creative Headline": w.creativeHeadline,
     "Creative ASINs": creativeAsins.join(","),
   };
@@ -731,6 +738,60 @@ function sbKeywordSegment(value: string, maxLength = 32) {
     .slice(0, maxLength);
 }
 
+function sbAdEntity(w: SbCampaignWizard) {
+  const value = w.adFormat.trim().toLowerCase().replace(/[\s_-]+/g, "");
+  if (value.includes("video")) return "Video Ad";
+  if (value.includes("storespotlight") || value.includes("storefocal") || value.includes("store")) return "Store Spotlight Ad";
+  return "Product Collection Ad";
+}
+
+function sbTempId(prefix: string, value: string) {
+  const segment = sbKeywordSegment(value, 64) || "ITEM";
+  return `${prefix}-${segment}`;
+}
+
+function clearSbFields(row: SbBulkRow, fields: string[]) {
+  const next: SbBulkRow = { ...row };
+  for (const field of fields) (next as Record<string, unknown>)[field] = "";
+  return next;
+}
+
+const SB_MULTI_CAMPAIGN_CLEAR_FIELDS = [
+  "Ad Group ID", "Ad ID", "Ad Group Name", "Ad Name", "Bid", "Placement", "Percentage",
+  "Audience ID", "Shopper Cohort Percentage", "Shopper Cohort Type", "Keyword Text",
+  "Match Type", "Native Language Keyword", "Native Language Locale", "Product Targeting Expression",
+  "Landing Page URL", "Landing Page ASINs", "Landing Page Type", "Brand Name",
+  "Consent To Translate", "Brand Logo Asset ID", "Brand Logo Crop", "Custom Images",
+  "Creative Headline", "Creative ASINs", "Video Asset IDs", "Subpages"
+];
+
+const SB_MULTI_ADGROUP_CLEAR_FIELDS = [
+  "Campaign Name", "Ad ID", "Ad Name", "Start Date", "End Date", "Brand Entity ID",
+  "Budget Type", "Budget", "Bid Optimization", "Product Location", "Bid", "Placement",
+  "Percentage", "Audience ID", "Shopper Cohort Percentage", "Shopper Cohort Type",
+  "Keyword Text", "Match Type", "Native Language Keyword", "Native Language Locale",
+  "Product Targeting Expression", "Landing Page URL", "Landing Page ASINs", "Landing Page Type",
+  "Brand Name", "Consent To Translate", "Brand Logo Asset ID", "Brand Logo Crop",
+  "Custom Images", "Creative Headline", "Creative ASINs", "Video Asset IDs", "Subpages", "Sites"
+];
+
+const SB_MULTI_AD_CLEAR_FIELDS = [
+  "Campaign Name", "Ad Group Name", "Start Date", "End Date", "Brand Entity ID",
+  "Budget Type", "Budget", "Bid Optimization", "Product Location", "Bid", "Placement",
+  "Percentage", "Audience ID", "Shopper Cohort Percentage", "Shopper Cohort Type",
+  "Keyword Text", "Match Type", "Native Language Keyword", "Native Language Locale",
+  "Product Targeting Expression", "Sites"
+];
+
+const SB_MULTI_TARGET_CLEAR_FIELDS = [
+  "Campaign Name", "Ad Group Name", "Ad Name", "Ad ID", "Start Date", "End Date",
+  "Brand Entity ID", "Budget Type", "Budget", "Bid Optimization", "Product Location",
+  "Placement", "Percentage", "Audience ID", "Shopper Cohort Percentage", "Shopper Cohort Type",
+  "Landing Page URL", "Landing Page ASINs", "Landing Page Type", "Brand Name",
+  "Consent To Translate", "Brand Logo Asset ID", "Brand Logo Crop", "Custom Images",
+  "Creative Headline", "Creative ASINs", "Video Asset IDs", "Subpages", "Sites"
+];
+
 function sbSkagGroups(w: SbCampaignWizard) {
   if (!w.splitSkag) return [{ w, keywords: w.keywords }];
   const keywordRows = w.keywords.filter((row) => row.text.trim());
@@ -745,6 +806,8 @@ function sbSkagGroups(w: SbCampaignWizard) {
         campaignId: splitCampaign ? sbSuffixValue(w.campaignId, suffix) : w.campaignId,
         campaignName: splitCampaign ? sbSuffixValue(w.campaignName, suffix) : w.campaignName,
         adGroupId: sbSuffixValue(w.adGroupId, suffix),
+        adGroupName: sbSuffixValue(w.adGroupName, suffix),
+        adName: sbSuffixValue(w.adName, suffix),
       },
       keywords: [keyword],
     };
@@ -756,53 +819,62 @@ function buildSingleSbRows(w: SbCampaignWizard): SbBulkRow[] {
   const campaignPerKeyword = w.splitSkag && w.skagScope === "campaigns";
 
   if (!campaignPerKeyword) {
-    rows.push({
+    rows.push(clearSbFields({
       ...sbBaseRow(w),
       Entity: "Campaign",
-    });
+      "Bid Optimization": "false",
+    }, SB_MULTI_CAMPAIGN_CLEAR_FIELDS));
   }
 
   for (const group of groups) {
     if (campaignPerKeyword) {
-      rows.push({
+      rows.push(clearSbFields({
         ...sbBaseRow(group.w),
         Entity: "Campaign",
-      });
+        "Bid Optimization": "false",
+      }, SB_MULTI_CAMPAIGN_CLEAR_FIELDS));
     }
 
-    rows.push({
+    rows.push(clearSbFields({
       ...sbBaseRow(group.w),
       Entity: "Ad Group",
-    });
+    }, SB_MULTI_ADGROUP_CLEAR_FIELDS));
+
+    rows.push(clearSbFields({
+      ...sbBaseRow(group.w),
+      Entity: sbAdEntity(group.w),
+      "Ad ID": sbTempId("SB-AD", `${group.w.adGroupId}-${group.w.adName}`),
+      State: group.w.state,
+    }, SB_MULTI_AD_CLEAR_FIELDS));
 
     for (const k of group.keywords) {
-      rows.push({
+      rows.push(clearSbFields({
         ...sbBaseRow(group.w),
         Entity: "Keyword",
         State: k.state,
         Bid: k.bid,
         "Keyword Text": k.text,
         "Match Type": k.matchType,
-      });
+      }, SB_MULTI_TARGET_CLEAR_FIELDS));
     }
 
     for (const nk of group.w.negativeKeywords) {
-      rows.push({
+      rows.push(clearSbFields({
         ...sbBaseRow(group.w),
         Entity: "Negative Keyword",
         State: nk.state,
         "Keyword Text": nk.text,
         "Match Type": nk.matchType,
-      });
+      }, SB_MULTI_TARGET_CLEAR_FIELDS));
     }
 
     for (const npt of group.w.negativeProductTargetings) {
-      rows.push({
+      rows.push(clearSbFields({
         ...sbBaseRow(group.w),
         Entity: "Negative Product Targeting",
         State: npt.state,
         "Product Targeting Expression": npt.expression,
-      });
+      }, SB_MULTI_TARGET_CLEAR_FIELDS));
     }
   }
 
@@ -855,7 +927,7 @@ export function buildSdRows(w: SdCampaignWizard): SdBulkRow[] {
   for (const sku of skus) {
     rows.push({
       ...sdBaseRow(w),
-      Entity: "Ad",
+      Entity: "Product Ad",
       SKU: sku,
       State: "enabled",
     });
