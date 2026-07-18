@@ -1,4 +1,4 @@
-// 设计理念：Spreadsheet Punk（工业表格朋克）
+﻿// 设计理念：Spreadsheet Punk（工业表格朋克）
 // - 以“工具感/效率感”为核心：高对比、密度适中、强调结构线与信息层级
 // - 强调可视化录入 → 自动生成Bulk Sheet行，不强迫用户直接编辑Excel
 
@@ -105,6 +105,8 @@ export const HEADERS = {
     "Creative ASINs",
     "Video Asset IDs",
     "Subpages",
+    "Product Exclusions",
+    "Ad Title",
     "Sites",
   ],
   [SHEETS.rasCampaigns]: [
@@ -282,6 +284,7 @@ export type SbCampaignWizard = {
   // 创意/落地页
   adFormat: string; // 例如 productCollection / video / storeSpotlight（以账户支持为准）
   landingPageUrl?: string;
+  collectionType: "automatic" | "manual";
   landingPageAsins: string[];
   creativeHeadline: string;
   creativeAsins: string[];
@@ -426,6 +429,10 @@ export function validateSbWizard(w: SbCampaignWizard): string[] {
   const issues: string[] = [];
   const landingPageAsins = compactLines(w.landingPageAsins);
   const creativeAsins = compactLines(w.creativeAsins);
+  const entity = sbAdEntity(w);
+  const isProductCollection = entity === "Product Collection Ad";
+  const isCollectionAd = isProductCollection;
+  const isVideoAd = entity === "Video Ad";
   if (!w.campaignId.trim()) issues.push("Campaign ID 不能为空");
   if (!w.campaignName.trim()) issues.push("Campaign Name 不能为空");
   if (!yyyymmdd(w.startDate)) issues.push("Start Date 必须是YYYYMMDD");
@@ -434,11 +441,14 @@ export function validateSbWizard(w: SbCampaignWizard): string[] {
   if (!w.adGroupId.trim()) issues.push("Ad Group ID 不能为空");
   if (!w.adGroupName.trim()) issues.push("Ad Group Name 不能为空");
   if (!w.adName.trim()) issues.push("Ad Name 不能为空（SB广告组下必须先有广告实体）");
-  if (!w.adFormat.trim()) issues.push("SB广告类型不能为空（用于判断 Product Collection Ad / Video Ad）");
+  if (!w.adFormat.trim()) issues.push("SB ad type is required for Collection / Video / Store Spotlight");
   if (!w.brandEntityId?.trim()) issues.push("Brand Entity ID 不能为空（SB上传要求品牌实体ID）");
-  if (!landingPageAsins.length && !w.landingPageUrl) issues.push("Landing Page ASINs 或 Landing Page URL 至少填写一个");
-  if (!w.creativeHeadline.trim()) issues.push("Creative Headline 不能为空");
-  if (!creativeAsins.length) issues.push("Creative ASINs 至少填写1个");
+  if (isCollectionAd && !w.brandName?.trim()) issues.push("Brand Name is required for SB collection ads");
+  if (isProductCollection && !w.creativeHeadline.trim()) issues.push("Creative Headline is required for current SB bulk compatibility mode");
+  if (isCollectionAd && creativeAsins.length < 3) issues.push("Creative ASINs requires 3-10 ASINs for current SB bulk compatibility mode");
+  if (isCollectionAd && creativeAsins.length > 10) issues.push("Creative ASINs allows at most 10 ASINs");
+  if (isCollectionAd && creativeAsins.some((asin) => !/^B[A-Z0-9]{9}$/i.test(asin.trim()))) issues.push("Creative ASINs must be ASINs like B0XXXXXXXX, not SKU values");
+  if (isVideoAd && creativeAsins.length !== 1) issues.push("Video Ad requires exactly 1 Creative ASIN");
   if (!w.keywords.length) issues.push("至少填写1个关键词");
   for (const [i, k] of w.keywords.entries()) {
     if (!k.text.trim()) issues.push(`关键词第${i + 1}行：Keyword Text 不能为空`);
@@ -697,6 +707,9 @@ export function buildPortfolioRows(p: PortfolioWizard): PortfolioBulkRow[] {
 function sbBaseRow(w: SbCampaignWizard): SbBulkRow {
   const landingPageAsins = compactLines(w.landingPageAsins);
   const creativeAsins = compactLines(w.creativeAsins);
+  const entity = sbAdEntity(w);
+  const exportedCreativeAsins = creativeAsins;
+  const exportedLandingPageAsins = landingPageAsins.length ? landingPageAsins : creativeAsins;
   return {
     Product: "Sponsored Brands",
     Operation: "Create",
@@ -711,15 +724,18 @@ function sbBaseRow(w: SbCampaignWizard): SbBulkRow {
     State: w.state,
     "Budget Type": w.budgetType,
     Budget: w.budget,
+    "Bid Optimization": "True",
     "Landing Page URL": w.landingPageUrl || "",
-    "Landing Page ASINs": landingPageAsins.join(","),
+    "Landing Page ASINs": exportedLandingPageAsins.join(","),
     "Landing Page Type": "",
     "Brand Entity ID": w.brandEntityId || "",
     "Brand Name": w.brandName || "",
     "Brand Logo Asset ID": w.brandLogoAssetId || "",
     "Custom Images": w.customImageAssetId || "",
     "Creative Headline": w.creativeHeadline,
-    "Creative ASINs": creativeAsins.join(","),
+    "Creative ASINs": exportedCreativeAsins.join(","),
+    "Product Exclusions": "",
+    "Ad Title": "",
   };
 }
 
@@ -762,7 +778,7 @@ const SB_MULTI_CAMPAIGN_CLEAR_FIELDS = [
   "Match Type", "Native Language Keyword", "Native Language Locale", "Product Targeting Expression",
   "Landing Page URL", "Landing Page ASINs", "Landing Page Type", "Brand Name",
   "Consent To Translate", "Brand Logo Asset ID", "Brand Logo Crop", "Custom Images",
-  "Creative Headline", "Creative ASINs", "Video Asset IDs", "Subpages"
+  "Creative Headline", "Creative ASINs", "Video Asset IDs", "Subpages", "Product Exclusions", "Ad Title"
 ];
 
 const SB_MULTI_ADGROUP_CLEAR_FIELDS = [
@@ -772,7 +788,7 @@ const SB_MULTI_ADGROUP_CLEAR_FIELDS = [
   "Keyword Text", "Match Type", "Native Language Keyword", "Native Language Locale",
   "Product Targeting Expression", "Landing Page URL", "Landing Page ASINs", "Landing Page Type",
   "Brand Name", "Consent To Translate", "Brand Logo Asset ID", "Brand Logo Crop",
-  "Custom Images", "Creative Headline", "Creative ASINs", "Video Asset IDs", "Subpages", "Sites"
+  "Custom Images", "Creative Headline", "Creative ASINs", "Video Asset IDs", "Subpages", "Product Exclusions", "Ad Title", "Sites"
 ];
 
 const SB_MULTI_AD_CLEAR_FIELDS = [
@@ -789,7 +805,7 @@ const SB_MULTI_TARGET_CLEAR_FIELDS = [
   "Placement", "Percentage", "Audience ID", "Shopper Cohort Percentage", "Shopper Cohort Type",
   "Landing Page URL", "Landing Page ASINs", "Landing Page Type", "Brand Name",
   "Consent To Translate", "Brand Logo Asset ID", "Brand Logo Crop", "Custom Images",
-  "Creative Headline", "Creative ASINs", "Video Asset IDs", "Subpages", "Sites"
+  "Creative Headline", "Creative ASINs", "Video Asset IDs", "Subpages", "Product Exclusions", "Ad Title", "Sites"
 ];
 
 function sbSkagGroups(w: SbCampaignWizard) {
@@ -835,13 +851,12 @@ function buildSingleSbRows(w: SbCampaignWizard): SbBulkRow[] {
 
     rows.push(clearSbFields({
       ...sbBaseRow(group.w),
-      Entity: "Ad Group",
+      Entity: "Ad group",
     }, SB_MULTI_ADGROUP_CLEAR_FIELDS));
 
     rows.push(clearSbFields({
       ...sbBaseRow(group.w),
       Entity: sbAdEntity(group.w),
-      "Ad ID": sbTempId("SB-AD", `${group.w.adGroupId}-${group.w.adName}`),
       State: group.w.state,
     }, SB_MULTI_AD_CLEAR_FIELDS));
 
@@ -951,3 +966,6 @@ export function rowsToAoA(headers: readonly string[], rows: Record<string, any>[
   }
   return aoa;
 }
+
+
+

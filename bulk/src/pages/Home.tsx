@@ -2908,6 +2908,7 @@ function createInitialSb(): SbCampaignWizard {
     adGroupName: "",
     adName: "",
     adFormat: "productCollection",
+    collectionType: "automatic",
     landingPageUrl: "",
     landingPageAsins: [],
     creativeHeadline: "",
@@ -7730,6 +7731,7 @@ function SbWizardUI({
   const [sbDuplicateCampaignNamePrefix, setSbDuplicateCampaignNamePrefix] = useState("");
   const [sbDuplicateCampaignIdPrefix, setSbDuplicateCampaignIdPrefix] = useState("");
   const [sbDuplicateAdGroupIdPrefix, setSbDuplicateAdGroupIdPrefix] = useState("");
+  const isSbAutomaticCollection = false;
 
   function set<K extends keyof SbCampaignWizard>(key: K, value: SbCampaignWizard[K]) {
     setW((prev) => ({ ...prev, [key]: value }));
@@ -7958,7 +7960,7 @@ function SbWizardUI({
           <Labeled label="Ad Group Name" hint="后台要求的广告组名称；可与ID相同或更易读" required>
             <Input value={w.adGroupName} onChange={(e) => set("adGroupName", e.target.value)} placeholder="如：SB-KW-XXX" />
           </Labeled>
-          <Labeled label="Ad Name" hint="SB广告组下必须有广告实体；商品集会自动导出为 Product Collection Ad" required>
+          <Labeled label="Ad Name" hint="广告实体名称，会写入 Ad Name 列；不要填系统生成的 Ad ID" required>
             <Input value={w.adName} onChange={(e) => set("adName", e.target.value)} placeholder="如：SB-KW-XXX-Ad" />
           </Labeled>
         </div>
@@ -7974,42 +7976,57 @@ function SbWizardUI({
           </Badge>
         </div>
 
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-900">
+          <div className="font-semibold">SB 上传前检查</div>
+          <div>当前 bulk 上传兼容模式使用 Product Collection Ad。必填：Brand Entity ID、Brand Name、Creative Headline、3-10 个 Creative ASINs。Creative ASINs 必须填 ASIN，不是 SKU；示例值上传前一定要替换。</div>
+        </div>
+
         <div className="grid gap-3 sm:grid-cols-2">
-          <Labeled label="SB广告类型" hint="产品集填 productCollection；用于生成 Product Collection Ad，不会写入 Landing Page Type 列" required>
+          <Labeled label="SB广告类型" hint="当前可上传模式：填 productCollection，导出为 Product Collection Ad" required>
             <Input value={w.adFormat} onChange={(e) => set("adFormat", e.target.value)} placeholder="例如：productCollection" />
           </Labeled>
-          <Labeled label="Landing Page URL" hint="可选（与ASIN二选一或都填）">
+          <Labeled label="Collection Type" hint="仅作后台界面参考；当前 bulk 导出仍使用 Product Collection Ad">
+            <div className="flex flex-wrap gap-2 rounded-md border border-border/70 bg-background p-1">
+              {([ ["automatic", "Automatic"], ["manual", "Manual"] ] as const).map(([value, label]) => (
+                <Button key={value} type="button" size="sm" variant={w.collectionType === value ? "default" : "ghost"} onClick={() => set("collectionType", value)}>
+                  {label}
+                </Button>
+              ))}
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">后台界面可能显示 Automatic/Manual Collection，但当前已验证的 bulk 上传接口这里接受 Product Collection Ad。</p>
+          </Labeled>
+          <Labeled label="Landing Page URL" hint="可选。可填品牌旗舰店或落地页 URL；留空则按商品列表落地页处理">
             <Input value={w.landingPageUrl || ""} onChange={(e) => set("landingPageUrl", e.target.value)} placeholder="https://..." />
           </Labeled>
-          <Labeled label="Landing Page ASINs" hint="一行一个ASIN（可选）">
+          <Labeled label="Landing Page ASINs" hint="可选。一行一个 ASIN；留空时会沿用 Creative ASINs">
             <Textarea
               value={w.landingPageAsins.join("\n")}
               onChange={(e) => set("landingPageAsins", normalizeLines(e.target.value))}
               className="min-h-[80px] font-mono text-[13px]"
-              placeholder="B0XXXXXXX\nB0YYYYYYY"
+              placeholder="B0ABCDEF12\nB0ABCDEG34\nB0ABCDEH56"
             />
           </Labeled>
-          <Labeled label="Creative Headline" required>
-            <Input value={w.creativeHeadline} onChange={(e) => set("creativeHeadline", e.target.value)} placeholder="标题文案" />
+          <Labeled label="Creative Headline" hint="必填。广告标题/卖点文案，不要留空；避免特殊符号和过长文本" required>
+            <Input value={w.creativeHeadline} onChange={(e) => set("creativeHeadline", e.target.value)} placeholder="例如：Spring Clamps / Best Sellers / New Arrivals" />
           </Labeled>
-          <Labeled label="Creative ASINs" hint="一行一个ASIN" required>
+          <Labeled label="Creative ASINs" hint="必填。填 3-10 个同品牌 ASIN，一行一个；这里不是 SKU" required>
             <Textarea
               value={w.creativeAsins.join("\n")}
               onChange={(e) => set("creativeAsins", normalizeLines(e.target.value))}
               className="min-h-[80px] font-mono text-[13px]"
-              placeholder="B0XXXXXXX\nB0YYYYYYY"
+              placeholder="B0ABCDEF12\nB0ABCDEG34\nB0ABCDEH56"
             />
           </Labeled>
-          <Labeled label="Brand Entity ID" hint="必填。不是品牌名；需填写后台/品牌资料中的品牌实体ID" required>
-            <Input value={w.brandEntityId || ""} onChange={(e) => set("brandEntityId", e.target.value)} placeholder="例如：amzn1.brand..." />
+          <Labeled label="Brand Entity ID" hint="必填。不是品牌名，也不是 SKU；从 Brand assets data 或品牌设置复制" required>
+            <Input value={w.brandEntityId || ""} onChange={(e) => set("brandEntityId", e.target.value)} placeholder="例如：ENTITYXXXXXXXXXXXXXXX" />
           </Labeled>
-          <Labeled label="Brand Name" hint="可选">
+          <Labeled label="Brand Name" hint="必填。填写后台显示的品牌名，需与 Brand Entity ID 对应" required>
             <Input value={w.brandName || ""} onChange={(e) => set("brandName", e.target.value)} />
           </Labeled>
-          <Labeled label="Brand Logo Asset ID" hint="可选">
+          <Labeled label="Brand Logo Asset ID" hint="可选。品牌素材库里的 logo asset ID；没有可先留空">
             <Input value={w.brandLogoAssetId || ""} onChange={(e) => set("brandLogoAssetId", e.target.value)} />
           </Labeled>
-          <Labeled label="Custom Image Asset ID" hint="可选">
+          <Labeled label="Custom Image Asset ID" hint="可选。如上传报 custom image，再补素材库图片 ID">
             <Input value={w.customImageAssetId || ""} onChange={(e) => set("customImageAssetId", e.target.value)} />
           </Labeled>
         </div>
