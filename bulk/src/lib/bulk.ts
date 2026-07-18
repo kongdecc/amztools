@@ -434,7 +434,7 @@ export function validateSbWizard(w: SbCampaignWizard): string[] {
   if (!w.adGroupId.trim()) issues.push("Ad Group ID 不能为空");
   if (!w.adGroupName.trim()) issues.push("Ad Group Name 不能为空");
   if (!w.adName.trim()) issues.push("Ad Name 不能为空（SB广告组下必须先有广告实体）");
-  if (!w.adFormat.trim()) issues.push("Landing Page Type 不能为空（不同SB类型会不同）");
+  if (!w.adFormat.trim()) issues.push("SB广告类型不能为空（用于判断 Product Collection Ad / Video Ad）");
   if (!w.brandEntityId?.trim()) issues.push("Brand Entity ID 不能为空（SB上传要求品牌实体ID）");
   if (!landingPageAsins.length && !w.landingPageUrl) issues.push("Landing Page ASINs 或 Landing Page URL 至少填写一个");
   if (!w.creativeHeadline.trim()) issues.push("Creative Headline 不能为空");
@@ -713,7 +713,7 @@ function sbBaseRow(w: SbCampaignWizard): SbBulkRow {
     Budget: w.budget,
     "Landing Page URL": w.landingPageUrl || "",
     "Landing Page ASINs": landingPageAsins.join(","),
-    "Landing Page Type": w.adFormat,
+    "Landing Page Type": "",
     "Brand Entity ID": w.brandEntityId || "",
     "Brand Name": w.brandName || "",
     "Brand Logo Asset ID": w.brandLogoAssetId || "",
@@ -822,7 +822,6 @@ function buildSingleSbRows(w: SbCampaignWizard): SbBulkRow[] {
     rows.push(clearSbFields({
       ...sbBaseRow(w),
       Entity: "Campaign",
-      "Bid Optimization": "false",
     }, SB_MULTI_CAMPAIGN_CLEAR_FIELDS));
   }
 
@@ -831,7 +830,6 @@ function buildSingleSbRows(w: SbCampaignWizard): SbBulkRow[] {
       rows.push(clearSbFields({
         ...sbBaseRow(group.w),
         Entity: "Campaign",
-        "Bid Optimization": "false",
       }, SB_MULTI_CAMPAIGN_CLEAR_FIELDS));
     }
 

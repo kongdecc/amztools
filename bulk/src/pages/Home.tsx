@@ -7970,12 +7970,12 @@ function SbWizardUI({
         <div className="flex items-center justify-between">
           <h3 className="font-semibold">C. 创意与落地页</h3>
           <Badge variant="outline" className="font-mono text-[11px]">
-            Landing Page / Brand / Creative
+            Ad Type / Brand / Creative
           </Badge>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <Labeled label="Landing Page Type" hint="对应模板列；常见值如 productCollection，以账户后台支持为准" required>
+          <Labeled label="SB广告类型" hint="产品集填 productCollection；用于生成 Product Collection Ad，不会写入 Landing Page Type 列" required>
             <Input value={w.adFormat} onChange={(e) => set("adFormat", e.target.value)} placeholder="例如：productCollection" />
           </Labeled>
           <Labeled label="Landing Page URL" hint="可选（与ASIN二选一或都填）">
