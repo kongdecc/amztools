@@ -444,6 +444,7 @@ export function validateSbWizard(w: SbCampaignWizard): string[] {
   if (!w.adFormat.trim()) issues.push("SB ad type is required for Collection / Video / Store Spotlight");
   if (!w.brandEntityId?.trim()) issues.push("Brand Entity ID 不能为空（SB上传要求品牌实体ID）");
   if (isCollectionAd && !w.brandName?.trim()) issues.push("Brand Name is required for SB collection ads");
+  if (isProductCollection && !w.brandLogoAssetId?.trim()) issues.push("SB 商品集上传必须填写 Brand Logo Asset ID（品牌素材库里的 logo asset ID）");
   if (isProductCollection && !w.creativeHeadline.trim()) issues.push("Creative Headline is required for current SB bulk compatibility mode");
   if (isCollectionAd && creativeAsins.length < 3) issues.push("Creative ASINs requires 3-10 ASINs for current SB bulk compatibility mode");
   if (isCollectionAd && creativeAsins.length > 10) issues.push("Creative ASINs allows at most 10 ASINs");
@@ -966,6 +967,4 @@ export function rowsToAoA(headers: readonly string[], rows: Record<string, any>[
   }
   return aoa;
 }
-
-
 

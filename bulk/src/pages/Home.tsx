@@ -7978,23 +7978,17 @@ function SbWizardUI({
 
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-900">
           <div className="font-semibold">SB 上传前检查</div>
-          <div>当前 bulk 上传兼容模式使用 Product Collection Ad。必填：Brand Entity ID、Brand Name、Creative Headline、3-10 个 Creative ASINs。Creative ASINs 必须填 ASIN，不是 SKU；示例值上传前一定要替换。</div>
+          <div>当前 bulk 上传兼容模式使用 Product Collection Ad。必填：Brand Entity ID、Brand Name、Brand Logo Asset ID、Creative Headline、3-10 个 Creative ASINs。Creative ASINs 必须填 ASIN，不是 SKU；示例值上传前一定要替换。</div>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
           <Labeled label="SB广告类型" hint="当前可上传模式：填 productCollection，导出为 Product Collection Ad" required>
             <Input value={w.adFormat} onChange={(e) => set("adFormat", e.target.value)} placeholder="例如：productCollection" />
           </Labeled>
-          <Labeled label="Collection Type" hint="仅作后台界面参考；当前 bulk 导出仍使用 Product Collection Ad">
-            <div className="flex flex-wrap gap-2 rounded-md border border-border/70 bg-background p-1">
-              {([ ["automatic", "Automatic"], ["manual", "Manual"] ] as const).map(([value, label]) => (
-                <Button key={value} type="button" size="sm" variant={w.collectionType === value ? "default" : "ghost"} onClick={() => set("collectionType", value)}>
-                  {label}
-                </Button>
-              ))}
-            </div>
-            <p className="mt-1 text-xs text-muted-foreground">后台界面可能显示 Automatic/Manual Collection，但当前已验证的 bulk 上传接口这里接受 Product Collection Ad。</p>
-          </Labeled>
+          <div className="rounded-lg border border-border/70 bg-muted/20 p-3 text-xs leading-5 text-muted-foreground">
+            <div className="font-medium text-foreground">Collection Type 说明</div>
+            <div>模板没有 Collection Type 列；后台的 Automatic/Manual Collection 当前不会写入 bulk 表。当前兼容模式导出为 Product Collection Ad，因此仍需填写 3-10 个 Creative ASINs。</div>
+          </div>
           <Labeled label="Landing Page URL" hint="可选。可填品牌旗舰店或落地页 URL；留空则按商品列表落地页处理">
             <Input value={w.landingPageUrl || ""} onChange={(e) => set("landingPageUrl", e.target.value)} placeholder="https://..." />
           </Labeled>
@@ -8023,8 +8017,8 @@ function SbWizardUI({
           <Labeled label="Brand Name" hint="必填。填写后台显示的品牌名，需与 Brand Entity ID 对应" required>
             <Input value={w.brandName || ""} onChange={(e) => set("brandName", e.target.value)} />
           </Labeled>
-          <Labeled label="Brand Logo Asset ID" hint="可选。品牌素材库里的 logo asset ID；没有可先留空">
-            <Input value={w.brandLogoAssetId || ""} onChange={(e) => set("brandLogoAssetId", e.target.value)} />
+          <Labeled label="Brand Logo Asset ID" hint="必填。品牌素材库里的 logo asset ID；从 Brand assets data 下载表或素材库复制" required>
+            <Input value={w.brandLogoAssetId || ""} onChange={(e) => set("brandLogoAssetId", e.target.value)} placeholder="示例：amzn1.assetlibrary.asset1.xxxxx" />
           </Labeled>
           <Labeled label="Custom Image Asset ID" hint="可选。如上传报 custom image，再补素材库图片 ID">
             <Input value={w.customImageAssetId || ""} onChange={(e) => set("customImageAssetId", e.target.value)} />
