@@ -60,6 +60,7 @@ export default function ClientPage({
     'image-to-pdf-batch': ImageIcon,
     'pdf-image-watermark-redaction': FileText,
     'image-info-viewer': ImageIcon,
+    'image-label-adder': ImageIcon,
     'image-batch-renamer': ImageIcon,
     'txt-excel-batch-converter': FileText,
     'certification-directory': FileText,
@@ -86,11 +87,16 @@ export default function ClientPage({
     if (safeKey) recordPersonalToolVisit(safeKey)
   }, [key])
 
+  const externalTool = React.useMemo(
+    () => modules.find((m: any) => m.key === safeKey && m.href && m.isExternal),
+    [modules, safeKey]
+  )
+
   React.useEffect(() => {
-    if (safeKey === 'amazon-category-selection-center') {
-      window.location.replace('/amazon-category-selection-center.html')
+    if (externalTool?.href) {
+      window.location.replace(externalTool.href)
     }
-  }, [safeKey])
+  }, [externalTool])
 
   React.useEffect(() => {
     return subscribePersonalToolUsage(() => setPersonalUsageVersion((value) => value + 1))
@@ -180,13 +186,13 @@ export default function ClientPage({
   }, [settings, initialNavItems])
 
   const renderTool = () => {
-    if (safeKey === 'amazon-category-selection-center') {
+    if (externalTool?.href) {
       return (
         <div className="max-w-3xl mx-auto bg-white border border-slate-200 rounded-2xl p-8 text-center shadow-sm">
-          <h1 className="text-2xl font-bold text-slate-900">正在打开 Amazon 类目选品管理中心</h1>
+          <h1 className="text-2xl font-bold text-slate-900">正在打开 {titleOverride[externalTool.key] || externalTool.title}</h1>
           <p className="mt-3 text-slate-600">如果没有自动跳转，请直接打开独立页面。</p>
           <a
-            href="/amazon-category-selection-center.html"
+            href={externalTool.href}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex mt-5 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"

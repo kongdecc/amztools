@@ -154,6 +154,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
     'image-to-pdf-batch': ImageIcon,
     'pdf-image-watermark-redaction': FileText,
     'image-info-viewer': ImageIcon,
+    'image-label-adder': ImageIcon,
     'image-batch-renamer': ImageIcon,
     'txt-excel-batch-converter': ArrowLeftRight,
     'certification-directory': FileText,

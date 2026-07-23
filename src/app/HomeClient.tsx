@@ -98,6 +98,7 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
     'image-to-pdf-batch': ImageIcon,
     'pdf-image-watermark-redaction': FileText,
     'image-info-viewer': ImageIcon,
+    'image-label-adder': ImageIcon,
     'image-batch-renamer': ImageIcon,
     'txt-excel-batch-converter': ArrowLeftRight,
     'certification-directory': FileText,

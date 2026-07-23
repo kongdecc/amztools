@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>图片标签添加工具</title>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;padding-top:3.5rem;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",Arial,sans-serif;background:#f5f7fb;color:#1f2937;display:flex;flex-direction:column;min-height:100vh}
+    .container{max-width:1100px;margin:0 auto;padding:32px 20px 60px;flex:1;width:100%}
+    .card{background:#fff;border-radius:18px;box-shadow:0 10px 30px rgba(15,23,42,.08);padding:28px;margin-bottom:22px}
+    h1{margin:0 0 10px;font-size:30px;color:#111827}
+    h2{font-size:20px;margin-top:0;color:#111827}
+    p{line-height:1.7}
+    .tag{display:inline-block;padding:6px 10px;border-radius:999px;background:#e0f2fe;color:#0369a1;font-family:Consolas,Monaco,monospace;font-size:14px}
+    .notice{border-left:4px solid #2563eb;background:#eff6ff;padding:14px 16px;border-radius:10px;line-height:1.7}
+    .recommend{border-left:4px solid #16a34a;background:#ecfdf5;padding:14px 16px;border-radius:10px;line-height:1.7;margin-top:16px}
+    .warning{border-left:4px solid #f59e0b;background:#fffbeb;padding:14px 16px;border-radius:10px;line-height:1.7}
+    .upload-area{border:2px dashed #93c5fd;border-radius:18px;background:#f8fbff;padding:34px;text-align:center;transition:.2s;cursor:pointer;display:block}
+    .upload-area:hover{border-color:#2563eb;background:#eff6ff}
+    .upload-area.dragover{border-color:#1d4ed8;background:#dbeafe}
+    input[type=file]{display:none}
+    .btn{display:inline-flex;align-items:center;justify-content:center;border:none;border-radius:10px;padding:12px 18px;font-size:15px;font-weight:600;cursor:pointer;background:#2563eb;color:#fff;transition:.2s;text-decoration:none}
+    .btn:hover{background:#1d4ed8}
+    .btn.green{background:#16a34a}.btn.green:hover{background:#15803d}
+    .btn.dark{background:#111827}.btn.dark:hover{background:#030712}
+    .btn.orange{background:#ea580c}.btn.orange:hover{background:#c2410c}
+    .btn.red{background:#dc2626}.btn.red:hover{background:#b91c1c}
+    .btn.gray{background:#6b7280}.btn.gray:hover{background:#4b5563}
+    .btn.disabled{opacity:.5;pointer-events:none}
+    .actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:18px}
+    .summary{display:none;margin-top:18px;padding:16px;border-radius:12px;background:#f9fafb;border:1px solid #e5e7eb;line-height:1.8}
+    .png-mode-box{margin-top:18px;padding:16px;border-radius:14px;background:#f8fafc;border:1px solid #e5e7eb;line-height:1.8}
+    .radio-line{display:block;margin-top:8px;cursor:pointer}
+    .radio-line input{margin-right:8px}
+    .result{display:none;margin-top:22px;padding:18px;border-radius:14px;background:#ecfdf5;border:1px solid #86efac}
+    .error{display:none;margin-top:22px;padding:18px;border-radius:14px;background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+    .file-list{margin-top:18px;display:none}
+    .file-item{display:grid;grid-template-columns:72px 1fr auto;gap:14px;align-items:center;padding:14px;border:1px solid #e5e7eb;border-radius:14px;margin-bottom:12px;background:#fff}
+    .thumb{width:72px;height:72px;border-radius:10px;border:1px solid #e5e7eb;background:#f9fafb;object-fit:contain}
+    .file-name{font-weight:700;margin-bottom:6px;word-break:break-all}
+    .file-meta{color:#6b7280;font-size:13px;line-height:1.6}
+    .status{display:inline-block;margin-top:6px;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:700}
+    .status.pending{background:#f3f4f6;color:#4b5563}
+    .status.processing{background:#dbeafe;color:#1d4ed8}
+    .status.success{background:#dcfce7;color:#047857}
+    .status.fail{background:#fee2e2;color:#b91c1c}
+    code{background:#f3f4f6;padding:2px 6px;border-radius:6px;font-family:Consolas,Monaco,monospace}
+    ol,ul{line-height:1.8}
+    .small{font-size:13px;color:#6b7280}
+    .success-text{color:#047857;font-weight:700}
+    .fail-text{color:#b91c1c;font-weight:700}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+    .tb-header{height:3.5rem;background-color:#5b5bd6;color:#fff;display:flex;align-items:center;padding:0 1rem;box-shadow:0 4px 6px -1px rgba(0,0,0,.1);position:fixed;top:0;left:0;right:0;z-index:1000;justify-content:space-between}
+    @media (min-width:768px){.tb-header{padding:0 2.5rem;justify-content:flex-start}}
+    .tb-logo-area{display:flex;align-items:center;gap:.5rem;font-weight:700;font-size:1.125rem;min-width:0;flex:1}
+    @media (min-width:768px){.tb-logo-area{flex:initial;margin-right:1.5rem}}
+    .tb-logo-icon{background-color:rgba(255,255,255,.2);padding:.25rem;border-radius:.25rem;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+    .tb-nav-desktop{display:none;margin-left:auto;align-items:center;gap:1.5rem;flex-shrink:0}
+    @media (min-width:768px){.tb-nav-desktop{display:flex}}
+    .tb-nav-link{font-size:.875rem;color:rgba(255,255,255,.9);text-decoration:none;display:flex;align-items:center;gap:.25rem;cursor:pointer;background:none;border:none;padding:0}
+    .tb-nav-link:hover{color:#fff}
+    .tb-mobile-toggle{display:flex;align-items:center;gap:.75rem;margin-left:auto;flex-shrink:0}
+    @media (min-width:768px){.tb-mobile-toggle{display:none}}
+    .tb-btn-icon{padding:.5rem;border-radius:.25rem;background:none;border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .tb-btn-icon:hover{background-color:rgba(255,255,255,.1)}
+    .tb-mobile-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;display:none}
+    .tb-mobile-overlay.open{display:block}
+    .tb-mobile-menu{position:fixed;top:0;right:0;bottom:0;width:16rem;background:#fff;z-index:2001;transform:translateX(100%);transition:transform .3s ease-in-out;padding:1.5rem;overflow-y:auto;color:#1f2937}
+    .tb-mobile-menu.open{transform:translateX(0)}
+    .tb-mobile-nav-item{display:block;padding:.75rem 0;font-size:1rem;font-weight:500;color:#374151;text-decoration:none;border-bottom:1px solid #f3f4f6}
+    .site-footer{text-align:center;padding:1.5rem 0;font-size:.75rem;color:#9ca3af;background-color:#f8fafc;border-top:1px solid #e2e8f0}
+    .site-footer a{color:inherit;text-decoration:none}
+    @media(max-width:760px){
+      .grid{grid-template-columns:1fr}
+      h1{font-size:24px}
+      .card{padding:22px}
+      .btn{width:100%}
+      .file-item{grid-template-columns:1fr}
+      .thumb{width:100%;height:160px}
+    }
+  </style>
+</head>
+<body>
+  <div id="site-header-container">
+    <div class="tb-header">
+      <div class="tb-logo-area">
+        <div class="tb-logo-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+        </div>
+        <span>跨境工具魔方 AmzToolBox</span>
+      </div>
+      <nav class="tb-nav-desktop">
+        <a href="/" class="tb-nav-link">首页</a>
+        <a href="/functionality" class="tb-nav-link">功能分类</a>
+        <a href="/about" class="tb-nav-link">关于</a>
+        <a href="/blog" class="tb-nav-link">博客</a>
+        <a href="/suggest" class="tb-nav-link">提需求</a>
+        <a href="/reward" class="tb-nav-link">打赏支持</a>
+      </nav>
+      <div class="tb-mobile-toggle">
+        <button id="mobileMenuBtn" class="tb-btn-icon" aria-label="打开菜单">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="tb-mobile-overlay" id="mobileOverlay"></div>
+    <div class="tb-mobile-menu" id="mobileMenu">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+        <span style="font-weight:700;font-size:1.25rem;">跨境工具魔方 AmzToolBox</span>
+        <button id="closeMobileBtn" style="background:none;border:none;padding:.5rem;cursor:pointer;" aria-label="关闭菜单">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+      <a href="/" class="tb-mobile-nav-item">首页</a>
+      <a href="/functionality" class="tb-mobile-nav-item">功能分类</a>
+      <a href="/about" class="tb-mobile-nav-item">关于</a>
+      <a href="/blog" class="tb-mobile-nav-item">博客</a>
+      <a href="/suggest" class="tb-mobile-nav-item">提需求</a>
+      <a href="/reward" class="tb-mobile-nav-item">打赏支持</a>
+    </div>
+  </div>
+  <div class="container">
+    <div class="card">
+      <h1>图片标签添加工具</h1>
+      <p>本工具用于给图片添加所需标签：<span class="tag">contains-synthetic-performer</span></p>
+      <div class="notice">上传图片后，工具会自动添加所需标签。处理完成后，请下载新图片使用。</div>
+      <div class="recommend">支持批量处理。PNG 默认会转成 JPG 并添加标签，也可以选择保留 PNG。</div>
+    </div>
+
+    <div class="card">
+      <h2>上传图片</h2>
+      <label class="upload-area" id="uploadArea">
+        <input id="fileInput" type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" multiple />
+        <div>
+          <p style="font-size:18px;margin:0 0 8px;">点击选择图片，或拖拽多张图片到这里</p>
+          <p class="small">支持 JPG、JPEG、PNG。图片不会上传到服务器，全部在本地处理。</p>
+        </div>
+      </label>
+
+      <div class="summary" id="summaryBox"></div>
+
+      <div class="png-mode-box">
+        <strong>PNG 处理方式：</strong>
+        <label class="radio-line">
+          <input type="radio" name="pngMode" value="jpg" checked />
+          推荐：转成 JPG 并添加标签
+        </label>
+        <label class="radio-line">
+          <input type="radio" name="pngMode" value="png" />
+          保留 PNG 并添加标签
+        </label>
+        <p class="small" style="margin:8px 0 0;">如果需要在 Windows 属性中更容易看到标签，建议选择“转成 JPG”。</p>
+      </div>
+
+      <div class="actions">
+        <button class="btn green disabled" id="processAllBtn">批量添加标签</button>
+        <button class="btn dark disabled" id="downloadAllBtn">下载全部处理后的图片</button>
+        <button class="btn orange disabled" id="checkAllBtn">检测处理结果</button>
+        <button class="btn red" id="resetBtn">重置</button>
+      </div>
+
+      <div class="result" id="resultBox"></div>
+      <div class="error" id="errorBox"></div>
+      <div class="file-list" id="fileList"></div>
+    </div>
+
+    <div class="card">
+      <h2>使用说明</h2>
+      <ol>
+        <li>点击上传 JPG、JPEG 或 PNG 图片，可一次选择多张。</li>
+        <li>选择 PNG 处理方式，默认推荐“转成 JPG 并添加标签”。</li>
+        <li>点击 <strong>“批量添加标签”</strong>。</li>
+        <li>处理完成后，可以逐个下载，也可以点击 <strong>“下载全部处理后的图片”</strong>。</li>
+        <li>如需重新开始，点击 <strong>“重置”</strong>。</li>
+      </ol>
+      <div class="warning">请使用下载后的新图片，不要继续使用原图。</div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>什么时候需要添加？</h2>
+        <ul>
+          <li>图片包含 AI 生成的逼真人物；</li>
+          <li>图片用于商品主图、详情页、A+ 页面等展示位置；</li>
+          <li>平台要求图片中包含该标签。</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>什么时候不需要添加？</h2>
+        <ul>
+          <li>图片仅包含真实人物；</li>
+          <li>图片不包含任何人物；</li>
+          <li>图片不包含逼真人物；</li>
+          <li>图片仅包含电影、电视、游戏等作品中的角色。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const KEYWORD="contains-synthetic-performer";
+    const fileInput=document.getElementById("fileInput");
+    const uploadArea=document.getElementById("uploadArea");
+    const summaryBox=document.getElementById("summaryBox");
+    const processAllBtn=document.getElementById("processAllBtn");
+    const downloadAllBtn=document.getElementById("downloadAllBtn");
+    const checkAllBtn=document.getElementById("checkAllBtn");
+    const resetBtn=document.getElementById("resetBtn");
+    const resultBox=document.getElementById("resultBox");
+    const errorBox=document.getElementById("errorBox");
+    const fileList=document.getElementById("fileList");
+    let items=[];
+
+    function showError(msg){errorBox.style.display="block";errorBox.innerHTML=msg;resultBox.style.display="none"}
+    function showResult(msg){resultBox.style.display="block";resultBox.innerHTML=msg;errorBox.style.display="none"}
+    function clearMessages(){resultBox.style.display="none";errorBox.style.display="none"}
+    function formatSize(b){if(b<1024)return b+" B";if(b<1024*1024)return(b/1024).toFixed(2)+" KB";return(b/1024/1024).toFixed(2)+" MB"}
+    function getExt(n){const p=n.split(".");return p.length>1?p.pop().toLowerCase():""}
+    function getBaseName(n){const i=n.lastIndexOf(".");return i===-1?n:n.slice(0,i)}
+    function isPngFile(f){const e=getExt(f.name);return f.type==="image/png"||e==="png"}
+    function isJpegFile(f){const e=getExt(f.name);return f.type==="image/jpeg"||e==="jpg"||e==="jpeg"}
+    function escapeHtml(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
+
+    function getPngMode(){
+      const el=document.querySelector('input[name="pngMode"]:checked');
+      return el?el.value:"jpg";
+    }
+
+    function updateSummary(){
+      if(!items.length){summaryBox.style.display="none";return}
+      const jpg=items.filter(i=>isJpegFile(i.file)).length;
+      const png=items.filter(i=>isPngFile(i.file)).length;
+      const ok=items.filter(i=>i.status==="success").length;
+      const fail=items.filter(i=>i.status==="fail").length;
+      const mode=getPngMode()==="jpg"?"PNG 转 JPG":"保留 PNG";
+      summaryBox.style.display="block";
+      summaryBox.innerHTML=`
+        <div><strong>已选择：</strong>${items.length} 张图片</div>
+        <div><strong>JPG/JPEG：</strong>${jpg} 张</div>
+        <div><strong>PNG：</strong>${png} 张，当前处理方式：${mode}</div>
+        <div><strong>已处理成功：</strong>${ok} 张</div>
+        <div><strong>处理失败：</strong>${fail} 张</div>
+      `;
+    }
+
+    function renderList(){
+      if(!items.length){
+        fileList.style.display="none";fileList.innerHTML="";
+        processAllBtn.classList.add("disabled");downloadAllBtn.classList.add("disabled");checkAllBtn.classList.add("disabled");
+        updateSummary();return;
+      }
+      fileList.style.display="block";
+      processAllBtn.classList.remove("disabled");
+      checkAllBtn.classList.remove("disabled");
+      if(items.some(i=>i.outputBlob))downloadAllBtn.classList.remove("disabled");else downloadAllBtn.classList.add("disabled");
+
+      fileList.innerHTML=items.map((item,idx)=>{
+        const cls=item.status||"pending";
+        const txt=item.status==="processing"?"处理中":item.status==="success"?"处理成功":item.status==="fail"?"处理失败":"待处理";
+        const type=isPngFile(item.file)?`PNG，${getPngMode()==="jpg"?"将输出 JPG":"将保留 PNG"}`:"JPG/JPEG";
+        const download=item.outputUrl?`<a class="btn dark" href="${item.outputUrl}" download="${escapeHtml(item.outputName)}">下载</a>`:`<span class="small">未处理</span>`;
+        return `
+          <div class="file-item">
+            <img class="thumb" src="${item.previewUrl}" alt="预览">
+            <div>
+              <div class="file-name">${escapeHtml(item.file.name)}</div>
+              <div class="file-meta">
+                类型：${type}<br>
+                大小：${formatSize(item.file.size)}<br>
+                输出：${item.outputName?escapeHtml(item.outputName):"-"}
+              </div>
+              <span class="status ${cls}">${txt}</span>
+              ${item.error?`<div class="fail-text small" style="margin-top:6px;">${escapeHtml(item.error)}</div>`:""}
+            </div>
+            <div>${download}</div>
+          </div>
+        `;
+      }).join("");
+      updateSummary();
+    }
+
+    function addFiles(list){
+      clearMessages();
+      const incoming=Array.from(list||[]);
+      const valid=incoming.filter(f=>isJpegFile(f)||isPngFile(f));
+      if(!valid.length){showError("请上传 JPG、JPEG 或 PNG 图片。");return}
+      valid.forEach(file=>{
+        items.push({file,previewUrl:URL.createObjectURL(file),status:"pending",outputBlob:null,outputUrl:"",outputName:"",error:""});
+      });
+      if(valid.length!==incoming.length)showResult(`已添加 ${valid.length} 张有效图片，部分不支持的文件已忽略。`);
+      renderList();
+    }
+
+    fileInput.addEventListener("change",()=>{addFiles(fileInput.files);fileInput.value=""});
+    uploadArea.addEventListener("dragover",e=>{e.preventDefault();uploadArea.classList.add("dragover")});
+    uploadArea.addEventListener("dragleave",()=>uploadArea.classList.remove("dragover"));
+    uploadArea.addEventListener("drop",e=>{e.preventDefault();uploadArea.classList.remove("dragover");addFiles(e.dataTransfer.files)});
+    document.querySelectorAll('input[name="pngMode"]').forEach(el=>el.addEventListener("change",renderList));
+
+    function stringToUint8(str){return new TextEncoder().encode(str)}
+    function asciiToUint8(str){const a=new Uint8Array(str.length);for(let i=0;i<str.length;i++)a[i]=str.charCodeAt(i)&255;return a}
+    function utf16leWithNull(str){const a=new Uint8Array((str.length+1)*2);for(let i=0;i<str.length;i++){const c=str.charCodeAt(i);a[i*2]=c&255;a[i*2+1]=(c>>8)&255}return a}
+    function uint8ToString(bytes){return new TextDecoder("utf-8",{fatal:false}).decode(bytes)}
+    function arrayBufferToLatin1(buffer){const bytes=new Uint8Array(buffer);let s="";const size=8192;for(let i=0;i<bytes.length;i+=size)s+=String.fromCharCode.apply(null,bytes.subarray(i,i+size));return s}
+    function concatUint8(arrs){const total=arrs.reduce((s,a)=>s+a.length,0);const out=new Uint8Array(total);let o=0;arrs.forEach(a=>{out.set(a,o);o+=a.length});return out}
+    function write16LE(v,o,val){v.setUint16(o,val,true)}
+    function write32LE(v,o,val){v.setUint32(o,val,true)}
+
+    function createXmpPacket(){
+      return `<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
+<x:xmpmeta xmlns:x="adobe:ns:meta/">
+  <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+    <rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/">
+      <dc:subject>
+        <rdf:Bag>
+          <rdf:li>${KEYWORD}</rdf:li>
+        </rdf:Bag>
+      </dc:subject>
+    </rdf:Description>
+  </rdf:RDF>
+</x:xmpmeta>
+<?xpacket end="w"?>`;
+    }
+
+    function createXmpApp1Segment(){
+      const header="http://ns.adobe.com/xap/1.0/\0";
+      const bytes=stringToUint8(header+createXmpPacket());
+      const len=bytes.length+2;
+      if(len>65535)throw new Error("图片标签数据过大，无法写入。");
+      const app1=new Uint8Array(4+bytes.length);
+      app1[0]=255;app1[1]=225;app1[2]=(len>>8)&255;app1[3]=len&255;app1.set(bytes,4);
+      return app1;
+    }
+
+    function createExifApp1Segment(){
+      const xp=utf16leWithNull(KEYWORD);
+      const tiffHeaderSize=8,entryCount=1,ifdSize=2+entryCount*12+4,dataStart=tiffHeaderSize+ifdSize;
+      const xpOffset=dataStart,total=xpOffset+xp.length;
+      const exifPrefix=asciiToUint8("Exif\0\0");
+      const tiff=new Uint8Array(total);
+      const view=new DataView(tiff.buffer);
+      tiff[0]=73;tiff[1]=73;write16LE(view,2,42);write32LE(view,4,8);
+      let o=8;
+      write16LE(view,o,entryCount);o+=2;
+      write16LE(view,o,0x9c9e);
+      write16LE(view,o+2,1);
+      write32LE(view,o+4,xp.length);
+      write32LE(view,o+8,xpOffset);
+      o+=12;
+      write32LE(view,o,0);
+      tiff.set(xp,xpOffset);
+      const payload=concatUint8([exifPrefix,tiff]);
+      const len=payload.length+2;
+      if(len>65535)throw new Error("图片标签数据过大，无法写入。");
+      const app1=new Uint8Array(4+payload.length);
+      app1[0]=255;app1[1]=225;app1[2]=(len>>8)&255;app1[3]=len&255;app1.set(payload,4);
+      return app1;
+    }
+
+    function stripExistingApp1MetadataFromJpeg(buffer){
+      const input=new Uint8Array(buffer);
+      if(input[0]!==255||input[1]!==216)throw new Error("该文件不是有效的 JPG/JPEG 图片。");
+      const parts=[input.slice(0,2)];
+      let off=2;
+      while(off<input.length){
+        if(input[off]!==255){parts.push(input.slice(off));break}
+        const marker=input[off+1];
+        if(marker===0xda||marker===0xd9){parts.push(input.slice(off));break}
+        if(marker===0x01||(marker>=0xd0&&marker<=0xd7)){parts.push(input.slice(off,off+2));off+=2;continue}
+        if(off+4>input.length){parts.push(input.slice(off));break}
+        const len=(input[off+2]<<8)|input[off+3];
+        const end=off+2+len;
+        if(len<2||end>input.length){parts.push(input.slice(off));break}
+        const seg=input.slice(off,end);
+        let remove=false;
+        if(marker===0xe1){
+          const header=uint8ToString(input.slice(off+4,Math.min(end,off+120)));
+          if(header.includes("Exif")||header.includes("http://ns.adobe.com/xap/1.0/")||header.includes("xmp")||header.includes("adobe"))remove=true;
+        }
+        if(!remove)parts.push(seg);
+        off=end;
+      }
+      return concatUint8(parts).buffer;
+    }
+
+    function addMetadataToJpeg(buffer){
+      const clean=stripExistingApp1MetadataFromJpeg(buffer);
+      const input=new Uint8Array(clean);
+      const exif=createExifApp1Segment();
+      const xmp=createXmpApp1Segment();
+      const out=new Uint8Array(input.length+exif.length+xmp.length);
+      out.set(input.slice(0,2),0);
+      out.set(exif,2);
+      out.set(xmp,2+exif.length);
+      out.set(input.slice(2),2+exif.length+xmp.length);
+      return out.buffer;
+    }
+
+    function makeCrcTable(){
+      let c;const table=[];
+      for(let n=0;n<256;n++){c=n;for(let k=0;k<8;k++)c=(c&1)?(0xedb88320^(c>>>1)):(c>>>1);table[n]=c}
+      return table;
+    }
+    const crcTable=makeCrcTable();
+    function crc32(bytes){let crc=0^-1;for(let i=0;i<bytes.length;i++)crc=(crc>>>8)^crcTable[(crc^bytes[i])&255];return(crc^-1)>>>0}
+    function writeUint32(v){return new Uint8Array([(v>>>24)&255,(v>>>16)&255,(v>>>8)&255,v&255])}
+    function createPngChunk(type,data){
+      const typeBytes=stringToUint8(type);
+      const len=writeUint32(data.length);
+      const crcInput=new Uint8Array(typeBytes.length+data.length);
+      crcInput.set(typeBytes,0);crcInput.set(data,typeBytes.length);
+      const crc=writeUint32(crc32(crcInput));
+      const chunk=new Uint8Array(12+data.length);
+      chunk.set(len,0);chunk.set(typeBytes,4);chunk.set(data,8);chunk.set(crc,8+data.length);
+      return chunk;
+    }
+
+    function addXmpToPng(buffer){
+      const input=new Uint8Array(buffer);
+      const sig=[137,80,78,71,13,10,26,10];
+      for(let i=0;i<sig.length;i++)if(input[i]!==sig[i])throw new Error("该文件不是有效的 PNG 图片。");
+      const keywordBytes=stringToUint8("XML:com.adobe.xmp");
+      const textBytes=stringToUint8(createXmpPacket());
+      const data=new Uint8Array(keywordBytes.length+1+1+1+1+1+textBytes.length);
+      let o=0;
+      data.set(keywordBytes,o);o+=keywordBytes.length;
+      data[o++]=0;
+      data[o++]=0;
+      data[o++]=0;
+      data[o++]=0;
+      data[o++]=0;
+      data.set(textBytes,o);
+      const chunk=createPngChunk("iTXt",data);
+      let pos=8,insert=-1;
+      while(pos<input.length){
+        const len=(input[pos]<<24)|(input[pos+1]<<16)|(input[pos+2]<<8)|input[pos+3];
+        const type=uint8ToString(input.slice(pos+4,pos+8));
+        const total=12+len;
+        if(type==="IHDR"){insert=pos+total;break}
+        pos+=total;
+      }
+      if(insert===-1)throw new Error("PNG 文件结构异常，无法写入标签。");
+      const out=new Uint8Array(input.length+chunk.length);
+      out.set(input.slice(0,insert),0);
+      out.set(chunk,insert);
+      out.set(input.slice(insert),insert+chunk.length);
+      return out.buffer;
+    }
+
+    function imageFileToJpegArrayBuffer(file,quality=.95){
+      return new Promise((resolve,reject)=>{
+        const img=new Image();
+        const url=URL.createObjectURL(file);
+        img.onload=()=>{
+          try{
+            const canvas=document.createElement("canvas");
+            canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;
+            const ctx=canvas.getContext("2d");
+            ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);
+            ctx.drawImage(img,0,0);
+            canvas.toBlob(async blob=>{
+              URL.revokeObjectURL(url);
+              if(!blob){reject(new Error("PNG 转 JPG 失败。"));return}
+              resolve(await blob.arrayBuffer());
+            },"image/jpeg",quality);
+          }catch(e){URL.revokeObjectURL(url);reject(e)}
+        };
+        img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("图片加载失败，无法转换。"))};
+        img.src=url;
+      });
+    }
+
+    async function processOneItem(item){
+      const file=item.file;
+      const base=getBaseName(file.name);
+      if(isJpegFile(file)){
+        const buffer=await file.arrayBuffer();
+        const out=addMetadataToJpeg(buffer);
+        const ext=getExt(file.name)||"jpg";
+        return {outputBlob:new Blob([out],{type:"image/jpeg"}),outputName:`${base}_tagged.${ext}`};
+      }
+      if(isPngFile(file)){
+        if(getPngMode()==="jpg"){
+          const jpg=await imageFileToJpegArrayBuffer(file,.95);
+          const out=addMetadataToJpeg(jpg);
+          return {outputBlob:new Blob([out],{type:"image/jpeg"}),outputName:`${base}_tagged.jpg`};
+        }else{
+          const buffer=await file.arrayBuffer();
+          const out=addXmpToPng(buffer);
+          return {outputBlob:new Blob([out],{type:"image/png"}),outputName:`${base}_tagged.png`};
+        }
+      }
+      throw new Error("不支持的图片格式。");
+    }
+
+    async function processAll(){
+      if(!items.length){showError("请先上传图片。");return}
+      clearMessages();
+      processAllBtn.classList.add("disabled");
+      showResult("正在批量处理，请稍候...");
+      let ok=0,fail=0;
+      for(let i=0;i<items.length;i++){
+        const item=items[i];
+        try{
+          item.status="processing";item.error="";renderList();
+          const res=await processOneItem(item);
+          if(item.outputUrl)URL.revokeObjectURL(item.outputUrl);
+          item.outputBlob=res.outputBlob;
+          item.outputName=res.outputName;
+          item.outputUrl=URL.createObjectURL(res.outputBlob);
+          item.status="success";ok++;
+        }catch(e){
+          item.status="fail";item.error=e.message||"处理失败";fail++;
+        }
+        renderList();
+      }
+      processAllBtn.classList.remove("disabled");
+      showResult(`<div class="success-text">批量处理完成！</div><p>成功：<strong>${ok}</strong> 张</p><p>失败：<strong>${fail}</strong> 张</p><p>可以逐个下载，也可以点击 <strong>“下载全部处理后的图片”</strong>。</p>`);
+    }
+
+    function downloadBlob(blob,name){
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement("a");
+      a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),1500);
+    }
+
+    async function downloadAll(){
+      const list=items.filter(i=>i.outputBlob);
+      if(!list.length){showError("还没有可下载的处理后图片，请先批量添加标签。");return}
+      showResult(`开始下载 ${list.length} 张图片。如果浏览器提示多个文件下载，请选择允许。`);
+      for(const item of list){
+        downloadBlob(item.outputBlob,item.outputName);
+        await new Promise(r=>setTimeout(r,400));
+      }
+    }
+
+    async function checkAll(){
+      const list=items.filter(i=>i.outputBlob);
+      if(!list.length){showError("还没有处理后的图片，请先点击“批量添加标签”。");return}
+      let ok=0,bad=0;
+      for(const item of list){
+        const buffer=await item.outputBlob.arrayBuffer();
+        const text=arrayBufferToLatin1(buffer)+"\n"+uint8ToString(new Uint8Array(buffer));
+        if(text.includes(KEYWORD))ok++;else bad++;
+      }
+      if(bad===0){
+        showResult(`<div class="success-text">✅ 检测完成：全部已找到所需标签</div><p>检测数量：<strong>${list.length}</strong> 张</p><p>标签内容：<code>${KEYWORD}</code></p>`);
+      }else{
+        showError(`<div class="fail-text">❌ 检测完成：部分图片未找到标签</div><p>成功：<strong>${ok}</strong> 张</p><p>失败：<strong>${bad}</strong> 张</p><p>建议重新批量处理后再下载。</p>`);
+      }
+    }
+
+    function resetAll(){
+      items.forEach(i=>{if(i.previewUrl)URL.revokeObjectURL(i.previewUrl);if(i.outputUrl)URL.revokeObjectURL(i.outputUrl)});
+      items=[];
+      fileInput.value="";
+      summaryBox.style.display="none";
+      fileList.style.display="none";
+      fileList.innerHTML="";
+      resultBox.style.display="none";
+      errorBox.style.display="none";
+      processAllBtn.classList.add("disabled");
+      downloadAllBtn.classList.add("disabled");
+      checkAllBtn.classList.add("disabled");
+    }
+
+    processAllBtn.addEventListener("click",processAll);
+    downloadAllBtn.addEventListener("click",downloadAll);
+    checkAllBtn.addEventListener("click",checkAll);
+    resetBtn.addEventListener("click",resetAll);
+  </script>
+  <footer class="site-footer">
+    © 2025 跨境工具魔方 AmzToolBox. All rights reserved.
+    <span style="margin:0 .5rem;">|</span>
+    <a href="/privacy">隐私说明</a>
+  </footer>
+  <script>
+    (function(){
+      var mobileMenuBtn=document.getElementById('mobileMenuBtn');
+      var closeMobileBtn=document.getElementById('closeMobileBtn');
+      var mobileMenu=document.getElementById('mobileMenu');
+      var mobileOverlay=document.getElementById('mobileOverlay');
+      function toggleMobileMenu(forceOpen){
+        if(!mobileMenu||!mobileOverlay)return;
+        var isOpen=mobileMenu.classList.contains('open');
+        var shouldOpen=typeof forceOpen==='boolean'?forceOpen:!isOpen;
+        mobileMenu.classList.toggle('open',shouldOpen);
+        mobileOverlay.classList.toggle('open',shouldOpen);
+      }
+      if(mobileMenuBtn)mobileMenuBtn.addEventListener('click',function(){toggleMobileMenu(true)});
+      if(closeMobileBtn)closeMobileBtn.addEventListener('click',function(){toggleMobileMenu(false)});
+      if(mobileOverlay)mobileOverlay.addEventListener('click',function(){toggleMobileMenu(false)});
+    })();
+  </script>
+  <script type="module" src="/shared-top-ad.js"></script>
+</body>
+</html>
