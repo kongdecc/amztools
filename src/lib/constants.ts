@@ -144,5 +144,6 @@ export const DEFAULT_TOOLS = [
   { key: 'image-to-pdf-batch', title: '批量图片转 PDF', desc: '批量导入图片并合并导出 PDF，支持排序、页边距、页面方向和适配方式设置', status: '启用', views: 0, color: 'blue', order: 33, category: 'image-text' },
   { key: 'pdf-image-watermark-redaction', title: 'PDF / 图片 水印与打码工具', desc: '支持 PDF 与图片实时预览、水印叠加、拖拽框选打码、马赛克/模糊/遮挡和导出处理后的文件', status: '启用', views: 0, color: 'violet', order: 34, category: 'image-text' },
   { key: 'image-label-adder', title: '图片标签添加工具', desc: '批量为 JPG / JPEG / PNG 图片写入 contains-synthetic-performer 标签，支持 PNG 转 JPG 或保留 PNG，本地处理不上传', status: '启用', views: 0, color: 'blue', order: 34.5, category: 'image-text', href: '/image-label-adder.html', isExternal: true },
+  { key: 'avif-image-converter', title: 'AVIF 图片格式转换工具', desc: '批量将 AVIF 图片转换为 PNG、JPEG 或 WebP，支持质量调节，全部在浏览器本地完成', status: '启用', views: 0, color: 'indigo', order: 34.6, category: 'image-text', href: '/avif-image-converter.html', isExternal: true },
   { key: 'image-batch-renamer', title: '图片批量重命名工具', desc: '批量导入图片后按关键词随机/顺序命名，支持手动编辑名称并下载重命名 ZIP', status: '启用', views: 0, color: 'indigo', order: 35, category: 'image-text' }
 ]

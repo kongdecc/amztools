@@ -99,6 +99,7 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
     'pdf-image-watermark-redaction': FileText,
     'image-info-viewer': ImageIcon,
     'image-label-adder': ImageIcon,
+    'avif-image-converter': ImageIcon,
     'image-batch-renamer': ImageIcon,
     'txt-excel-batch-converter': ArrowLeftRight,
     'certification-directory': FileText,

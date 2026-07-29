@@ -155,6 +155,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
     'pdf-image-watermark-redaction': FileText,
     'image-info-viewer': ImageIcon,
     'image-label-adder': ImageIcon,
+    'avif-image-converter': ImageIcon,
     'image-batch-renamer': ImageIcon,
     'txt-excel-batch-converter': ArrowLeftRight,
     'certification-directory': FileText,

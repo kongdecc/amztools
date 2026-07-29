@@ -61,6 +61,7 @@ export default function ClientPage({
     'pdf-image-watermark-redaction': FileText,
     'image-info-viewer': ImageIcon,
     'image-label-adder': ImageIcon,
+    'avif-image-converter': ImageIcon,
     'image-batch-renamer': ImageIcon,
     'txt-excel-batch-converter': FileText,
     'certification-directory': FileText,

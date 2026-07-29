@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AVIF 图片格式转换工具</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 3.5rem 16px 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #eef2ff, #f8fafc);
+      color: #1f2937;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      width: 100%;
+      flex: 1;
+      padding: 32px 0 60px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 34px;
+      color: #111827;
+    }
+
+    .header p {
+      color: #6b7280;
+      margin-top: 12px;
+      font-size: 16px;
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+    }
+
+    .drop-zone {
+      border: 2px dashed #818cf8;
+      border-radius: 18px;
+      padding: 42px 20px;
+      text-align: center;
+      cursor: pointer;
+      background: #f8fafc;
+      transition: 0.25s;
+    }
+
+    .drop-zone:hover,
+    .drop-zone.dragover {
+      background: #eef2ff;
+      border-color: #4f46e5;
+    }
+
+    .drop-icon {
+      font-size: 54px;
+      margin-bottom: 12px;
+    }
+
+    .drop-zone h2 {
+      margin: 0 0 8px;
+      color: #312e81;
+    }
+
+    .drop-zone p {
+      margin: 0;
+      color: #64748b;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .settings {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      margin: 26px 0;
+      align-items: center;
+      padding: 18px;
+      background: #f9fafb;
+      border-radius: 16px;
+    }
+
+    .setting-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 14px;
+      color: #374151;
+      font-weight: 600;
+    }
+
+    select,
+    input[type="range"] {
+      min-width: 180px;
+    }
+
+    select {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      background: white;
+      font-size: 15px;
+    }
+
+    .quality-value {
+      font-weight: 700;
+      color: #4f46e5;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-size: 15px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+
+    .primary {
+      background: #4f46e5;
+      color: white;
+    }
+
+    .primary:hover {
+      background: #4338ca;
+    }
+
+    .secondary {
+      background: #e5e7eb;
+      color: #374151;
+    }
+
+    .secondary:hover {
+      background: #d1d5db;
+    }
+
+    .danger {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .danger:hover {
+      background: #fecaca;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .file-list {
+      display: grid;
+      gap: 18px;
+    }
+
+    .file-card {
+      display: grid;
+      grid-template-columns: 120px 1fr auto;
+      gap: 18px;
+      align-items: center;
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid #e5e7eb;
+      background: white;
+    }
+
+    .preview {
+      width: 120px;
+      height: 90px;
+      border-radius: 12px;
+      object-fit: contain;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+    }
+
+    .file-info h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      word-break: break-all;
+    }
+
+    .file-info p {
+      margin: 4px 0;
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .status {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      background: #f3f4f6;
+      color: #4b5563;
+    }
+
+    .status.success {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .status.error {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .download-link {
+      display: inline-block;
+      text-decoration: none;
+      background: #10b981;
+      color: white;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .download-link:hover {
+      background: #059669;
+    }
+
+    .tips {
+      margin-top: 24px;
+      padding: 18px;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 14px;
+      color: #92400e;
+      line-height: 1.7;
+    }
+
+    .empty {
+      text-align: center;
+      color: #9ca3af;
+      padding: 24px;
+    }
+
+    .tb-header {
+      height: 3.5rem;
+      background-color: #5b5bd6;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      padding: 0 1rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,.1);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      justify-content: space-between;
+    }
+
+    .tb-logo-area {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      font-weight: 700;
+      font-size: 1.125rem;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .tb-logo-icon {
+      background-color: rgba(255,255,255,.2);
+      padding: .25rem;
+      border-radius: .25rem;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tb-nav-desktop {
+      display: none;
+      margin-left: auto;
+      align-items: center;
+      gap: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .tb-nav-link {
+      font-size: .875rem;
+      color: rgba(255,255,255,.9);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: .25rem;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+
+    .tb-nav-link:hover {
+      color: #fff;
+    }
+
+    .tb-mobile-toggle {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    .tb-btn-icon {
+      padding: .5rem;
+      border-radius: .25rem;
+      background: none;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tb-btn-icon:hover {
+      background-color: rgba(255,255,255,.1);
+    }
+
+    .tb-mobile-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.5);
+      z-index: 2000;
+      display: none;
+    }
+
+    .tb-mobile-overlay.open {
+      display: block;
+    }
+
+    .tb-mobile-menu {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 16rem;
+      background: #fff;
+      z-index: 2001;
+      transform: translateX(100%);
+      transition: transform .3s ease-in-out;
+      padding: 1.5rem;
+      overflow-y: auto;
+      color: #1f2937;
+    }
+
+    .tb-mobile-menu.open {
+      transform: translateX(0);
+    }
+
+    .tb-mobile-nav-item {
+      display: block;
+      padding: .75rem 0;
+      font-size: 1rem;
+      font-weight: 500;
+      color: #374151;
+      text-decoration: none;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .site-footer {
+      text-align: center;
+      padding: 1.5rem 0;
+      font-size: .75rem;
+      color: #9ca3af;
+      background-color: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .site-footer a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    @media (max-width: 720px) {
+      .file-card {
+        grid-template-columns: 1fr;
+      }
+
+      .preview {
+        width: 100%;
+        height: 180px;
+      }
+
+      .settings {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      select,
+      input[type="range"] {
+        width: 100%;
+      }
+    }
+
+    @media (min-width: 768px) {
+      body {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+
+      .tb-header {
+        padding: 0 2.5rem;
+        justify-content: flex-start;
+      }
+
+      .tb-logo-area {
+        flex: initial;
+        margin-right: 1.5rem;
+      }
+
+      .tb-nav-desktop {
+        display: flex;
+      }
+
+      .tb-mobile-toggle {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="site-header-container">
+    <div class="tb-header">
+      <div class="tb-logo-area">
+        <div class="tb-logo-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+        </div>
+        <span>跨境工具魔方 AmzToolBox</span>
+      </div>
+      <nav class="tb-nav-desktop">
+        <a href="/" class="tb-nav-link">首页</a>
+        <a href="/functionality" class="tb-nav-link">功能分类</a>
+        <a href="/about" class="tb-nav-link">关于</a>
+        <a href="/blog" class="tb-nav-link">博客</a>
+        <a href="/suggest" class="tb-nav-link">提需求</a>
+        <a href="/reward" class="tb-nav-link">打赏支持</a>
+      </nav>
+      <div class="tb-mobile-toggle">
+        <button id="mobileMenuBtn" class="tb-btn-icon" aria-label="打开菜单">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="tb-mobile-overlay" id="mobileOverlay"></div>
+    <div class="tb-mobile-menu" id="mobileMenu">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+        <span style="font-weight:700;font-size:1.25rem;">跨境工具魔方 AmzToolBox</span>
+        <button id="closeMobileBtn" style="background:none;border:none;padding:.5rem;cursor:pointer;" aria-label="关闭菜单">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+      <a href="/" class="tb-mobile-nav-item">首页</a>
+      <a href="/functionality" class="tb-mobile-nav-item">功能分类</a>
+      <a href="/about" class="tb-mobile-nav-item">关于</a>
+      <a href="/blog" class="tb-mobile-nav-item">博客</a>
+      <a href="/suggest" class="tb-mobile-nav-item">提需求</a>
+      <a href="/reward" class="tb-mobile-nav-item">打赏支持</a>
+    </div>
+  </div>
+  <div class="container">
+    <div class="header">
+      <h1>AVIF 图片格式转换工具</h1>
+      <p>将 AVIF 图片转换为 PNG、JPEG 或 WebP，所有转换都在浏览器本地完成。</p>
+    </div>
+
+    <div class="panel">
+      <div class="drop-zone" id="dropZone">
+        <div class="drop-icon">🖼️</div>
+        <h2>点击或拖拽 AVIF 图片到这里</h2>
+        <p>支持选择多个 .avif 文件</p>
+        <input type="file" id="fileInput" accept=".avif,image/avif" multiple />
+      </div>
+
+      <div class="settings">
+        <div class="setting-item">
+          <label for="formatSelect">输出格式</label>
+          <select id="formatSelect">
+            <option value="image/png">PNG，无损，体积较大</option>
+            <option value="image/jpeg">JPEG，常用，体积较小</option>
+            <option value="image/webp">WebP，清晰且体积小</option>
+          </select>
+        </div>
+
+        <div class="setting-item">
+          <label for="qualityRange">
+            输出质量：
+            <span class="quality-value" id="qualityValue">90%</span>
+          </label>
+          <input type="range" id="qualityRange" min="10" max="100" value="90" />
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" id="convertBtn" disabled>开始转换</button>
+        <button class="secondary" id="downloadAllBtn" disabled>批量下载</button>
+        <button class="danger" id="clearBtn" disabled>清空列表</button>
+      </div>
+
+      <div id="fileList" class="file-list">
+        <div class="empty">还没有选择图片</div>
+      </div>
+
+      <div class="tips">
+        <strong>使用说明：</strong>
+        <br />
+        1. 如果浏览器不支持 AVIF 解码，可能无法转换，请使用新版 Chrome、Edge、Firefox 或 Safari。
+        <br />
+        2. PNG 格式不使用质量参数；JPEG 和 WebP 会根据质量滑块进行压缩。
+        <br />
+        3. 图片不会上传到服务器，转换过程在本机浏览器完成。
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const dropZone = document.getElementById("dropZone");
+    const fileInput = document.getElementById("fileInput");
+    const fileList = document.getElementById("fileList");
+    const formatSelect = document.getElementById("formatSelect");
+    const qualityRange = document.getElementById("qualityRange");
+    const qualityValue = document.getElementById("qualityValue");
+    const convertBtn = document.getElementById("convertBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const downloadAllBtn = document.getElementById("downloadAllBtn");
+
+    let files = [];
+
+    const extensionMap = {
+      "image/png": "png",
+      "image/jpeg": "jpg",
+      "image/webp": "webp"
+    };
+
+    dropZone.addEventListener("click", () => {
+      fileInput.click();
+    });
+
+    dropZone.addEventListener("dragover", (event) => {
+      event.preventDefault();
+      dropZone.classList.add("dragover");
+    });
+
+    dropZone.addEventListener("dragleave", () => {
+      dropZone.classList.remove("dragover");
+    });
+
+    dropZone.addEventListener("drop", (event) => {
+      event.preventDefault();
+      dropZone.classList.remove("dragover");
+      handleFiles(event.dataTransfer.files);
+    });
+
+    fileInput.addEventListener("change", () => {
+      handleFiles(fileInput.files);
+    });
+
+    qualityRange.addEventListener("input", () => {
+      qualityValue.textContent = qualityRange.value + "%";
+    });
+
+    convertBtn.addEventListener("click", convertAll);
+    clearBtn.addEventListener("click", clearFiles);
+    downloadAllBtn.addEventListener("click", downloadAll);
+
+    function handleFiles(selectedFiles) {
+      const avifFiles = Array.from(selectedFiles).filter(file => {
+        return file.type === "image/avif" || file.name.toLowerCase().endsWith(".avif");
+      });
+
+      avifFiles.forEach(file => {
+        files.push({
+          id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+          file,
+          previewUrl: URL.createObjectURL(file),
+          outputUrl: null,
+          outputName: null,
+          status: "等待转换",
+          error: false
+        });
+      });
+
+      renderFiles();
+      updateButtons();
+    }
+
+    function renderFiles() {
+      if (files.length === 0) {
+        fileList.innerHTML = '<div class="empty">还没有选择图片</div>';
+        return;
+      }
+
+      fileList.innerHTML = files.map(item => {
+        const sizeText = formatSize(item.file.size);
+        const statusClass = item.error ? "error" : item.outputUrl ? "success" : "";
+
+        return `
+          <div class="file-card">
+            <img class="preview" src="${item.previewUrl}" alt="预览图" />
+            <div class="file-info">
+              <h3>${escapeHtml(item.file.name)}</h3>
+              <p>原始大小：${sizeText}</p>
+              <p>目标格式：${formatSelect.options[formatSelect.selectedIndex].text}</p>
+              <span class="status ${statusClass}">${escapeHtml(item.status)}</span>
+            </div>
+            <div>
+              ${
+                item.outputUrl
+                  ? `<a class="download-link" href="${item.outputUrl}" download="${item.outputName}">下载</a>`
+                  : ""
+              }
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function convertAll() {
+      convertBtn.disabled = true;
+      downloadAllBtn.disabled = true;
+
+      for (const item of files) {
+        item.status = "转换中...";
+        item.error = false;
+        renderFiles();
+
+        try {
+          const result = await convertImage(item.file);
+          item.outputUrl = result.url;
+          item.outputName = result.name;
+          item.status = "转换完成";
+        } catch (error) {
+          console.error(error);
+          item.status = "转换失败：浏览器可能不支持 AVIF 解码";
+          item.error = true;
+        }
+
+        renderFiles();
+      }
+
+      updateButtons();
+    }
+
+    function convertImage(file) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        const objectUrl = URL.createObjectURL(file);
+
+        img.onload = () => {
+          try {
+            const canvas = document.createElement("canvas");
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0);
+
+            const type = formatSelect.value;
+            const quality = Number(qualityRange.value) / 100;
+            const ext = extensionMap[type];
+
+            canvas.toBlob(
+              blob => {
+                URL.revokeObjectURL(objectUrl);
+
+                if (!blob) {
+                  reject(new Error("转换失败"));
+                  return;
+                }
+
+                const outputUrl = URL.createObjectURL(blob);
+                const baseName = file.name.replace(/\.[^/.]+$/, "");
+                const outputName = `${baseName}.${ext}`;
+
+                resolve({
+                  url: outputUrl,
+                  name: outputName
+                });
+              },
+              type,
+              type === "image/png" ? undefined : quality
+            );
+          } catch (error) {
+            URL.revokeObjectURL(objectUrl);
+            reject(error);
+          }
+        };
+
+        img.onerror = () => {
+          URL.revokeObjectURL(objectUrl);
+          reject(new Error("无法读取 AVIF 图片"));
+        };
+
+        img.src = objectUrl;
+      });
+    }
+
+    function downloadAll() {
+      const convertedFiles = files.filter(item => item.outputUrl);
+
+      convertedFiles.forEach((item, index) => {
+        setTimeout(() => {
+          const a = document.createElement("a");
+          a.href = item.outputUrl;
+          a.download = item.outputName;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }, index * 300);
+      });
+    }
+
+    function clearFiles() {
+      files.forEach(item => {
+        if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
+        if (item.outputUrl) URL.revokeObjectURL(item.outputUrl);
+      });
+
+      files = [];
+      fileInput.value = "";
+      renderFiles();
+      updateButtons();
+    }
+
+    function updateButtons() {
+      const hasFiles = files.length > 0;
+      const hasConverted = files.some(item => item.outputUrl);
+
+      convertBtn.disabled = !hasFiles;
+      clearBtn.disabled = !hasFiles;
+      downloadAllBtn.disabled = !hasConverted;
+    }
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + " B";
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + " KB";
+      return (bytes / 1024 / 1024).toFixed(2) + " MB";
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+  <footer class="site-footer">
+    © 2025 跨境工具魔方 AmzToolBox. All rights reserved.
+    <span style="margin:0 .5rem;">|</span>
+    <a href="/privacy">隐私说明</a>
+  </footer>
+  <script>
+    (function(){
+      var mobileMenuBtn=document.getElementById('mobileMenuBtn');
+      var closeMobileBtn=document.getElementById('closeMobileBtn');
+      var mobileMenu=document.getElementById('mobileMenu');
+      var mobileOverlay=document.getElementById('mobileOverlay');
+      function toggleMobileMenu(forceOpen){
+        if(!mobileMenu||!mobileOverlay)return;
+        var isOpen=mobileMenu.classList.contains('open');
+        var shouldOpen=typeof forceOpen==='boolean'?forceOpen:!isOpen;
+        mobileMenu.classList.toggle('open',shouldOpen);
+        mobileOverlay.classList.toggle('open',shouldOpen);
+      }
+      if(mobileMenuBtn)mobileMenuBtn.addEventListener('click',function(){toggleMobileMenu(true)});
+      if(closeMobileBtn)closeMobileBtn.addEventListener('click',function(){toggleMobileMenu(false)});
+      if(mobileOverlay)mobileOverlay.addEventListener('click',function(){toggleMobileMenu(false)});
+    })();
+  </script>
+  <script type="module" src="/shared-top-ad.js"></script>
+</body>
+</html>
