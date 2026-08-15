@@ -48,11 +48,15 @@ export default function TopAdBar() {
   const hasLink = Boolean(config.linkUrl)
   const target = config.openInNewTab ? '_blank' : '_self'
   const rel = config.openInNewTab ? 'noopener noreferrer' : undefined
+  // Image ads use a full-width container; the image itself still keeps its aspect ratio via w-full + h-auto.
+  const innerClassName = isImageMode
+    ? 'w-full py-2 text-orange-700'
+    : 'mx-auto max-w-screen-2xl px-3 py-2 text-orange-700 md:px-4'
   const image = (
     <img
       src={config.imageUrl}
       alt={config.alt}
-      className="block w-full rounded-md bg-white object-contain"
+      className="block h-auto w-full bg-white object-contain"
       style={{ maxHeight: `${config.imageHeight}px` }}
       loading="eager"
     />
@@ -60,10 +64,10 @@ export default function TopAdBar() {
 
   return (
     <div className="w-full border-y border-orange-200 bg-orange-50">
-      <div className="mx-auto max-w-screen-2xl px-3 py-2 text-orange-700 md:px-4">
+      <div className={innerClassName}>
         {isImageMode ? (
           hasLink ? (
-            <a href={config.linkUrl} target={target} rel={rel} className="block overflow-hidden rounded-md transition-opacity hover:opacity-95">
+            <a href={config.linkUrl} target={target} rel={rel} className="block w-full overflow-hidden transition-opacity hover:opacity-95">
               {image}
             </a>
           ) : (

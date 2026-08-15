@@ -11,14 +11,14 @@
   "notes": {
     "usage": "enabled=true 时显示。type 支持 auto、image、text。推荐日常用 auto：有 imageUrl 时优先显示图片，没有 imageUrl 时自动回退显示 text。",
     "quickStart": "文字广告：type=text 并填写 text。图片广告：type=image 或 auto，并填写 imageUrl。自动模式下填图则显示图，不填图则显示文字。",
-    "imageDisplay": "图片模式默认完整显示，不再上下裁切。当前按最大高度限制展示，图片使用 contain 方式缩放。",
-    "recommendedWidth": "1536px",
-    "recommendedHeight": "180-210px",
-    "retinaSize": "3072x240px 到 3072x360px",
+    "imageDisplay": "图片模式默认完整显示，不裁切、不拉伸。前端使用 w-full + h-auto 并通过 imageHeight 作为 max-height，因此页面缩放时会等比缩放，不会变形。",
+    "recommendedWidth": "3072px",
+    "recommendedHeight": "320px",
+    "retinaSize": "3072x320px（推荐）",
     "safeArea": "重要文案建议放在图片中间 70% 区域，兼顾不同屏宽下的安全显示范围",
-    "alignment": "广告图宽度会与页眉内容区域对齐，容器最大宽度为 max-w-screen-2xl",
+    "alignment": "图片广告当前采用全宽容器展示，文字广告仍与页眉内容区域对齐。",
     "linkTip": "如果填写 linkUrl，点击文字或图片会跳转；openInNewTab=true 时在新标签页打开。",
     "fallbackTip": "type=image 但 imageUrl 为空时会回退到文字展示；建议优先使用 auto 便于维护。",
-    "currentImage": "当前广告图：1500x200，建议 imageHeight 使用 200；如果仍想更贴满宽度，可尝试 205-210。"
+    "currentImage": "当前方案建议使用 3072x320 的横幅图，并保持 imageHeight=200。这样常见桌面宽度下可接近 200px 展示高度，同时缩放时保持比例、不易出现左右留白。1300x200 这类较窄素材在浏览器缩放后更容易露出空白。"
   }
 }
