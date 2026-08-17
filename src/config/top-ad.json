@@ -6,7 +6,7 @@
   "linkUrl": "https://amzlink.top/",
   "alt": "页眉下广告位",
   "ctaText": "点击跳转",
-  "openInNewTab": true
+  "openInNewTab": true,
   "imageHeight": 200,
   "notes": {
     "usage": "enabled=true 时显示。type 支持 auto、image、text。推荐日常用 auto：有 imageUrl 时优先显示图片，没有 imageUrl 时自动回退显示 text。",
