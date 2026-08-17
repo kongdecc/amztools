@@ -2,11 +2,11 @@
   "enabled": true,
   "type": "auto",
   "text": "跨境乐趣园：亚马逊卖家讨论群日报，海量运营干货资料免费下载，欢迎查看使用。",
-  "imageUrl":"imageUrl": "https://pub-2a43946b555a4a1d8c9fcabbb581ed41.r2.dev/3072320.jpg",
+  "imageUrl":https://pub-2a43946b555a4a1d8c9fcabbb581ed41.r2.dev/3072320.jpg",
   "linkUrl": "https://amzlink.top/",
   "alt": "页眉下广告位",
   "ctaText": "点击跳转",
-  "openInNewTab": true,
+  "openInNewTab": true
   "imageHeight": 200,
   "notes": {
     "usage": "enabled=true 时显示。type 支持 auto、image、text。推荐日常用 auto：有 imageUrl 时优先显示图片，没有 imageUrl 时自动回退显示 text。",
