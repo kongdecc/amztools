@@ -5,6 +5,7 @@ import { Metadata } from 'next'
 import fs from 'fs'
 import path from 'path'
 import GlobalPromoPopup from '@/components/GlobalPromoPopup'
+import GoogleAnalytics from '@/components/GoogleAnalytics'
 
 import { DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 
@@ -141,6 +142,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
           />
         )}
+        <GoogleAnalytics />
         <script dangerouslySetInnerHTML={{ __html: BAIDU_ANALYTICS_SCRIPT }} />
         {showAnalytics && analyticsHeadHtml && <div dangerouslySetInnerHTML={{ __html: analyticsHeadHtml }} style={{ display: 'none' }} />}
         <GlobalPromoPopup />

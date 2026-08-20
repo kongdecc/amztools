@@ -2,10 +2,11 @@ import fs from 'fs'
 import path from 'path'
 
 const BAIDU_ANALYTICS_ID = 'f41283b760f768032fa2b7990826c3c3'
+const GOOGLE_ANALYTICS_ID = 'G-MDVMB3KBBP'
 const PUBLIC_DIR = path.join(process.cwd(), 'public')
 const HTML_SUFFIX = '.html'
 
-const analyticsSnippet = [
+const baiduAnalyticsSnippet = [
   '<script>',
   '  var _hmt = window._hmt || [];',
   '  (function() {',
@@ -14,6 +15,16 @@ const analyticsSnippet = [
   '    var s = document.getElementsByTagName("script")[0];',
   '    s.parentNode.insertBefore(hm, s);',
   '  })();',
+  '</script>',
+].join('\n')
+
+const googleAnalyticsSnippet = [
+  `<script async src="https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ANALYTICS_ID}"></script>`,
+  '<script>',
+  '  window.dataLayer = window.dataLayer || [];',
+  '  function gtag(){dataLayer.push(arguments);}',
+  "  gtag('js', new Date());",
+  `  gtag('config', '${GOOGLE_ANALYTICS_ID}');`,
   '</script>',
 ].join('\n')
 
@@ -40,20 +51,36 @@ function hasBaiduAnalytics(content) {
   return content.includes('hm.baidu.com/hm.js?') || content.includes('window._hmt')
 }
 
-function injectAnalytics(content) {
-  if (hasBaiduAnalytics(content)) return content
+function hasGoogleAnalytics(content) {
+  return content.includes('googletagmanager.com/gtag/js?id=') || content.includes("gtag('config'")
+}
 
+function injectSnippet(content, snippet) {
   const bodyCloseTag = /<\/body>/i
   if (bodyCloseTag.test(content)) {
-    return content.replace(bodyCloseTag, `${analyticsSnippet}\n</body>`)
+    return content.replace(bodyCloseTag, `${snippet}\n</body>`)
   }
 
   const htmlCloseTag = /<\/html>/i
   if (htmlCloseTag.test(content)) {
-    return content.replace(htmlCloseTag, `${analyticsSnippet}\n</html>`)
+    return content.replace(htmlCloseTag, `${snippet}\n</html>`)
   }
 
-  return `${content}\n${analyticsSnippet}\n`
+  return `${content}\n${snippet}\n`
+}
+
+function injectAnalytics(content) {
+  let nextContent = content
+
+  if (!hasBaiduAnalytics(nextContent)) {
+    nextContent = injectSnippet(nextContent, baiduAnalyticsSnippet)
+  }
+
+  if (!hasGoogleAnalytics(nextContent)) {
+    nextContent = injectSnippet(nextContent, googleAnalyticsSnippet)
+  }
+
+  return nextContent
 }
 
 if (!fs.existsSync(PUBLIC_DIR)) {
@@ -72,7 +99,7 @@ for (const filePath of htmlFiles) {
 
   fs.writeFileSync(filePath, injected, 'utf8')
   updatedCount += 1
-  console.log(`Injected Baidu analytics: ${path.relative(process.cwd(), filePath)}`)
+  console.log(`Injected analytics: ${path.relative(process.cwd(), filePath)}`)
 }
 
 console.log(`Static analytics injection complete. Updated ${updatedCount} HTML file(s).`)
