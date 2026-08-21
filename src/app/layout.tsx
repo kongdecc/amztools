@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { Suspense } from 'react'
 import './globals.css'
 import { db } from '@/lib/db'
 import { Metadata } from 'next'
@@ -142,7 +143,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
           />
         )}
-        <GoogleAnalytics />
+        <Suspense fallback={null}>
+          <GoogleAnalytics />
+        </Suspense>
         <script dangerouslySetInnerHTML={{ __html: BAIDU_ANALYTICS_SCRIPT }} />
         {showAnalytics && analyticsHeadHtml && <div dangerouslySetInnerHTML={{ __html: analyticsHeadHtml }} style={{ display: 'none' }} />}
         <GlobalPromoPopup />
