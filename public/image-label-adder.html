@@ -125,7 +125,7 @@
       <h1>图片/视频标签添加工具</h1>
       <p>本工具用于给图片或视频添加所需标签：<span class="tag">contains-synthetic-performer</span></p>
       <div class="notice">上传图片或视频后，工具会自动添加所需标签。处理完成后，请下载新文件使用。</div>
-      <div class="recommend">支持批量处理。PNG 默认会转成 JPG，也可以选择保留 PNG；MP4/MOV 视频无需转码，不改变画质、音质和时长。</div>
+      <div class="recommend">支持批量处理并合并原有 XMP。JPEG 会保留 EXIF；PNG 默认转成 JPG，也可保留 PNG；MP4/MOV 视频不转码。</div>
     </div>
 
     <div class="card">
@@ -150,7 +150,7 @@
           <input type="radio" name="pngMode" value="png" />
           保留 PNG 并添加标签
         </label>
-        <p class="small" style="margin:8px 0 0;">如果需要在 Windows 属性中更容易看到标签，建议选择“转成 JPG”。</p>
+        <p class="small" style="margin:8px 0 0;">亚马逊要求标签位于 XMP dc:subject；两种方式都会写入并严格检测该字段。</p>
       </div>
 
       <div class="actions">
@@ -179,19 +179,37 @@
       <div class="warning">请使用下载后的新图片或新视频，不要继续使用原文件。</div>
     </div>
 
+    <div class="card">
+      <h2>亚马逊政策要点</h2>
+      <ul>
+        <li>适用于包含<strong>完全由 AI 生成的逼真人物</strong>的买家可见媒体，包括商品图片、A+、品牌故事、品牌店铺及商品/A+/店铺/广告视频。</li>
+        <li>即使只显示人物的一部分，只要仍属于完全由 AI 生成的逼真人物，也应添加标签。</li>
+        <li>真实人物经过 AI 修改、非逼真人物、影视游戏等表达性作品角色、没有人物的素材不需要添加。</li>
+        <li>A+ 内容可以写入文件元数据，也可以在 A+ Creative Assets 上传时勾选“AI-generated people”；其他位置应在上传前写入文件。</li>
+      </ul>
+      <div class="warning">
+        本工具只能验证本地文件中的 XMP 结构，不能判断画面是否应适用政策，也不能证明亚马逊已经接收元数据或展示披露标识。
+        请以
+        <a href="https://sellercentral.amazon.com/help/hub/reference/GFXHCHYZRGJRBZA5" target="_blank" rel="noopener noreferrer">亚马逊标签指南</a>
+        和
+        <a href="https://sellercentral.amazon.com/seller-forums/discussions/t/aa0aee06-aff4-497a-a4b6-9b2ebe06f715" target="_blank" rel="noopener noreferrer">官方公告</a>
+        为准。
+      </div>
+    </div>
+
     <div class="grid">
       <div class="card">
         <h2>什么时候需要添加？</h2>
         <ul>
-          <li>图片或视频包含 AI 生成的逼真人物；</li>
-          <li>素材用于商品主图、详情页、A+ 页面或视频等展示位置；</li>
-          <li>平台要求素材中包含该标签。</li>
+          <li>素材包含完全由 AI 生成的逼真人物；</li>
+          <li>完整人物或局部可见的逼真 AI 人物都适用；</li>
+          <li>素材用于亚马逊的买家可见图片或视频位置。</li>
         </ul>
       </div>
       <div class="card">
         <h2>什么时候不需要添加？</h2>
         <ul>
-          <li>素材仅包含真实人物；</li>
+          <li>素材仅包含真实人物，即使经过 AI 修改；</li>
           <li>素材不包含任何人物；</li>
           <li>素材不包含逼真人物；</li>
           <li>素材仅包含电影、电视、游戏等作品中的角色。</li>
@@ -223,7 +241,9 @@
     function getBaseName(n){const i=n.lastIndexOf(".");return i===-1?n:n.slice(0,i)}
     function isPngFile(f){const e=getExt(f.name);return f.type==="image/png"||e==="png"}
     function isJpegFile(f){const e=getExt(f.name);return f.type==="image/jpeg"||e==="jpg"||e==="jpeg"}
-    function isVideoFile(f){const e=getExt(f.name);return f.type==="video/mp4"||f.type==="video/quicktime"||e==="mp4"||e==="mov"}
+    function isMovFile(f){return f.type==="video/quicktime"||getExt(f.name)==="mov"}
+    function isMp4File(f){return !isMovFile(f)&&(f.type==="video/mp4"||getExt(f.name)==="mp4")}
+    function isVideoFile(f){return isMp4File(f)||isMovFile(f)}
     function isSupportedFile(f){return isJpegFile(f)||isPngFile(f)||isVideoFile(f)}
     function escapeHtml(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
 
@@ -309,31 +329,96 @@
 
     function stringToUint8(str){return new TextEncoder().encode(str)}
     function asciiToUint8(str){const a=new Uint8Array(str.length);for(let i=0;i<str.length;i++)a[i]=str.charCodeAt(i)&255;return a}
-    function utf16leWithNull(str){const a=new Uint8Array((str.length+1)*2);for(let i=0;i<str.length;i++){const c=str.charCodeAt(i);a[i*2]=c&255;a[i*2+1]=(c>>8)&255}return a}
     function uint8ToString(bytes){return new TextDecoder("utf-8",{fatal:false}).decode(bytes)}
     function concatUint8(arrs){const total=arrs.reduce((s,a)=>s+a.length,0);const out=new Uint8Array(total);let o=0;arrs.forEach(a=>{out.set(a,o);o+=a.length});return out}
-    function write16LE(v,o,val){v.setUint16(o,val,true)}
-    function write32LE(v,o,val){v.setUint32(o,val,true)}
+
+    const XMP_NS="adobe:ns:meta/";
+    const RDF_NS="http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+    const DC_NS="http://purl.org/dc/elements/1.1/";
+    const JPEG_XMP_HEADER="http://ns.adobe.com/xap/1.0/\0";
+    const PNG_XMP_KEYWORD="XML:com.adobe.xmp";
+    const MAX_XMP_BYTES=16*1024*1024;
 
     function createXmpPacket(){
       return `<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
-<x:xmpmeta xmlns:x="adobe:ns:meta/">
-  <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-    <rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/">
-      <dc:subject>
-        <rdf:Bag>
-          <rdf:li>${KEYWORD}</rdf:li>
-        </rdf:Bag>
-      </dc:subject>
+<x:xmpmeta xmlns:x="${XMP_NS}">
+  <rdf:RDF xmlns:rdf="${RDF_NS}">
+    <rdf:Description rdf:about="" xmlns:dc="${DC_NS}">
+      <dc:subject><rdf:Bag><rdf:li>${KEYWORD}</rdf:li></rdf:Bag></dc:subject>
     </rdf:Description>
   </rdf:RDF>
 </x:xmpmeta>
 <?xpacket end="w"?>`;
     }
 
-    function createXmpApp1Segment(){
-      const header="http://ns.adobe.com/xap/1.0/\0";
-      const bytes=stringToUint8(header+createXmpPacket());
+    function parseXmpPacket(packet){
+      const doc=new DOMParser().parseFromString(packet,"application/xml");
+      if(doc.getElementsByTagName("parsererror").length)throw new Error("发现损坏或无法解析的 XMP 元数据。");
+      const rdf=doc.getElementsByTagNameNS(RDF_NS,"RDF")[0];
+      if(!rdf)throw new Error("XMP 中缺少 RDF 数据。");
+      return doc;
+    }
+
+    function getXmpKeywords(packet){
+      const doc=parseXmpPacket(packet);
+      const result=[];
+      const subjects=Array.from(doc.getElementsByTagNameNS(DC_NS,"subject"));
+      subjects.forEach(subject=>{
+        const bags=Array.from(subject.children).filter(el=>el.namespaceURI===RDF_NS&&el.localName==="Bag");
+        bags.forEach(bag=>Array.from(bag.children).forEach(el=>{
+          if(el.namespaceURI===RDF_NS&&el.localName==="li")result.push((el.textContent||"").trim());
+        }));
+      });
+      return result.filter(Boolean);
+    }
+
+    function xmpPacketHasKeyword(packet){
+      return getXmpKeywords(packet).includes(KEYWORD);
+    }
+
+    function mergeXmpPackets(packets){
+      const source=packets.length?packets[0]:createXmpPacket();
+      const doc=parseXmpPacket(source);
+      const keywords=[];
+      packets.forEach(packet=>getXmpKeywords(packet).forEach(value=>{if(!keywords.includes(value))keywords.push(value)}));
+      if(!keywords.includes(KEYWORD))keywords.push(KEYWORD);
+      const rdf=doc.getElementsByTagNameNS(RDF_NS,"RDF")[0];
+      let description=doc.getElementsByTagNameNS(RDF_NS,"Description")[0];
+      if(!description){
+        description=doc.createElementNS(RDF_NS,"rdf:Description");
+        description.setAttributeNS(RDF_NS,"rdf:about","");
+        rdf.appendChild(description);
+      }
+      const subjects=Array.from(doc.getElementsByTagNameNS(DC_NS,"subject"));
+      let subject=subjects[0];
+      if(!subject){
+        subject=doc.createElementNS(DC_NS,"dc:subject");
+        description.appendChild(subject);
+      }
+      subjects.slice(1).forEach(extra=>extra.parentNode.removeChild(extra));
+      while(subject.firstChild)subject.removeChild(subject.firstChild);
+      const bag=doc.createElementNS(RDF_NS,"rdf:Bag");
+      keywords.forEach(value=>{
+        const li=doc.createElementNS(RDF_NS,"rdf:li");
+        li.textContent=value;bag.appendChild(li);
+      });
+      subject.appendChild(bag);
+      const xml=new XMLSerializer().serializeToString(doc.documentElement);
+      return `<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>\n${xml}\n<?xpacket end="w"?>`;
+    }
+
+    function markXmpPacketReadOnly(packet){
+      return packet.replace(/<\?xpacket end=["']w["']\?>\s*$/,`<?xpacket end="r"?>`);
+    }
+
+    function startsWithBytes(bytes,offset,prefix){
+      if(offset+prefix.length>bytes.length)return false;
+      for(let i=0;i<prefix.length;i++)if(bytes[offset+i]!==prefix[i])return false;
+      return true;
+    }
+
+    function createXmpApp1Segment(packet){
+      const bytes=stringToUint8(JPEG_XMP_HEADER+packet);
       const len=bytes.length+2;
       if(len>65535)throw new Error("图片标签数据过大，无法写入。");
       const app1=new Uint8Array(4+bytes.length);
@@ -341,35 +426,12 @@
       return app1;
     }
 
-    function createExifApp1Segment(){
-      const xp=utf16leWithNull(KEYWORD);
-      const tiffHeaderSize=8,entryCount=1,ifdSize=2+entryCount*12+4,dataStart=tiffHeaderSize+ifdSize;
-      const xpOffset=dataStart,total=xpOffset+xp.length;
-      const exifPrefix=asciiToUint8("Exif\0\0");
-      const tiff=new Uint8Array(total);
-      const view=new DataView(tiff.buffer);
-      tiff[0]=73;tiff[1]=73;write16LE(view,2,42);write32LE(view,4,8);
-      let o=8;
-      write16LE(view,o,entryCount);o+=2;
-      write16LE(view,o,0x9c9e);
-      write16LE(view,o+2,1);
-      write32LE(view,o+4,xp.length);
-      write32LE(view,o+8,xpOffset);
-      o+=12;
-      write32LE(view,o,0);
-      tiff.set(xp,xpOffset);
-      const payload=concatUint8([exifPrefix,tiff]);
-      const len=payload.length+2;
-      if(len>65535)throw new Error("图片标签数据过大，无法写入。");
-      const app1=new Uint8Array(4+payload.length);
-      app1[0]=255;app1[1]=225;app1[2]=(len>>8)&255;app1[3]=len&255;app1.set(payload,4);
-      return app1;
-    }
-
-    function stripExistingApp1MetadataFromJpeg(buffer){
+    function parseJpegAndTransform(buffer,writeTag){
       const input=new Uint8Array(buffer);
       if(input[0]!==255||input[1]!==216)throw new Error("该文件不是有效的 JPG/JPEG 图片。");
       const parts=[input.slice(0,2)];
+      const packets=[];
+      const xmpHeader=asciiToUint8(JPEG_XMP_HEADER);
       let off=2;
       while(off<input.length){
         if(input[off]!==255){parts.push(input.slice(off));break}
@@ -380,29 +442,24 @@
         const len=(input[off+2]<<8)|input[off+3];
         const end=off+2+len;
         if(len<2||end>input.length){parts.push(input.slice(off));break}
-        const seg=input.slice(off,end);
-        let remove=false;
-        if(marker===0xe1){
-          const header=uint8ToString(input.slice(off+4,Math.min(end,off+120)));
-          if(header.includes("Exif")||header.includes("http://ns.adobe.com/xap/1.0/")||header.includes("xmp")||header.includes("adobe"))remove=true;
-        }
-        if(!remove)parts.push(seg);
+        const isXmp=marker===0xe1&&startsWithBytes(input,off+4,xmpHeader);
+        if(isXmp){
+          const packetBytes=input.slice(off+4+xmpHeader.length,end);
+          if(packetBytes.length>MAX_XMP_BYTES)throw new Error("XMP 元数据过大，无法安全处理。");
+          packets.push(uint8ToString(packetBytes).replace(/\0+$/,""));
+        }else parts.push(input.slice(off,end));
         off=end;
       }
+      if(!writeTag)return packets;
+      const xmp=createXmpApp1Segment(mergeXmpPackets(packets));
+      let insertAt=1;
+      while(insertAt<parts.length&&parts[insertAt][0]===255&&parts[insertAt][1]>=0xe0&&parts[insertAt][1]<=0xef)insertAt++;
+      parts.splice(insertAt,0,xmp);
       return concatUint8(parts).buffer;
     }
 
     function addMetadataToJpeg(buffer){
-      const clean=stripExistingApp1MetadataFromJpeg(buffer);
-      const input=new Uint8Array(clean);
-      const exif=createExifApp1Segment();
-      const xmp=createXmpApp1Segment();
-      const out=new Uint8Array(input.length+exif.length+xmp.length);
-      out.set(input.slice(0,2),0);
-      out.set(exif,2);
-      out.set(xmp,2+exif.length);
-      out.set(input.slice(2),2+exif.length+xmp.length);
-      return out.buffer;
+      return parseJpegAndTransform(buffer,true);
     }
 
     function makeCrcTable(){
@@ -424,12 +481,47 @@
       return chunk;
     }
 
-    function addXmpToPng(buffer){
+    function parsePngChunks(input){
+      const chunks=[];let pos=8;
+      while(pos<input.length){
+        if(pos+12>input.length)throw new Error("PNG 文件结构异常。");
+        const len=new DataView(input.buffer,input.byteOffset+pos,4).getUint32(0,false);
+        const end=pos+12+len;
+        if(end>input.length)throw new Error("PNG 数据块长度异常。");
+        chunks.push({type:uint8ToString(input.slice(pos+4,pos+8)),start:pos,end,dataStart:pos+8,dataEnd:pos+8+len});
+        pos=end;
+        if(chunks[chunks.length-1].type==="IEND")break;
+      }
+      return chunks;
+    }
+
+    function readPngXmpPacket(input,chunk){
+      const data=input.slice(chunk.dataStart,chunk.dataEnd);
+      let pos=data.indexOf(0);
+      if(pos<0||uint8ToString(data.slice(0,pos))!==PNG_XMP_KEYWORD)return null;
+      if(pos+5>data.length)throw new Error("PNG XMP 数据结构异常。");
+      const compressed=data[pos+1];
+      pos+=3;
+      const languageEnd=data.indexOf(0,pos);if(languageEnd<0)throw new Error("PNG XMP 语言字段异常。");
+      pos=languageEnd+1;
+      const translatedEnd=data.indexOf(0,pos);if(translatedEnd<0)throw new Error("PNG XMP 翻译字段异常。");
+      pos=translatedEnd+1;
+      if(compressed!==0)throw new Error("暂不支持压缩的 PNG XMP 数据。");
+      return uint8ToString(data.slice(pos)).replace(/\0+$/,"");
+    }
+
+    function parsePngAndTransform(buffer,writeTag){
       const input=new Uint8Array(buffer);
       const sig=[137,80,78,71,13,10,26,10];
       for(let i=0;i<sig.length;i++)if(input[i]!==sig[i])throw new Error("该文件不是有效的 PNG 图片。");
-      const keywordBytes=stringToUint8("XML:com.adobe.xmp");
-      const textBytes=stringToUint8(createXmpPacket());
+      const chunks=parsePngChunks(input);
+      const packets=[];
+      chunks.filter(chunk=>chunk.type==="iTXt").forEach(chunk=>{
+        const packet=readPngXmpPacket(input,chunk);if(packet!==null)packets.push(packet);
+      });
+      if(!writeTag)return packets;
+      const keywordBytes=stringToUint8(PNG_XMP_KEYWORD);
+      const textBytes=stringToUint8(markXmpPacketReadOnly(mergeXmpPackets(packets)));
       const data=new Uint8Array(keywordBytes.length+1+1+1+1+1+textBytes.length);
       let o=0;
       data.set(keywordBytes,o);o+=keywordBytes.length;
@@ -440,40 +532,199 @@
       data[o++]=0;
       data.set(textBytes,o);
       const chunk=createPngChunk("iTXt",data);
-      let pos=8,insert=-1;
-      while(pos<input.length){
-        const len=(input[pos]<<24)|(input[pos+1]<<16)|(input[pos+2]<<8)|input[pos+3];
-        const type=uint8ToString(input.slice(pos+4,pos+8));
-        const total=12+len;
-        if(type==="IHDR"){insert=pos+total;break}
-        pos+=total;
-      }
-      if(insert===-1)throw new Error("PNG 文件结构异常，无法写入标签。");
-      const out=new Uint8Array(input.length+chunk.length);
-      out.set(input.slice(0,insert),0);
-      out.set(chunk,insert);
-      out.set(input.slice(insert),insert+chunk.length);
-      return out.buffer;
+      const parts=[input.slice(0,8)];
+      chunks.forEach(current=>{
+        const packet=current.type==="iTXt"?readPngXmpPacket(input,current):null;
+        parts.push(input.slice(current.start,current.end));
+        if(current.type==="IHDR")parts.push(chunk);
+        if(packet!==null)parts.pop();
+      });
+      return concatUint8(parts).buffer;
     }
 
+    function addXmpToPng(buffer){return parsePngAndTransform(buffer,true)}
+
     const ADOBE_XMP_UUID=new Uint8Array([0xbe,0x7a,0xcf,0xcb,0x97,0xa9,0x42,0xe8,0x9c,0x71,0x99,0x94,0x91,0xe3,0xaf,0xac]);
-    function createVideoXmpUuidBox(){
-      const xmp=stringToUint8(createXmpPacket());
-      const size=8+ADOBE_XMP_UUID.length+xmp.length;
-      const box=new Uint8Array(size);
+    function createIsoBox(type,payload){
+      const size=8+payload.length;
+      if(size>0xffffffff)throw new Error("元数据盒过大。");
+      const box=new Uint8Array(8+payload.length);
       const view=new DataView(box.buffer);
-      view.setUint32(0,size,false);
-      box.set(asciiToUint8("uuid"),4);
-      box.set(ADOBE_XMP_UUID,8);
-      box.set(xmp,24);
+      view.setUint32(0,box.length,false);box.set(asciiToUint8(type),4);box.set(payload,8);
       return box;
     }
 
-    async function validateIsoVideo(file){
-      const header=new Uint8Array(await file.slice(0,32).arrayBuffer());
-      if(header.length<12||String.fromCharCode(...header.slice(4,8))!=="ftyp"){
-        throw new Error("该文件不是有效的 MP4/MOV 视频。");
+    function createVideoXmpUuidBox(packet){
+      return createIsoBox("uuid",concatUint8([ADOBE_XMP_UUID,stringToUint8(packet)]));
+    }
+
+    async function listIsoBoxes(blob,start=0,end=blob.size){
+      const boxes=[];let pos=start;
+      while(pos<end){
+        const head=new Uint8Array(await blob.slice(pos,Math.min(pos+16,end)).arrayBuffer());
+        if(head.length<8)throw new Error("视频容器结构异常。");
+        const view=new DataView(head.buffer,head.byteOffset,head.byteLength);
+        let size=view.getUint32(0,false),headerSize=8,extendsToEnd=false;
+        const type=uint8ToString(head.slice(4,8));
+        if(size===1){
+          if(head.length<16)throw new Error("视频扩展数据盒异常。");
+          const large=view.getBigUint64(8,false);
+          if(large>BigInt(Number.MAX_SAFE_INTEGER))throw new Error("视频数据盒过大。");
+          size=Number(large);headerSize=16;
+        }else if(size===0){size=end-pos;extendsToEnd=true}
+        if(size<headerSize||pos+size>end)throw new Error("视频数据盒长度异常。");
+        boxes.push({type,start:pos,end:pos+size,size,headerSize,extendsToEnd});
+        pos+=size;
       }
+      return boxes;
+    }
+
+    async function isAdobeXmpBox(blob,box){
+      if(box.type!=="uuid"||box.size<box.headerSize+ADOBE_XMP_UUID.length)return false;
+      const uuid=new Uint8Array(await blob.slice(box.start+box.headerSize,box.start+box.headerSize+16).arrayBuffer());
+      return startsWithBytes(uuid,0,ADOBE_XMP_UUID);
+    }
+
+    async function readAdobeXmpBox(blob,box){
+      const length=box.size-box.headerSize-16;
+      if(length>MAX_XMP_BYTES)throw new Error("视频 XMP 元数据过大，无法安全处理。");
+      return uint8ToString(new Uint8Array(await blob.slice(box.start+box.headerSize+16,box.end).arrayBuffer())).replace(/\0+$/,"");
+    }
+
+    async function validateIsoVideo(file){
+      const boxes=await listIsoBoxes(file);
+      if(!boxes.length||boxes[0].type!=="ftyp"||!boxes.some(box=>box.type==="moov"))throw new Error("该文件不是有效的 MP4/MOV 视频。");
+      return boxes;
+    }
+
+    async function detectIsoVideoFamily(file,boxes){
+      const ftyp=boxes.find(box=>box.type==="ftyp");
+      const payloadLength=ftyp.size-ftyp.headerSize;
+      if(payloadLength<8||payloadLength>1024*1024)throw new Error("视频 ftyp 数据盒异常。");
+      const bytes=new Uint8Array(await file.slice(ftyp.start+ftyp.headerSize,ftyp.end).arrayBuffer());
+      const brands=[uint8ToString(bytes.slice(0,4))];
+      for(let pos=8;pos+4<=bytes.length;pos+=4)brands.push(uint8ToString(bytes.slice(pos,pos+4)));
+      return brands.includes("qt  ")?"mov":"mp4";
+    }
+
+    function parseIsoBoxesBytes(bytes,start,end){
+      const boxes=[];let pos=start;
+      while(pos<end){
+        if(pos+8>end)throw new Error("MOV 容器结构异常。");
+        const view=new DataView(bytes.buffer,bytes.byteOffset+pos,end-pos);
+        let size=view.getUint32(0,false),headerSize=8;
+        const type=uint8ToString(bytes.slice(pos+4,pos+8));
+        if(size===1){
+          if(pos+16>end)throw new Error("MOV 扩展数据盒异常。");
+          const large=view.getBigUint64(8,false);
+          if(large>BigInt(Number.MAX_SAFE_INTEGER))throw new Error("MOV 数据盒过大。");
+          size=Number(large);headerSize=16;
+        }else if(size===0)size=end-pos;
+        if(size<headerSize||pos+size>end)throw new Error("MOV 数据盒长度异常。");
+        boxes.push({type,start:pos,end:pos+size,size,headerSize});
+        pos+=size;
+      }
+      return boxes;
+    }
+
+    function getMovXmpPackets(moovBytes,moovHeaderSize){
+      const packets=[];
+      const children=parseIsoBoxesBytes(moovBytes,moovHeaderSize,moovBytes.length);
+      if(children.some(box=>box.type==="cmov"))throw new Error("暂不支持压缩 moov 的 MOV 文件。");
+      children.filter(box=>box.type==="udta").forEach(udta=>{
+        const entries=parseIsoBoxesBytes(moovBytes,udta.start+udta.headerSize,udta.end);
+        entries.filter(box=>box.type==="XMP_").forEach(box=>{
+          const length=box.size-box.headerSize;
+          if(length>MAX_XMP_BYTES)throw new Error("MOV XMP 元数据过大，无法安全处理。");
+          packets.push(uint8ToString(moovBytes.slice(box.start+box.headerSize,box.end)).replace(/\0+$/,""));
+        });
+      });
+      return packets;
+    }
+
+    function rebuildMovMoov(moovBytes,moovHeaderSize,packet){
+      const children=parseIsoBoxesBytes(moovBytes,moovHeaderSize,moovBytes.length);
+      if(children.some(box=>box.type==="cmov"))throw new Error("暂不支持压缩 moov 的 MOV 文件。");
+      const xmpBox=createIsoBox("XMP_",stringToUint8(packet));
+      const parts=[];let inserted=false;
+      children.forEach(child=>{
+        if(child.type!=="udta"){parts.push(moovBytes.slice(child.start,child.end));return}
+        const entries=parseIsoBoxesBytes(moovBytes,child.start+child.headerSize,child.end);
+        const payload=entries.filter(box=>box.type!=="XMP_").map(box=>moovBytes.slice(box.start,box.end));
+        if(!inserted){payload.push(xmpBox);inserted=true}
+        parts.push(createIsoBox("udta",concatUint8(payload)));
+      });
+      if(!inserted)parts.push(createIsoBox("udta",xmpBox));
+      return createIsoBox("moov",concatUint8(parts));
+    }
+
+    function createFreeHeader(box){
+      if(box.size>0xffffffff&&box.headerSize!==16)throw new Error("MOV moov 数据盒过大，无法安全移动。");
+      const header=new Uint8Array(box.headerSize);
+      const view=new DataView(header.buffer);
+      if(box.headerSize===16){view.setUint32(0,1,false);view.setBigUint64(8,BigInt(box.size),false)}
+      else view.setUint32(0,box.size,false);
+      header.set(asciiToUint8("free"),4);
+      return header;
+    }
+
+    function appendFreeReplacement(parts,file,box){
+      parts.push(createFreeHeader(box));
+      parts.push(file.slice(box.start+box.headerSize,box.end));
+    }
+
+    async function appendOriginalTopBox(parts,file,box){
+      if(!box.extendsToEnd){parts.push(file.slice(box.start,box.end));return}
+      if(box.size>0xffffffff)throw new Error("末尾视频数据盒过大，无法在追加元数据前修正长度。");
+      const header=new Uint8Array(await file.slice(box.start,box.start+8).arrayBuffer());
+      new DataView(header.buffer).setUint32(0,box.size,false);
+      parts.push(header);parts.push(file.slice(box.start+8,box.end));
+    }
+
+    async function getTopLevelAdobeBoxes(blob,boxes){
+      const matches=[];
+      for(const box of boxes)if(await isAdobeXmpBox(blob,box))matches.push(box);
+      return matches;
+    }
+
+    async function addXmpToMp4(file){
+      const boxes=await validateIsoVideo(file);
+      const xmpBoxes=await getTopLevelAdobeBoxes(file,boxes);
+      const packets=[];
+      for(const box of xmpBoxes)packets.push(await readAdobeXmpBox(file,box));
+      const newBox=createVideoXmpUuidBox(mergeXmpPackets(packets));
+      const parts=[];
+      const canReplace=xmpBoxes.length===1&&xmpBoxes[0].size===newBox.length;
+      for(const box of boxes){
+        if(!xmpBoxes.includes(box)){await appendOriginalTopBox(parts,file,box);continue}
+        if(canReplace)parts.push(newBox);else appendFreeReplacement(parts,file,box);
+      }
+      if(!canReplace)parts.push(newBox);
+      return new Blob(parts,{type:file.type||"video/mp4"});
+    }
+
+    async function addXmpToMov(file){
+      const boxes=await validateIsoVideo(file);
+      const moovBoxes=boxes.filter(box=>box.type==="moov");
+      if(moovBoxes.length!==1)throw new Error("MOV 必须包含且只能包含一个 moov 数据盒。");
+      const moov=moovBoxes[0];
+      if(moov.size>128*1024*1024)throw new Error("MOV 的 moov 数据盒过大，无法在浏览器中安全处理。");
+      const moovBytes=new Uint8Array(await file.slice(moov.start,moov.end).arrayBuffer());
+      const packets=getMovXmpPackets(moovBytes,moov.headerSize);
+      const legacyBoxes=await getTopLevelAdobeBoxes(file,boxes);
+      for(const box of legacyBoxes)packets.push(await readAdobeXmpBox(file,box));
+      const newMoov=rebuildMovMoov(moovBytes,moov.headerSize,mergeXmpPackets(packets));
+      const parts=[];
+      const canReplace=newMoov.length===moov.size&&legacyBoxes.length===0;
+      for(const box of boxes){
+        if(legacyBoxes.includes(box)){appendFreeReplacement(parts,file,box);continue}
+        if(box===moov){
+          if(canReplace)parts.push(newMoov);
+          else appendFreeReplacement(parts,file,box);
+        }else await appendOriginalTopBox(parts,file,box);
+      }
+      if(!canReplace)parts.push(newMoov);
+      return new Blob(parts,{type:file.type||"video/quicktime"});
     }
 
     function imageFileToJpegArrayBuffer(file,quality=.95){
@@ -503,10 +754,12 @@
       const file=item.file;
       const base=getBaseName(file.name);
       if(isVideoFile(file)){
-        await validateIsoVideo(file);
         const ext=getExt(file.name)||"mp4";
         const type=file.type||(ext==="mov"?"video/quicktime":"video/mp4");
-        return {outputBlob:new Blob([file,createVideoXmpUuidBox()],{type}),outputName:`${base}_tagged.${ext}`};
+        const boxes=await validateIsoVideo(file);
+        const family=await detectIsoVideoFamily(file,boxes);
+        const outputBlob=family==="mov"?await addXmpToMov(file):await addXmpToMp4(file);
+        return {outputBlob:new Blob([outputBlob],{type}),outputName:`${base}_tagged.${ext}`};
       }
       if(isJpegFile(file)){
         const buffer=await file.arrayBuffer();
@@ -587,6 +840,34 @@
       return false;
     }
 
+    async function getStructuredXmpPackets(blob,fileInfo){
+      if(isJpegFile(fileInfo))return parseJpegAndTransform(await blob.arrayBuffer(),false);
+      if(isPngFile(fileInfo))return parsePngAndTransform(await blob.arrayBuffer(),false);
+      const boxes=await validateIsoVideo(blob);
+      if(await detectIsoVideoFamily(blob,boxes)==="mov"){
+        const moov=boxes.find(box=>box.type==="moov");
+        if(!moov||moov.size>128*1024*1024)throw new Error("MOV moov 数据盒无法安全读取。");
+        const bytes=new Uint8Array(await blob.slice(moov.start,moov.end).arrayBuffer());
+        return getMovXmpPackets(bytes,moov.headerSize);
+      }
+      const xmpBoxes=await getTopLevelAdobeBoxes(blob,boxes);
+      const packets=[];for(const box of xmpBoxes)packets.push(await readAdobeXmpBox(blob,box));
+      return packets;
+    }
+
+    async function inspectMediaLabel(blob,fileInfo){
+      const packets=await getStructuredXmpPackets(blob,fileInfo);
+      let malformed=false;
+      for(const packet of packets){
+        try{if(xmpPacketHasKeyword(packet))return {status:"valid",detail:"已在有效的 XMP dc:subject 中找到标签"}}
+        catch(e){malformed=true}
+      }
+      if(await blobContainsKeyword(blob)){
+        return {status:"invalid",detail:malformed?"发现标签文字，但 XMP 已损坏或无法解析":"发现标签文字，但不在有效的 XMP dc:subject 中"};
+      }
+      return {status:"missing",detail:malformed?"存在损坏的 XMP，且未找到有效标签":"未找到标签"};
+    }
+
     function renderNameList(names){
       if(!names.length)return "";
       return `<details style="margin-top:8px;"><summary>查看文件</summary><ul>${names.map(name=>`<li>${escapeHtml(name)}</li>`).join("")}</ul></details>`;
@@ -596,20 +877,24 @@
       if(!items.length){showError("请先上传图片或视频。");return}
       clearMessages();
       checkOriginalBtn.classList.add("disabled");
-      const tagged=[],untagged=[];
+      const valid=[],invalid=[],missing=[],failed=[];
       try{
         for(let i=0;i<items.length;i++){
           showResult(`正在检测原文件（${i+1}/${items.length}）：${escapeHtml(items[i].file.name)}`);
-          if(await blobContainsKeyword(items[i].file))tagged.push(items[i].file.name);
-          else untagged.push(items[i].file.name);
+          try{
+            const result=await inspectMediaLabel(items[i].file,items[i].file);
+            if(result.status==="valid")valid.push(items[i].file.name);
+            else if(result.status==="invalid")invalid.push(items[i].file.name);
+            else missing.push(items[i].file.name);
+          }catch(e){failed.push(`${items[i].file.name}：${e.message||"检测失败"}`)}
         }
         showResult(`
           <div class="success-text">原文件检测完成</div>
-          <p>已含标签：<strong>${tagged.length}</strong> 个</p>
-          ${renderNameList(tagged)}
-          <p>未含标签：<strong>${untagged.length}</strong> 个</p>
-          ${renderNameList(untagged)}
-          ${untagged.length?'<p>未含标签的文件可继续点击 <strong>“批量添加标签”</strong> 处理。</p>':'<p>全部原文件均已包含所需标签。</p>'}
+          <p>有效标签：<strong>${valid.length}</strong> 个</p>${renderNameList(valid)}
+          <p>位置异常或 XMP 损坏：<strong>${invalid.length}</strong> 个</p>${renderNameList(invalid)}
+          <p>未添加标签：<strong>${missing.length}</strong> 个</p>${renderNameList(missing)}
+          <p>无法检测：<strong>${failed.length}</strong> 个</p>${renderNameList(failed)}
+          ${invalid.length||missing.length||failed.length?'<p>非“有效标签”的文件建议重新点击 <strong>“批量添加标签”</strong> 处理。</p>':'<p>全部原文件均在有效的 XMP dc:subject 中包含标签。</p>'}
           <p>标签内容：<code>${KEYWORD}</code></p>
         `);
       }catch(e){
@@ -622,14 +907,25 @@
     async function checkAll(){
       const list=items.filter(i=>i.outputBlob);
       if(!list.length){showError("还没有处理后的文件，请先点击“批量添加标签”。");return}
-      let ok=0,bad=0;
+      const valid=[],invalid=[],missing=[],failed=[];
       for(const item of list){
-        if(await blobContainsKeyword(item.outputBlob))ok++;else bad++;
+        const fileInfo={name:item.outputName,type:item.outputBlob.type};
+        try{
+          const result=await inspectMediaLabel(item.outputBlob,fileInfo);
+          if(result.status==="valid")valid.push(item.outputName);
+          else if(result.status==="invalid")invalid.push(item.outputName);
+          else missing.push(item.outputName);
+        }catch(e){failed.push(`${item.outputName}：${e.message||"检测失败"}`)}
       }
-      if(bad===0){
-        showResult(`<div class="success-text">✅ 检测完成：全部已找到所需标签</div><p>检测数量：<strong>${list.length}</strong> 个文件</p><p>标签内容：<code>${KEYWORD}</code></p>`);
+      if(valid.length===list.length){
+        showResult(`<div class="success-text">✅ 严格检测通过：全部标签均位于有效的 XMP dc:subject</div><p>检测数量：<strong>${list.length}</strong> 个文件</p><p>标签内容：<code>${KEYWORD}</code></p><p class="small">本结果仅验证本地文件元数据结构，不代表亚马逊已经接收或展示披露标识。</p>`);
       }else{
-        showError(`<div class="fail-text">❌ 检测完成：部分文件未找到标签</div><p>成功：<strong>${ok}</strong> 个</p><p>失败：<strong>${bad}</strong> 个</p><p>建议重新批量处理后再下载。</p>`);
+        showError(`<div class="fail-text">❌ 严格检测未全部通过</div>
+          <p>有效标签：<strong>${valid.length}</strong> 个</p>${renderNameList(valid)}
+          <p>位置异常或 XMP 损坏：<strong>${invalid.length}</strong> 个</p>${renderNameList(invalid)}
+          <p>未添加标签：<strong>${missing.length}</strong> 个</p>${renderNameList(missing)}
+          <p>无法检测：<strong>${failed.length}</strong> 个</p>${renderNameList(failed)}
+          <p>建议重新处理未通过的文件。</p>`);
       }
     }
 
