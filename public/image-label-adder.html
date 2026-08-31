@@ -154,9 +154,10 @@
       </div>
 
       <div class="actions">
+        <button class="btn gray disabled" id="checkOriginalBtn">检测原文件（处理前）</button>
         <button class="btn green disabled" id="processAllBtn">批量添加标签</button>
         <button class="btn dark disabled" id="downloadAllBtn">下载全部处理后的文件</button>
-        <button class="btn orange disabled" id="checkAllBtn">检测处理结果</button>
+        <button class="btn orange disabled" id="checkAllBtn">检测处理结果（处理后）</button>
         <button class="btn red" id="resetBtn">重置</button>
       </div>
 
@@ -169,9 +170,10 @@
       <h2>使用说明</h2>
       <ol>
         <li>点击上传 JPG、JPEG、PNG 图片或 MP4、MOV 视频，可一次选择多个文件。</li>
-        <li>选择 PNG 处理方式，默认推荐“转成 JPG 并添加标签”。</li>
-        <li>点击 <strong>“批量添加标签”</strong>。</li>
-        <li>视频仅写入元数据，不会转码；处理完成后可逐个下载，也可点击 <strong>“下载全部处理后的文件”</strong>。</li>
+        <li>如需确认原文件是否已有标签，点击 <strong>“检测原文件（处理前）”</strong>。</li>
+        <li>选择 PNG 处理方式，然后点击 <strong>“批量添加标签”</strong>。</li>
+        <li>视频仅写入元数据，不会转码；处理完成后可点击 <strong>“检测处理结果（处理后）”</strong>。</li>
+        <li>检测无误后可逐个下载，也可点击 <strong>“下载全部处理后的文件”</strong>。</li>
         <li>如需重新开始，点击 <strong>“重置”</strong>。</li>
       </ol>
       <div class="warning">请使用下载后的新图片或新视频，不要继续使用原文件。</div>
@@ -203,6 +205,7 @@
     const fileInput=document.getElementById("fileInput");
     const uploadArea=document.getElementById("uploadArea");
     const summaryBox=document.getElementById("summaryBox");
+    const checkOriginalBtn=document.getElementById("checkOriginalBtn");
     const processAllBtn=document.getElementById("processAllBtn");
     const downloadAllBtn=document.getElementById("downloadAllBtn");
     const checkAllBtn=document.getElementById("checkAllBtn");
@@ -251,10 +254,11 @@
     function renderList(){
       if(!items.length){
         fileList.style.display="none";fileList.innerHTML="";
-        processAllBtn.classList.add("disabled");downloadAllBtn.classList.add("disabled");checkAllBtn.classList.add("disabled");
+        checkOriginalBtn.classList.add("disabled");processAllBtn.classList.add("disabled");downloadAllBtn.classList.add("disabled");checkAllBtn.classList.add("disabled");
         updateSummary();return;
       }
       fileList.style.display="block";
+      checkOriginalBtn.classList.remove("disabled");
       processAllBtn.classList.remove("disabled");
       checkAllBtn.classList.remove("disabled");
       if(items.some(i=>i.outputBlob))downloadAllBtn.classList.remove("disabled");else downloadAllBtn.classList.add("disabled");
@@ -307,7 +311,6 @@
     function asciiToUint8(str){const a=new Uint8Array(str.length);for(let i=0;i<str.length;i++)a[i]=str.charCodeAt(i)&255;return a}
     function utf16leWithNull(str){const a=new Uint8Array((str.length+1)*2);for(let i=0;i<str.length;i++){const c=str.charCodeAt(i);a[i*2]=c&255;a[i*2+1]=(c>>8)&255}return a}
     function uint8ToString(bytes){return new TextDecoder("utf-8",{fatal:false}).decode(bytes)}
-    function arrayBufferToLatin1(buffer){const bytes=new Uint8Array(buffer);let s="";const size=8192;for(let i=0;i<bytes.length;i+=size)s+=String.fromCharCode.apply(null,bytes.subarray(i,i+size));return s}
     function concatUint8(arrs){const total=arrs.reduce((s,a)=>s+a.length,0);const out=new Uint8Array(total);let o=0;arrs.forEach(a=>{out.set(a,o);o+=a.length});return out}
     function write16LE(v,o,val){v.setUint16(o,val,true)}
     function write32LE(v,o,val){v.setUint32(o,val,true)}
@@ -567,15 +570,61 @@
       }
     }
 
+    async function blobContainsKeyword(blob){
+      const target=asciiToUint8(KEYWORD);
+      const chunkSize=2*1024*1024;
+      let carry=new Uint8Array(0);
+      for(let offset=0;offset<blob.size;offset+=chunkSize){
+        const end=Math.min(offset+chunkSize,blob.size);
+        const current=new Uint8Array(await blob.slice(offset,end).arrayBuffer());
+        const bytes=concatUint8([carry,current]);
+        outer:for(let i=0;i<=bytes.length-target.length;i++){
+          for(let j=0;j<target.length;j++)if(bytes[i+j]!==target[j])continue outer;
+          return true;
+        }
+        carry=bytes.slice(Math.max(0,bytes.length-target.length+1));
+      }
+      return false;
+    }
+
+    function renderNameList(names){
+      if(!names.length)return "";
+      return `<details style="margin-top:8px;"><summary>查看文件</summary><ul>${names.map(name=>`<li>${escapeHtml(name)}</li>`).join("")}</ul></details>`;
+    }
+
+    async function checkOriginals(){
+      if(!items.length){showError("请先上传图片或视频。");return}
+      clearMessages();
+      checkOriginalBtn.classList.add("disabled");
+      const tagged=[],untagged=[];
+      try{
+        for(let i=0;i<items.length;i++){
+          showResult(`正在检测原文件（${i+1}/${items.length}）：${escapeHtml(items[i].file.name)}`);
+          if(await blobContainsKeyword(items[i].file))tagged.push(items[i].file.name);
+          else untagged.push(items[i].file.name);
+        }
+        showResult(`
+          <div class="success-text">原文件检测完成</div>
+          <p>已含标签：<strong>${tagged.length}</strong> 个</p>
+          ${renderNameList(tagged)}
+          <p>未含标签：<strong>${untagged.length}</strong> 个</p>
+          ${renderNameList(untagged)}
+          ${untagged.length?'<p>未含标签的文件可继续点击 <strong>“批量添加标签”</strong> 处理。</p>':'<p>全部原文件均已包含所需标签。</p>'}
+          <p>标签内容：<code>${KEYWORD}</code></p>
+        `);
+      }catch(e){
+        showError(`检测原文件失败：${escapeHtml(e.message||"未知错误")}`);
+      }finally{
+        if(items.length)checkOriginalBtn.classList.remove("disabled");
+      }
+    }
+
     async function checkAll(){
       const list=items.filter(i=>i.outputBlob);
       if(!list.length){showError("还没有处理后的文件，请先点击“批量添加标签”。");return}
       let ok=0,bad=0;
       for(const item of list){
-        const source=isVideoFile(item.file)?item.outputBlob.slice(Math.max(0,item.outputBlob.size-8192)):item.outputBlob;
-        const buffer=await source.arrayBuffer();
-        const text=arrayBufferToLatin1(buffer)+"\n"+uint8ToString(new Uint8Array(buffer));
-        if(text.includes(KEYWORD))ok++;else bad++;
+        if(await blobContainsKeyword(item.outputBlob))ok++;else bad++;
       }
       if(bad===0){
         showResult(`<div class="success-text">✅ 检测完成：全部已找到所需标签</div><p>检测数量：<strong>${list.length}</strong> 个文件</p><p>标签内容：<code>${KEYWORD}</code></p>`);
@@ -593,11 +642,13 @@
       fileList.innerHTML="";
       resultBox.style.display="none";
       errorBox.style.display="none";
+      checkOriginalBtn.classList.add("disabled");
       processAllBtn.classList.add("disabled");
       downloadAllBtn.classList.add("disabled");
       checkAllBtn.classList.add("disabled");
     }
 
+    checkOriginalBtn.addEventListener("click",checkOriginals);
     processAllBtn.addEventListener("click",processAll);
     downloadAllBtn.addEventListener("click",downloadAll);
     checkAllBtn.addEventListener("click",checkAll);
