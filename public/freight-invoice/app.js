@@ -21,7 +21,12 @@ function resolveApiInput(input){
   return input;
 }
 
-window.fetch=(input,init)=>ORIGINAL_FETCH(resolveApiInput(input),init);
+window.fetch=async(input,init)=>{
+  const warehouseResponse=window.freightInvoiceWarehouseFetch
+    ? await window.freightInvoiceWarehouseFetch(input,init)
+    : null;
+  return warehouseResponse||ORIGINAL_FETCH(resolveApiInput(input),init);
+};
 
 const state = {
   products: loadProducts(),
@@ -618,7 +623,7 @@ async function offerBrowserRestoreIfNeeded(){
 }
 
 async function init(){
-  try{state.config=await fetch('/api/config').then(r=>r.json());if(typeof loadTemplateCatalog==='function')await loadTemplateCatalog(true);await syncProductsFromServer();await loadHistory(true);await restoreDraft();const preserveExistingBrowserBackup=await offerBrowserRestoreIfNeeded();if(!preserveExistingBrowserBackup)scheduleBrowserMirror()}catch{toast('未连接到本地导出服务',true)}
+  try{state.config=await fetch('/api/config').then(r=>r.json());const warehouseSummary=await fetch('/api/warehouses?limit=1').then(r=>r.json());state.config.warehouseCount=warehouseSummary.total||0;if(typeof loadTemplateCatalog==='function')await loadTemplateCatalog(true);await syncProductsFromServer();await loadHistory(true);await restoreDraft();const preserveExistingBrowserBackup=await offerBrowserRestoreIfNeeded();if(!preserveExistingBrowserBackup)scheduleBrowserMirror()}catch{toast('未连接到本地导出服务',true)}
   fillCurrencies($('#productForm').elements.currency);renderAppMeta();renderProducts();renderTemplates();renderInvoice();updateStats();
 }
 

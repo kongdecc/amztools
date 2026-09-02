@@ -27,9 +27,7 @@ os.environ.setdefault(
 from _freight_invoice.app import (  # noqa: E402
     InvoiceHandler,
     create_full_backup,
-    read_warehouses,
     restore_full_backup,
-    write_warehouses,
 )
 
 
@@ -62,9 +60,6 @@ def _load_durable_state() -> None:
         state = json.loads(row[0])
         backup = base64.b64decode(state.get("backup", ""), validate=True)
         restore_full_backup(backup)
-        warehouses = state.get("warehouses")
-        if isinstance(warehouses, list):
-            write_warehouses(warehouses)
     except Exception as exc:
         # Keep the function usable with its /tmp + IndexedDB fallback when the
         # database is temporarily unavailable or has not been provisioned yet.
@@ -83,7 +78,6 @@ def _save_durable_state() -> None:
         value = json.dumps(
             {
                 "backup": base64.b64encode(backup).decode("ascii"),
-                "warehouses": read_warehouses(),
             },
             ensure_ascii=False,
             separators=(",", ":"),
