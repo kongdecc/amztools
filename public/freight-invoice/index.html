@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>货代发票工作台</title>
+  <meta name="description" content="货代发票工作台，支持产品资料、模板映射、Excel 预览编辑、导出历史和完整备份。">
+  <link rel="stylesheet" href="./site-shell.css?v=20260902-1">
+  <link rel="stylesheet" href="./styles.css?v=20260831-5">
+  <link rel="stylesheet" href="./enhancements.css?v=20260831-5">
+  <link rel="stylesheet" href="./spreadsheet-preview.css?v=20260901-6">
+  <link rel="stylesheet" href="./preview-layout-fix.css?v=20260831-5">
+  <link rel="stylesheet" href="./item-picker.css?v=20260831-8">
+  <link rel="stylesheet" href="./warehouse-picker.css?v=20260901-1">
+  <link rel="stylesheet" href="./warehouse-manager.css?v=20260902-1">
+  <link rel="stylesheet" href="./history.css?v=20260901-2">
+  <link rel="stylesheet" href="./template-designer.css?v=20260902-3">
+  <link rel="stylesheet" href="./field-catalog-fix.css?v=20260902-3">
+  <style>.template-picker-empty{grid-column:1/-1;border:1px dashed #bdc9da;border-radius:12px;padding:22px;text-align:center;background:#fafcff}.template-picker-empty strong,.template-picker-empty small{display:block}.template-picker-empty small{color:var(--muted);margin:7px 0 14px}.template-list>.template-empty{grid-column:1/-1}.bulk-actions,.template-center-actions{display:flex;align-items:center;gap:9px}.select-column{width:38px;text-align:center!important}.select-column input,.record-select,.template-select input,.bulk-select-all input{width:16px;height:16px;margin:0;box-shadow:none}.template-card{position:relative}.template-select{display:flex;align-items:flex-start;padding-top:15px}.bulk-select-all{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);margin:0}.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}</style>
+</head>
+<body>
+  <div id="site-header-container">
+    <header class="tb-header">
+      <div class="tb-logo-area">
+        <div class="tb-logo-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+        </div>
+        <span>跨境工具魔方 AmzToolBox</span>
+      </div>
+      <nav class="tb-nav-desktop">
+        <a href="/" class="tb-nav-link">首页</a>
+        <a href="/functionality" class="tb-nav-link">功能分类</a>
+        <a href="/about" class="tb-nav-link">关于</a>
+        <a href="/blog" class="tb-nav-link">博客</a>
+        <a href="/suggest" class="tb-nav-link">提需求</a>
+        <a href="/reward" class="tb-nav-link">打赏支持</a>
+      </nav>
+    </header>
+  </div>
+  <section class="tool-hero">
+    <div class="tool-hero__inner">
+      <div>
+        <p class="tool-hero__eyebrow">Freight Invoice Studio</p>
+        <h1>货代发票工作台</h1>
+        <p>在系统内直接打开货代发票工具，统一保留站点页眉、广告区和页脚；产品资料、模板映射、预览编辑与导出能力保持不变。</p>
+      </div>
+      <div class="tool-hero__badge">运营工具</div>
+    </div>
+  </section>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">运</div>
+        <div><strong>货代发票工作台</strong><span>Freight Invoice Studio</span></div>
+      </div>
+      <nav>
+        <button class="nav-item active" data-page="dashboard"><span>⌂</span>工作台</button>
+        <button class="nav-item" data-page="products"><span>▦</span>产品资料库</button>
+        <button class="nav-item" data-page="invoice"><span>▤</span>新建发票</button>
+        <button class="nav-item" data-page="drafts"><span>✎</span>草稿箱</button>
+        <button class="nav-item" data-page="history"><span>↶</span>导出历史</button>
+        <button class="nav-item" data-page="templates"><span>◇</span>模板中心</button>
+      </nav>
+      <div class="sidebar-note">
+        <span class="status-dot"></span>
+        <div><strong id="appEdition">通用服务器版</strong><small id="appVersion">v3.0.0-beta</small><small id="appStorageMode">正在连接服务…</small></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div><p class="eyebrow" id="pageEyebrow">OVERVIEW</p><h1 id="pageTitle">工作台</h1></div>
+        <div class="top-actions"><button type="button" class="draft-status" id="draftStatus" data-go="drafts" title="打开草稿箱">尚未保存草稿</button><button class="btn ghost" id="importDataBtn">导入备份</button><button class="btn primary" data-go="invoice">＋ 新建发票</button></div>
+      </header>
+
+      <section class="page active" id="page-dashboard">
+        <div class="hero-card">
+          <div><span class="pill light">通用货代模板工作台</span><h2>把重复填表，变成一次选择。</h2><p>上传任意货代 Excel 模板，校对字段后按原结构预览、编辑和导出。</p><div class="hero-actions"><button class="btn white" data-go="products">录入产品资料</button><button class="btn outline-white" data-go="invoice">开始制作发票</button></div></div>
+          <div class="hero-visual"><div class="sheet sheet-back"></div><div class="sheet sheet-front"><div class="sheet-head"></div><i></i><i></i><i></i><div class="sheet-total"></div></div></div>
+        </div>
+        <div class="stats-grid">
+          <article class="stat"><div class="stat-icon blue">▦</div><div><span>产品资料</span><strong id="statProducts">0</strong><small>个预设产品</small></div></article>
+          <article class="stat"><div class="stat-icon orange">◇</div><div><span>可用模板</span><strong id="statTemplates">2</strong><small>当前已启用的通用导出模板</small></div></article>
+          <article class="stat"><div class="stat-icon green">✓</div><div><span>已导出</span><strong id="statExports">0</strong><small>份 Excel 文件</small></div></article>
+        </div>
+        <div class="dashboard-grid">
+          <article class="panel"><div class="panel-head"><div><p class="eyebrow">QUICK START</p><h3>四步生成货代发票</h3></div></div><div class="steps workflow-steps"><div><b>01</b><span><strong>维护产品资料</strong><small>预设尺寸、重量、价格和清关信息</small></span></div><div><b>02</b><span><strong>上传并配置模板</strong><small>校对字段映射，必要时维护识别别名</small></span></div><div><b>03</b><span><strong>创建并填写发票</strong><small>选择模板、仓库和商品，填写票件信息</small></span></div><div><b>04</b><span><strong>预览编辑后导出</strong><small>按原表格检查内容，确认后导出 Excel</small></span></div></div></article>
+          <article class="panel"><div class="panel-head"><div><p class="eyebrow">DATA SAFETY</p><h3>数据管理</h3></div></div><p class="muted">产品、模板、草稿、导出历史和原始 Excel 均同步保存到服务端及当前浏览器。仓库预设作为本机常驻资料独立维护，不参与 ZIP 备份、恢复或清空所有数据。</p><div class="stack-actions"><button class="btn secondary" id="backupBtn">导出完整 ZIP 备份</button><button class="btn ghost danger" id="clearDataBtn">清空产品资料</button><button class="btn ghost danger" id="clearAllDataBtn">清空所有数据</button></div></article>
+        </div>
+      </section>
+
+      <section class="page" id="page-products">
+        <div class="toolbar"><div class="toolbar-left"><div class="search"><span>⌕</span><input id="productSearch" placeholder="搜索 SKU、产品名称、型号、海关编码"></div><label class="sort-control"><span>排序</span><select id="productSort"><option value="updated-desc">最近更新</option><option value="sku-asc">SKU A–Z</option><option value="name-asc">中文品名 A–Z</option><option value="price-asc">价格从低到高</option><option value="price-desc">价格从高到低</option></select></label></div><div class="bulk-actions"><button class="btn ghost danger" id="deleteSelectedProductsBtn" disabled>删除所选（0）</button><button class="btn primary" id="newProductBtn">＋ 新增产品</button></div></div>
+        <div class="panel table-panel">
+          <div class="panel-head"><div><p class="eyebrow">PRODUCT LIBRARY</p><h3>产品资料库</h3></div><span class="count-chip" id="productCount">0 个产品</span></div>
+          <div id="productEmpty" class="empty-state"><div class="empty-icon">▦</div><h3>还没有产品资料</h3><p>先录入常用产品，之后制作发票可以一键带入。</p><button class="btn primary" data-action="new-product">新增第一个产品</button></div>
+          <div class="table-wrap" id="productTableWrap"><table><thead><tr><th class="select-column"><input type="checkbox" id="selectAllProducts" aria-label="全选当前产品"></th><th>产品</th><th>内部 / 导出 SKU</th><th>默认价格</th><th>产品重量</th><th>装箱参数</th><th>海关编码</th><th></th></tr></thead><tbody id="productRows"></tbody></table></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-invoice">
+        <div class="invoice-layout">
+          <div class="invoice-main">
+            <article class="panel form-panel">
+              <div class="section-title"><span>01</span><div><h3>选择货代模板</h3><p>不同模板将显示对应的发票字段</p></div></div>
+              <div class="template-picker" id="templatePicker"></div>
+            </article>
+            <article class="panel form-panel">
+              <div class="section-title items-title"><span>02</span><div><h3>添加商品</h3><p>从资料库连续选择 SKU，并设置每个 SKU 的箱数</p></div><button class="btn secondary" id="addInvoiceItemBtn">＋ 添加商品</button></div>
+              <div id="invoiceItems" class="invoice-items"></div>
+            </article>
+            <article class="panel form-panel">
+              <div class="section-title"><span>03</span><div><h3>收件与票件信息</h3><p>带 <em>*</em> 的字段建议填写</p></div></div>
+              <div class="warehouse-picker">
+                <div class="warehouse-picker-head">
+                  <div><strong>Amazon 仓库预设</strong><small>适用于全部模板，支持仓库代码、城市、州、邮编或地址关键字</small></div>
+                  <div class="warehouse-head-actions"><span class="warehouse-count" id="warehouseCount"></span><button type="button" class="mini-btn" id="manageWarehousesBtn">维护仓库</button></div>
+                </div>
+                <div class="warehouse-search-row">
+                  <span class="warehouse-search-icon">⌕</span>
+                  <input id="warehouseSearch" type="search" autocomplete="off" placeholder="例如：SCK4、Stockton、CA 95215">
+                </div>
+                <div class="warehouse-results" id="warehouseResults" hidden></div>
+                <div class="selected-warehouse" id="selectedWarehouse" hidden></div>
+              </div>
+              <div class="form-grid" id="shipmentFields"></div>
+            </article>
+          </div>
+          <aside class="invoice-summary panel">
+            <p class="eyebrow">INVOICE SUMMARY</p><h3>本票汇总</h3>
+            <div class="summary-list"><div><span>商品种类</span><strong id="sumKinds">0</strong></div><div><span>总数量</span><strong id="sumQuantity">0</strong></div><div><span>总箱数</span><strong id="sumCartons">0</strong></div><div><span>总毛重</span><strong id="sumGross">0 kg</strong></div><div><span>总体积</span><strong id="sumCbm">0 m³</strong></div><div class="summary-total"><span>申报总值</span><strong id="sumValue">0.00</strong></div></div>
+            <div class="summary-warning" id="summaryWarning">请至少添加一个商品。</div>
+            <button class="btn secondary full" id="previewBtn">生成并编辑表格预览</button>
+            <button class="btn primary full" id="exportBtn">导出原格式 Excel</button>
+            <button class="btn ghost full" id="resetInvoiceBtn">重置本票</button>
+          </aside>
+        </div>
+      </section>
+
+      <section class="page" id="page-drafts">
+        <div class="panel draft-manager-panel">
+          <div class="panel-head"><div><p class="eyebrow">AUTO DRAFT</p><h3>当前发票草稿</h3></div><span class="count-chip">自动保存</span></div>
+          <div id="draftManagerContent"></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-history">
+        <div class="toolbar"><div class="toolbar-left"><div class="search"><span>⌕</span><input id="historySearch" placeholder="搜索 FBA、Reference ID、收件人或文件名"></div></div><div class="bulk-actions"><button class="btn ghost danger" id="deleteSelectedHistoryBtn" disabled>删除所选（0）</button><button class="btn secondary" id="refreshHistoryBtn">↻ 刷新历史</button></div></div>
+        <div class="panel table-panel">
+          <div class="panel-head"><div><p class="eyebrow">EXPORT HISTORY</p><h3>导出历史</h3></div><span class="count-chip" id="historyCount">0 条记录</span></div>
+          <div id="historyEmpty" class="empty-state"><div class="empty-icon">↶</div><h3>还没有导出记录</h3><p>成功导出 Excel 后会自动保存数据快照，可随时加载并创建新发票。</p><button class="btn primary" data-go="invoice">新建第一张发票</button></div>
+          <div class="table-wrap" id="historyTableWrap"><table class="history-table"><thead><tr><th class="select-column"><input type="checkbox" id="selectAllHistory" aria-label="全选当前导出记录"></th><th>导出时间</th><th>模板 / 文件</th><th>FBA / Reference ID</th><th>收件信息</th><th>商品 / 箱数</th><th>申报金额</th><th></th></tr></thead><tbody id="historyRows"></tbody></table></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-templates">
+        <div class="panel">
+          <div class="panel-head"><div><p class="eyebrow">UNIVERSAL TEMPLATE CENTER</p><h3>货代模板中心</h3></div><div class="template-center-actions"><label class="bulk-select-all"><input type="checkbox" id="selectAllTemplates"> 全选</label><button class="btn ghost danger" id="deleteSelectedTemplatesBtn" disabled>删除所选（0）</button><span class="pill">通用版</span><button class="btn ghost" id="manageFieldCatalogBtn">维护字段库</button><button class="btn primary" id="uploadTemplateBtn">＋ 上传 Excel 模板</button></div></div>
+          <div class="template-list" id="templateList"></div>
+          <div class="roadmap"><div class="roadmap-icon">◎</div><div><h3>上传、识别、校对、保存</h3><p>支持 .xls / .xlsx / .xlsm；旧版 .xls 会自动转换。系统会自动识别固定字段和商品表头；点击右侧映射输入框，再点击左侧 Excel 单元格即可完成校对。</p></div></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal" id="productModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-dialog large">
+      <div class="modal-head"><div><p class="eyebrow">PRODUCT PRESET</p><h2 id="productModalTitle">新增产品资料</h2></div><button class="icon-btn" data-close-modal>×</button></div>
+      <form id="productForm">
+        <input type="hidden" name="id">
+        <div class="modal-body">
+          <div class="form-section"><h3>基本资料</h3><div class="form-grid cols-3">
+            <label><span>内部 SKU <em>*</em></span><input name="sku" required placeholder="仅用于内部识别，不会导出"></label>
+            <label><span>导出 SKU（给货代）<em>*</em></span><input name="exportSku" required placeholder="例如 P001，不要填写真实 SKU"></label>
+            <label><span>型号</span><input name="model" placeholder="产品型号"></label>
+            <label><span>ASIN</span><input name="asin" placeholder="例如 B0XXXXXXXX"></label>
+            <label><span>FNSKU</span><input name="fnsku" placeholder="亚马逊商品 FNSKU"></label>
+            <label><span>品牌</span><input name="brand" placeholder="无品牌可填 无"></label>
+            <label><span>中文品名 <em>*</em></span><input name="nameZh" required placeholder="例如 螺纹紧固件"></label>
+            <label><span>英文品名 <em>*</em></span><input name="nameEn" required placeholder="例如 Thread Fasteners"></label>
+            <label><span>品牌类型</span><select name="brandType"><option>无品牌</option><option>自有品牌</option><option>授权品牌</option><option>其他</option></select></label>
+          </div></div>
+          <div class="form-section"><h3>价格与申报</h3><div class="form-grid cols-4">
+            <label><span>默认单价 <em>*</em></span><input name="unitPrice" type="number" step="0.0001" min="0" required></label>
+            <label><span>币种</span><select name="currency" class="currency-select"></select></label>
+            <label><span>销售价格</span><input name="salePrice" type="number" step="0.0001" min="0"></label>
+            <label><span>海关编码 <em>*</em></span><input name="hsCode" required></label>
+            <label class="span-2"><span>销售链接 / 备注内容</span><input name="saleUrl" type="text" placeholder="可填写链接、平台编号或任意文字"></label>
+            <label><span>产品带磁</span><select name="hasMagnet"><option>否</option><option>是</option></select></label>
+            <label><span>产品带电</span><select name="hasBattery"><option>否</option><option>是</option></select></label>
+            <label class="span-2"><span>电池标号和总量</span><input name="batteryInfo" placeholder="例如 PI967/3g"></label>
+          </div></div>
+          <div class="form-section"><h3>产品尺寸与重量</h3><div class="measure-grid"><div class="measure-card"><span>产品尺寸（cm）</span><div><input name="productLength" type="number" step="0.01" min="0" placeholder="长"><b>×</b><input name="productWidth" type="number" step="0.01" min="0" placeholder="宽"><b>×</b><input name="productHeight" type="number" step="0.01" min="0" placeholder="高"></div></div><label><span>单个产品重量</span><input name="productWeight" type="number" step="0.0001" min="0" placeholder="输入重量"></label><label><span>重量单位</span><select name="weightUnit"><option value="g">g（克）</option><option value="kg">kg（千克）</option><option value="oz">oz（盎司）</option><option value="lb">lb（磅）</option></select></label></div></div>
+          <div class="form-section"><h3>默认装箱参数</h3><div class="measure-grid"><div class="measure-card"><span>外箱尺寸（cm）</span><div><input name="cartonLength" type="number" step="0.01" min="0" placeholder="长"><b>×</b><input name="cartonWidth" type="number" step="0.01" min="0" placeholder="宽"><b>×</b><input name="cartonHeight" type="number" step="0.01" min="0" placeholder="高"></div></div><label><span>每箱数量</span><input name="unitsPerCarton" type="number" step="1" min="0"></label><label><span>整箱毛重（kg）</span><input name="cartonGrossWeight" type="number" step="0.001" min="0"></label><label><span>整箱净重（kg）</span><input name="cartonNetWeight" type="number" step="0.001" min="0"></label></div></div>
+          <div class="form-section"><h3>清关信息与图片</h3><div class="form-grid cols-2"><label><span>材质（中文）</span><input name="materialZh"></label><label><span>Material (English)</span><input name="materialEn"></label><label><span>用途（中文）</span><textarea name="purposeZh" rows="2"></textarea></label><label><span>Purpose (English)</span><textarea name="purposeEn" rows="2"></textarea></label></div><label class="image-upload"><input name="imageFile" type="file" accept="image/*"><input name="image" type="hidden"><div class="image-preview"><span>＋</span><img alt="产品图片预览"></div><div><strong>上传产品图片</strong><small>自动压缩后保存在本机，支持 JPG / PNG / WebP</small></div></label></div>
+          <div class="form-section" id="customProductFieldSection" hidden><h3>自定义商品字段</h3><p class="form-section-hint">在字段库中新增的商品字段，可随产品资料保存并用于模板导出。</p><div class="form-grid cols-3" id="customProductFields"></div></div>
+        </div>
+        <div class="modal-foot"><button type="button" class="btn ghost" data-close-modal>取消</button><button type="submit" class="btn primary">保存产品资料</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="itemModal" aria-hidden="true">
+    <div class="modal-backdrop"></div>
+    <div class="modal-dialog item-picker-dialog">
+      <div class="modal-head"><div><p class="eyebrow">ADD PRODUCTS</p><h2>连续添加商品</h2></div><button class="icon-btn" data-close-modal>×</button></div>
+      <div class="item-picker-summary"><div><span>已选 SKU</span><strong id="itemModalSkuCount">0</strong></div><div><span>总箱数</span><strong id="itemModalBoxCount">0</strong></div><small>选择商品后可直接调整每个 SKU 的箱数</small></div>
+      <div class="modal-body"><div class="search"><span>⌕</span><input id="itemProductSearch" placeholder="搜索产品资料"></div><div class="product-select-list" id="productSelectList"></div><button class="btn secondary full" id="addBlankItemBtn">＋ 添加临时空白商品</button></div>
+      <div class="modal-foot"><button type="button" class="btn ghost" data-close-modal>关闭</button><button type="button" class="btn primary" id="finishAddingItemsBtn">完成并返回发票</button></div>
+    </div>
+  </div>
+
+  <div class="modal" id="previewModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-dialog preview-dialog">
+      <div class="modal-head"><div><p class="eyebrow">EXCEL PREVIEW & EDITOR</p><h2>生成结果预览与编辑</h2></div><div class="preview-head-actions"><button class="btn primary" id="previewExportBtn">按预览内容导出 Excel</button><button class="icon-btn" data-close-modal>×</button></div></div>
+      <div class="modal-body preview-body spreadsheet-preview-body" id="previewContent"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="templateEditorModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-dialog template-editor-dialog">
+      <div class="modal-head"><div><p class="eyebrow">TEMPLATE MAPPING DESIGNER</p><h2 id="templateEditorTitle">模板字段映射</h2></div><div class="preview-head-actions"><button class="btn ghost" id="reanalyzeTemplateBtn">重新自动识别</button><button class="btn primary" id="saveTemplateMappingBtn">保存并启用模板</button><button class="icon-btn" data-close-modal>×</button></div></div>
+      <div class="template-editor-body">
+        <section class="template-preview-pane">
+          <div class="template-preview-toolbar"><label><span>工作表</span><select id="templateSheetSelect"></select></label><div id="templateMappingHint">绿色表示已映射；蓝色表示当前选中。先选右侧字段，再点左侧单元格。</div></div>
+          <div class="template-preview-canvas" id="templateDesignerPreview"></div>
+        </section>
+        <aside class="template-mapping-pane">
+          <label class="mapping-name"><span>模板名称</span><input id="customTemplateName"></label>
+          <div class="mapping-summary" id="templateDetectionSummary"></div>
+          <div class="direct-mapping-panel" id="directMappingPanel" hidden></div>
+          <details open><summary>固定票件字段</summary><p>可以直接点击左侧单元格后选择字段，也可以先点击下方输入框再到左侧选取；“必填”会在预览和导出前校验，可按该货代的规则调整。</p><div class="mapping-fields" id="fixedMappingFields"></div></details>
+          <details open><summary>商品明细设置</summary><div class="mapping-settings" id="itemMappingSettings"></div><p>商品列可填写列字母或点击左侧任意单元格选择该列。</p><div class="mapping-fields" id="itemMappingFields"></div></details>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="fieldCatalogModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-dialog field-catalog-dialog">
+      <div class="modal-head"><div><p class="eyebrow">FIELD LIBRARY</p><h2>模板字段库</h2></div><button class="icon-btn" data-close-modal>×</button></div>
+      <div class="field-catalog-body">
+        <section class="field-list-pane">
+          <div class="field-list-toolbar"><select id="fieldCatalogCategoryFilter"><option value="fixed">固定票件字段</option><option value="items">商品明细字段</option></select><input id="fieldCatalogSearch" placeholder="搜索字段或识别别名"><button class="btn primary" type="button" id="newFieldDefinitionBtn">＋ 新增字段</button></div>
+          <div class="field-library-help"><strong>什么时候新增字段？</strong><span>模板出现系统中完全没有的数据项时才新增；如果只是同一字段换了叫法，请点击现有字段的“编辑”，增加识别别名。</span></div>
+          <div class="field-definition-list" id="fieldDefinitionList"></div>
+        </section>
+        <aside class="field-editor-pane">
+          <div class="field-editor-empty" id="fieldDefinitionEmpty"><div>＋</div><h3>选择编辑或新增字段</h3><p>点击左侧字段的“编辑”可修改名称和识别别名；点击“新增字段”会在这里打开新的字段表单。</p></div>
+          <form class="field-definition-form" id="fieldDefinitionForm" hidden>
+            <input type="hidden" name="key"><input type="hidden" name="category">
+            <div><p class="eyebrow">EDIT FIELD</p><h3 id="fieldDefinitionFormTitle">新增字段</h3></div>
+            <label><span>显示名称</span><input name="label" required maxlength="80" placeholder="例如 目的仓代码"></label>
+            <label><span>数据类型</span><select name="inputType"><option value="text">单行文字</option><option value="number">数字</option><option value="textarea">多行文字</option></select></label>
+            <label><span>自动识别名称 / 别名</span><textarea name="aliases" rows="7" placeholder="每行一个，例如：&#10;目的仓代码&#10;仓库代码&#10;Destination code"></textarea><small>上传或重新识别模板时，表头包含任一别名即可匹配。名称越具体越好。</small></label>
+            <div class="field-form-note" id="fieldDefinitionNote"></div>
+            <div class="field-form-actions"><button class="btn ghost" type="button" id="cancelFieldDefinitionBtn">取消编辑</button><button class="btn primary" type="submit">保存字段</button></div>
+          </form>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="warehouseManagerModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-dialog warehouse-manager-dialog">
+      <div class="modal-head"><div><p class="eyebrow">WAREHOUSE PRESETS</p><h2>仓库预设维护</h2></div><button class="icon-btn" data-close-modal>×</button></div>
+      <div class="warehouse-manager-body">
+        <section class="warehouse-manager-list-pane">
+          <div class="warehouse-manager-toolbar"><div class="search"><span>⌕</span><input id="warehouseManagerSearch" placeholder="搜索代码、城市、州、邮编或地址"></div><button type="button" class="btn primary" id="newWarehouseBtn">＋ 新增仓库</button></div>
+          <p class="warehouse-manager-note">仓库库常驻本机，不参与“清空所有数据”、ZIP 备份或恢复；本页只提供新增、编辑和删除，不提供导出。</p>
+          <div class="warehouse-manager-list" id="warehouseManagerList"></div>
+        </section>
+        <form class="warehouse-manager-form" id="warehouseManagerForm">
+          <input type="hidden" name="id">
+          <div><p class="eyebrow">EDIT WAREHOUSE</p><h3 id="warehouseManagerFormTitle">新增仓库</h3></div>
+          <div class="warehouse-form-grid"><label><span>仓库代码 *</span><input name="code" required maxlength="30" placeholder="例如 SCK4"></label><label><span>国家代码</span><input name="countryCode" maxlength="2" placeholder="US"></label><label><span>国家</span><input name="country" placeholder="美国"></label><label><span>地区</span><input name="region"></label><label class="span-2"><span>街道地址</span><input name="address"></label><label><span>城市</span><input name="city"></label><label><span>州 / 省代码</span><input name="state"></label><label><span>邮编</span><input name="postalCode"></label></div>
+          <div class="warehouse-manager-form-actions"><button type="button" class="btn ghost" id="cancelWarehouseEditBtn">重置</button><button type="submit" class="btn primary">保存仓库</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="importDataInput" accept=".zip,.json,application/zip,application/json" hidden>
+  <input type="file" id="templateUploadInput" accept=".xls,.xlsx,.xlsm" hidden>
+  <div id="toast" class="toast"></div>
+  <footer class="site-footer">
+    © 2025 跨境工具魔方 AmzToolBox. All rights reserved.
+    <span style="margin: 0 0.5rem;">|</span>
+    <a href="/privacy">隐私说明</a>
+  </footer>
+  <script>
+    window.FREIGHT_INVOICE_API_BASE = '/api/freight-invoice';
+  </script>
+  <script type="module" src="/shared-top-ad.js"></script>
+  <script src="./app.js?v=20260902-22"></script>
+  <script src="./template-designer.js?v=20260902-11"></script>
+  <script src="./warehouse-manager.js?v=20260902-1"></script>
+</body>
+</html>

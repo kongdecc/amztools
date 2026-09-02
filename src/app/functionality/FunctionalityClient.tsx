@@ -171,6 +171,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
     'amazon-category-selection-center': LayoutDashboard,
     'partner-equity-calculator': Users,
     'natural-traffic-tool': BarChart3,
+    'freight-invoice-studio': FileText,
     'freight-rate-radar': Truck,
     'fba-warehouses': Warehouse,
     'fba-label-editor': FileText,

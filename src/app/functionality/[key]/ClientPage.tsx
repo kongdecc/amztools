@@ -73,6 +73,7 @@ export default function ClientPage({
     'partner-equity-calculator': Users,
     'carton-calc-advanced': Box,
     'natural-traffic-tool': BarChart3,
+    'freight-invoice-studio': FileText,
     'freight-rate-radar': Truck,
     'fba-warehouses': Warehouse,
     'fba-label-editor': FileText,

@@ -1,0 +1,187 @@
+#manageFieldCatalogBtn {
+  color: #b45b16;
+  border-color: #e7c5a8;
+  background: #fffaf5;
+  font-weight: 700;
+}
+
+#manageFieldCatalogBtn:hover {
+  color: #8b3e08;
+  border-color: #dca36f;
+  background: #fff1e5;
+}
+
+.field-catalog-dialog {
+  display: flex;
+  overflow: hidden;
+  flex-direction: column;
+}
+
+.field-catalog-dialog > .modal-head {
+  flex: 0 0 auto;
+}
+
+.field-catalog-body {
+  height: auto;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+.field-list-pane {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.field-definition-list {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.field-definition-form {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.workflow-steps {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  row-gap: 20px;
+}
+
+.field-library-help {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px solid #d7e5f8;
+  border-radius: 9px;
+  color: #516b89;
+  background: #f2f7fe;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.field-library-help strong {
+  color: #243f64;
+  font-size: 12px;
+}
+
+.field-editor-pane {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: #fafcff;
+}
+
+.field-editor-empty {
+  display: flex;
+  height: 100%;
+  padding: 34px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  color: #7b8ca2;
+}
+
+.field-editor-empty > div {
+  width: 50px;
+  height: 50px;
+  margin-bottom: 14px;
+  border-radius: 15px;
+  color: #3975ef;
+  background: #eaf2ff;
+  font-size: 30px;
+  line-height: 48px;
+}
+
+.field-editor-empty h3 {
+  margin: 0 0 8px;
+  color: #344961;
+}
+
+.field-editor-empty p {
+  max-width: 290px;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.field-definition-form[hidden],
+.field-editor-empty[hidden] {
+  display: none;
+}
+
+.field-definition-form {
+  box-sizing: border-box;
+  height: 100%;
+  padding-bottom: 0;
+}
+
+.field-form-actions {
+  position: sticky;
+  z-index: 5;
+  bottom: 0;
+  margin: auto -22px 0;
+  padding: 14px 22px;
+  border-top: 1px solid #dfe6ef;
+  background: rgba(250, 252, 255, .97);
+  box-shadow: 0 -8px 18px rgba(38, 57, 82, .07);
+  backdrop-filter: blur(6px);
+}
+
+.field-definition-form.form-activated {
+  animation: field-form-activated .28s ease-out;
+}
+
+@keyframes field-form-activated {
+  from { background: #eaf2ff; }
+  to { background: #fafcff; }
+}
+
+@media (max-width: 850px) {
+  .field-editor-pane {
+    min-height: 430px;
+  }
+}
+.mapping-field-entry {
+  min-width: 0;
+}
+
+.mapping-field-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.mapping-field-heading > span {
+  color: #66768a;
+  font-size: 11px;
+}
+
+.mapping-field-heading .mapping-required-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #b45309;
+  font-size: 11px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.mapping-field-heading .mapping-required-toggle input {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  box-shadow: none;
+}
+
+.mapping-field-entry > input {
+  width: 100%;
+  height: 34px;
+}

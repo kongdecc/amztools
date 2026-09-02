@@ -1,0 +1,20 @@
+.warehouse-picker{position:relative;margin:18px 0 22px;padding:16px;border:1px solid #dbe5f2;border-radius:14px;background:linear-gradient(135deg,#f8fbff,#f5f8fd)}
+.warehouse-picker-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:12px}
+.warehouse-picker-head strong{display:block;color:#26364d;font-size:14px}
+.warehouse-picker-head small{display:block;margin-top:4px;color:#78889e;font-size:12px}
+.warehouse-count{flex:0 0 auto;padding:4px 9px;border-radius:999px;background:#eaf1ff;color:#416698;font-size:11px}
+.warehouse-search-row{position:relative}
+.warehouse-search-row input{width:100%;height:44px;padding:0 14px 0 40px;border:1px solid #cdd9e8;border-radius:10px;background:#fff;color:#25364d;outline:none}
+.warehouse-search-row input:focus{border-color:#3975ef;box-shadow:0 0 0 3px rgba(57,117,239,.1)}
+.warehouse-search-icon{position:absolute;left:14px;top:10px;z-index:1;color:#7690b3;font-size:20px;line-height:22px}
+.warehouse-results{position:absolute;z-index:25;left:16px;right:16px;top:112px;max-height:330px;overflow:auto;border:1px solid #d5e0ef;border-radius:12px;background:#fff;box-shadow:0 16px 40px rgba(35,55,85,.18)}
+.warehouse-result{display:grid;grid-template-columns:105px minmax(0,1fr);gap:12px;width:100%;padding:12px 14px;border:0;border-bottom:1px solid #edf1f7;background:#fff;text-align:left;cursor:pointer}
+.warehouse-result:last-child{border-bottom:0}
+.warehouse-result:hover,.warehouse-result:focus{background:#f1f6ff;outline:none}
+.warehouse-result-code strong{display:block;color:#2154ad;font-size:14px}.warehouse-result-code small{display:block;margin-top:3px;color:#8794a8}
+.warehouse-result-address strong{display:block;color:#2d3c51;font-size:13px;font-weight:600}.warehouse-result-address small{display:block;margin-top:4px;color:#78879b;line-height:1.4}
+.warehouse-result-empty{padding:20px;text-align:center;color:#7d8ba0;font-size:13px}
+.selected-warehouse{position:relative;margin-top:12px;padding:12px 42px 12px 14px;border:1px solid #bcd5c9;border-radius:10px;background:#f2fbf6;color:#315846}
+.selected-warehouse strong{display:block;font-size:13px}.selected-warehouse span{display:block;margin-top:4px;font-size:12px;line-height:1.5}
+.selected-warehouse button{position:absolute;right:10px;top:9px;border:0;background:transparent;color:#779080;cursor:pointer;font-size:18px}
+@media(max-width:700px){.warehouse-picker-head{display:block}.warehouse-count{display:inline-block;margin-top:8px}.warehouse-result{grid-template-columns:80px 1fr}.warehouse-results{top:134px}}
