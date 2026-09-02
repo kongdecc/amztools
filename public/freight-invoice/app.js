@@ -3,14 +3,20 @@ const EXPORT_KEY = 'freight-invoice-export-count-v1';
 const BACKUP_DB_NAME = 'freight-invoice-browser-backup-v1';
 const BACKUP_STORE_NAME = 'snapshots';
 const CURRENCIES = ['USD','EUR','GBP','CNY','JPY','HKD','CAD','AUD'];
-const API_BASE = window.FREIGHT_INVOICE_API_BASE || '/api/freight-invoice';
+const API_BASE = window.FREIGHT_INVOICE_API_BASE || '/api/freight-invoice-python';
 const ORIGINAL_FETCH = window.fetch.bind(window);
 
+function freightInvoiceApiUrl(apiUrl){
+  const source=new URL(apiUrl,window.location.origin),target=new URL(API_BASE,window.location.origin);
+  target.searchParams.set('path',source.pathname.slice(4)||'/config');
+  source.searchParams.forEach((value,key)=>target.searchParams.append(key,value));
+  return target.toString();
+}
+
 function resolveApiInput(input){
-  if(typeof input==='string'&&input.startsWith('/api/'))return `${API_BASE}${input.slice(4)}`;
+  if(typeof input==='string'&&input.startsWith('/api/'))return freightInvoiceApiUrl(input);
   if(input instanceof Request&&input.url.startsWith(window.location.origin+'/api/')){
-    const proxiedUrl=`${window.location.origin}${API_BASE}${input.url.slice((window.location.origin+'/api').length)}`;
-    return new Request(proxiedUrl,input);
+    return new Request(freightInvoiceApiUrl(input.url),input);
   }
   return input;
 }
@@ -670,4 +676,4 @@ $('#clearDataBtn').addEventListener('click',()=>{if(confirm('确定清空全部�
 $('#clearAllDataBtn').addEventListener('click',clearAllData);
 
 init();
-window.addEventListener('beforeunload',()=>{clearTimeout(scheduleDraftSave.timer);if(!state.draftDirty)return;try{navigator.sendBeacon(`${API_BASE}/draft`,new Blob([JSON.stringify(invoiceDraftPayload())],{type:'application/json'}))}catch{}});
+window.addEventListener('beforeunload',()=>{clearTimeout(scheduleDraftSave.timer);if(!state.draftDirty)return;try{navigator.sendBeacon(freightInvoiceApiUrl('/api/draft'),new Blob([JSON.stringify(invoiceDraftPayload())],{type:'application/json'}))}catch{}});

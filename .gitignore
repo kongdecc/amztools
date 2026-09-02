@@ -31,3 +31,5 @@ public/bulk/
 
 # Generated files
 *.pdf
+__pycache__/
+*.py[cod]

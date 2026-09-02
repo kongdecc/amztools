@@ -7,6 +7,10 @@
     "src/app/api/**/*.ts": {
       "maxDuration": 30,
       "includeFiles": "node_modules/.prisma/**"
+    },
+    "api/freight-invoice-python.py": {
+      "maxDuration": 60,
+      "includeFiles": "api/_freight_invoice/**"
     }
   },
   "env": {

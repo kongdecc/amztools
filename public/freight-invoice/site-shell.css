@@ -16,14 +16,11 @@ body {
   color: var(--tb-shell-text);
   background: linear-gradient(180deg, #f8fafc 0%, #eef4ff 220px, #f8fafc 100%);
   min-width: 0 !important;
-  padding-top: 3.5rem;
+  padding-top: 0;
 }
 
 .tb-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  position: relative;
   z-index: 1000;
   height: 3.5rem;
   box-sizing: border-box;
@@ -287,15 +284,23 @@ body {
 
 @media (max-width: 720px) {
   .tb-header {
-    flex-direction: column;
-    align-items: flex-start;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
   }
 
   .tb-nav-desktop {
-    width: 100%;
-    justify-content: flex-start;
+    justify-content: flex-end;
     overflow-x: auto;
-    padding-bottom: 0.1rem;
+  }
+
+  .tb-logo-area {
+    min-width: 0;
+  }
+
+  .tb-logo-area span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .app-shell {
