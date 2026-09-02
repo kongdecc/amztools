@@ -37,16 +37,7 @@
       </nav>
     </header>
   </div>
-  <section class="tool-hero">
-    <div class="tool-hero__inner">
-      <div>
-        <p class="tool-hero__eyebrow">Freight Invoice Studio</p>
-        <h1>货代发票工作台</h1>
-        <p>在系统内直接打开货代发票工具，统一保留站点页眉、广告区和页脚；产品资料、模板映射、预览编辑与导出能力保持不变。</p>
-      </div>
-      <div class="tool-hero__badge">运营工具</div>
-    </div>
-  </section>
+  <div id="page-top-ad-anchor"></div>
   <div class="app-shell">
     <aside class="sidebar">
       <div class="brand">
@@ -296,7 +287,92 @@
   <script>
     window.FREIGHT_INVOICE_API_BASE = '/api/freight-invoice';
   </script>
-  <script type="module" src="/shared-top-ad.js"></script>
+  <script>
+    (function () {
+      const anchor = document.getElementById('page-top-ad-anchor');
+      if (!anchor) return;
+
+      function renderTopAd(config) {
+        if (!config || !config.enabled) return;
+
+        const hasImage = Boolean(config.imageUrl);
+        const showImage = config.type === 'image' ? hasImage : config.type === 'text' ? false : hasImage;
+        const linkUrl = String(config.linkUrl || '').trim();
+        const openInNewTab = config.openInNewTab !== false;
+        const root = document.createElement('section');
+        root.className = 'page-top-ad';
+
+        const inner = document.createElement('div');
+        inner.className = 'page-top-ad__inner' + (showImage ? ' page-top-ad__inner--image' : '');
+
+        if (showImage) {
+          const image = document.createElement('img');
+          image.className = 'page-top-ad__image';
+          image.src = config.imageUrl;
+          image.alt = String(config.alt || '页眉下广告位').trim() || '页眉下广告位';
+          image.loading = 'eager';
+          image.style.maxHeight = `${Number(config.imageHeight || 200)}px`;
+
+          if (linkUrl) {
+            const link = document.createElement('a');
+            link.className = 'page-top-ad__image-link';
+            link.href = linkUrl;
+            if (openInNewTab) {
+              link.target = '_blank';
+              link.rel = 'noopener noreferrer';
+            }
+            link.appendChild(image);
+            inner.appendChild(link);
+          } else {
+            inner.appendChild(image);
+          }
+        } else {
+          const text = String(config.text || '').trim();
+          if (!text) return;
+
+          if (linkUrl) {
+            const link = document.createElement('a');
+            link.className = 'page-top-ad__link';
+            link.href = linkUrl;
+            if (openInNewTab) {
+              link.target = '_blank';
+              link.rel = 'noopener noreferrer';
+            }
+
+            const content = document.createElement('span');
+            content.className = 'page-top-ad__text';
+            content.textContent = text;
+
+            const cta = document.createElement('span');
+            cta.className = 'page-top-ad__cta';
+            cta.textContent = `${String(config.ctaText || '点击跳转').trim() || '点击跳转'} ↗`;
+
+            link.appendChild(content);
+            link.appendChild(cta);
+            inner.appendChild(link);
+          } else {
+            const plain = document.createElement('div');
+            plain.className = 'page-top-ad__plain';
+            plain.textContent = text;
+            inner.appendChild(plain);
+          }
+        }
+
+        root.appendChild(inner);
+        anchor.replaceWith(root);
+      }
+
+      fetch('/api/top-ad', { cache: 'no-store' })
+        .then(function (response) {
+          if (!response.ok) throw new Error('failed to load top ad config');
+          return response.json();
+        })
+        .then(renderTopAd)
+        .catch(function () {
+          anchor.remove();
+        });
+    })();
+  </script>
   <script src="./app.js?v=20260902-22"></script>
   <script src="./template-designer.js?v=20260902-11"></script>
   <script src="./warehouse-manager.js?v=20260902-1"></script>
