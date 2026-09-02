@@ -25,7 +25,16 @@ window.fetch=async(input,init)=>{
   const warehouseResponse=window.freightInvoiceWarehouseFetch
     ? await window.freightInvoiceWarehouseFetch(input,init)
     : null;
-  return warehouseResponse||ORIGINAL_FETCH(resolveApiInput(input),init);
+  if(warehouseResponse)return warehouseResponse;
+  const response=await ORIGINAL_FETCH(resolveApiInput(input),init);
+  const contentType=String(response.headers.get('content-type')||'').toLowerCase();
+  if(contentType.includes('text/html')){
+    return new Response(JSON.stringify({error:`货代发票后端返回了网页错误（HTTP ${response.status}），请稍后刷新重试`}),{
+      status:response.ok?502:response.status,
+      headers:{'Content-Type':'application/json; charset=utf-8'}
+    });
+  }
+  return response;
 };
 
 const state = {

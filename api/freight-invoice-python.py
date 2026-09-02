@@ -11,6 +11,7 @@ from __future__ import annotations
 import os
 import base64
 import json
+import sys
 import threading
 import uuid
 from pathlib import Path
@@ -23,6 +24,12 @@ os.environ.setdefault(
     "FREIGHT_INVOICE_DATA_DIR",
     str(Path(os.environ.get("TMPDIR", "/tmp")) / "freight-invoice-data"),
 )
+
+# Vercel loads the entry point from the project root, so sibling modules under
+# api/ are not guaranteed to be on sys.path as they are with a direct script run.
+API_DIR = Path(__file__).resolve().parent
+if str(API_DIR) not in sys.path:
+    sys.path.insert(0, str(API_DIR))
 
 from _freight_invoice.app import (  # noqa: E402
     InvoiceHandler,
