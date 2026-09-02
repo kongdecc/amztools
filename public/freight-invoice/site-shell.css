@@ -15,6 +15,7 @@ body {
   margin: 0;
   color: var(--tb-shell-text);
   background: linear-gradient(180deg, #f8fafc 0%, #eef4ff 220px, #f8fafc 100%);
+  min-width: 0 !important;
 }
 
 .tb-header {
@@ -132,10 +133,84 @@ body {
 
 .app-shell {
   box-sizing: border-box;
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
   max-width: var(--tb-shell-max-width);
   margin: 1rem auto 0;
   padding-left: 1rem;
   padding-right: 1rem;
+}
+
+.sidebar {
+  position: sticky;
+  inset: auto;
+  top: 1rem;
+  z-index: 5;
+  flex: 0 0 248px;
+  width: 248px;
+  height: calc(100vh - 2rem);
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  border-radius: 24px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.14);
+}
+
+.main {
+  margin-left: 0;
+  width: auto;
+  min-width: 0;
+  flex: 1 1 auto;
+  padding: 0 0 50px;
+}
+
+.topbar {
+  height: auto;
+  min-height: 106px;
+  padding: 10px 0 22px;
+}
+
+.toolbar,
+.top-actions,
+.hero-actions,
+.template-center-actions,
+.bulk-actions,
+.warehouse-head-actions {
+  flex-wrap: wrap;
+}
+
+.toolbar-left {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  min-width: 0;
+}
+
+.search {
+  min-width: 0;
+  width: min(100%, 380px);
+}
+
+.hero-card,
+.stats-grid,
+.dashboard-grid,
+.invoice-layout,
+.invoice-main,
+.template-list,
+.template-picker,
+.form-grid,
+.item-body,
+.item-details,
+.warehouse-manager-body,
+.field-catalog-body,
+.template-editor-body {
+  min-width: 0;
+}
+
+#shared-top-ad-root,
+.shared-top-ad {
+  position: relative;
+  z-index: 15;
 }
 
 .site-footer {
@@ -171,6 +246,23 @@ body {
   .tool-hero__inner {
     flex-direction: column;
   }
+
+  .app-shell {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    position: relative;
+    top: 0;
+    width: 100%;
+    max-height: none;
+    height: auto;
+    border-radius: 18px;
+  }
+
+  .main {
+    width: 100%;
+  }
 }
 
 @media (max-width: 720px) {
@@ -203,5 +295,14 @@ body {
     margin-top: 0.85rem;
     padding-left: 0.75rem;
     padding-right: 0.75rem;
+  }
+
+  .topbar,
+  .toolbar {
+    align-items: flex-start;
+  }
+
+  .search {
+    width: 100%;
   }
 }
