@@ -18,7 +18,7 @@ async function getSettings() {
   try {
     let settings: any = {}
     try {
-      const rows = await (db as any).siteSettings.findMany()
+      const rows = await (db as any).siteSettings.findMany({ where: { NOT: { key: { startsWith: 'freight-invoice-' } } } })
       for (const r of rows as any) settings[String((r as any).key)] = String((r as any).value ?? '')
     } catch (e) {
       console.error('Error fetching site settings:', e)

@@ -79,7 +79,7 @@ function normalizeNavItems(navRow: any) {
 }
 
 export const getFunctionalityShellData = cache(async () => {
-  const settingsPromise = (db as any).siteSettings.findMany().catch(() => [])
+  const settingsPromise = (db as any).siteSettings.findMany({ where: { NOT: { key: { startsWith: 'freight-invoice-' } } } }).catch(() => [])
   const categoriesPromise = (db as any).toolCategory.findMany({ orderBy: { order: 'asc' } }).catch(() => [])
   const modulesPromise = (db as any).toolModule.findMany({ orderBy: { order: 'asc' } }).catch(() => [])
   const navPromise = (db as any).siteSettings.findUnique({ where: { key: 'navigation' } }).catch(() => null)

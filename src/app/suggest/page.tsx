@@ -11,7 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
   let siteDescription = ''
   let siteKeywords = ''
   try {
-    const rows = await (db as any).siteSettings.findMany()
+    const rows = await (db as any).siteSettings.findMany({ where: { NOT: { key: { startsWith: 'freight-invoice-' } } } })
     const settings: any = {}
     for (const r of rows as any) settings[String((r as any).key)] = String((r as any).value ?? '')
     siteName = settings.siteName || siteName
@@ -33,7 +33,7 @@ export default async function Page() {
   let modules: any[] = []
 
   try {
-    const rows = await (db as any).siteSettings.findMany()
+    const rows = await (db as any).siteSettings.findMany({ where: { NOT: { key: { startsWith: 'freight-invoice-' } } } })
     for (const r of rows as any) initialSettings[String((r as any).key)] = String((r as any).value ?? '')
     
     const row = await (db as any).siteSettings.findUnique({ where: { key: 'navigation' } })

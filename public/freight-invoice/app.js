@@ -1,32 +1,21 @@
-const STORAGE_KEY = 'freight-invoice-products-v1';
-const EXPORT_KEY = 'freight-invoice-export-count-v1';
-const BACKUP_DB_NAME = 'freight-invoice-browser-backup-v1';
+const STORAGE_KEY = 'freight-invoice-private-products-v1';
+const EXPORT_KEY = 'freight-invoice-private-export-count-v1';
+const BACKUP_DB_NAME = 'freight-invoice-private-backup-v1';
 const BACKUP_STORE_NAME = 'snapshots';
 const CURRENCIES = ['USD','EUR','GBP','CNY','JPY','HKD','CAD','AUD'];
-const API_BASE = window.FREIGHT_INVOICE_API_BASE || '/api/freight-invoice-python';
 const ORIGINAL_FETCH = window.fetch.bind(window);
-
-function freightInvoiceApiUrl(apiUrl){
-  const source=new URL(apiUrl,window.location.origin),target=new URL(API_BASE,window.location.origin);
-  target.searchParams.set('path',source.pathname.slice(4)||'/config');
-  source.searchParams.forEach((value,key)=>target.searchParams.append(key,value));
-  return target.toString();
-}
-
-function resolveApiInput(input){
-  if(typeof input==='string'&&input.startsWith('/api/'))return freightInvoiceApiUrl(input);
-  if(input instanceof Request&&input.url.startsWith(window.location.origin+'/api/')){
-    return new Request(freightInvoiceApiUrl(input.url),input);
-  }
-  return input;
-}
 
 window.fetch=async(input,init)=>{
   const warehouseResponse=window.freightInvoiceWarehouseFetch
     ? await window.freightInvoiceWarehouseFetch(input,init)
     : null;
   if(warehouseResponse)return warehouseResponse;
-  const response=await ORIGINAL_FETCH(resolveApiInput(input),init);
+  const localResponse=window.freightInvoiceDataFetch?.(input,init);
+  if(localResponse)return localResponse;
+  if(typeof input==='string'&&input.startsWith('/api/')&&input!=='/api/top-ad'){
+    throw new Error('本地数据模块未加载，请刷新页面；不会连接旧共享数据服务');
+  }
+  const response=await ORIGINAL_FETCH(input,init);
   const contentType=String(response.headers.get('content-type')||'').toLowerCase();
   if(contentType.includes('text/html')){
     return new Response(JSON.stringify({error:`货代发票后端返回了网页错误（HTTP ${response.status}），请稍后刷新重试`}),{
@@ -107,10 +96,17 @@ async function clearBrowserBackup(){try{const database=await openBackupDatabase(
 function backupCountsFromResponse(response){try{const encoded=response.headers.get('X-Backup-Counts');return encoded?JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(encoded),character=>character.charCodeAt(0)))):{}}catch{return {}}}
 function backupCountsHaveUserData(counts={}){return num(counts.products)>0||num(counts.templates)>0||num(counts.history)>0||counts.hasDraft===true}
 async function refreshBrowserMirror(){if(state.preventBrowserMirror)return;try{const response=await fetch('/api/backup');if(!response.ok)return;const counts=backupCountsFromResponse(response),blob=await response.blob();if(state.preventBrowserMirror)return;if(!backupCountsHaveUserData(counts)){await clearBrowserBackup();return}await saveBrowserBackup(blob,counts)}catch{/* Manual ZIP backup remains available if IndexedDB is unavailable. */}}
-function scheduleBrowserMirror(){clearTimeout(scheduleBrowserMirror.timer);if(state.preventBrowserMirror)return;scheduleBrowserMirror.timer=setTimeout(refreshBrowserMirror,900)}
+function scheduleBrowserMirror(){/* Every successful mutation is already committed atomically to private IndexedDB. */}
 async function restoreBackupBlob(blob){const response=await fetch('/api/restore',{method:'POST',headers:{'Content-Type':'application/zip'},body:blob});const data=await response.json();if(!response.ok)throw new Error(data.error||'完整备份恢复失败');await saveBrowserBackup(blob,data.restored||{});return data.restored||{}}
-function saveProducts(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state.products));persistProductsToServer();renderProducts();updateStats(); }
-async function persistProductsToServer(){try{const response=await fetch('/api/products',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({products:state.products})});if(response.ok)scheduleBrowserMirror()}catch{/* Browser storage remains as a fallback. */}}
+async function saveProducts(){
+  const products=structuredClone(state.products);
+  try{
+    const response=await fetch('/api/products',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({products})});
+    const data=await response.json();if(!response.ok)throw new Error(data.error||'产品保存失败');
+    try{localStorage.setItem(STORAGE_KEY,JSON.stringify(products))}catch{/* IndexedDB is authoritative; this is only a display cache. */}
+    renderProducts();updateStats();return true;
+  }catch(error){state.products=loadProducts();renderProducts();updateStats();toast(error.message||'产品未保存，请重试',true);return false}
+}
 async function syncProductsFromServer(){
   try{
     const response=await fetch('/api/products');if(!response.ok)return;const serverProducts=((await response.json()).products||[]).map(normalizeProduct);
@@ -622,29 +618,20 @@ async function clearAllData(){
   }catch(error){state.preventBrowserMirror=false;button.disabled=false;button.textContent=original;toast(error.message,true)}
 }
 
-function serverHasUserData(){return Boolean(state.products.length||state.templateCatalog.length||state.history.length||state.draftRecord)}
-async function offerBrowserRestoreIfNeeded(){
-  const snapshot=await readBrowserBackup();if(!snapshot||serverHasUserData())return false;
-  if(!backupCountsHaveUserData(snapshot.counts||{})){await clearBrowserBackup();return false}
-  const updated=snapshot.updatedAt?new Date(snapshot.updatedAt).toLocaleString('zh-CN',{hour12:false}):'未知时间';
-  if(!confirm(`当前服务端没有任何数据，但这个浏览器中保存着 ${updated} 的完整备份。\n是否现在恢复产品、模板、草稿和导出历史？`))return true;
-  try{await restoreBackupBlob(snapshot.blob);toast('浏览器完整备份已恢复，正在重新加载…');setTimeout(()=>location.reload(),500);return true}catch(error){toast(error.message,true);return true}
-}
-
 async function init(){
-  try{state.config=await fetch('/api/config').then(r=>r.json());const warehouseSummary=await fetch('/api/warehouses?limit=1').then(r=>r.json());state.config.warehouseCount=warehouseSummary.total||0;if(typeof loadTemplateCatalog==='function')await loadTemplateCatalog(true);await syncProductsFromServer();await loadHistory(true);await restoreDraft();const preserveExistingBrowserBackup=await offerBrowserRestoreIfNeeded();if(!preserveExistingBrowserBackup)scheduleBrowserMirror()}catch{toast('未连接到本地导出服务',true)}
+  try{state.config=await fetch('/api/config').then(r=>r.json());const warehouseSummary=await fetch('/api/warehouses?limit=1').then(r=>r.json());state.config.warehouseCount=warehouseSummary.total||0;if(typeof loadTemplateCatalog==='function')await loadTemplateCatalog(true);await syncProductsFromServer();await loadHistory(true);await restoreDraft()}catch(error){toast(error.message||'Excel 处理服务连接失败，本地数据不会被覆盖',true)}
   fillCurrencies($('#productForm').elements.currency);renderAppMeta();renderProducts();renderTemplates();renderInvoice();updateStats();
 }
 
-document.addEventListener('click',event=>{
+document.addEventListener('click',async event=>{
   const nav=event.target.closest('[data-page]');if(nav)navigate(nav.dataset.page);
   const go=event.target.closest('[data-go]');if(go)navigate(go.dataset.go);
   if(event.target.closest('[data-close-modal]'))closeModals();
   if(event.target.closest('[data-action="new-product"]')||event.target.closest('#newProductBtn'))openProductModal();
   if(event.target.closest('[data-action="add-item"]')||event.target.closest('#addInvoiceItemBtn'))openItemModal();
   const edit=event.target.closest('[data-edit-product]');if(edit)openProductModal(state.products.find(p=>p.id===edit.dataset.editProduct));
-  const copyBtn=event.target.closest('[data-copy-product]');if(copyBtn){const source=state.products.find(p=>p.id===copyBtn.dataset.copyProduct);state.products.push({...structuredClone(source),id:uid(),sku:`${source.sku}-COPY`,updatedAt:new Date().toISOString()});saveProducts();toast('产品资料已复制')}
-  const del=event.target.closest('[data-delete-product]');if(del&&confirm('确定删除这条产品资料吗？')){state.products=state.products.filter(p=>p.id!==del.dataset.deleteProduct);saveProducts()}
+  const copyBtn=event.target.closest('[data-copy-product]');if(copyBtn){const source=state.products.find(p=>p.id===copyBtn.dataset.copyProduct);state.products.push({...structuredClone(source),id:uid(),sku:`${source.sku}-COPY`,updatedAt:new Date().toISOString()});if(await saveProducts())toast('产品资料已复制')}
+  const del=event.target.closest('[data-delete-product]');if(del&&confirm('确定删除这条产品资料吗？')){state.products=state.products.filter(p=>p.id!==del.dataset.deleteProduct);await saveProducts()}
   const template=event.target.closest('[data-template]');if(template){state.templateId=template.dataset.template;invalidatePreview();renderInvoice()}
   const loadHistoryButton=event.target.closest('[data-load-history]');if(loadHistoryButton)loadHistoryRecord(loadHistoryButton.dataset.loadHistory);
   const downloadHistoryButton=event.target.closest('[data-download-history]');if(downloadHistoryButton&&!downloadHistoryButton.disabled)downloadHistoryFile(downloadHistoryButton.dataset.downloadHistory,downloadHistoryButton.dataset.historyFilename);
@@ -668,7 +655,7 @@ document.addEventListener('change',event=>{
   if(event.target.id==='selectAllTemplates'){$$('[data-select-template-record]').forEach(input=>event.target.checked?state.selectedTemplateIds.add(input.dataset.selectTemplateRecord):state.selectedTemplateIds.delete(input.dataset.selectTemplateRecord));renderTemplates()}
 });
 
-$('#productForm').addEventListener('submit',event=>{event.preventDefault();const product=formObject(event.target);product.id=product.id||uid();product.updatedAt=new Date().toISOString();const index=state.products.findIndex(p=>p.id===product.id);if(index>=0)state.products[index]=product;else state.products.unshift(product);saveProducts();closeModals();toast('产品资料已保存')});
+$('#productForm').addEventListener('submit',async event=>{event.preventDefault();const product=formObject(event.target);product.id=product.id||uid();product.updatedAt=new Date().toISOString();const index=state.products.findIndex(p=>p.id===product.id);if(index>=0)state.products[index]=product;else state.products.unshift(product);if(await saveProducts()){closeModals();toast('产品资料已保存')}});
 $('#productForm [name=imageFile]').addEventListener('change',async event=>{const file=event.target.files[0];if(!file)return;try{const data=await compressImage(file);event.target.form.elements.image.value=data;updateImagePreview(data)}catch{toast('图片读取失败',true)}});
 $('#productSearch').addEventListener('input',renderProducts);$('#productSort').addEventListener('change',renderProducts);$('#itemProductSearch').addEventListener('input',renderProductSelect);
 $('#historySearch').addEventListener('input',renderHistory);$('#refreshHistoryBtn').addEventListener('click',()=>loadHistory());
@@ -685,9 +672,9 @@ $('#previewContent').addEventListener('change',event=>{if(!event.target.matches(
 $('#previewContent').addEventListener('wheel',event=>{const viewport=event.target.closest('.excel-viewport');if(viewport&&event.shiftKey){event.preventDefault();viewport.scrollLeft+=event.deltaY}},{passive:false});
 $('#previewBtn').addEventListener('click',openPreview);$('#previewExportBtn').addEventListener('click',()=>{closeModals();exportInvoice()});$('#exportBtn').addEventListener('click',exportInvoice);$('#resetInvoiceBtn').addEventListener('click',resetInvoice);$('#backupBtn').addEventListener('click',backupData);
 $('#importDataBtn').addEventListener('click',()=>$('#importDataInput').click());
-$('#importDataInput').addEventListener('change',async event=>{const file=event.target.files[0];if(!file)return;try{if(/\.json$/i.test(file.name)||file.type==='application/json'){const data=JSON.parse(await file.text());if(!Array.isArray(data.products))throw new Error('旧版产品备份格式不正确');state.products=data.products.map(normalizeProduct);saveProducts();toast(`已兼容导入 ${data.products.length} 个旧版产品`);return}if(!confirm('恢复完整备份会用备份中的产品、模板、草稿和历史记录替换当前全部数据。是否继续？'))return;const restored=await restoreBackupBlob(file);toast(`恢复完成：${num(restored.products)} 个产品、${num(restored.templates)} 个模板、${num(restored.history)} 条历史`);setTimeout(()=>location.reload(),700)}catch(error){toast(error.message,true)}finally{event.target.value=''}});
-$('#clearDataBtn').addEventListener('click',()=>{if(confirm('确定清空全部产品资料吗？此操作无法撤销。')){state.products=[];saveProducts();toast('本地产品资料已清空')}});
+$('#importDataInput').addEventListener('change',async event=>{const file=event.target.files[0];if(!file)return;try{if(/\.json$/i.test(file.name)||file.type==='application/json'){const data=JSON.parse(await file.text());if(!Array.isArray(data.products))throw new Error('旧版产品备份格式不正确');state.products=data.products.map(normalizeProduct);if(await saveProducts())toast(`已兼容导入 ${data.products.length} 个旧版产品`);return}if(!confirm('恢复完整备份会用备份中的产品、模板、草稿和历史记录替换当前全部数据。是否继续？'))return;const restored=await restoreBackupBlob(file);toast(`恢复完成：${num(restored.products)} 个产品、${num(restored.templates)} 个模板、${num(restored.history)} 条历史`);setTimeout(()=>location.reload(),700)}catch(error){toast(error.message,true)}finally{event.target.value=''}});
+$('#clearDataBtn').addEventListener('click',async()=>{if(confirm('确定清空全部产品资料吗？此操作无法撤销。')){state.products=[];if(await saveProducts())toast('本地产品资料已清空')}});
 $('#clearAllDataBtn').addEventListener('click',clearAllData);
 
 init();
-window.addEventListener('beforeunload',()=>{clearTimeout(scheduleDraftSave.timer);if(!state.draftDirty)return;try{navigator.sendBeacon(freightInvoiceApiUrl('/api/draft'),new Blob([JSON.stringify(invoiceDraftPayload())],{type:'application/json'}))}catch{}});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&state.draftDirty)saveDraftNow()});

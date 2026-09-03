@@ -54,7 +54,7 @@
       </nav>
       <div class="sidebar-note">
         <span class="status-dot"></span>
-        <div><strong id="appEdition">通用服务器版</strong><small id="appVersion">v3.0.0-beta</small><small id="appStorageMode">正在连接服务…</small></div>
+        <div><strong id="appEdition">浏览器独立存储版</strong><small id="appVersion">v3.0.0-beta</small><small id="appStorageMode">数据仅保存在当前浏览器</small></div>
       </div>
     </aside>
 
@@ -76,7 +76,7 @@
         </div>
         <div class="dashboard-grid">
           <article class="panel"><div class="panel-head"><div><p class="eyebrow">QUICK START</p><h3>四步生成货代发票</h3></div></div><div class="steps workflow-steps"><div><b>01</b><span><strong>维护产品资料</strong><small>预设尺寸、重量、价格和清关信息</small></span></div><div><b>02</b><span><strong>上传并配置模板</strong><small>校对字段映射，必要时维护识别别名</small></span></div><div><b>03</b><span><strong>创建并填写发票</strong><small>选择模板、仓库和商品，填写票件信息</small></span></div><div><b>04</b><span><strong>预览编辑后导出</strong><small>按原表格检查内容，确认后导出 Excel</small></span></div></div></article>
-          <article class="panel"><div class="panel-head"><div><p class="eyebrow">DATA SAFETY</p><h3>数据管理</h3></div></div><p class="muted">产品、模板、草稿、导出历史和原始 Excel 均同步保存到服务端及当前浏览器。仓库预设作为本机常驻资料独立维护，不参与 ZIP 备份、恢复或清空所有数据。</p><div class="stack-actions"><button class="btn secondary" id="backupBtn">导出完整 ZIP 备份</button><button class="btn ghost danger" id="clearDataBtn">清空产品资料</button><button class="btn ghost danger" id="clearAllDataBtn">清空所有数据</button></div></article>
+          <article class="panel"><div class="panel-head"><div><p class="eyebrow">DATA SAFETY</p><h3>数据管理</h3></div></div><p class="muted">产品、模板、草稿、导出历史、原始 Excel 和自定义字段只持久保存在当前浏览器。在线 Excel 处理使用一次性临时目录，请求结束即删除。仓库库在浏览器单独管理，不参与 ZIP 备份、恢复或清空。清除浏览器网站数据会删除本地资料，请定期下载备份。旧共享模式的数据不会自动导入，请仅手动恢复您确认属于自己的备份。</p><div class="stack-actions"><button class="btn secondary" id="backupBtn">导出完整 ZIP 备份</button><button class="btn ghost danger" id="clearDataBtn">清空产品资料</button><button class="btn ghost danger" id="clearAllDataBtn">清空所有数据</button></div></article>
         </div>
       </section>
 
@@ -285,9 +285,6 @@
     <a href="/privacy">隐私说明</a>
   </footer>
   <script>
-    window.FREIGHT_INVOICE_API_BASE = '/api/freight-invoice-python';
-  </script>
-  <script>
     (function () {
       const anchor = document.getElementById('page-top-ad-anchor');
       if (!anchor) return;
@@ -374,7 +371,8 @@
     })();
   </script>
   <script src="./warehouse-browser-store.js?v=20260902-1"></script>
-  <script src="./app.js?v=20260902-25"></script>
+  <script src="./browser-data-store.js?v=20260903-1"></script>
+  <script src="./app.js?v=20260903-1"></script>
   <script src="./template-designer.js?v=20260902-11"></script>
   <script src="./warehouse-manager.js?v=20260902-1"></script>
 <script>

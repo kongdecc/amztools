@@ -61,7 +61,7 @@ function writeFileSettings(obj: Record<string, string>) {
 
 export async function GET() {
   try {
-    const rows = await db.siteSettings.findMany()
+    const rows = await db.siteSettings.findMany({ where: { NOT: { key: { startsWith: 'freight-invoice-' } } } })
     const dbObj: Record<string, string> = {}
     rows.forEach(r => { dbObj[r.key] = r.value })
     const fileObj = readFileSettings()
@@ -75,7 +75,7 @@ export async function GET() {
       merged.copyrightText = DEFAULT_SITE_SETTINGS.copyrightText
     }
 
-    return NextResponse.json(merged, { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } })
+    return NextResponse.json(Object.fromEntries(Object.entries(merged).filter(([key]) => !key.startsWith('freight-invoice-'))), { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } })
   } catch {
     const fileObj = readFileSettings()
     const merged = { ...defaults, ...fileObj, ...memSettings }
@@ -88,7 +88,7 @@ export async function GET() {
       merged.copyrightText = DEFAULT_SITE_SETTINGS.copyrightText
     }
 
-    return NextResponse.json(merged, { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } })
+    return NextResponse.json(Object.fromEntries(Object.entries(merged).filter(([key]) => !key.startsWith('freight-invoice-'))), { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } })
   }
 }
 

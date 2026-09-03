@@ -1,146 +1,143 @@
-"""Vercel entry point for the freight invoice Excel engine.
+"""Stateless Excel processor. User state is owned exclusively by IndexedDB.
 
-The browser calls this single function with ``?path=/config`` (and similar
-paths).  The adapter restores the original ``/api/...`` path expected by the
-desktop server's request handler, so the tested Excel implementation can run
-unchanged in Vercel's Python runtime.
+Every call supplies its own ZIP snapshot. Nothing is loaded from Postgres or
+from a previous invocation. A fresh temporary directory is removed before the
+response is sent. Legacy direct API calls are deliberately rejected.
 """
-
 from __future__ import annotations
 
-import os
 import base64
+import io
 import json
+import re
 import sys
+import tempfile
 import threading
-import uuid
+from http.server import BaseHTTPRequestHandler
 from pathlib import Path
-from urllib.parse import parse_qsl, urlencode, urlsplit
+from types import SimpleNamespace
 
-
-# Vercel functions have a read-only deployment filesystem and a writable /tmp.
-# The frontend mirrors this state to IndexedDB and restores it after a cold start.
-os.environ.setdefault(
-    "FREIGHT_INVOICE_DATA_DIR",
-    str(Path(os.environ.get("TMPDIR", "/tmp")) / "freight-invoice-data"),
-)
-
-# Vercel loads the entry point from the project root, so sibling modules under
-# api/ are not guaranteed to be on sys.path as they are with a direct script run.
 API_DIR = Path(__file__).resolve().parent
 if str(API_DIR) not in sys.path:
     sys.path.insert(0, str(API_DIR))
+from _freight_invoice import app as engine  # noqa: E402
 
-from _freight_invoice.app import (  # noqa: E402
-    InvoiceHandler,
-    create_full_backup,
-    restore_full_backup,
-)
-
-
-STATE_KEY = "freight-invoice-state-v1"
+PROTOCOL = "freight-browser-v1"
+MAX_WIRE_BYTES = 4_000_000  # Leave headroom below the platform payload limit.
 STATE_LOCK = threading.RLock()
+DATA_PATHS = {
+    "EXPORT_DIR": "exports",
+    "PRODUCTS_FILE": "products.json", "WAREHOUSES_FILE": "warehouses.json",
+    "HISTORY_FILE": "export_history.json", "HISTORY_FILES_DIR": "history_files",
+    "DRAFT_FILE": "invoice_draft.json", "CUSTOM_TEMPLATES_FILE": "custom_templates.json",
+    "CUSTOM_TEMPLATES_DIR": "custom_templates", "TEMPLATE_SETTINGS_FILE": "template_settings.json",
+}
 
 
-def _database_url() -> str:
-    for name in ("POSTGRES_URL", "PRISMA_DATABASE_URL"):
-        value = os.environ.get(name, "").strip()
-        if value.startswith(("postgres://", "postgresql://")):
-            return value
-    return ""
+class BufferedHandler(engine.InvoiceHandler):
+    def send_response(self, code, message=None):
+        self.status = int(code)
+
+    def send_header(self, name, value):
+        self.response_headers[name] = str(value)
+
+    def end_headers(self):
+        pass
+
+    def log_message(self, *args):
+        pass  # Never log user payloads, filenames or snapshots.
 
 
-def _load_durable_state() -> None:
-    """Hydrate /tmp from the Postgres store used by the main Next.js app."""
-    database_url = _database_url()
-    if not database_url:
-        return
-    try:
-        import psycopg
-
-        with psycopg.connect(database_url) as connection:
-            with connection.cursor() as cursor:
-                cursor.execute('SELECT "value" FROM "SiteSettings" WHERE "key" = %s', (STATE_KEY,))
-                row = cursor.fetchone()
-        if not row:
-            return
-        state = json.loads(row[0])
-        backup = base64.b64decode(state.get("backup", ""), validate=True)
-        restore_full_backup(backup)
-    except Exception as exc:
-        # Keep the function usable with its /tmp + IndexedDB fallback when the
-        # database is temporarily unavailable or has not been provisioned yet.
-        print(f"Freight invoice state hydration skipped: {exc}")
+def encode(value: bytes) -> str:
+    return base64.b64encode(value).decode("ascii")
 
 
-def _save_durable_state() -> None:
-    """Persist all mutable files after a successful write operation."""
-    database_url = _database_url()
-    if not database_url:
-        return
-    try:
-        import psycopg
+def execute(envelope: dict) -> dict:
+    if not isinstance(envelope, dict) or envelope.get("protocol") != PROTOCOL:
+        raise ValueError("请刷新页面使用浏览器独立存储版本；旧共享接口已关闭")
+    method = envelope.get("method", "GET")
+    route = envelope.get("path", "")
+    if method not in {"GET", "POST", "DELETE"} or not isinstance(route, str) or not re.fullmatch(r"/[A-Za-z0-9/_-]+", route):
+        raise ValueError("无效的本地数据操作")
+    if route.startswith("/warehouses"):
+        raise ValueError("仓库库由浏览器独立管理")
+    body = base64.b64decode(envelope.get("body", ""), validate=True)
+    snapshot = base64.b64decode(envelope.get("snapshot", ""), validate=True)
 
-        backup, _, _ = create_full_backup()
-        value = json.dumps(
-            {
-                "backup": base64.b64encode(backup).decode("ascii"),
-            },
-            ensure_ascii=False,
-            separators=(",", ":"),
-        )
-        with psycopg.connect(database_url) as connection:
-            with connection.cursor() as cursor:
-                cursor.execute(
-                    '''
-                    INSERT INTO "SiteSettings" ("id", "key", "value", "updatedAt")
-                    VALUES (%s, %s, %s, NOW())
-                    ON CONFLICT ("key") DO UPDATE
-                    SET "value" = EXCLUDED."value", "updatedAt" = NOW()
-                    ''',
-                    (uuid.uuid4().hex, STATE_KEY, value),
-                )
-            connection.commit()
-    except Exception as exc:
-        print(f"Freight invoice state persistence skipped: {exc}")
+    # The original engine uses module-level Paths; serialize their rebinding.
+    # Independent Vercel instances are safe too: every request starts empty.
+    with STATE_LOCK, tempfile.TemporaryDirectory(prefix="freight-request-") as folder:
+        original = {name: getattr(engine, name) for name in ["DATA_DIR", *DATA_PATHS, "BACKUP_MAX_BYTES"]}
+        engine.DATA_DIR = Path(folder)
+        for name, relative in DATA_PATHS.items():
+            setattr(engine, name, Path(folder) / relative)
+        engine.BACKUP_MAX_BYTES = 32 * 1024 * 1024
+        engine.TEMPLATE_REQUIRED_CACHE.clear()
+        try:
+            if snapshot:
+                engine.restore_full_backup(snapshot)
+            request = BufferedHandler.__new__(BufferedHandler)
+            request.path = "/api" + route
+            request.headers = {"Content-Length": str(len(body)), "Content-Type": envelope.get("contentType", "application/json")}
+            request.rfile = io.BytesIO(body)
+            request.wfile = io.BytesIO()
+            request.server = SimpleNamespace(server_address=("127.0.0.1", 0))
+            request.command = method
+            request.request_version = "HTTP/1.1"
+            request.response_headers = {}
+            request.status = 500
+            getattr(request, "do_" + method)()
+            content = request.wfile.getvalue()
+            if route == "/config" and request.status == 200:
+                config = json.loads(content)
+                config.update(appEdition="浏览器独立存储版", storageMode="仅保存在当前浏览器", warehouseCount=0)
+                content = json.dumps(config, ensure_ascii=False).encode("utf-8")
+            result = {"protocol": PROTOCOL, "status": request.status,
+                      "headers": {k: v for k, v in request.response_headers.items() if k.lower() != "content-length"},
+                      "body": encode(content)}
+            if method != "GET" and route != "/preview" and 200 <= request.status < 300:
+                backup, _, manifest = engine.create_full_backup()
+                result["snapshot"] = encode(backup)
+                result["counts"] = manifest["counts"]
+            # Fail before acknowledging a mutation that the browser cannot save.
+            if len(json.dumps(result).encode("utf-8")) > MAX_WIRE_BYTES:
+                raise ValueError("数据超过在线处理容量；本地原数据未修改，请先备份并减少历史文件或图片")
+            return result
+        finally:
+            for name, value in original.items():
+                setattr(engine, name, value)
+            engine.TEMPLATE_REQUIRED_CACHE.clear()
 
 
-class handler(InvoiceHandler):
-    """Expose the existing request handler through one Vercel function."""
+class handler(BaseHTTPRequestHandler):
+    def log_message(self, *args):
+        pass
 
-    def _use_backend_path(self) -> None:
-        parsed = urlsplit(self.path)
-        params = parse_qsl(parsed.query, keep_blank_values=True)
-        requested_path = next((value for key, value in params if key == "path"), "/config")
-        forwarded = [(key, value) for key, value in params if key != "path"]
-        safe_path = "/" + requested_path.lstrip("/")
-        self.path = f"/api{safe_path}"
-        if forwarded:
-            self.path += "?" + urlencode(forwarded)
+    def send_json(self, data, status=200):
+        content = json.dumps(data, ensure_ascii=False).encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Cache-Control", "private, no-store")
+        self.send_header("Content-Length", str(len(content)))
+        self.end_headers()
+        self.wfile.write(content)
 
-    def send_response(self, code: int, message: str | None = None) -> None:
-        self._response_status = code
-        super().send_response(code, message)
+    def do_GET(self):
+        self.send_json({"error": "旧共享接口已关闭，请刷新页面使用浏览器独立存储版本", "protocol": PROTOCOL}, 410)
 
-    def do_GET(self) -> None:
-        self._use_backend_path()
-        with STATE_LOCK:
-            _load_durable_state()
-            super().do_GET()
+    do_DELETE = do_GET
+    do_PUT = do_GET
+    do_PATCH = do_GET
 
-    def do_POST(self) -> None:
-        self._use_backend_path()
-        is_preview = urlsplit(self.path).path == "/api/preview"
-        with STATE_LOCK:
-            _load_durable_state()
-            super().do_POST()
-            if not is_preview and 200 <= getattr(self, "_response_status", 500) < 300:
-                _save_durable_state()
-
-    def do_DELETE(self) -> None:
-        self._use_backend_path()
-        with STATE_LOCK:
-            _load_durable_state()
-            super().do_DELETE()
-            if 200 <= getattr(self, "_response_status", 500) < 300:
-                _save_durable_state()
+    def do_POST(self):
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+            if length <= 0 or length > MAX_WIRE_BYTES:
+                self.send_json({"error": "请求超过在线处理容量，本地数据未修改"}, 413)
+                return
+            result = execute(json.loads(self.rfile.read(length)))
+            self.send_json(result)
+        except (ValueError, TypeError, KeyError) as exc:
+            self.send_json({"error": str(exc)}, 400)
+        except Exception:
+            self.send_json({"error": "Excel 处理失败，本地数据未修改"}, 500)

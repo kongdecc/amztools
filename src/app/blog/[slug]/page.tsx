@@ -61,7 +61,7 @@ async function getPostBySlug(slug: string) {
 async function getSettingsMap(): Promise<Record<string, string>> {
   const out: Record<string, string> = {}
   try {
-    const rows = await (db as any).siteSettings.findMany()
+    const rows = await (db as any).siteSettings.findMany({ where: { NOT: { key: { startsWith: 'freight-invoice-' } } } })
     for (const r of rows as any) out[String((r as any).key)] = String((r as any).value ?? '')
   } catch {}
   return out
@@ -126,7 +126,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
   try { initialHtml = String(marked.parse(content)) } catch { initialHtml = '' }
   let initialSettings: Record<string, any> = {}
   try {
-    const rows = await (db as any).siteSettings.findMany()
+    const rows = await (db as any).siteSettings.findMany({ where: { NOT: { key: { startsWith: 'freight-invoice-' } } } })
     for (const r of rows as any) initialSettings[String((r as any).key)] = String((r as any).value ?? '')
   } catch {}
   let navItems: any[] = []

@@ -29,7 +29,7 @@ export async function generateMetadata(): Promise<Metadata> {
   let baiduVerification = ''
 
   try {
-    const rows = await (db as any).siteSettings.findMany().catch(() => [])
+    const rows = await (db as any).siteSettings.findMany({ where: { NOT: { key: { startsWith: 'freight-invoice-' } } } }).catch(() => [])
     const settings: any = {}
     for (const r of rows as any) settings[String((r as any).key)] = String((r as any).value ?? '')
     logoUrl = settings.logoUrl || ''
@@ -108,7 +108,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   let siteUrl = ''
 
   try {
-    const rows = await (db as any).siteSettings.findMany().catch(() => [])
+    const rows = await (db as any).siteSettings.findMany({ where: { NOT: { key: { startsWith: 'freight-invoice-' } } } }).catch(() => [])
     const settings: any = {}
     for (const r of rows as any) settings[String((r as any).key)] = String((r as any).value ?? '')
     analyticsHeadHtml = settings.analyticsHeadHtml || ''
