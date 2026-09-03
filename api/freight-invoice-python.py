@@ -1,8 +1,9 @@
 """Stateless Excel processor. User state is owned exclusively by IndexedDB.
 
-Every call supplies its own ZIP snapshot. Nothing is loaded from Postgres or
-from a previous invocation. A fresh temporary directory is removed before the
-response is sent. Legacy direct API calls are deliberately rejected.
+V2 calls supply only operation-scoped files; v1 snapshots remain compatible for
+older open tabs. Nothing is loaded from Postgres or from a previous invocation.
+A fresh temporary directory is removed before the response is sent. Legacy
+direct API calls are deliberately rejected.
 """
 from __future__ import annotations
 
@@ -23,6 +24,7 @@ if str(API_DIR) not in sys.path:
 from _freight_invoice import app as engine  # noqa: E402
 
 PROTOCOL = "freight-browser-v1"
+SCOPED_PROTOCOL = "freight-browser-v2"
 MAX_WIRE_BYTES = 4_000_000  # Leave headroom below the platform payload limit.
 STATE_LOCK = threading.RLock()
 DATA_PATHS = {
@@ -52,16 +54,33 @@ def encode(value: bytes) -> str:
     return base64.b64encode(value).decode("ascii")
 
 
+def scoped_file(name: str) -> bool:
+    return name in {"custom_templates.json", "template_settings.json"} or bool(
+        re.fullmatch(r"custom_templates/tpl-[0-9a-f]{10}\.(?:xlsx|xlsm|xls)", name))
+
+
+def scoped_files() -> dict:
+    return {path.relative_to(engine.DATA_DIR).as_posix(): path.read_bytes()
+            for path in engine.DATA_DIR.rglob("*") if path.is_file()
+            and scoped_file(path.relative_to(engine.DATA_DIR).as_posix())}
+
+
 def execute(envelope: dict) -> dict:
-    if not isinstance(envelope, dict) or envelope.get("protocol") != PROTOCOL:
+    if not isinstance(envelope, dict) or envelope.get("protocol") not in {PROTOCOL, SCOPED_PROTOCOL}:
         raise ValueError("请刷新页面使用浏览器独立存储版本；旧共享接口已关闭")
+    scoped = envelope["protocol"] == SCOPED_PROTOCOL
     method = envelope.get("method", "GET")
     route = envelope.get("path", "")
     if method not in {"GET", "POST", "DELETE"} or not isinstance(route, str) or not re.fullmatch(r"/[A-Za-z0-9/_-]+", route):
         raise ValueError("无效的本地数据操作")
     if route.startswith("/warehouses"):
         raise ValueError("仓库库由浏览器独立管理")
-    body = base64.b64decode(envelope.get("body", ""), validate=True)
+    if scoped and not re.fullmatch(r"/(?:config|templates(?:/[A-Za-z0-9/_-]+)?|field-catalog(?:/[A-Za-z0-9/_-]+)?|preview|export)", route):
+        raise ValueError("此操作应在浏览器本地完成")
+    if scoped and envelope.get("snapshot"):
+        raise ValueError("新版接口不接收完整本地数据")
+    body = (json.dumps(envelope["payload"], ensure_ascii=False).encode("utf-8")
+            if scoped and "payload" in envelope else base64.b64decode(envelope.get("body", ""), validate=True))
     snapshot = base64.b64decode(envelope.get("snapshot", ""), validate=True)
 
     # The original engine uses module-level Paths; serialize their rebinding.
@@ -74,7 +93,20 @@ def execute(envelope: dict) -> dict:
         engine.BACKUP_MAX_BYTES = 32 * 1024 * 1024
         engine.TEMPLATE_REQUIRED_CACHE.clear()
         try:
-            if snapshot:
+            before = {}
+            if scoped:
+                files = envelope.get("files", {})
+                if not isinstance(files, dict) or len(files) > 1000:
+                    raise ValueError("模板处理数据无效")
+                for name, encoded in files.items():
+                    if not scoped_file(name):
+                        raise ValueError("请求包含非本次处理所需的数据")
+                    content = base64.b64decode(encoded, validate=True)
+                    target = engine.DATA_DIR / name
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    target.write_bytes(content)
+                before = scoped_files()
+            elif snapshot:
                 engine.restore_full_backup(snapshot)
             request = BufferedHandler.__new__(BufferedHandler)
             request.path = "/api" + route
@@ -92,16 +124,25 @@ def execute(envelope: dict) -> dict:
                 config = json.loads(content)
                 config.update(appEdition="浏览器独立存储版", storageMode="仅保存在当前浏览器", warehouseCount=0)
                 content = json.dumps(config, ensure_ascii=False).encode("utf-8")
-            result = {"protocol": PROTOCOL, "status": request.status,
+            result = {"protocol": envelope["protocol"], "status": request.status,
                       "headers": {k: v for k, v in request.response_headers.items() if k.lower() != "content-length"},
                       "body": encode(content)}
             if method != "GET" and route != "/preview" and 200 <= request.status < 300:
-                backup, _, manifest = engine.create_full_backup()
-                result["snapshot"] = encode(backup)
-                result["counts"] = manifest["counts"]
+                if scoped:
+                    after = scoped_files()
+                    result["changes"] = {name: encode(value) for name, value in after.items() if before.get(name) != value}
+                    result["removed"] = [name for name in before if name not in after]
+                    if route == "/export":
+                        # The Excel body is returned once; the browser retains
+                        # its own payload and adds the history file locally.
+                        result["historyRecord"] = engine.export_history_summary(engine.read_export_history()[0])
+                else:
+                    backup, _, manifest = engine.create_full_backup()
+                    result["snapshot"] = encode(backup)
+                    result["counts"] = manifest["counts"]
             # Fail before acknowledging a mutation that the browser cannot save.
             if len(json.dumps(result).encode("utf-8")) > MAX_WIRE_BYTES:
-                raise ValueError("数据超过在线处理容量；本地原数据未修改，请先备份并减少历史文件或图片")
+                raise ValueError("本次 Excel 或预览结果超过单次在线传输上限，请减小当前模板/商品图片或拆分本次票件；无需删除历史，本地数据未修改")
             return result
         finally:
             for name, value in original.items():

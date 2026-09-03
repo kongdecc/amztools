@@ -116,7 +116,7 @@ async function syncProductsFromServer(){
 function toast(message, error=false){ const el=$('#toast'); el.textContent=message; el.className=`toast show${error?' error':''}`; clearTimeout(toast.timer); toast.timer=setTimeout(()=>el.className='toast',2600); }
 function invalidatePreview(saveDraft=true){state.previewWorkbook=null;state.previewEdits=[];if(saveDraft)scheduleDraftSave()}
 
-function invoiceDraftPayload(){return {templateId:state.templateId,shipment:state.shipment,items:state.items,selectedWarehouse:state.selectedWarehouse,cellEdits:state.previewEdits||[]}}
+function invoiceDraftPayload(){applyShipmentSelectDefaults();return {templateId:state.templateId,shipment:state.shipment,items:state.items,selectedWarehouse:state.selectedWarehouse,cellEdits:state.previewEdits||[]}}
 function setDraftStatus(text,status=''){const element=$('#draftStatus');if(!element)return;element.textContent=text;element.className=`draft-status${status?' '+status:''}`}
 function scheduleDraftSave(){state.draftDirty=true;state.draftRevision++;clearTimeout(scheduleDraftSave.timer);setDraftStatus('草稿待保存','saving');scheduleDraftSave.timer=setTimeout(saveDraftNow,500)}
 async function saveDraftNow(){
@@ -161,6 +161,14 @@ function applyAddressAutofill(value){
 }
 
 function requiredValueMissing(value){return value===undefined||value===null||(typeof value==='string'&&!value.trim())}
+function applyShipmentSelectDefaults(){
+  // A select without a selected option visually chooses its first option, but
+  // does not fire input. Persist that same default for uploaded templates too.
+  for(const key of ['hasBattery','hasMagnet','hasLiquid','hasPowder']){
+    if(requiredValueMissing(state.shipment[key]))state.shipment[key]='否';
+  }
+  if(requiredValueMissing(state.shipment.currency))state.shipment.currency=state.items[0]?.currency||'USD';
+}
 function templateFieldLabel(category,key){return (state.templateFieldCatalog?.[category]||[]).find(field=>field.key===key)?.label||key}
 function customRequiredFixedValue(key){
   if(key==='fullAddress'||key==='fullAddressInline')return [state.shipment.warehouseCode,state.shipment.address1,state.shipment.address2,state.shipment.address3,state.shipment.city,state.shipment.state,state.shipment.postalCode,state.shipment.countryCode].filter(Boolean).join(' ');
@@ -184,6 +192,7 @@ function customRequiredItemValue(item,key){
   return item[key];
 }
 function invoiceValidationErrors(){
+  applyShipmentSelectDefaults();
   const errors=[];
   if(!state.templateId)errors.push('请先在模板中心上传并配置一个 Excel 模板');
   if((isRuichiTemplate()||isYuntuoTemplate())&&!String(state.shipment.fbaNumber||'').trim())errors.push('请填写客户订单号(FBA#)');
@@ -426,6 +435,7 @@ function fieldHtml([key,label,type,placeholder]){
 }
 
 function renderShipmentFields(){
+  applyShipmentSelectDefaults();
   const fields=isRuichiTemplate()?[...commonFields]:(isYuntuoTemplate()?[...commonFields,...yuntuoFields]:[...commonFields,...yuntuoFields,...customTemplateFields]);
   const existing=new Set(fields.map(field=>field[0]));mappedCustomFields('fixed').forEach(field=>{if(!existing.has(field.key))fields.push([field.key,field.label,field.inputType||'text',''])});
   if(['ruichi','yuntuo'].includes(state.templateId))fields.forEach(([key,,type,placeholder])=>{if(state.shipment[key]===undefined&&placeholder!==''&&type!=='channel')state.shipment[key]=placeholder});

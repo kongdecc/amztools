@@ -3,6 +3,7 @@ import base64
 import importlib.util
 import io
 import json
+import os
 import sys
 import unittest
 import zipfile
@@ -36,6 +37,74 @@ class Browser:
 
 
 class IsolationTests(unittest.TestCase):
+    def test_scoped_upload_mapping_defaults_export_and_isolation(self):
+        files = {}
+        def call(path, payload=None, method=None, supplied=None):
+            result = backend.execute({'protocol': backend.SCOPED_PROTOCOL, 'path': path,
+                                      'method': method or ('POST' if payload is not None else 'GET'),
+                                      'files': files if supplied is None else supplied,
+                                      **({'payload': payload} if payload is not None else {})})
+            if 200 <= result['status'] < 300:
+                files.update(result.get('changes', {}))
+                for name in result.get('removed', []):
+                    files.pop(name, None)
+            return result
+        book = Workbook()
+        sheet = book.active
+        sheet.title = 'Invoice'
+        sheet.append(['带电', '', '带磁', ''])
+        sheet.append(['SKU', 'Quantity'])
+        output = io.BytesIO()
+        book.save(output)
+        book.close()
+        result = call('/templates/upload', {'filename': 'invoice.xlsx', 'name': 'Test', 'data': backend.encode(output.getvalue())})
+        self.assertEqual(result['status'], 200)
+        self.assertNotIn('snapshot', result)
+        record = json.loads(base64.b64decode(result['body']))['template']
+        mapping = {'sheet': 'Invoice', 'fixed': {'hasBattery': 'B1', 'hasMagnet': 'D1'},
+                   'required': {'fixed': ['hasBattery', 'hasMagnet'], 'items': []},
+                   'items': {'headerRow': 2, 'startRow': 3, 'reservedRows': 1, 'columns': {'exportSku': 'A', 'quantity': 'B'}}}
+        result = call(f"/templates/{record['id']}/mapping", {'mapping': mapping})
+        self.assertEqual(result['status'], 200)
+        self.assertEqual(set(result['changes']), {'custom_templates.json'})  # Never echo unchanged Excel.
+        payload = {'templateId': record['id'], 'shipment': {'hasBattery': '否', 'hasMagnet': '否'},
+                   'items': [{'exportSku': 'ONLY-A', 'quantity': 2, 'cartons': 1}]}
+        self.assertEqual(call('/preview', payload)['status'], 200)
+        result = call('/export', payload)
+        self.assertEqual(result['status'], 200)
+        self.assertEqual(result['changes'], {})
+        self.assertNotIn('payload', result['historyRecord'])
+        workbook = load_workbook(io.BytesIO(base64.b64decode(result['body'])))
+        self.assertEqual(workbook.active['B1'].value, '否')
+        self.assertEqual(workbook.active['D1'].value, '否')
+        workbook.close()
+        payload['shipment']['hasBattery'] = '是'
+        result = call('/export', payload)
+        workbook = load_workbook(io.BytesIO(base64.b64decode(result['body'])))
+        self.assertEqual(workbook.active['B1'].value, '是')
+        workbook.close()
+        result = call('/templates', supplied={})
+        self.assertEqual(json.loads(base64.b64decode(result['body']))['templates'], [])
+
+    def test_scoped_large_export_not_duplicated_in_snapshot(self):
+        # An incompressible 2.3MB Excel used to appear twice in the response:
+        # download plus full history ZIP, crossing the 4MB transport guard.
+        content = os.urandom(2300000)
+        with patch.object(backend.engine, 'generate_workbook', return_value=(content, 'test.xlsx')):
+            with patch.object(backend.engine, 'apply_cell_edits', return_value=content):
+                result = backend.execute({'protocol': backend.SCOPED_PROTOCOL, 'path': '/export',
+                                          'method': 'POST', 'files': {}, 'payload': {'items': [], 'shipment': {}}})
+        self.assertEqual(result['status'], 200)
+        self.assertEqual(base64.b64decode(result['body']), content)
+        self.assertEqual(result['changes'], {})
+        self.assertLess(len(json.dumps(result).encode()), backend.MAX_WIRE_BYTES)
+
+    def test_scoped_rejects_unrelated_private_files(self):
+        for name in ['products.json', 'export_history.json', '../secret', 'custom_templates/../../secret']:
+            with self.assertRaises(ValueError):
+                backend.execute({'protocol': backend.SCOPED_PROTOCOL, 'path': '/config',
+                                 'files': {name: backend.encode(b'[]')}})
+
     def test_products_drafts_fields_and_cold_start(self):
         a, b = Browser(), Browser()
         a.call('/products', {'products': [{'id': 'a', 'sku': 'A-only'}]})
