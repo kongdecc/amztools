@@ -12,7 +12,7 @@ function readFileAsDataUrl(file){return new Promise((resolve,reject)=>{const rea
 async function uploadCustomTemplate(file){
   if(!file)return;
   if(!/\.(xls|xlsx|xlsm)$/i.test(file.name)){toast('目前支持 .xls、.xlsx 和 .xlsm 模板',true);return}
-  if(file.size>20*1024*1024){toast('模板文件不能超过 20MB',true);return}
+  if(file.size>20*1024*1024){toast('模板文件过大：单次在线传输上限为 4 MB（含编码数据），建议将模板精简至 2 MB 以内后重试',true);return}
   const button=$('#uploadTemplateBtn'),original=button.textContent;button.disabled=true;button.textContent='正在分析模板…';
   try{
     const data=await readFileAsDataUrl(file);const name=file.name.replace(/\.(xls|xlsx|xlsm)$/i,'');

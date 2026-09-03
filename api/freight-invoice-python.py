@@ -142,7 +142,7 @@ def execute(envelope: dict) -> dict:
                     result["counts"] = manifest["counts"]
             # Fail before acknowledging a mutation that the browser cannot save.
             if len(json.dumps(result).encode("utf-8")) > MAX_WIRE_BYTES:
-                raise ValueError("本次 Excel 或预览结果超过单次在线传输上限，请减小当前模板/商品图片或拆分本次票件；无需删除历史，本地数据未修改")
+                raise ValueError("本次 Excel 或预览结果超过单次在线传输上限 4 MB（4,000,000 字节，含编码数据），请减小当前模板/商品图片或拆分本次票件；无需删除历史，本地数据未修改")
             return result
         finally:
             for name, value in original.items():
@@ -174,7 +174,7 @@ class handler(BaseHTTPRequestHandler):
         try:
             length = int(self.headers.get("Content-Length", "0"))
             if length <= 0 or length > MAX_WIRE_BYTES:
-                self.send_json({"error": "请求超过在线处理容量，本地数据未修改"}, 413)
+                self.send_json({"error": "请求超过单次在线传输上限 4 MB（4,000,000 字节，含编码数据），请精简模板或压缩图片后重试；本地数据未修改"}, 413)
                 return
             result = execute(json.loads(self.rfile.read(length)))
             self.send_json(result)

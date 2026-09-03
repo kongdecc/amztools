@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="./history.css?v=20260901-2">
   <link rel="stylesheet" href="./template-designer.css?v=20260902-3">
   <link rel="stylesheet" href="./field-catalog-fix.css?v=20260902-3">
-  <link rel="stylesheet" href="./site-shell.css?v=20260902-3">
+  <link rel="stylesheet" href="./site-shell.css?v=20260903-1">
   <style>.template-picker-empty{grid-column:1/-1;border:1px dashed #bdc9da;border-radius:12px;padding:22px;text-align:center;background:#fafcff}.template-picker-empty strong,.template-picker-empty small{display:block}.template-picker-empty small{color:var(--muted);margin:7px 0 14px}.template-list>.template-empty{grid-column:1/-1}.bulk-actions,.template-center-actions{display:flex;align-items:center;gap:9px}.select-column{width:38px;text-align:center!important}.select-column input,.record-select,.template-select input,.bulk-select-all input{width:16px;height:16px;margin:0;box-shadow:none}.template-card{position:relative}.template-select{display:flex;align-items:flex-start;padding-top:15px}.bulk-select-all{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);margin:0}.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}</style>
 </head>
 <body>
@@ -76,7 +76,7 @@
         </div>
         <div class="dashboard-grid">
           <article class="panel"><div class="panel-head"><div><p class="eyebrow">QUICK START</p><h3>四步生成货代发票</h3></div></div><div class="steps workflow-steps"><div><b>01</b><span><strong>维护产品资料</strong><small>预设尺寸、重量、价格和清关信息</small></span></div><div><b>02</b><span><strong>上传并配置模板</strong><small>校对字段映射，必要时维护识别别名</small></span></div><div><b>03</b><span><strong>创建并填写发票</strong><small>选择模板、仓库和商品，填写票件信息</small></span></div><div><b>04</b><span><strong>预览编辑后导出</strong><small>按原表格检查内容，确认后导出 Excel</small></span></div></div></article>
-          <article class="panel"><div class="panel-head"><div><p class="eyebrow">DATA SAFETY</p><h3>数据管理</h3></div></div><p class="muted">产品、模板、草稿、导出历史、原始 Excel 和自定义字段只持久保存在当前浏览器。在线 Excel 处理使用一次性临时目录，请求结束即删除。仓库库在浏览器单独管理，不参与 ZIP 备份、恢复或清空。清除浏览器网站数据会删除本地资料，请定期下载备份。旧共享模式的数据不会自动导入，请仅手动恢复您确认属于自己的备份。</p><div class="stack-actions"><button class="btn secondary" id="backupBtn">导出完整 ZIP 备份</button><button class="btn ghost danger" id="clearDataBtn">清空产品资料</button><button class="btn ghost danger" id="clearAllDataBtn">清空所有数据</button></div></article>
+          <article class="panel"><div class="panel-head"><div><p class="eyebrow">DATA SAFETY</p><h3>数据管理</h3></div></div><p class="muted">产品、模板、草稿、导出历史、原始 Excel 和自定义字段只持久保存在当前浏览器。在线 Excel 处理使用一次性临时目录，请求结束即删除。仓库库在浏览器单独管理，不参与 ZIP 备份、恢复或清空。清除浏览器网站数据会删除本地资料，请定期下载备份。旧共享模式的数据不会自动导入，请仅手动恢复您确认属于自己的备份。</p><p class="transfer-limit-note">ZIP 备份在浏览器本地导入/导出，不受在线处理的 4 MB 限制。恢复时 ZIP 文件及解压后总大小均须 ≤ 256 MiB（约 268 MB）。</p><div class="stack-actions"><button class="btn secondary" id="backupBtn">导出完整 ZIP 备份</button><button class="btn ghost danger" id="clearDataBtn">清空产品资料</button><button class="btn ghost danger" id="clearAllDataBtn">清空所有数据</button></div></article>
         </div>
       </section>
 
@@ -121,6 +121,7 @@
             <p class="eyebrow">INVOICE SUMMARY</p><h3>本票汇总</h3>
             <div class="summary-list"><div><span>商品种类</span><strong id="sumKinds">0</strong></div><div><span>总数量</span><strong id="sumQuantity">0</strong></div><div><span>总箱数</span><strong id="sumCartons">0</strong></div><div><span>总毛重</span><strong id="sumGross">0 kg</strong></div><div><span>总体积</span><strong id="sumCbm">0 m³</strong></div><div class="summary-total"><span>申报总值</span><strong id="sumValue">0.00</strong></div></div>
             <div class="summary-warning" id="summaryWarning">请至少添加一个商品。</div>
+            <p class="transfer-limit-note">预览和导出：单次传输上限 <strong>4 MB</strong>（含编码数据）。超限时请压缩商品图片、精简模板或拆分本票。</p>
             <button class="btn secondary full" id="previewBtn">生成并编辑表格预览</button>
             <button class="btn primary full" id="exportBtn">导出原格式 Excel</button>
             <button class="btn ghost full" id="resetInvoiceBtn">重置本票</button>
@@ -146,7 +147,8 @@
 
       <section class="page" id="page-templates">
         <div class="panel">
-          <div class="panel-head"><div><p class="eyebrow">UNIVERSAL TEMPLATE CENTER</p><h3>货代模板中心</h3></div><div class="template-center-actions"><label class="bulk-select-all"><input type="checkbox" id="selectAllTemplates"> 全选</label><button class="btn ghost danger" id="deleteSelectedTemplatesBtn" disabled>删除所选（0）</button><span class="pill">通用版</span><button class="btn ghost" id="manageFieldCatalogBtn">维护字段库</button><button class="btn primary" id="uploadTemplateBtn">＋ 上传 Excel 模板</button></div></div>
+          <div class="panel-head"><div><p class="eyebrow">UNIVERSAL TEMPLATE CENTER</p><h3>货代模板中心</h3></div><div class="template-center-actions"><label class="bulk-select-all"><input type="checkbox" id="selectAllTemplates"> 全选</label><button class="btn ghost danger" id="deleteSelectedTemplatesBtn" disabled>删除所选（0）</button><span class="pill">通用版</span><button class="btn ghost" id="manageFieldCatalogBtn">维护字段库</button><button class="btn primary" id="uploadTemplateBtn" aria-describedby="templateUploadLimit">＋ 上传 Excel 模板</button></div></div>
+          <div class="transfer-limit-note" id="templateUploadLimit"><strong>文件大小提示：建议单个 Excel 模板控制在 2 MB 以内。</strong><p>本工具单次在线请求或返回结果上限为 4 MB（4,000,000 字节），包含模板、商品图片及编码后的数据。实际可用文件大小会更小，2 MB 为建议值；超限时请压缩图片、精简模板或拆分票件。</p></div>
           <div class="template-list" id="templateList"></div>
           <div class="roadmap"><div class="roadmap-icon">◎</div><div><h3>上传、识别、校对、保存</h3><p>支持 .xls / .xlsx / .xlsm；旧版 .xls 会自动转换。系统会自动识别固定字段和商品表头；点击右侧映射输入框，再点击左侧 Excel 单元格即可完成校对。</p></div></div>
         </div>
@@ -372,9 +374,9 @@
   </script>
   <script src="./warehouse-browser-store.js?v=20260902-1"></script>
   <script src="./jszip.min.js?v=3.10.1"></script>
-  <script src="./browser-data-store.js?v=20260903-2"></script>
+  <script src="./browser-data-store.js?v=20260903-3"></script>
   <script src="./app.js?v=20260903-2"></script>
-  <script src="./template-designer.js?v=20260902-11"></script>
+  <script src="./template-designer.js?v=20260903-1"></script>
   <script src="./warehouse-manager.js?v=20260902-1"></script>
 <script>
   var _hmt = window._hmt || [];

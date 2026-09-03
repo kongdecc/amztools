@@ -85,7 +85,7 @@
     const envelope = { protocol: PROTOCOL, path, method, files };
     if (payload !== null) envelope.payload = payload;
     const serialized = JSON.stringify(envelope);
-    if (new Blob([serialized]).size > MAX_WIRE_BYTES) throw new Error('当前模板和本次票件超过单次在线传输上限，请减小当前模板/商品图片或拆分票件；无需删除历史，本地数据未修改');
+    if (new Blob([serialized]).size > MAX_WIRE_BYTES) throw new Error('当前模板和本次票件超过单次在线传输上限 4 MB（4,000,000 字节，含编码数据），请减小当前模板/商品图片或拆分票件；无需删除历史，本地数据未修改');
     const response = await nativeFetch('/api/freight-invoice-python', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: serialized, cache: 'no-store' });
     if (!(response.headers.get('Content-Type') || '').includes('application/json')) throw new Error(`Excel 处理服务返回网页错误（HTTP ${response.status}），本地数据未修改`);
     const result = await response.json();
