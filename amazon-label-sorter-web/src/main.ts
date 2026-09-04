@@ -12,11 +12,13 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   </div>
   <div id="page-top-ad-anchor"></div>
   <header class="hero">
-    <nav class="nav wrap"><div class="brand"><span class="brand-mark">SKU</span><span>箱唛归集工具</span></div><span class="version">${VERSION}</span></nav>
     <div class="hero-body wrap">
-      <div class="eyebrow">AMAZON FBA / AWD LABEL SORTER</div>
-      <h1>跨仓箱唛，<span>按 SKU 一次归好</span></h1>
-      <p>上传多个仓库混排标签 PDF，自动生成每个 SKU 的跨仓合集，贴标连续作业，不再来回翻文件。</p>
+      <div class="hero-copy">
+        <div class="tool-meta"><span class="brand-mark">SKU</span><strong>箱唛归集工具</strong><span class="version">${VERSION}</span></div>
+        <div class="eyebrow">AMAZON FBA / AWD LABEL SORTER</div>
+        <h1>跨仓箱唛，<span>按 SKU 一次归好</span></h1>
+        <p>上传多个仓库混排标签 PDF，自动生成每个 SKU 的跨仓合集，贴标连续作业，不再来回翻文件。</p>
+      </div>
       <div class="privacy-pill"><span>✓</span><strong>纯浏览器本地处理</strong> · PDF 不上传服务器</div>
     </div>
   </header>
