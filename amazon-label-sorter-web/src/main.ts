@@ -26,6 +26,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <main class="wrap workspace">
     <section class="card upload-card">
       <div class="step-head"><span class="step">01</span><div><h2>选择标签 PDF</h2><p>支持同时选择多个 FBA / AWD 标签文件</p></div></div>
+      <div class="template-scope-note"><span>!</span><p><strong>标签尺寸提示</strong>测试使用的是“每张 A4 纸一个标签”的模板，其他尺寸或排版可能不适用。</p></div>
       <div id="dropzone" class="dropzone" tabindex="0">
         <div class="upload-icon">↑</div><h3>拖放 PDF 到这里</h3><p>或从电脑中选择，可多选</p>
         <button id="chooseBtn" class="button secondary" type="button">选择 PDF 文件</button>
