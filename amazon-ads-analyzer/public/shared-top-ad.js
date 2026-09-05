@@ -15,11 +15,12 @@
     style.textContent = [
       '.shared-top-ad{width:100%;border-top:1px solid #fed7aa;border-bottom:1px solid #fed7aa;background:#fff7ed;}',
       '.shared-top-ad__inner{max-width:' + MAX_WIDTH + ';margin:0 auto;padding:8px 12px;color:#c2410c;}',
+      '.shared-top-ad__inner.shared-top-ad__inner--image{max-width:none;padding-left:0;padding-right:0;}',
       '.shared-top-ad__link{display:flex;min-height:40px;width:100%;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;text-decoration:none;color:inherit;}',
       '.shared-top-ad__text{font-size:12px;font-weight:600;white-space:normal;word-break:break-word;}',
       '.shared-top-ad__cta{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;background:#ffedd5;padding:2px 8px;font-size:11px;font-weight:700;color:#c2410c;}',
-      '.shared-top-ad__image-link{display:block;width:100%;overflow:hidden;border-radius:6px;text-decoration:none;color:inherit;}',
-      '.shared-top-ad__image{display:block;height:auto;width:100%;border-radius:6px;object-fit:contain;background:#ffffff;}',
+      '.shared-top-ad__image-link{display:block;width:100%;overflow:hidden;text-decoration:none;color:inherit;}',
+      '.shared-top-ad__image{display:block;height:auto;width:100%;object-fit:contain;background:#ffffff;}',
       '.shared-top-ad__plain{display:flex;min-height:40px;width:100%;align-items:center;justify-content:center;text-align:center;}',
       '@media (min-width: 768px){.shared-top-ad__inner{padding:8px 16px;}.shared-top-ad__link{min-height:40px;flex-direction:row;gap:8px;}.shared-top-ad__text{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}}'
     ].join('');
@@ -68,7 +69,7 @@
     const inner = document.createElement('div');
 
     root.className = 'shared-top-ad';
-    inner.className = 'shared-top-ad__inner';
+    inner.className = 'shared-top-ad__inner' + (showImage ? ' shared-top-ad__inner--image' : '');
 
     if (showImage) {
       const image = document.createElement('img');

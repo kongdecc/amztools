@@ -19,57 +19,96 @@
       h1, h2, h3, h4, h5, h6 {
         font-family: 'Plus Jakarta Sans',system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans, sans-serif;
       }
-      .site-header {
-        height: 56px;
+      #site-header-container {
+        height: 3.5rem;
+      }
+      #site-header-container .tb-header {
+        position: relative;
+        z-index: 1000;
+        height: 3.5rem;
+        box-sizing: border-box;
         background: #5b5bd6;
         color: #fff;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 0 16px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-        box-sizing: border-box;
+        gap: 1rem;
+        padding: 0.9rem 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
       }
-      .site-brand {
+      #site-header-container .tb-logo-area {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
         font-weight: 700;
-        font-size: 16px;
+        font-size: 1rem;
+        color: #fff;
+        min-width: 0;
+      }
+      #site-header-container .tb-logo-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        flex: 0 0 2rem;
+        border-radius: 0.75rem;
+        background: rgba(255, 255, 255, 0.2);
+        color: #fff;
+      }
+      #site-header-container .tb-logo-area span {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
-      .site-nav {
+      #site-header-container .tb-nav-desktop {
         display: flex;
         align-items: center;
-        gap: 20px;
+        gap: 1.1rem;
+        flex: 0 0 auto;
       }
-      .site-nav a {
+      #site-header-container .tb-nav-link {
         color: rgba(255, 255, 255, 0.92);
         -webkit-text-decoration: none;
         text-decoration: none;
-        font-size: 14px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        white-space: nowrap;
       }
-      .site-nav a:hover {
+      #site-header-container .tb-nav-link:hover {
         color: #fff;
       }
       #root {
-        min-height: calc(100vh - 56px);
+        min-height: calc(100vh - 3.5rem);
       }
-      body.embedded .site-header {
+      body.embedded #site-header-container {
         display: none;
       }
       body.embedded #root {
         min-height: 100vh;
       }
-      @media (max-width: 768px) {
-        .site-header {
-          padding: 0 12px;
+      @media (max-width: 960px) {
+        #site-header-container .tb-header {
+          padding-left: 0.9rem;
+          padding-right: 0.9rem;
         }
-        .site-brand {
-          font-size: 14px;
-          max-width: 48%;
+        #site-header-container .tb-nav-desktop {
+          gap: 0.8rem;
         }
-        .site-nav {
-          gap: 12px;
+      }
+      @media (max-width: 720px) {
+        #site-header-container .tb-header {
+          padding-left: 0.75rem;
+          padding-right: 0.75rem;
+        }
+        #site-header-container .tb-nav-desktop {
+          max-width: 58%;
+          overflow-x: auto;
+        }
+      }
+      @media (min-width: 768px) {
+        #site-header-container .tb-header {
+          padding: 0 2.5rem;
         }
       }
     </style>
@@ -77,23 +116,36 @@
     <link rel="stylesheet" crossorigin href="./assets/index-sssiTIUR.css">
   </head>
   <body>
-    <header class="site-header">
-      <div class="site-brand">跨境工具魔方 AmzToolBox</div>
-      <nav class="site-nav" aria-label="主导航">
-        <a href="/">首页</a>
-        <a href="/functionality">功能分类</a>
-        <a href="/about">关于</a>
-        <a href="/blog">博客</a>
-        <a href="/suggest">提需求</a>
-      </nav>
-    </header>
+    <div id="site-header-container">
+      <header class="tb-header">
+        <a class="tb-logo-area" href="/" aria-label="返回首页" style="text-decoration: none">
+          <span class="tb-logo-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="7" height="9" x="3" y="3" rx="1"></rect>
+              <rect width="7" height="5" x="14" y="3" rx="1"></rect>
+              <rect width="7" height="9" x="14" y="12" rx="1"></rect>
+              <rect width="7" height="5" x="3" y="16" rx="1"></rect>
+            </svg>
+          </span>
+          <span>跨境工具魔方 AmzToolBox</span>
+        </a>
+        <nav class="tb-nav-desktop" aria-label="主导航">
+          <a href="/" class="tb-nav-link">首页</a>
+          <a href="/functionality" class="tb-nav-link">功能分类</a>
+          <a href="/about" class="tb-nav-link">关于</a>
+          <a href="/blog" class="tb-nav-link">博客</a>
+          <a href="/suggest" class="tb-nav-link">提需求</a>
+          <a href="/reward" class="tb-nav-link">打赏支持</a>
+        </nav>
+      </header>
+    </div>
     <div id="root"></div>
     <script>
       if (window.self !== window.top) {
         document.body.classList.add('embedded');
       }
       window.TOP_AD_OPTIONS = {
-        insertAfterSelector: '.site-header',
+        insertAfterSelector: '#site-header-container',
         hideWhenEmbedded: true
       };
       const sharedTopAdScript = document.createElement('script');
