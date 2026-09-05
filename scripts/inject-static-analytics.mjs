@@ -5,6 +5,8 @@ const BAIDU_ANALYTICS_ID = 'f41283b760f768032fa2b7990826c3c3'
 const GOOGLE_ANALYTICS_ID = 'G-MDVMB3KBBP'
 const PUBLIC_DIR = path.join(process.cwd(), 'public')
 const HTML_SUFFIX = '.html'
+const SITE_FAVICON_SNIPPET = '<link rel="icon" href="/api/favicon" />'
+const FAVICON_LINK_PATTERN = /<link\b(?=[^>]*\brel\s*=\s*["'][^"']*\bicon\b[^"']*["'])[^>]*>/gi
 
 const baiduAnalyticsSnippet = [
   '<script>',
@@ -69,8 +71,26 @@ function injectSnippet(content, snippet) {
   return `${content}\n${snippet}\n`
 }
 
+function injectFavicon(content) {
+  let foundIcon = false
+  const normalized = content.replace(FAVICON_LINK_PATTERN, () => {
+    if (foundIcon) return ''
+    foundIcon = true
+    return SITE_FAVICON_SNIPPET
+  })
+
+  if (foundIcon) return normalized
+
+  const headCloseTag = /<\/head>/i
+  if (headCloseTag.test(normalized)) {
+    return normalized.replace(headCloseTag, `  ${SITE_FAVICON_SNIPPET}\n</head>`)
+  }
+
+  return `${SITE_FAVICON_SNIPPET}\n${normalized}`
+}
+
 function injectAnalytics(content) {
-  let nextContent = content
+  let nextContent = injectFavicon(content)
 
   if (!hasBaiduAnalytics(nextContent)) {
     nextContent = injectSnippet(nextContent, baiduAnalyticsSnippet)
@@ -99,7 +119,7 @@ for (const filePath of htmlFiles) {
 
   fs.writeFileSync(filePath, injected, 'utf8')
   updatedCount += 1
-  console.log(`Injected analytics: ${path.relative(process.cwd(), filePath)}`)
+  console.log(`Updated static page shell: ${path.relative(process.cwd(), filePath)}`)
 }
 
-console.log(`Static analytics injection complete. Updated ${updatedCount} HTML file(s).`)
+console.log(`Static page shell update complete. Updated ${updatedCount} HTML file(s).`)
