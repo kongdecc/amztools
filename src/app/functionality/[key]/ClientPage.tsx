@@ -131,7 +131,7 @@ export default function ClientPage({
     if (initialCategories.length === 0) {
       (async () => {
         try {
-          const r = await fetch('/api/categories', { cache: 'no-store' })
+          const r = await fetch('/api/published/categories', { cache: 'no-store' })
           const d = await r.json()
           if (Array.isArray(d) && d.length > 0) setCategories(d)
         } catch {}
@@ -143,7 +143,7 @@ export default function ClientPage({
     if (initialModules.length === 0) {
       (async () => { 
         try { 
-          const r = await fetch('/api/modules', { cache: 'no-store' }); 
+          const r = await fetch('/api/published/modules', { cache: 'no-store' });
           const d = await r.json(); 
           const arr = Array.isArray(d) ? d : []; 
           let merged = arr.filter((m:any)=>m.status !== '下架')

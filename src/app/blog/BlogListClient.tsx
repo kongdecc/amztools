@@ -22,7 +22,7 @@ export default function BlogListClient({ initialList, initialTotal, initialNavIt
   useEffect(() => {
     (async () => {
       try {
-        const r = await fetch('/api/categories', { cache: 'no-store' })
+        const r = await fetch('/api/published/categories', { cache: 'no-store' })
         const d = await r.json()
         if (Array.isArray(d) && d.length > 0) setCategories(d.filter((c: any) => c.enabled !== false))
         else setCategories(DEFAULT_CATEGORIES)
@@ -35,7 +35,7 @@ export default function BlogListClient({ initialList, initialTotal, initialNavIt
   useEffect(() => {
     (async () => {
       try {
-        const r = await fetch(`/api/blog?page=${page}&pageSize=${pageSize}`, { cache: 'no-store' })
+        const r = await fetch(`/api/published/blog?page=${page}&pageSize=${pageSize}`, { cache: 'no-store' })
         const d = await r.json()
         if (Array.isArray(d)) {
           setList(d)
@@ -44,11 +44,11 @@ export default function BlogListClient({ initialList, initialTotal, initialNavIt
           setList(Array.isArray(d?.items) ? d.items : [])
           setTotal(Number(d?.total || 0))
         }
-      } catch { setList([]); setTotal(0) }
+      } catch { /* Keep the published server-rendered list if refresh fails. */ }
     })()
   }, [page])
   useEffect(() => {
-    (async () => { try { const r = await fetch('/api/modules', { cache: 'no-store' }); const d = await r.json(); const arr = Array.isArray(d) ? d : []; setModules(arr.filter((m:any)=>m.status !== '下架')) } catch { setModules(DEFAULT_TOOLS) } })()
+    (async () => { try { const r = await fetch('/api/published/modules', { cache: 'no-store' }); const d = await r.json(); const arr = Array.isArray(d) ? d : []; setModules(arr.filter((m:any)=>m.status !== '下架')) } catch { setModules(DEFAULT_TOOLS) } })()
   }, [])
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">

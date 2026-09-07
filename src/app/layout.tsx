@@ -1,164 +1,34 @@
 import type { ReactNode } from 'react'
 import { Suspense } from 'react'
+import type { Metadata } from 'next'
 import './globals.css'
-import { db } from '@/lib/db'
-import { Metadata } from 'next'
-import fs from 'fs'
-import path from 'path'
 import GlobalPromoPopup from '@/components/GlobalPromoPopup'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
+import { PUBLIC_SETTINGS, SITE_URL, jsonLd } from '@/lib/published-content'
 
-import { DEFAULT_SITE_SETTINGS } from '@/lib/constants'
-
-const BAIDU_ANALYTICS_ID = 'f41283b760f768032fa2b7990826c3c3'
-const GOOGLE_ADSENSE_CLIENT = 'ca-pub-6790643369569237'
-const BAIDU_ANALYTICS_SCRIPT = `var _hmt = window._hmt || [];
-(function() {
-  var hm = document.createElement("script");
-  hm.src = "https://hm.baidu.com/hm.js?${BAIDU_ANALYTICS_ID}";
-  var s = document.getElementsByTagName("script")[0];
-  s.parentNode.insertBefore(hm, s);
-})();`
-
-export async function generateMetadata(): Promise<Metadata> {
-  let logoUrl = ''
-  let faviconUrl = ''
-  let siteName = DEFAULT_SITE_SETTINGS.siteName
-  let siteDescription = DEFAULT_SITE_SETTINGS.siteDescription
-  let siteKeywords = ''
-  let googleVerification = ''
-  let baiduVerification = ''
-
-  try {
-    const rows = await (db as any).siteSettings.findMany({ where: { NOT: { key: { startsWith: 'freight-invoice-' } } } }).catch(() => [])
-    const settings: any = {}
-    for (const r of rows as any) settings[String((r as any).key)] = String((r as any).value ?? '')
-    logoUrl = settings.logoUrl || ''
-    faviconUrl = settings.faviconUrl || ''
-    siteName = settings.siteName || siteName
-    siteDescription = settings.seoDescription || settings.siteDescription || siteDescription
-    siteKeywords = settings.siteKeywords || ''
-    googleVerification = settings.googleVerification || ''
-    baiduVerification = settings.baiduVerification || ''
-
-    // If no logoUrl in settings, check if local file exists
-    if (!logoUrl) {
-      try {
-        const dataDir = path.join(process.cwd(), '.data')
-        const exts = ['png','jpg','jpeg','webp','svg']
-        for (const ext of exts) {
-          if (fs.existsSync(path.join(dataDir, `logo.${ext}`))) {
-            logoUrl = '/api/logo'
-            break
-          }
-        }
-      } catch {}
-    }
-    
-    if (!faviconUrl) faviconUrl = logoUrl
-  } catch {}
-
-  let metadataBase: URL | undefined = undefined
-  const rawBase = String(process.env.NEXT_PUBLIC_SITE_URL || '').trim()
-  if (rawBase) {
-    try {
-      metadataBase = new URL(rawBase.endsWith('/') ? rawBase : `${rawBase}/`)
-    } catch {}
-  }
-
-  const ogImage = (() => {
-    const u = String(logoUrl || '').trim()
-    if (!u) return undefined
-    if (/^https?:\/\//i.test(u)) return u
-    if (metadataBase && u.startsWith('/')) return new URL(u.slice(1), metadataBase).toString()
-    return undefined
-  })()
-
-  return {
-    metadataBase,
-    title: siteName,
-    description: siteDescription || undefined,
-    keywords: siteKeywords || undefined,
-    icons: faviconUrl ? { icon: faviconUrl } : undefined,
-    openGraph: {
-      type: 'website',
-      title: siteName,
-      description: siteDescription || undefined,
-      url: '/',
-      images: ogImage ? [{ url: ogImage }] : undefined
-    },
-    robots: {
-      index: true,
-      follow: true
-    },
-    verification: {
-      google: googleVerification || undefined,
-      other: baiduVerification ? { 'baidu-site-verification': baiduVerification } : undefined
-    }
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  title: PUBLIC_SETTINGS.siteName,
+  description: PUBLIC_SETTINGS.seoDescription,
+  icons: { icon: '/site-icon.svg' },
+  robots: { index: true, follow: true },
+  verification: {
+    google: PUBLIC_SETTINGS.googleVerification || undefined,
+    other: PUBLIC_SETTINGS.baiduVerification ? { 'baidu-site-verification': PUBLIC_SETTINGS.baiduVerification } : undefined
   }
 }
-
-export default async function RootLayout({ children }: { children: ReactNode }) {
-  let analyticsHeadHtml = ''
-  let analyticsBodyHtml = ''
-  let showAnalytics = false
-  let enableStructuredData = false
-  let siteName = DEFAULT_SITE_SETTINGS.siteName
-  let siteDescription = DEFAULT_SITE_SETTINGS.siteDescription
-  let logoUrl = ''
-  let siteUrl = ''
-
-  try {
-    const rows = await (db as any).siteSettings.findMany({ where: { NOT: { key: { startsWith: 'freight-invoice-' } } } }).catch(() => [])
-    const settings: any = {}
-    for (const r of rows as any) settings[String((r as any).key)] = String((r as any).value ?? '')
-    analyticsHeadHtml = settings.analyticsHeadHtml || ''
-    analyticsBodyHtml = settings.analyticsBodyHtml || ''
-    showAnalytics = String(settings.showAnalytics || 'false') === 'true'
-    enableStructuredData = String(settings.enableStructuredData || 'true') === 'true'
-    siteName = settings.siteName || siteName
-    siteDescription = settings.siteDescription || siteDescription
-    logoUrl = settings.logoUrl || ''
-  } catch {}
-
-  try {
-    const raw = String(process.env.NEXT_PUBLIC_SITE_URL || '').trim()
-    if (raw) siteUrl = String(new URL(raw.endsWith('/') ? raw : `${raw}/`)).replace(/\/$/, '')
-  } catch {}
-
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": siteName,
-    "description": siteDescription,
-    "url": siteUrl || undefined,
-    "logo": logoUrl
-  }
-
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="zh-CN">
       <head>
-        <script
-          async
-          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${GOOGLE_ADSENSE_CLIENT}`}
-          crossOrigin="anonymous"
-        />
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6790643369569237" crossOrigin="anonymous" />
       </head>
-      <body suppressHydrationWarning={true}>
-        {enableStructuredData && (
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-          />
-        )}
-        <Suspense fallback={null}>
-          <GoogleAnalytics />
-        </Suspense>
-        <script dangerouslySetInnerHTML={{ __html: BAIDU_ANALYTICS_SCRIPT }} />
-        {showAnalytics && analyticsHeadHtml && <div dangerouslySetInnerHTML={{ __html: analyticsHeadHtml }} style={{ display: 'none' }} />}
+      <body suppressHydrationWarning>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd({ '@context': 'https://schema.org', '@type': 'WebSite', name: PUBLIC_SETTINGS.siteName, alternateName: ['跨境工具魔方', 'AmzToolBox'], url: SITE_URL }) }} />
+        <Suspense fallback={null}><GoogleAnalytics /></Suspense>
+        <script dangerouslySetInnerHTML={{ __html: 'var _hmt=window._hmt||[];(function(){var h=document.createElement("script");h.src="https://hm.baidu.com/hm.js?f41283b760f768032fa2b7990826c3c3";document.head.appendChild(h)})();' }} />
         <GlobalPromoPopup />
         {children}
-        {showAnalytics && analyticsBodyHtml && <div dangerouslySetInnerHTML={{ __html: analyticsBodyHtml }} />}
       </body>
     </html>
   )

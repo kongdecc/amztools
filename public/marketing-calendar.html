@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026年电商营销日历</title>
+
     <style>
         :root {
             --primary-color: #3b82f6;
@@ -14,20 +14,20 @@
             --text-primary: #1e293b;
             --text-secondary: #64748b;
             --border-color: #e2e8f0;
-            
+
             /* Tag Colors */
             --cat-statutory-bg: #fef2f2;
             --cat-statutory-text: #ef4444;
             --cat-statutory-border: #fca5a5;
-            
+
             --cat-overseas-bg: #eff6ff;
             --cat-overseas-text: #3b82f6;
             --cat-overseas-border: #93c5fd;
-            
+
             --cat-promotion-bg: #f3e8ff;
             --cat-promotion-text: #a855f7;
             --cat-promotion-border: #d8b4fe;
-            
+
             --cat-other-bg: #f1f5f9;
             --cat-other-text: #64748b;
             --cat-other-border: #cbd5e1;
@@ -70,7 +70,7 @@
             font-size: 2.5rem;
             letter-spacing: -0.025em;
         }
-        
+
         header p {
             color: var(--text-secondary);
             font-size: 1.1rem;
@@ -109,7 +109,7 @@
             box-sizing: border-box;
             background-color: #f8fafc;
         }
-        
+
         .search-icon {
             position: absolute;
             left: 14px;
@@ -143,22 +143,22 @@
             transition: all 0.2s;
             min-width: 120px;
         }
-        
+
         select:hover {
             border-color: #cbd5e1;
         }
-        
+
         select:focus {
             outline: none;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
-        
+
         .quick-filters {
             display: flex;
             gap: 8px;
         }
-        
+
         .filter-btn {
             background-color: #fff;
             border: 1px solid var(--border-color);
@@ -170,12 +170,12 @@
             color: var(--text-secondary);
             font-weight: 500;
         }
-        
+
         .filter-btn:hover {
             background-color: #f1f5f9;
             color: var(--text-primary);
         }
-        
+
         .filter-btn.active {
             background-color: var(--primary-color);
             color: white;
@@ -201,7 +201,7 @@
             z-index: 90;
             padding: 10px 0;
         }
-        
+
         .month-title {
             font-size: 1.5rem;
             font-weight: 700;
@@ -209,7 +209,7 @@
             position: relative;
             padding-left: 15px;
         }
-        
+
         .month-title::before {
             content: '';
             position: absolute;
@@ -281,7 +281,7 @@
             padding-left: 10px;
             border-radius: 8px;
         }
-        
+
         @media (hover: none) {
             .card-actions {
                 opacity: 1;
@@ -374,7 +374,7 @@
             border-radius: 16px;
             border: 2px dashed var(--border-color);
         }
-        
+
         .no-results-icon {
             font-size: 48px;
             margin-bottom: 16px;
@@ -397,22 +397,22 @@
             .month-section {
                 position: static;
             }
-            
+
             .filter-group {
                 flex-direction: column;
                 align-items: stretch;
             }
-            
+
             .quick-filters {
                 justify-content: center;
                 flex-wrap: wrap;
             }
-            
+
             .calendar-grid {
                 grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
             }
         }
-        
+
         .back-to-top {
             position: fixed;
             bottom: 30px;
@@ -444,32 +444,32 @@
             background-color: var(--primary-hover);
             transform: translateY(-4px);
         }
-        
+
         .weekend-highlight {
             color: #ef4444; /* Red color for weekends */
         }
-        
+
         /* Dynamic Header Styles */
         .tb-header { height: 3.5rem; background-color: #5b5bd6; color: white; display: flex; align-items: center; padding: 0 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); position: fixed; top: 0; left: 0; right: 0; z-index: 1000; font-family: system-ui, -apple-system, sans-serif; justify-content: space-between; }
         @media (min-width: 768px) { .tb-header { padding: 0 2.5rem; justify-content: flex-start; } }
-        
+
         .tb-logo-area { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; font-size: 1.125rem; min-width: 0; flex: 1; }
         @media (min-width: 768px) { .tb-logo-area { flex: initial; margin-right: 1.5rem; } }
-        
+
         .tb-logo-icon { background-color: rgba(255,255,255,0.2); padding: 0.25rem; border-radius: 0.25rem; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-        
+
         .tb-nav-desktop { display: none; margin-left: auto; align-items: center; gap: 1.5rem; flex-shrink: 0; }
         @media (min-width: 768px) { .tb-nav-desktop { display: flex; } }
-        
+
         .tb-nav-link { font-size: 0.875rem; color: rgba(255,255,255,0.9); text-decoration: none; display: flex; align-items: center; gap: 0.25rem; cursor: pointer; background: none; border: none; padding: 0; }
         .tb-nav-link:hover { color: white; }
-        
+
         .tb-mobile-toggle { display: flex; align-items: center; gap: 0.75rem; margin-left: auto; flex-shrink: 0; }
         @media (min-width: 768px) { .tb-mobile-toggle { display: none; } }
-        
+
         .tb-btn-icon { padding: 0.5rem; border-radius: 0.25rem; background: none; border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .tb-btn-icon:hover { background-color: rgba(255,255,255,0.1); }
-        
+
         /* Dropdown */
         .tb-dropdown { position: relative; height: 100%; display: flex; align-items: center; }
         .tb-dropdown-menu { 
@@ -480,7 +480,7 @@
             cursor: default;
         }
         .tb-dropdown:hover .tb-dropdown-menu { opacity: 1; visibility: visible; }
-        
+
         .tb-cat-section { display: flex; flex-direction: column; gap: 0.5rem; }
         .tb-cat-title { font-size: 0.875rem; font-weight: 600; color: #111827; display: flex; align-items: center; gap: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid #e5e7eb; margin-bottom: 0.5rem; }
         .tb-module-link { display: block; font-size: 0.875rem; color: #4b5563; text-decoration: none; padding: 0.25rem 0; transition: color 0.2s; }
@@ -507,7 +507,7 @@
             border: 1px solid var(--border-color);
             background: #fff;
         }
-        
+
         .summary-table-header {
             background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
             color: white;
@@ -516,13 +516,13 @@
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .summary-table-header h2 {
             margin: 0;
             font-size: 1.5rem;
             color: white;
         }
-        
+
         .toggle-table-btn {
             background: rgba(255,255,255,0.2);
             border: 1px solid rgba(255,255,255,0.4);
@@ -533,7 +533,7 @@
             font-weight: 600;
             transition: all 0.2s;
         }
-        
+
         .toggle-table-btn:hover {
             background: rgba(255,255,255,0.3);
         }
@@ -543,14 +543,14 @@
             border-collapse: collapse;
             min-width: 800px;
         }
-        
+
         .summary-table th, .summary-table td {
             padding: 16px;
             text-align: left;
             border-bottom: 1px solid #fed7aa;
             vertical-align: top;
         }
-        
+
         .summary-table th {
             background-color: #ffedd5;
             color: #9a3412;
@@ -558,7 +558,7 @@
             font-size: 1.1rem;
             border-bottom: 2px solid #fdba74;
         }
-        
+
         .summary-table td:first-child {
             background-color: #fff7ed;
             font-weight: 700;
@@ -567,15 +567,15 @@
             width: 60px;
             font-size: 1.2rem;
         }
-        
+
         .summary-table tr:last-child td {
             border-bottom: none;
         }
-        
+
         .summary-table tr:hover td {
             background-color: #fffaf0;
         }
-        
+
         .summary-table tr:hover td:first-child {
             background-color: #ffedd5;
         }
@@ -585,7 +585,7 @@
             padding: 0;
             margin: 0;
         }
-        
+
         .summary-list li {
             margin-bottom: 8px;
             position: relative;
@@ -593,7 +593,7 @@
             line-height: 1.4;
             font-size: 0.95rem;
         }
-        
+
         .summary-list li::before {
             content: '•';
             color: #f97316;
@@ -601,15 +601,22 @@
             left: 0;
             font-weight: bold;
         }
-        
+
         .highlight-date {
             color: #c2410c;
             font-weight: 600;
             font-size: 0.9em;
         }
     </style>
-  <link rel="icon" href="/api/favicon" />
+  <link rel="icon" href="/site-icon.svg" />
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6790643369569237" crossorigin="anonymous"></script>
+<!-- published-seo:start -->
+<title>2026年电商营销日历 - 跨境工具魔方 AmzToolBox</title>
+<meta name="description" content="查看全年节日、大促与营销节点，安排选品和推广计划。">
+<link rel="canonical" href="https://www.amztoolbox.top/marketing-calendar.html">
+<meta name="robots" content="index, follow">
+<meta name="baidu-site-verification" content="codeva-TDas0V8Wan">
+<!-- published-seo:end -->
 </head>
 <body>
     <div id="site-header-container">
@@ -705,7 +712,7 @@
             <!-- Content will be injected by JS -->
         </div>
     </div>
-    
+
     <footer style="text-align: center; padding: 1.5rem 0; font-size: 0.75rem; color: #9ca3af; background-color: #f8fafc; border-top: 1px solid #e2e8f0; margin-top: auto;">
         © 2025 跨境工具魔方 AmzToolBox. All rights reserved.
         <span style="margin: 0 0.5rem;">|</span>
@@ -726,7 +733,7 @@
         const resetBtn = document.getElementById('resetBtn');
         const todayBtn = document.getElementById('todayBtn');
         const container = document.getElementById('calendarContainer');
-        
+
         let currentQuickFilter = 'all';
 
         // Today Button Logic
@@ -745,7 +752,7 @@
             monthFilter.value = 'all';
             categoryFilter.value = 'all';
             currentQuickFilter = 'all';
-            
+
             // Reset quick filter buttons UI
             quickFilterBtns.forEach(b => {
                 if (b.dataset.filter === 'all') {
@@ -754,7 +761,7 @@
                     b.classList.remove('active');
                 }
             });
-            
+
             // Re-render
             renderEvents();
         });
@@ -770,7 +777,7 @@
         });
 
         const solarTerms = ["立春", "雨水", "惊蛰", "春分", "清明", "谷雨", "立夏", "小满", "芒种", "夏至", "小暑", "大暑", "立秋", "处暑", "白露", "秋分", "寒露", "霜降", "立冬", "小雪", "大雪", "冬至", "小寒", "大寒"];
-        
+
         // Whitelist of holidays that are relevant to US market even if they are 'International'
         const usCommonHolidays = [
             '元旦', 'New Year',
@@ -797,20 +804,20 @@
             // Extract month and day: "1月1日" -> 1, 1
             const match = dateStr.match(/(\d+)月(\d+)日/);
             if (!match) return null;
-            
+
             const month = parseInt(match[1]);
             const day = parseInt(match[2]);
-            
+
             const now = new Date();
             const currentYear = now.getFullYear();
-            
+
             // Create date object for this year
             let targetDate = new Date(currentYear, month - 1, day);
-            
+
             // Reset time to midnight for accurate day calculation
             now.setHours(0, 0, 0, 0);
             targetDate.setHours(0, 0, 0, 0);
-            
+
             // If the date has passed this year, assume it's next year
             // Note: Since the calendar might be for a specific year (2026), 
             // strictly speaking we should check the year of the calendar.
@@ -818,10 +825,10 @@
             if (targetDate < now) {
                 targetDate.setFullYear(currentYear + 1);
             }
-            
+
             const diffTime = targetDate - now;
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-            
+
             return diffDays;
         }
 
@@ -843,7 +850,7 @@
             const summaryRows = document.querySelectorAll('.summary-table tbody tr');
             const summaryContainer = document.querySelector('.summary-table-container');
             let hasVisibleSummaryRows = false;
-            
+
             // 1. Column Visibility (Country Filter)
             const showUS = currentQuickFilter === 'all' || currentQuickFilter === 'us';
             const showJP = currentQuickFilter === 'all' || currentQuickFilter === 'jp';
@@ -852,12 +859,12 @@
             document.querySelectorAll('.col-us').forEach(el => el.style.display = showUS ? '' : 'none');
             document.querySelectorAll('.col-eu').forEach(el => el.style.display = showEU ? '' : 'none');
             document.querySelectorAll('.col-jp').forEach(el => el.style.display = showJP ? '' : 'none');
-            
+
             // 2. Row Visibility (Month & Search)
             summaryRows.forEach(row => {
                 const rowMonth = parseInt(row.getAttribute('data-month'));
                 const rowText = row.textContent.toLowerCase();
-                
+
                 // Month Check
                 let matchesMonth = false;
                 if (selectedMonth === 'all') {
@@ -873,7 +880,7 @@
 
                 // Search Check
                 const matchesSearch = searchTerm === '' || rowText.includes(searchTerm);
-                
+
                 if (matchesMonth && matchesSearch) {
                     row.style.display = '';
                     hasVisibleSummaryRows = true;
@@ -881,7 +888,7 @@
                     row.style.display = 'none';
                 }
             });
-            
+
             if (summaryContainer) {
                 // If searching or filtering by month, hide table if no matches.
                 // But also, if category filter is active (not 'all'), maybe we should hide the table?
@@ -903,7 +910,7 @@
                 const matchesSearch = event.content.toLowerCase().includes(searchTerm) || 
                                       event.date_str.toLowerCase().includes(searchTerm) ||
                                       event.lunar.toLowerCase().includes(searchTerm);
-                
+
                 let matchesMonth = false;
                 if (selectedMonth === 'all') {
                     matchesMonth = true;
@@ -915,7 +922,7 @@
                 } else {
                     matchesMonth = event.month == selectedMonth;
                 }
-                
+
                 let matchesCategory = false;
                 if (selectedCategory === 'all') {
                     matchesCategory = true;
@@ -924,27 +931,27 @@
                 } else {
                     matchesCategory = event.category_code === selectedCategory;
                 }
-                
+
                 let matchesQuickFilter = true;
                 if (currentQuickFilter === 'us') {
                     const isExplicitUS = event.content.includes('美') || event.content.includes('USA');
-                    
+
                     // Check if event matches common holiday list
                     let isCommonHoliday = usCommonHolidays.some(keyword => event.content.includes(keyword));
-                    
+
                     // If it matches a common holiday, double check it's not explicitly for another country
                     // e.g. "Independent Day (Myanmar)" should be excluded
                     if (isCommonHoliday) {
                         const otherCountryIndicators = [
                             '(', '（'  // Check for brackets which usually indicate country
                         ];
-                        
+
                         // If it has brackets, we need to be careful
                         if (otherCountryIndicators.some(indicator => event.content.includes(indicator))) {
                             // But allow if the bracket content is US related
                             const isUSInBracket = event.content.includes('(美)') || event.content.includes('（美）') || 
                                                 event.content.includes('(USA)') || event.content.includes('（USA）');
-                            
+
                             // Allow religious qualifiers for common holidays (like Easter)
                             const isReligious = event.content.includes('基督教') || event.content.includes('东正教');
 
@@ -998,22 +1005,22 @@
                 eventsByMonth[month].forEach(event => {
                     const card = document.createElement('div');
                     card.className = `event-card ${event.category_code}`;
-                    
+
                     let tagClass = `tag-${event.category_code}`;
-                    
+
                     // Highlight weekends
                     let dateHtml = event.date_str;
                     if (event.date_str.includes('周六') || event.date_str.includes('周日')) {
                         dateHtml = dateHtml.replace(/(周[六日])/, '<span class="weekend-highlight">$1</span>');
                     }
-                    
+
                     // Countdown Logic
                     const daysLeft = calculateDaysLeft(event.date_str);
                     let countdownHtml = '';
                     if (daysLeft !== null && daysLeft >= 0 && daysLeft <= 60) {
                         let badgeClass = 'countdown-upcoming';
                         let text = `${daysLeft}天后`;
-                        
+
                         if (daysLeft === 0) {
                             badgeClass = 'countdown-urgent';
                             text = '今天';
@@ -1023,10 +1030,10 @@
                         } else if (daysLeft <= 30) {
                             badgeClass = 'countdown-soon';
                         }
-                        
+
                         countdownHtml = `<div class="countdown-badge ${badgeClass}">${text}</div>`;
                     }
-                    
+
                     card.innerHTML = `
                         ${countdownHtml}
                         <div class="event-header">
@@ -1054,7 +1061,7 @@
 
         // Back to Top Button Logic
         const backToTopBtn = document.getElementById('backToTop');
-        
+
         window.addEventListener('scroll', () => {
             if (window.scrollY > 300) {
                 backToTopBtn.classList.add('visible');
@@ -1062,7 +1069,7 @@
                 backToTopBtn.classList.remove('visible');
             }
         });
-        
+
         backToTopBtn.addEventListener('click', () => {
             window.scrollTo({
                 top: 0,
@@ -1126,6 +1133,7 @@
   gtag('js', new Date());
   gtag('config', 'G-MDVMB3KBBP');
 </script>
+<!-- published-intro:start --><section aria-label="工具说明" style="max-width:1100px;margin:24px auto;padding:20px;color:#334155;background:#fff;border-radius:12px"><h1>2026年电商营销日历</h1><p>查看全年节日、大促与营销节点，安排选品和推广计划。</p><p>跨境工具魔方 AmzToolBox · <a href="/">首页</a> · <a href="/functionality">查看全部工具</a></p></section><!-- published-intro:end -->
 </body>
 </html>
-    
+

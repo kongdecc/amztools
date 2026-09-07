@@ -1,4 +1,4 @@
-import { db } from '@/lib/db'
+import { PUBLIC_SETTINGS, PUBLIC_NAV, PUBLIC_MODULES, PUBLIC_CATEGORIES, PUBLIC_POSTS, SITE_URL, pageMetadata, jsonLd } from '@/lib/published-content'
 import { Metadata } from 'next'
 import { LayoutDashboard, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
@@ -6,88 +6,20 @@ import RewardImage from '@/components/RewardImage'
 import TopAdBar from '@/components/TopAdBar'
 import { BLOCKED_TOOL_KEYS, DEFAULT_NAV_ITEMS, DEFAULT_TOOLS, DEFAULT_CATEGORIES, DEFAULT_SITE_SETTINGS, ensureNavItems } from '@/lib/constants'
 
-export const revalidate = 0
+export const revalidate = false
 
 export const metadata: Metadata = {
+  alternates: { canonical: SITE_URL + '/reward' },
   title: '打赏支持',
   description: '如果您觉得本工具箱对您有帮助，欢迎打赏支持！'
 }
 
 async function getSettings() {
-  const blockedKeys = new Set(BLOCKED_TOOL_KEYS)
-  try {
-    let settings: any = {}
-    try {
-      const rows = await (db as any).siteSettings.findMany({ where: { NOT: { key: { startsWith: 'freight-invoice-' } } } })
-      for (const r of rows as any) settings[String((r as any).key)] = String((r as any).value ?? '')
-    } catch (e) {
-      console.error('Error fetching site settings:', e)
-    }
-    
-    // Get navigation
-    let navItems: any[] = []
-    try {
-      const navRow = await (db as any).siteSettings.findUnique({ where: { key: 'navigation' } })
-      const arr = navRow && (navRow as any).value ? JSON.parse(String((navRow as any).value)) : []
-      navItems = ensureNavItems(Array.isArray(arr) && arr.length > 0 ? arr : DEFAULT_NAV_ITEMS)
-    } catch {
-      navItems = ensureNavItems(DEFAULT_NAV_ITEMS)
-    }
-
-    let modules: any[] = []
-    let categories: any[] = []
-    try {
-      modules = await (db as any).toolModule.findMany({ orderBy: { order: 'asc' } })
-      categories = await (db as any).toolCategory.findMany({ orderBy: { order: 'asc' } })
-      if (categories.length === 0) {
-        categories = DEFAULT_CATEGORIES
-      }
-      
-      // Merge logic for modules
-      const ensure = (arr: any[]) => {
-        const keys = new Set(arr.map((x: any) => x.key))
-        const merged = arr.slice()
-        for (const d of DEFAULT_TOOLS) if (!keys.has(d.key)) merged.push(d)
-        return merged
-      }
-      modules = ensure(Array.isArray(modules) ? modules : []).filter((m: any) => !blockedKeys.has(m.key))
-      
-      // Force override status for 'word-count' if it is '维护'
-      modules = modules.map((m: any) => {
-        if (m.key === 'word-count' && m.status === '维护') {
-          return { ...m, status: '启用' }
-        }
-        return m
-      })
-
-    } catch (e) {
-      console.error('Error fetching modules/categories:', e)
-      categories = DEFAULT_CATEGORIES
-      modules = DEFAULT_TOOLS.filter((m: any) => !blockedKeys.has(m.key))
-    }
-
-    return {
-      siteName: settings.siteName || DEFAULT_SITE_SETTINGS.siteName,
-      copyrightText: settings.copyrightText || DEFAULT_SITE_SETTINGS.copyrightText,
-      friendLinks: settings.friendLinks || '[]',
-      showFriendLinksLabel: String(settings.showFriendLinksLabel || 'false') === 'true',
-      rewardDescription: settings.rewardDescription || '如果您觉得本工具箱对您有帮助，欢迎打赏支持我们继续维护和开发！',
-      navItems,
-      modules,
-      categories
-    }
-  } catch (e) {
-    console.error('Critical error in getSettings:', e)
-    return {
-      siteName: DEFAULT_SITE_SETTINGS.siteName,
-      copyrightText: DEFAULT_SITE_SETTINGS.copyrightText,
-      friendLinks: '[]',
-      showFriendLinksLabel: false,
-      rewardDescription: '如果您觉得本工具箱对您有帮助，欢迎打赏支持我们继续维护和开发！',
-      navItems: ensureNavItems(DEFAULT_NAV_ITEMS),
-      modules: DEFAULT_TOOLS.filter((m: any) => !blockedKeys.has(m.key)),
-      categories: DEFAULT_CATEGORIES
-    }
+  return {
+    siteName: PUBLIC_SETTINGS.siteName, copyrightText: PUBLIC_SETTINGS.copyrightText,
+    friendLinks: PUBLIC_SETTINGS.friendLinks, showFriendLinksLabel: PUBLIC_SETTINGS.showFriendLinksLabel === 'true',
+    rewardDescription: '如果您觉得本工具箱对您有帮助，欢迎打赏支持我们继续维护和开发！',
+    navItems: PUBLIC_NAV, modules: PUBLIC_MODULES, categories: PUBLIC_CATEGORIES
   }
 }
 

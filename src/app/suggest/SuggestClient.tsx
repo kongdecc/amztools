@@ -21,7 +21,7 @@ export default function SuggestClient({ initialNavItems, modules }: SuggestClien
   useEffect(() => {
     (async () => {
       try {
-        const r = await fetch('/api/categories', { cache: 'no-store' })
+        const r = await fetch('/api/published/categories', { cache: 'no-store' })
         const d = await r.json()
         if (Array.isArray(d) && d.length > 0) setCategories(d)
         else setCategories(DEFAULT_CATEGORIES)

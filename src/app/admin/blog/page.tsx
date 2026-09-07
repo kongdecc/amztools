@@ -131,6 +131,7 @@ export default function AdminBlog() {
 
   return (
     <div className="p-8">
+      <p className="rounded border border-blue-200 bg-blue-50 p-3 text-blue-900">公开博客已改为仓库发布快照。此后台保存的是数据库编辑内容，不会直接更新公开页面；请将发布内容同步至 src/config/published-posts.json 并部署。</p>
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 flex flex-col min-h-[600px]">
         <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-white rounded-t-lg">
           <div>

@@ -49,7 +49,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
     (async () => {
       if (!initialModules || initialModules.length === 0) {
         try {
-          const r = await fetch('/api/modules', { cache: 'no-store' })
+          const r = await fetch('/api/published/modules', { cache: 'no-store' })
           const d = await r.json()
           const arr: Module[] = Array.isArray(d) ? d : []
           const next = arr.filter(m => m.status !== '下架').sort((a, b) => a.order - b.order)
@@ -59,7 +59,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
 
       if (!initialCategories || initialCategories.length === 0) {
         try {
-          const r = await fetch('/api/categories', { cache: 'no-store' })
+          const r = await fetch('/api/published/categories', { cache: 'no-store' })
           const d = await r.json()
           if (Array.isArray(d) && d.length > 0) {
             setCategories(d.filter((c: any) => c.enabled !== false))

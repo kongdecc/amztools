@@ -265,7 +265,7 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
                     }
           const colorKey = colorOverride[tool.key] || tool.color
           return (
-            <Card key={tool.key} className="group relative p-6 hover:shadow-xl transition-all duration-300 cursor-pointer border-transparent hover:border-gray-100 bg-white overflow-hidden" onClick={() => handleToolOpen(tool)}>
+            <Link key={tool.key} href={tool.href || `/functionality/${tool.key}`} prefetch={false} className="block rounded-xl group relative p-6 hover:shadow-xl transition-all duration-300 cursor-pointer border border-transparent hover:border-gray-100 bg-white overflow-hidden">
               <div className="flex items-start gap-4 mb-4">
                 <div className={`w-12 h-12 rounded-xl ${colorSolidMap[colorKey] || 'bg-blue-600'} flex items-center justify-center shadow-md shrink-0 group-hover:scale-105 transition-transform duration-300`}>
                   {(() => {
@@ -281,7 +281,7 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
                 <span>{tool.href ? '打开入口' : '立即使用'}</span>
                 <ArrowLeftRight className="h-4 w-4" />
               </div>
-            </Card>
+            </Link>
           )
         })}
       </div>

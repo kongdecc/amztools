@@ -23,7 +23,7 @@ export default function AboutClient({ initialNavItems, initialHtml }: { initialN
   useEffect(() => {
     (async () => {
       try {
-        const r = await fetch('/api/categories', { cache: 'no-store' })
+        const r = await fetch('/api/published/categories', { cache: 'no-store' })
         const d = await r.json()
         if (Array.isArray(d) && d.length > 0) setCategories(d.filter((c: any) => c.enabled !== false))
         else setCategories(DEFAULT_CATEGORIES)
@@ -45,7 +45,7 @@ export default function AboutClient({ initialNavItems, initialHtml }: { initialN
   useEffect(() => { try { setOrigin(window.location.origin) } catch {} }, [])
   useEffect(() => {
     (async () => {
-      try { const r = await fetch('/api/modules', { cache: 'no-store' }); const d = await r.json(); const arr = Array.isArray(d) ? d : []; setModules(arr.filter((m:any)=>m.status !== '下架')) } catch { setModules(DEFAULT_TOOLS) }
+      try { const r = await fetch('/api/published/modules', { cache: 'no-store' }); const d = await r.json(); const arr = Array.isArray(d) ? d : []; setModules(arr.filter((m:any)=>m.status !== '下架')) } catch { setModules(DEFAULT_TOOLS) }
     })()
   }, [])
   return (

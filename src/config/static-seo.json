@@ -1,0 +1,72 @@
+{
+  "/Amazon-EU-FBA计算器.html": {
+    "title": "Amazon EU FBA 费用计算器",
+    "description": "欧洲站配送费、仓储费、弃置退仓与多站点费用对比。",
+    "canonical": "/functionality/amazon-eu-fba-calculator"
+  },
+  "/amazon-eu-fba-calculator.html": {
+    "title": "Amazon EU FBA 费用计算器",
+    "description": "欧洲站配送费、仓储费、弃置退仓与多站点费用对比。",
+    "canonical": "/functionality/amazon-eu-fba-calculator"
+  },
+  "/amazon-ads-analyzer/index.html": {
+    "title": "亚马逊广告分析工具",
+    "description": "导入亚马逊广告报表，查看 KPI、趋势、搜索词与投放表现。",
+    "canonical": "/amazon-ads-analyzer/index.html"
+  },
+  "/amazon-category-selection-center.html": {
+    "title": "Amazon类目选品管理中心",
+    "description": "浏览 Amazon 分类树、叶子类目清单与选品评估进度。",
+    "canonical": "/amazon-category-selection-center.html"
+  },
+  "/amazon-label-sorter/index.html": {
+    "title": "Amazon 箱唛按 SKU 归集工具",
+    "description": "把 FBA 和 AWD 标签 PDF 按 SKU 跨仓归集，生成 PDF 并打包下载。",
+    "canonical": "/amazon-label-sorter/index.html"
+  },
+  "/avif-image-converter.html": {
+    "title": "AVIF 图片格式转换工具",
+    "description": "在浏览器中将 AVIF 图片批量转换为 PNG、JPEG 或 WebP，支持质量调节。",
+    "canonical": "/avif-image-converter.html"
+  },
+  "/bulk/index.html": {
+    "title": "亚马逊广告批量处理工具",
+    "description": "导入、创建、更新和导出亚马逊广告 Bulk 表格，文件在浏览器本地处理。",
+    "canonical": "/bulk/index.html"
+  },
+  "/china-industry-belts.html": {
+    "title": "中国产业带",
+    "description": "查看中国产业带信息，辅助选品、供应链与货源调研。",
+    "canonical": "/china-industry-belts.html"
+  },
+  "/cpsc_efiling_screening_tool.html": {
+    "title": "CPSC 合规与 eFiling 筛查工具",
+    "description": "按品类、年龄段、材料与申报场景进行初步筛查，结果需结合最新官方要求核实。",
+    "canonical": "/cpsc_efiling_screening_tool.html"
+  },
+  "/freight-invoice/index.html": {
+    "title": "货代发票工作台",
+    "description": "维护产品资料与货代模板，支持字段映射、Excel 预览编辑及导出。",
+    "canonical": "/freight-invoice/index.html"
+  },
+  "/freight-rate-radar/index.html": {
+    "title": "头程比价工具",
+    "description": "上传货代 Excel 报价表，按仓库、重量、税别和时效筛选头程报价。",
+    "canonical": "/freight-rate-radar/index.html"
+  },
+  "/image-label-adder.html": {
+    "title": "图片/视频标签添加工具",
+    "description": "批量为图片和视频写入 contains-synthetic-performer 标签，本地处理。",
+    "canonical": "/image-label-adder.html"
+  },
+  "/marketing-calendar-summary.html": {
+    "title": "2026年亚马逊全球营销日历",
+    "description": "查看亚马逊全球站点营销节点和活动节奏，安排选品与运营计划。",
+    "canonical": "/marketing-calendar-summary.html"
+  },
+  "/marketing-calendar.html": {
+    "title": "2026年电商营销日历",
+    "description": "查看全年节日、大促与营销节点，安排选品和推广计划。",
+    "canonical": "/marketing-calendar.html"
+  }
+}

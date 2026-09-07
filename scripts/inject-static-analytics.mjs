@@ -6,7 +6,34 @@ const GOOGLE_ANALYTICS_ID = 'G-MDVMB3KBBP'
 const GOOGLE_ADSENSE_CLIENT = 'ca-pub-6790643369569237'
 const PUBLIC_DIR = path.join(process.cwd(), 'public')
 const HTML_SUFFIX = '.html'
-const SITE_FAVICON_SNIPPET = '<link rel="icon" href="/api/favicon" />'
+const SITE_FAVICON_SNIPPET = '<link rel="icon" href="/site-icon.svg" />'
+const siteSeo = JSON.parse(fs.readFileSync(new URL('../src/config/site-seo.json', import.meta.url), 'utf8'))
+const staticSeo = JSON.parse(fs.readFileSync(new URL('../src/config/static-seo.json', import.meta.url), 'utf8'))
+const escapeHtml = value => String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+
+function injectSeo(content, filePath) {
+  const key = '/' + path.relative(PUBLIC_DIR, filePath).split(path.sep).join('/')
+  const entry = staticSeo[key]
+  if (!entry) throw new Error('Missing static SEO entry: ' + key)
+  let html = content.replace(/<!-- published-seo:start -->[\s\S]*?<!-- published-seo:end -->\s*/g, '')
+    .replace(/<!-- published-intro:start -->[\s\S]*?<!-- published-intro:end -->\s*/g, '')
+    .replace(/<title\b[^>]*>[\s\S]*?<\/title>/gi, '')
+    .replace(/<meta\b(?=[^>]*\bname=["'](?:description|robots|google-site-verification|baidu-site-verification)["'])[^>]*>/gi, '')
+    .replace(/<link\b(?=[^>]*\brel=["']canonical["'])[^>]*>/gi, '')
+  const canonical = new URL(entry.canonical, siteSeo.siteUrl).href
+  const tags = [
+    '<!-- published-seo:start -->',
+    '<title>' + escapeHtml(entry.title + ' - ' + siteSeo.siteName) + '</title>',
+    '<meta name="description" content="' + escapeHtml(entry.description) + '">',
+    '<link rel="canonical" href="' + escapeHtml(canonical) + '">',
+    '<meta name="robots" content="index, follow">',
+    ...[['google-site-verification', siteSeo.googleVerification], ['baidu-site-verification', siteSeo.baiduVerification]].filter(([, value]) => value).map(([name, value]) => '<meta name="' + name + '" content="' + escapeHtml(value) + '">'),
+    '<!-- published-seo:end -->'
+  ].join('\n')
+  html = html.replace(/<\/head>/i, tags + '\n</head>')
+  const intro = '<!-- published-intro:start --><section aria-label="工具说明" style="max-width:1100px;margin:24px auto;padding:20px;color:#334155;background:#fff;border-radius:12px"><h1>' + escapeHtml(entry.title) + '</h1><p>' + escapeHtml(entry.description) + '</p><p>跨境工具魔方 AmzToolBox · <a href="/">首页</a> · <a href="/functionality">查看全部工具</a></p></section><!-- published-intro:end -->'
+  return html.replace(/<\/body>/i, intro + '\n</body>').replace(/^[\t ]+$/gm, '')
+}
 const FAVICON_LINK_PATTERN = /<link\b(?=[^>]*\brel\s*=\s*["'][^"']*\bicon\b[^"']*["'])[^>]*>/gi
 
 const baiduAnalyticsSnippet = [
@@ -133,7 +160,7 @@ let updatedCount = 0
 
 for (const filePath of htmlFiles) {
   const original = fs.readFileSync(filePath, 'utf8')
-  const injected = injectAnalytics(original)
+  const injected = injectSeo(injectAnalytics(original), filePath)
 
   if (injected === original) continue
 

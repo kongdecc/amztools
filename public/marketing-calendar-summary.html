@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026年亚马逊全球营销日历汇总表</title>
+
     <style>
         :root {
             --primary-color: #3b82f6;
@@ -48,7 +48,7 @@
             font-size: 2.5rem;
             letter-spacing: -0.025em;
         }
-        
+
         header p {
             color: var(--text-secondary);
             font-size: 1.1rem;
@@ -87,7 +87,7 @@
             box-sizing: border-box;
             background-color: #f8fafc;
         }
-        
+
         .search-icon {
             position: absolute;
             left: 14px;
@@ -121,22 +121,22 @@
             transition: all 0.2s;
             min-width: 120px;
         }
-        
+
         select:hover {
             border-color: #cbd5e1;
         }
-        
+
         select:focus {
             outline: none;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
-        
+
         .quick-filters {
             display: flex;
             gap: 8px;
         }
-        
+
         .filter-btn {
             background-color: #fff;
             border: 1px solid var(--border-color);
@@ -151,12 +151,12 @@
             display: inline-flex;
             align-items: center;
         }
-        
+
         .filter-btn:hover {
             background-color: #f1f5f9;
             color: var(--text-primary);
         }
-        
+
         .filter-btn.active {
             background-color: var(--primary-color);
             color: white;
@@ -166,24 +166,24 @@
         /* Dynamic Header Styles */
         .tb-header { height: 3.5rem; background-color: #5b5bd6; color: white; display: flex; align-items: center; padding: 0 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); position: fixed; top: 0; left: 0; right: 0; z-index: 1000; font-family: system-ui, -apple-system, sans-serif; justify-content: space-between; }
         @media (min-width: 768px) { .tb-header { padding: 0 2.5rem; justify-content: flex-start; } }
-        
+
         .tb-logo-area { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; font-size: 1.125rem; min-width: 0; flex: 1; }
         @media (min-width: 768px) { .tb-logo-area { flex: initial; margin-right: 1.5rem; } }
-        
+
         .tb-logo-icon { background-color: rgba(255,255,255,0.2); padding: 0.25rem; border-radius: 0.25rem; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-        
+
         .tb-nav-desktop { display: none; margin-left: auto; align-items: center; gap: 1.5rem; flex-shrink: 0; }
         @media (min-width: 768px) { .tb-nav-desktop { display: flex; } }
-        
+
         .tb-nav-link { font-size: 0.875rem; color: rgba(255,255,255,0.9); text-decoration: none; display: flex; align-items: center; gap: 0.25rem; cursor: pointer; background: none; border: none; padding: 0; }
         .tb-nav-link:hover { color: white; }
-        
+
         .tb-mobile-toggle { display: flex; align-items: center; gap: 0.75rem; margin-left: auto; flex-shrink: 0; }
         @media (min-width: 768px) { .tb-mobile-toggle { display: none; } }
-        
+
         .tb-btn-icon { padding: 0.5rem; border-radius: 0.25rem; background: none; border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .tb-btn-icon:hover { background-color: rgba(255,255,255,0.1); }
-        
+
         /* Mobile Menu */
         .tb-mobile-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: none; }
         .tb-mobile-overlay.open { display: block; }
@@ -204,7 +204,7 @@
             border: 1px solid var(--border-color);
             background: #fff;
         }
-        
+
         .summary-table-header {
             background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
             color: white;
@@ -213,26 +213,26 @@
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .summary-table-header h2 {
             margin: 0;
             font-size: 1.5rem;
             color: white;
         }
-        
+
         .summary-table {
             width: 100%;
             border-collapse: collapse;
             min-width: 800px;
         }
-        
+
         .summary-table th, .summary-table td {
             padding: 16px;
             text-align: left;
             border-bottom: 1px solid #fed7aa;
             vertical-align: top;
         }
-        
+
         .summary-table th {
             background-color: #ffedd5;
             color: #9a3412;
@@ -240,7 +240,7 @@
             font-size: 1.1rem;
             border-bottom: 2px solid #fdba74;
         }
-        
+
         .summary-table td:first-child {
             background-color: #fff7ed;
             font-weight: 700;
@@ -249,15 +249,15 @@
             width: 60px;
             font-size: 1.2rem;
         }
-        
+
         .summary-table tr:last-child td {
             border-bottom: none;
         }
-        
+
         .summary-table tr:hover td {
             background-color: #fffaf0;
         }
-        
+
         .summary-table tr:hover td:first-child {
             background-color: #ffedd5;
         }
@@ -267,7 +267,7 @@
             padding: 0;
             margin: 0;
         }
-        
+
         .summary-list li {
             margin-bottom: 8px;
             position: relative;
@@ -275,7 +275,7 @@
             line-height: 1.4;
             font-size: 0.95rem;
         }
-        
+
         .summary-list li::before {
             content: '•';
             color: #f97316;
@@ -283,7 +283,7 @@
             left: 0;
             font-weight: bold;
         }
-        
+
         .highlight-date {
             color: #c2410c;
             font-weight: 600;
@@ -302,18 +302,18 @@
                 flex: none;
                 width: 100%;
             }
-            
+
             .filter-group {
                 flex-direction: column;
                 align-items: stretch;
             }
-            
+
             .quick-filters {
                 justify-content: center;
                 flex-wrap: wrap;
             }
         }
-        
+
         .back-to-top {
             position: fixed;
             bottom: 30px;
@@ -346,8 +346,15 @@
             transform: translateY(-4px);
         }
     </style>
-  <link rel="icon" href="/api/favicon" />
+  <link rel="icon" href="/site-icon.svg" />
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6790643369569237" crossorigin="anonymous"></script>
+<!-- published-seo:start -->
+<title>2026年亚马逊全球营销日历 - 跨境工具魔方 AmzToolBox</title>
+<meta name="description" content="查看亚马逊全球站点营销节点和活动节奏，安排选品与运营计划。">
+<link rel="canonical" href="https://www.amztoolbox.top/marketing-calendar-summary.html">
+<meta name="robots" content="index, follow">
+<meta name="baidu-site-verification" content="codeva-TDas0V8Wan">
+<!-- published-seo:end -->
 </head>
 <body>
     <div id="site-header-container">
@@ -523,7 +530,7 @@
             </div>
         </div>
     </div>
-    
+
     <footer style="text-align: center; padding: 1.5rem 0; font-size: 0.75rem; color: #9ca3af; background-color: #f8fafc; border-top: 1px solid #e2e8f0; margin-top: auto;">
         © 2025 跨境工具魔方 AmzToolBox. All rights reserved.
         <span style="margin: 0 0.5rem;">|</span>
@@ -537,7 +544,7 @@
         const monthFilter = document.getElementById('monthFilter');
         const quickFilterBtns = document.querySelectorAll('.filter-btn:not(#resetBtn):not(a)');
         const resetBtn = document.getElementById('resetBtn');
-        
+
         let currentQuickFilter = 'all';
 
         // Reset Button Logic
@@ -545,7 +552,7 @@
             searchInput.value = '';
             monthFilter.value = 'all';
             currentQuickFilter = 'all';
-            
+
             quickFilterBtns.forEach(b => {
                 if (b.dataset.filter === 'all') {
                     b.classList.add('active');
@@ -553,7 +560,7 @@
                     b.classList.remove('active');
                 }
             });
-            
+
             filterTable();
         });
 
@@ -572,7 +579,7 @@
             const selectedMonth = monthFilter.value;
 
             const summaryRows = document.querySelectorAll('.summary-table tbody tr');
-            
+
             // 1. Column Visibility (Country Filter)
             const showUS = currentQuickFilter === 'all' || currentQuickFilter === 'us';
             const showJP = currentQuickFilter === 'all' || currentQuickFilter === 'jp';
@@ -581,12 +588,12 @@
             document.querySelectorAll('.col-us').forEach(el => el.style.display = showUS ? '' : 'none');
             document.querySelectorAll('.col-eu').forEach(el => el.style.display = showEU ? '' : 'none');
             document.querySelectorAll('.col-jp').forEach(el => el.style.display = showJP ? '' : 'none');
-            
+
             // 2. Row Visibility (Month & Search)
             summaryRows.forEach(row => {
                 const rowMonth = parseInt(row.getAttribute('data-month'));
                 const rowText = row.textContent.toLowerCase();
-                
+
                 // Month Check
                 let matchesMonth = false;
                 if (selectedMonth === 'all') {
@@ -602,7 +609,7 @@
 
                 // Search Check
                 const matchesSearch = searchTerm === '' || rowText.includes(searchTerm);
-                
+
                 if (matchesMonth && matchesSearch) {
                     row.style.display = '';
                 } else {
@@ -617,7 +624,7 @@
 
         // Back to Top Button Logic
         const backToTopBtn = document.getElementById('backToTop');
-        
+
         window.addEventListener('scroll', () => {
             if (window.scrollY > 300) {
                 backToTopBtn.classList.add('visible');
@@ -625,7 +632,7 @@
                 backToTopBtn.classList.remove('visible');
             }
         });
-        
+
         backToTopBtn.addEventListener('click', () => {
             window.scrollTo({
                 top: 0,
@@ -677,5 +684,6 @@
   gtag('js', new Date());
   gtag('config', 'G-MDVMB3KBBP');
 </script>
+<!-- published-intro:start --><section aria-label="工具说明" style="max-width:1100px;margin:24px auto;padding:20px;color:#334155;background:#fff;border-radius:12px"><h1>2026年亚马逊全球营销日历</h1><p>查看亚马逊全球站点营销节点和活动节奏，安排选品与运营计划。</p><p>跨境工具魔方 AmzToolBox · <a href="/">首页</a> · <a href="/functionality">查看全部工具</a></p></section><!-- published-intro:end -->
 </body>
 </html>

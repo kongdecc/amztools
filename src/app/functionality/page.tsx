@@ -1,15 +1,17 @@
+import { PUBLIC_SETTINGS, PUBLIC_NAV, PUBLIC_MODULES, PUBLIC_CATEGORIES, PUBLIC_POSTS, SITE_URL, pageMetadata, jsonLd } from '@/lib/published-content'
 import { SettingsProvider } from '@/components/SettingsProvider'
 import FunctionalityClient from './FunctionalityClient'
 import { Metadata } from 'next'
 import { getEnabledFunctionalityShellData, getFunctionalityMetadataSettings } from '@/lib/functionality-data'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = false
 
 export async function generateMetadata(): Promise<Metadata> {
   const { siteName, functionalityTitle, functionalitySubtitle } = await getFunctionalityMetadataSettings()
 
   return {
     title: `${functionalityTitle} - ${siteName}`,
+    alternates: { canonical: SITE_URL + '/functionality' },
     description: functionalitySubtitle || `探索${siteName}提供的所有工具和功能`,
   }
 }
@@ -22,7 +24,7 @@ export default async function FunctionalityPage() {
     navItems
   } = await getEnabledFunctionalityShellData()
 
-  const safeOrigin = process.env.NEXT_PUBLIC_SITE_URL || ''
+  const safeOrigin = SITE_URL
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
@@ -33,7 +35,7 @@ export default async function FunctionalityPage() {
       "@type": "WebPage",
       "name": m.title,
       "description": m.desc,
-      "url": `${safeOrigin}/?tab=${m.key}`
+      "url": `${safeOrigin}${'href' in m && m.href ? m.href : '/functionality/' + m.key}`
     }))
   }
 

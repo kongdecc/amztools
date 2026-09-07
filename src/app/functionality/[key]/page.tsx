@@ -1,11 +1,14 @@
+import { PUBLIC_SETTINGS, PUBLIC_NAV, PUBLIC_MODULES, PUBLIC_CATEGORIES, PUBLIC_POSTS, SITE_URL, pageMetadata, jsonLd } from '@/lib/published-content'
 import { Metadata } from 'next'
-import { redirect } from 'next/navigation'
+import { permanentRedirect, notFound } from 'next/navigation'
 import { DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 import ClientPage from './ClientPage'
+import ToolGuide from '@/components/ToolGuide'
 import { SettingsProvider } from '@/components/SettingsProvider'
 import { getFunctionalityShellData } from '@/lib/functionality-data'
 
-export const dynamic = 'force-dynamic'
+export const dynamicParams = false
+export function generateStaticParams() { return PUBLIC_MODULES.map(tool => ({ key: tool.key })) }
 
 export async function generateMetadata({ params }: { params: Promise<{ key: string }> }): Promise<Metadata> {
   const { key } = await params
@@ -14,12 +17,7 @@ export async function generateMetadata({ params }: { params: Promise<{ key: stri
   const tool = modules.find((m: any) => m.key === key)
   const siteName = settings.siteName || DEFAULT_SITE_SETTINGS.siteName
   
-  if (!tool) {
-    return {
-      title: `未找到工具 - ${siteName}`,
-      description: '请求的工具不存在'
-    }
-  }
+  if (!tool) notFound()
 
   const title = `${tool.title} - ${siteName}`
   const description = tool.desc || `${tool.title} - ${siteName} 在线免费使用`
@@ -36,7 +34,7 @@ export async function generateMetadata({ params }: { params: Promise<{ key: stri
       url: `/functionality/${key}`
     },
     alternates: {
-      canonical: `/functionality/${key}`
+      canonical: new URL(tool.href || `/functionality/${key}`, SITE_URL).href
     },
     robots: {
       index: true,
@@ -50,11 +48,12 @@ export default async function Page({ params }: { params: Promise<{ key: string }
   const { settings, categories, modules, navItems } = await getFunctionalityShellData()
   const tool = modules.find((m: any) => m.key === key)
 
-  if (tool?.href) {
-    redirect(tool.href)
+  if (!tool) notFound()
+  if (tool.href) {
+    permanentRedirect(tool.href)
   }
   
-  const safeOrigin = (process.env.NEXT_PUBLIC_SITE_URL || '').replace(/\/$/, '')
+  const safeOrigin = SITE_URL
   
   const jsonLd = tool ? {
     "@context": "https://schema.org",
@@ -85,6 +84,7 @@ export default async function Page({ params }: { params: Promise<{ key: string }
       {jsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
       <ClientPage initialModules={modules} initialNavItems={navItems} initialCategories={categories} />
+      <ToolGuide tool={tool} />
     </SettingsProvider>
   )
 }

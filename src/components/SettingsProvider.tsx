@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 
+import publishedSettings from '@/config/site-seo.json'
 import { DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 
 type SiteSettings = {
@@ -75,12 +76,13 @@ const defaults: SiteSettings = {
 const SettingsContext = createContext<Ctx | undefined>(undefined)
 
 export function SettingsProvider({ children, initial }: { children: ReactNode; initial?: Partial<SiteSettings> }) {
-  const [settings, setSettings] = useState<SiteSettings>(initial ? { ...defaults, ...initial } as SiteSettings : defaults)
+  const [settings, setSettings] = useState<SiteSettings>({ ...defaults, ...publishedSettings, ...initial })
   const [loading, setLoading] = useState(!initial)
 
   const fetchSettings = async () => {
     try {
-      const r = await fetch('/api/settings', { cache: 'no-store' })
+      const isAdmin = window.location.pathname.startsWith('/admin')
+      const r = await fetch(isAdmin ? '/api/settings' : '/api/published/settings', { cache: 'no-store' })
       if (r.ok) {
         const data = await r.json()
         setSettings({ ...defaults, ...data })
@@ -92,7 +94,7 @@ export function SettingsProvider({ children, initial }: { children: ReactNode; i
 
   useEffect(() => {
     try {
-      if (!initial) {
+      if (!initial && window.location.pathname.startsWith('/admin')) {
         const raw = localStorage.getItem('settings_cache')
         if (raw) {
           const obj = JSON.parse(raw)
@@ -104,12 +106,13 @@ export function SettingsProvider({ children, initial }: { children: ReactNode; i
   }, [])
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {
+      if (!window.location.pathname.startsWith('/admin')) return
       if (e.key === 'settings_updated') refreshSettings()
       if (e.key === 'settings_cache' && e.newValue) {
         try { const obj = JSON.parse(e.newValue); if (obj && typeof obj === 'object') setSettings(prev => ({ ...prev, ...obj })) } catch {}
       }
     }
-    const onVisible = () => { if (document.visibilityState === 'visible') refreshSettings() }
+    const onVisible = () => { if (document.visibilityState === 'visible' && window.location.pathname.startsWith('/admin')) refreshSettings() }
     window.addEventListener('storage', onStorage)
     document.addEventListener('visibilitychange', onVisible)
     return () => { window.removeEventListener('storage', onStorage); document.removeEventListener('visibilitychange', onVisible) }
@@ -126,6 +129,6 @@ export function SettingsProvider({ children, initial }: { children: ReactNode; i
 
 export function useSettings() {
   const ctx = useContext(SettingsContext)
-  if (!ctx) return { settings: defaults, loading: true, refreshSettings: async () => {} }
+  if (!ctx) return { settings: { ...defaults, ...publishedSettings }, loading: false, refreshSettings: async () => {} }
   return ctx
 }

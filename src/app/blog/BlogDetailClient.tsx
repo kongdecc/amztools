@@ -14,7 +14,7 @@ export default function BlogDetailClient({ item, initialNavItems, initialHtml }:
   const { settings } = useSettings()
   const [navItems] = useState<Array<any>>(initialNavItems || [])
   const [html, setHtml] = useState(initialHtml || '')
-  const [views, setViews] = useState<number>(Number(item?.views || 0))
+  const [views] = useState<number>(Number(item?.views || 0))
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [categories, setCategories] = useState<any[]>([])
   const [modules, setModules] = useState<any[]>([])
@@ -25,7 +25,7 @@ export default function BlogDetailClient({ item, initialNavItems, initialHtml }:
   useEffect(() => {
     (async () => {
       try {
-        const r = await fetch('/api/categories', { cache: 'no-store' })
+        const r = await fetch('/api/published/categories', { cache: 'no-store' })
         const d = await r.json()
         if (Array.isArray(d) && d.length > 0) setCategories(d.filter((c: any) => c.enabled !== false))
         else setCategories(DEFAULT_CATEGORIES)
@@ -37,7 +37,7 @@ export default function BlogDetailClient({ item, initialNavItems, initialHtml }:
 
   useEffect(() => {
     (async () => {
-      try { const r = await fetch('/api/modules', { cache: 'no-store' }); const d = await r.json(); const arr = Array.isArray(d) ? d : []; setModules(arr.filter((m:any)=>m.status !== '下架')) } catch { setModules(DEFAULT_TOOLS) }
+      try { const r = await fetch('/api/published/modules', { cache: 'no-store' }); const d = await r.json(); const arr = Array.isArray(d) ? d : []; setModules(arr.filter((m:any)=>m.status !== '下架')) } catch { setModules(DEFAULT_TOOLS) }
     })()
   }, [])
 
@@ -59,29 +59,7 @@ export default function BlogDetailClient({ item, initialNavItems, initialHtml }:
     })()
   }, [item?.content])
 
-  useEffect(() => {
-    (async () => {
-      try {
-        if (!slug) return
-        const key = `blog_viewed_${slug}`
-        const last = Number(sessionStorage.getItem(key) || 0)
-        const nowTs = Date.now()
-        if (!last || nowTs - last > 5000) {
-          sessionStorage.setItem(key, String(nowTs))
-          const r = await fetch('/api/blog/views', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug }), cache: 'no-store' })
-          let d: any = {}
-          try { d = await r.json() } catch {}
-          if (r.ok && d && typeof d.views !== 'undefined') {
-            setViews(Number(d.views || 0))
-          } else {
-            setViews(v => v + 1)
-          }
-        }
-      } catch {}
-    })()
-  }, [slug])
-
-  return (
+return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <header className="h-14 bg-[#5b5bd6] text-white flex items-center px-4 md:px-10 shadow-md z-20 justify-between md:justify-start">
         <div className={`flex items-center gap-2 font-bold text-lg min-w-0 flex-1`}>
