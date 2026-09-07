@@ -6,7 +6,7 @@ const GOOGLE_ANALYTICS_ID = 'G-MDVMB3KBBP'
 const GOOGLE_ADSENSE_CLIENT = 'ca-pub-6790643369569237'
 const PUBLIC_DIR = path.join(process.cwd(), 'public')
 const HTML_SUFFIX = '.html'
-const SITE_FAVICON_SNIPPET = '<link rel="icon" href="/site-icon.svg" />'
+const SITE_FAVICON_SNIPPET = '<link rel="icon" href="/site-icon-v2.svg" type="image/svg+xml" />'
 const siteSeo = JSON.parse(fs.readFileSync(new URL('../src/config/site-seo.json', import.meta.url), 'utf8'))
 const staticSeo = JSON.parse(fs.readFileSync(new URL('../src/config/static-seo.json', import.meta.url), 'utf8'))
 const escapeHtml = value => String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')

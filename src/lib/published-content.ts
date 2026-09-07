@@ -4,7 +4,7 @@ import posts from '@/config/published-posts.json'
 import { DEFAULT_SITE_SETTINGS, DEFAULT_TOOLS, DEFAULT_CATEGORIES, DEFAULT_NAV_ITEMS, BLOCKED_TOOL_KEYS, ensureNavItems } from '@/lib/constants'
 
 export const SITE_URL = config.siteUrl
-export const PUBLIC_SETTINGS: Record<string, string> = { ...DEFAULT_SITE_SETTINGS, ...config, faviconUrl: '/site-icon.svg' }
+export const PUBLIC_SETTINGS: Record<string, string> = { ...DEFAULT_SITE_SETTINGS, ...config, faviconUrl: '/site-icon-v2.svg' }
 export const PUBLIC_MODULES = DEFAULT_TOOLS.filter(tool => !BLOCKED_TOOL_KEYS.includes(tool.key))
 export const PUBLIC_CATEGORIES = DEFAULT_CATEGORIES
 export const PUBLIC_NAV = ensureNavItems(DEFAULT_NAV_ITEMS)

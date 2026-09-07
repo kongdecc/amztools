@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: PUBLIC_SETTINGS.siteName,
   description: PUBLIC_SETTINGS.seoDescription,
-  icons: { icon: '/site-icon.svg' },
+  icons: { icon: '/site-icon-v2.svg' },
   robots: { index: true, follow: true },
   verification: {
     google: PUBLIC_SETTINGS.googleVerification || undefined,
