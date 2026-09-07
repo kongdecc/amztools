@@ -15,21 +15,25 @@
     style.textContent = [
       '.shared-top-ad{width:100%;border-top:1px solid #fed7aa;border-bottom:1px solid #fed7aa;background:#fff7ed;}',
       '.shared-top-ad__inner{max-width:' + MAX_WIDTH + ';margin:0 auto;padding:8px 12px;color:#c2410c;}',
-      '.shared-top-ad__inner.shared-top-ad__inner--image{max-width:none;padding-left:0;padding-right:0;}',
+      '.shared-top-ad__inner--image{max-width:none;padding-left:0;padding-right:0;}',
+      '.shared-top-ad__stack{display:flex;width:100%;flex-direction:column;gap:8px;}',
       '.shared-top-ad__link{display:flex;min-height:40px;width:100%;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;text-decoration:none;color:inherit;}',
       '.shared-top-ad__text{font-size:12px;font-weight:600;white-space:normal;word-break:break-word;}',
       '.shared-top-ad__cta{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;background:#ffedd5;padding:2px 8px;font-size:11px;font-weight:700;color:#c2410c;}',
       '.shared-top-ad__image-link{display:block;width:100%;overflow:hidden;text-decoration:none;color:inherit;}',
       '.shared-top-ad__image{display:block;height:auto;width:100%;object-fit:contain;background:#ffffff;}',
       '.shared-top-ad__plain{display:flex;min-height:40px;width:100%;align-items:center;justify-content:center;text-align:center;}',
-      '@media (min-width: 768px){.shared-top-ad__inner{padding:8px 16px;}.shared-top-ad__link{min-height:40px;flex-direction:row;gap:8px;}.shared-top-ad__text{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}}'
+      '@media (min-width: 768px){.shared-top-ad__inner{padding:8px 16px;}.shared-top-ad__inner--image{padding-left:0;padding-right:0;}.shared-top-ad__link{min-height:40px;flex-direction:row;gap:8px;}.shared-top-ad__text{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}}'
     ].join('');
     document.head.appendChild(style);
   }
 
   function normalizeConfig(raw) {
     const type = String((raw && raw.type) || 'auto').trim().toLowerCase();
-    const imageHeight = Number(raw && raw.imageHeight);
+    const primaryImage = normalizeImage(raw || {}, {});
+    const additionalImages = raw && Array.isArray(raw.additionalImages)
+      ? raw.additionalImages.map(function (item) { return normalizeImage(item || {}, raw); }).filter(function (item) { return Boolean(item.imageUrl); })
+      : [];
 
     return {
       enabled: Boolean(raw && raw.enabled),
@@ -40,7 +44,20 @@
       alt: String((raw && raw.alt) || '页眉下广告位').trim() || '页眉下广告位',
       ctaText: String((raw && raw.ctaText) || '点击跳转').trim() || '点击跳转',
       openInNewTab: raw && raw.openInNewTab !== false,
-      imageHeight: Number.isFinite(imageHeight) && imageHeight >= 80 ? imageHeight : 160
+      imageHeight: primaryImage.imageHeight,
+      images: [primaryImage].concat(additionalImages).filter(function (item) { return Boolean(item.imageUrl); })
+    };
+  }
+
+  function normalizeImage(raw, fallback) {
+    const imageHeight = Number(raw.imageHeight != null ? raw.imageHeight : fallback.imageHeight);
+
+    return {
+      imageUrl: String(raw.imageUrl || '').trim(),
+      linkUrl: String(raw.linkUrl != null ? raw.linkUrl : (fallback.linkUrl || '')).trim(),
+      alt: String(raw.alt != null ? raw.alt : (fallback.alt || '页眉下广告位')).trim() || '页眉下广告位',
+      openInNewTab: (raw.openInNewTab != null ? raw.openInNewTab : fallback.openInNewTab) !== false,
+      imageHeight: Number.isFinite(imageHeight) && imageHeight >= 80 ? imageHeight : 200
     };
   }
 
@@ -61,7 +78,7 @@
   }
 
   function render(config) {
-    const hasImage = Boolean(config.imageUrl);
+    const hasImage = config.images.length > 0;
     const showImage = config.type === 'image' ? hasImage : config.type === 'text' ? false : hasImage;
     const hasLink = Boolean(config.linkUrl);
     const wrapper = createWrapper();
@@ -72,26 +89,33 @@
     inner.className = 'shared-top-ad__inner' + (showImage ? ' shared-top-ad__inner--image' : '');
 
     if (showImage) {
-      const image = document.createElement('img');
-      image.className = 'shared-top-ad__image';
-      image.src = config.imageUrl;
-      image.alt = config.alt;
-      image.loading = 'eager';
-      image.style.maxHeight = config.imageHeight + 'px';
+      const stack = document.createElement('div');
+      stack.className = 'shared-top-ad__stack';
 
-      if (hasLink) {
-        const link = document.createElement('a');
-        link.className = 'shared-top-ad__image-link';
-        link.href = config.linkUrl;
-        if (config.openInNewTab) {
-          link.target = '_blank';
-          link.rel = 'noopener noreferrer';
+      config.images.forEach(function (item, index) {
+        const image = document.createElement('img');
+        image.className = 'shared-top-ad__image';
+        image.src = item.imageUrl;
+        image.alt = item.alt;
+        image.loading = index === 0 ? 'eager' : 'lazy';
+        image.style.maxHeight = item.imageHeight + 'px';
+
+        if (item.linkUrl) {
+          const link = document.createElement('a');
+          link.className = 'shared-top-ad__image-link';
+          link.href = item.linkUrl;
+          if (item.openInNewTab) {
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+          }
+          link.appendChild(image);
+          stack.appendChild(link);
+        } else {
+          stack.appendChild(image);
         }
-        link.appendChild(image);
-        inner.appendChild(link);
-      } else {
-        inner.appendChild(image);
-      }
+      });
+
+      inner.appendChild(stack);
     } else if (hasLink) {
       const link = document.createElement('a');
       const text = document.createElement('span');

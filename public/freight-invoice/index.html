@@ -303,7 +303,27 @@
       function renderTopAd(config) {
         if (!config || !config.enabled) return;
 
-        const hasImage = Boolean(config.imageUrl);
+        const primaryImage = {
+          imageUrl: String(config.imageUrl || '').trim(),
+          linkUrl: String(config.linkUrl || '').trim(),
+          alt: String(config.alt || '页眉下广告位').trim() || '页眉下广告位',
+          openInNewTab: config.openInNewTab !== false,
+          imageHeight: Number(config.imageHeight || 200)
+        };
+        const additionalImages = Array.isArray(config.additionalImages)
+          ? config.additionalImages.map(function (item) {
+              item = item || {};
+              return {
+                imageUrl: String(item.imageUrl || '').trim(),
+                linkUrl: String(item.linkUrl != null ? item.linkUrl : (config.linkUrl || '')).trim(),
+                alt: String(item.alt != null ? item.alt : (config.alt || '页眉下广告位')).trim() || '页眉下广告位',
+                openInNewTab: (item.openInNewTab != null ? item.openInNewTab : config.openInNewTab) !== false,
+                imageHeight: Number(item.imageHeight || config.imageHeight || 200)
+              };
+            }).filter(function (item) { return Boolean(item.imageUrl); })
+          : [];
+        const images = [primaryImage].concat(additionalImages).filter(function (item) { return Boolean(item.imageUrl); });
+        const hasImage = images.length > 0;
         const showImage = config.type === 'image' ? hasImage : config.type === 'text' ? false : hasImage;
         const linkUrl = String(config.linkUrl || '').trim();
         const openInNewTab = config.openInNewTab !== false;
@@ -314,26 +334,33 @@
         inner.className = 'page-top-ad__inner' + (showImage ? ' page-top-ad__inner--image' : '');
 
         if (showImage) {
-          const image = document.createElement('img');
-          image.className = 'page-top-ad__image';
-          image.src = config.imageUrl;
-          image.alt = String(config.alt || '页眉下广告位').trim() || '页眉下广告位';
-          image.loading = 'eager';
-          image.style.maxHeight = `${Number(config.imageHeight || 200)}px`;
+          const stack = document.createElement('div');
+          stack.className = 'page-top-ad__stack';
 
-          if (linkUrl) {
-            const link = document.createElement('a');
-            link.className = 'page-top-ad__image-link';
-            link.href = linkUrl;
-            if (openInNewTab) {
-              link.target = '_blank';
-              link.rel = 'noopener noreferrer';
+          images.forEach(function (item, index) {
+            const image = document.createElement('img');
+            image.className = 'page-top-ad__image';
+            image.src = item.imageUrl;
+            image.alt = item.alt;
+            image.loading = index === 0 ? 'eager' : 'lazy';
+            image.style.maxHeight = `${item.imageHeight}px`;
+
+            if (item.linkUrl) {
+              const link = document.createElement('a');
+              link.className = 'page-top-ad__image-link';
+              link.href = item.linkUrl;
+              if (item.openInNewTab) {
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+              }
+              link.appendChild(image);
+              stack.appendChild(link);
+            } else {
+              stack.appendChild(image);
             }
-            link.appendChild(image);
-            inner.appendChild(link);
-          } else {
-            inner.appendChild(image);
-          }
+          });
+
+          inner.appendChild(stack);
         } else {
           const text = String(config.text || '').trim();
           if (!text) return;

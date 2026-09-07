@@ -8,9 +8,19 @@
   "ctaText": "点击跳转",
   "openInNewTab": true,
   "imageHeight": 200,
+  "additionalImages": [
+    {
+      "imageUrl": "",
+      "linkUrl": "",
+      "alt": "页眉下广告位 2",
+      "openInNewTab": true,
+      "imageHeight": 200
+    }
+  ],
   "notes": {
     "usage": "enabled=true 时显示。type 支持 auto、image、text。推荐日常用 auto：有 imageUrl 时优先显示图片，没有 imageUrl 时自动回退显示 text。",
-    "quickStart": "文字广告：type=text 并填写 text。图片广告：type=image 或 auto，并填写 imageUrl。自动模式下填图则显示图，不填图则显示文字。",
+    "quickStart": "文字广告：type=text 并填写 text。第一张图片填写 imageUrl；更多图片填写 additionalImages 数组。数组中的 imageUrl 为空时不显示，也不占位置。",
+    "multipleImages": "additionalImages 已预留第二个广告位。需要第三张或更多图片时，复制数组中的对象继续添加；有 URL 的图片按数组顺序上下排列。每张图片可独立设置 linkUrl、alt、openInNewTab 和 imageHeight。",
     "imageDisplay": "图片模式默认完整显示，不裁切、不拉伸。前端使用 w-full + h-auto 并通过 imageHeight 作为 max-height，因此页面缩放时会等比缩放，不会变形。",
     "recommendedWidth": "3072px",
     "recommendedHeight": "320px",
