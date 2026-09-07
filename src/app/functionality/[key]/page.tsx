@@ -3,7 +3,6 @@ import { Metadata } from 'next'
 import { permanentRedirect, notFound } from 'next/navigation'
 import { DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 import ClientPage from './ClientPage'
-import ToolGuide from '@/components/ToolGuide'
 import { SettingsProvider } from '@/components/SettingsProvider'
 import { getFunctionalityShellData } from '@/lib/functionality-data'
 
@@ -84,7 +83,6 @@ export default async function Page({ params }: { params: Promise<{ key: string }
       {jsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
       <ClientPage initialModules={modules} initialNavItems={navItems} initialCategories={categories} />
-      <ToolGuide tool={tool} />
     </SettingsProvider>
   )
 }

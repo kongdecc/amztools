@@ -39,7 +39,6 @@ assert.equal(redirect.response.headers.get('location'), '/amazon-ads-analyzer/in
 const home = (await request('/')).body
 assert(home.includes('href="/functionality/ad-calc"'), 'Home must link directly to tools')
 assert(home.includes('跨境工具魔方'))
-assert((await request('/functionality/ad-calc')).body.includes('最高 CPC'), 'Tool instructions must be server-rendered')
 assert((await request('/robots.txt')).body.includes(config.siteUrl + '/sitemap.xml'))
 const posts = JSON.parse((await request('/api/published/blog?pageSize=100')).body)
 assert.equal(posts.total, 9)

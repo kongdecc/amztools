@@ -31,8 +31,7 @@ function injectSeo(content, filePath) {
     '<!-- published-seo:end -->'
   ].join('\n')
   html = html.replace(/<\/head>/i, tags + '\n</head>')
-  const intro = '<!-- published-intro:start --><section aria-label="工具说明" style="max-width:1100px;margin:24px auto;padding:20px;color:#334155;background:#fff;border-radius:12px"><h1>' + escapeHtml(entry.title) + '</h1><p>' + escapeHtml(entry.description) + '</p><p>跨境工具魔方 AmzToolBox · <a href="/">首页</a> · <a href="/functionality">查看全部工具</a></p></section><!-- published-intro:end -->'
-  return html.replace(/<\/body>/i, intro + '\n</body>').replace(/^[\t ]+$/gm, '')
+  return html.replace(/^[\t ]+$/gm, '')
 }
 const FAVICON_LINK_PATTERN = /<link\b(?=[^>]*\brel\s*=\s*["'][^"']*\bicon\b[^"']*["'])[^>]*>/gi
 
