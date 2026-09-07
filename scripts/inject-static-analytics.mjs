@@ -3,6 +3,7 @@ import path from 'path'
 
 const BAIDU_ANALYTICS_ID = 'f41283b760f768032fa2b7990826c3c3'
 const GOOGLE_ANALYTICS_ID = 'G-MDVMB3KBBP'
+const GOOGLE_ADSENSE_CLIENT = 'ca-pub-6790643369569237'
 const PUBLIC_DIR = path.join(process.cwd(), 'public')
 const HTML_SUFFIX = '.html'
 const SITE_FAVICON_SNIPPET = '<link rel="icon" href="/api/favicon" />'
@@ -30,6 +31,8 @@ const googleAnalyticsSnippet = [
   '</script>',
 ].join('\n')
 
+const googleAdsenseSnippet = `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${GOOGLE_ADSENSE_CLIENT}" crossorigin="anonymous"></script>`
+
 function walkHtmlFiles(dir) {
   const entries = fs.readdirSync(dir, { withFileTypes: true })
   const files = []
@@ -55,6 +58,10 @@ function hasBaiduAnalytics(content) {
 
 function hasGoogleAnalytics(content) {
   return content.includes('googletagmanager.com/gtag/js?id=') || content.includes("gtag('config'")
+}
+
+function hasGoogleAdsense(content) {
+  return content.includes('pagead2.googlesyndication.com/pagead/js/adsbygoogle.js')
 }
 
 function injectSnippet(content, snippet) {
@@ -89,8 +96,21 @@ function injectFavicon(content) {
   return `${SITE_FAVICON_SNIPPET}\n${normalized}`
 }
 
+function injectHeadSnippet(content, snippet) {
+  const headCloseTag = /<\/head>/i
+  if (headCloseTag.test(content)) {
+    return content.replace(headCloseTag, `  ${snippet}\n</head>`)
+  }
+
+  return `${snippet}\n${content}`
+}
+
 function injectAnalytics(content) {
   let nextContent = injectFavicon(content)
+
+  if (!hasGoogleAdsense(nextContent)) {
+    nextContent = injectHeadSnippet(nextContent, googleAdsenseSnippet)
+  }
 
   if (!hasBaiduAnalytics(nextContent)) {
     nextContent = injectSnippet(nextContent, baiduAnalyticsSnippet)

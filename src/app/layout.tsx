@@ -11,6 +11,7 @@ import GoogleAnalytics from '@/components/GoogleAnalytics'
 import { DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 
 const BAIDU_ANALYTICS_ID = 'f41283b760f768032fa2b7990826c3c3'
+const GOOGLE_ADSENSE_CLIENT = 'ca-pub-6790643369569237'
 const BAIDU_ANALYTICS_SCRIPT = `var _hmt = window._hmt || [];
 (function() {
   var hm = document.createElement("script");
@@ -136,6 +137,13 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
 
   return (
     <html lang="zh-CN">
+      <head>
+        <script
+          async
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${GOOGLE_ADSENSE_CLIENT}`}
+          crossOrigin="anonymous"
+        />
+      </head>
       <body suppressHydrationWarning={true}>
         {enableStructuredData && (
           <script
