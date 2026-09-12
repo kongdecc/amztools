@@ -127,6 +127,15 @@ function navigate(page){
 }
 function updateSavedActions(){const has=state.reports.length>0;$('#savedActions').classList.toggle('hidden',!has);$('#savedReportCount').textContent=state.reports.length}
 function showDashboard(){navigate('dashboard')}
+function setSidebarCollapsed(collapsed,persist=true){
+  const dashboard=$('#dashboard'),toggle=$('#toggleSidebar');
+  dashboard.classList.toggle('sidebar-collapsed',collapsed);
+  toggle.textContent=collapsed?'›':'‹';
+  toggle.title=collapsed?'展开记录栏':'收起记录栏';
+  toggle.setAttribute('aria-label',toggle.title);
+  toggle.setAttribute('aria-expanded',String(!collapsed));
+  if(persist)try{localStorage.setItem('sqp-lens-sidebar-collapsed',collapsed?'1':'0')}catch{}
+}
 function render(){renderSidebar();renderPeriods();const reports=activeReports();if(!reports.length)return;const data=aggregate(reports);renderHeader(reports);renderKPIs(data,reports);renderInsights(data,reports);renderTrend(reports);renderFunnel(data);renderDecisionMatrix(data);renderTable(data);}
 
 function renderSidebar(){
@@ -324,6 +333,7 @@ $('#backupInput').onchange=()=>{if($('#backupInput').files[0])restoreBackup($('#
 $('#addFromRecords').onclick=()=>{closeRecordManager();input.click()};
 $('#continueAnalysis').onclick=showDashboard;
 $('#manageFromHome').onclick=openRecordManager;
+$('#toggleSidebar').onclick=()=>setSidebarCollapsed(!$('#dashboard').classList.contains('sidebar-collapsed'));
 $('#recordModal').onclick=e=>{if(e.target===$('#recordModal'))closeRecordManager()};
 $('#closeQueryDetail').onclick=closeQueryDetail;
 $('#detailMetric').onchange=renderQueryDetail;
@@ -351,6 +361,7 @@ document.querySelectorAll('.nav-item').forEach(b=>b.onclick=()=>navigate(b.datas
 
 async function bootstrap(){
   try{const savedRules=JSON.parse(localStorage.getItem('sqp-lens-rules')||'null');if(savedRules&&[10,20,30].includes(Number(savedRules.volumeTop)))state.rules={volumeTop:Number(savedRules.volumeTop),shareThreshold:savedRules.shareThreshold===null?null:Math.max(0,Math.min(100,number(savedRules.shareThreshold))),minFixClicks:Math.max(1,Math.round(number(savedRules.minFixClicks)||3))}}catch{}
+  try{setSidebarCollapsed(localStorage.getItem('sqp-lens-sidebar-collapsed')==='1',false)}catch{setSidebarCollapsed(false,false)}
   try{const saved=await dbGet('reports');if(Array.isArray(saved)){state.reports=saved;dedupeReports();if(state.reports.length)setDefaultScope()}}catch(e){console.warn('无法读取本机记录',e)}
   let page='home';try{page=localStorage.getItem('sqp-lens-last-page')||'home'}catch{}
   navigate(page);

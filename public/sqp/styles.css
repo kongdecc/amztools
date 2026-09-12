@@ -56,5 +56,21 @@
 .field-title{display:inline-flex;align-items:center;justify-content:flex-end;gap:5px}.field-help{position:relative;width:15px;height:15px;border:1px solid #d3dde2;border-radius:50%;background:#f7faf9;color:#718092;display:inline-grid;place-items:center;font-size:8px;font-weight:800;cursor:help;outline:none;flex:0 0 auto}.field-help:hover,.field-help:focus{background:var(--mint-soft);border-color:var(--mint);color:#147d68}.field-tooltip{position:absolute;top:21px;left:0;width:235px;background:var(--navy);color:#fff;border-radius:9px;padding:10px 11px;text-align:left;white-space:normal;font-size:9px;font-weight:400;line-height:1.6;box-shadow:0 12px 30px rgba(7,24,44,.22);opacity:0;visibility:hidden;transform:translateY(-3px);transition:.15s;z-index:20;pointer-events:none}.field-tooltip:before{content:"";position:absolute;top:-4px;left:4px;width:8px;height:8px;background:var(--navy);transform:rotate(45deg)}.field-tooltip b{display:block;color:var(--lime);font-size:10px;margin-bottom:3px}.field-tooltip.align-right{left:auto;right:0}.field-tooltip.align-right:before{left:auto;right:4px}.field-help:hover .field-tooltip,.field-help:focus .field-tooltip{opacity:1;visibility:visible;transform:none}.table-footer{align-items:center;gap:15px}.pagination{display:flex;align-items:center;gap:5px}.pagination label{display:flex;align-items:center;gap:5px;color:var(--muted);white-space:nowrap}.pagination select{border:1px solid var(--line);background:#fff;border-radius:7px;padding:6px 24px 6px 8px;font-size:10px}.pagination button{min-width:28px;height:28px;border:1px solid var(--line);background:#fff;border-radius:7px;color:#536176;cursor:pointer;padding:0 6px;font-size:11px}.pagination button:hover:not(:disabled),.pagination .page-number.active{background:var(--navy);border-color:var(--navy);color:#fff}.pagination button:disabled{opacity:.35;cursor:not-allowed}.pagination #pageNumbers{display:flex;gap:4px}.page-ellipsis{padding:5px 2px;color:var(--muted)}
 @media(max-width:760px){.table-export-actions{width:100%;order:3}.table-export-actions .button{flex:1}.table-footer{align-items:flex-start;flex-direction:column}.pagination{width:100%;flex-wrap:wrap}.pagination label{margin-right:auto}.pagination #pageNumbers{order:3;width:100%;overflow:auto;padding-top:3px}.field-tooltip{position:fixed;left:14px!important;right:14px!important;top:auto;width:auto;margin-top:20px}.field-tooltip:before{display:none}}
 
+/* Collapsible dataset sidebar */
+.dashboard,.sidebar,.workspace{transition:grid-template-columns .22s ease,width .22s ease,padding .22s ease}
+.sidebar-toggle{font-size:19px;line-height:1}
+@media(min-width:761px){
+  .dashboard.sidebar-collapsed{grid-template-columns:52px minmax(0,1fr)}
+  .dashboard.sidebar-collapsed .sidebar{padding:28px 8px}
+  .dashboard.sidebar-collapsed .side-title{justify-content:center;margin-left:0;margin-right:0}
+  .dashboard.sidebar-collapsed .side-title>span:first-child,
+  .dashboard.sidebar-collapsed #manageRecordsSide,
+  .dashboard.sidebar-collapsed #addFiles,
+  .dashboard.sidebar-collapsed #datasetList,
+  .dashboard.sidebar-collapsed .privacy-note{display:none}
+  .dashboard.sidebar-collapsed .side-actions{justify-content:center}
+}
+@media(max-width:760px){.sidebar-toggle{display:none}}
+
 /* Custom period selection */
 .period-pills.editing{margin-bottom:8px;padding:10px;border:1px dashed #8fcfbe;border-radius:12px;background:#f3fbf8}.period-pills.editing .period-pill:not(.active){border-color:#cbd6da;background:#fff;color:#8a96a4}.period-hint{margin:0 0 16px;padding-left:4px;color:#327563;font-size:10px;line-height:1.5}
