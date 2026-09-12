@@ -1,0 +1,109 @@
+:root {
+  --tb-shell-max-width: 1536px;
+}
+
+#site-header-container {
+  height: 3.5rem;
+}
+
+.tb-header {
+  position: relative;
+  z-index: 1000;
+  height: 3.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1rem;
+  background-color: #5b5bd6;
+  color: #fff;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.tb-logo-area {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.tb-logo-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.tb-nav-desktop {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+}
+
+.tb-nav-link {
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.tb-nav-link:hover {
+  color: #fff;
+}
+
+#shared-top-ad-root,
+.shared-top-ad {
+  position: relative;
+  z-index: 21;
+}
+
+.site-footer {
+  max-width: var(--tb-shell-max-width);
+  margin: 1.5rem auto 0;
+  padding: 1.5rem 1rem 2rem;
+  color: #6b7280;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.site-footer a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.site-footer a:hover {
+  text-decoration: underline;
+}
+
+@media (min-width: 768px) {
+  .tb-header {
+    padding: 0 2.5rem;
+  }
+}
+
+@media (max-width: 720px) {
+  .tb-header {
+    padding: 0 0.75rem;
+  }
+
+  .tb-nav-desktop {
+    gap: 0.8rem;
+    justify-content: flex-end;
+    overflow-x: auto;
+  }
+
+  .tb-logo-area span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

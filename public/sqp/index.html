@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="site-shell.css">
+  <link rel="icon" href="/site-icon-v2.svg" type="image/svg+xml" />
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6790643369569237" crossorigin="anonymous"></script>
+<!-- published-seo:start -->
+<title>SQP 搜索查询绩效分析 - 跨境工具魔方 AmzToolBox</title>
+<meta name="description" content="批量导入 Amazon SQP 品牌或 ASIN 视图 CSV，分析搜索趋势、漏斗份额与关键词运营机会。">
+<link rel="canonical" href="https://www.amztoolbox.top/sqp/index.html">
+<meta name="robots" content="index, follow">
+<meta name="baidu-site-verification" content="codeva-TDas0V8Wan">
+<!-- published-seo:end -->
+</head>
+<body>
+  <div id="site-header-container">
+    <header class="tb-header">
+      <div class="tb-logo-area">
+        <div class="tb-logo-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+        </div>
+        <span>跨境工具魔方 AmzToolBox</span>
+      </div>
+      <nav class="tb-nav-desktop">
+        <a href="/" class="tb-nav-link">首页</a>
+        <a href="/functionality" class="tb-nav-link">功能分类</a>
+        <a href="/about" class="tb-nav-link">关于</a>
+        <a href="/blog" class="tb-nav-link">博客</a>
+        <a href="/suggest" class="tb-nav-link">提需求</a>
+        <a href="/reward" class="tb-nav-link">打赏支持</a>
+      </nav>
+    </header>
+  </div>
+  <div id="page-top-ad-anchor"></div>
+  <header class="topbar">
+    <div class="brand-mark">SQ</div>
+    <div>
+      <div class="product-name">SQP Lens <span>Beta</span></div>
+      <div class="product-subtitle">Search Query Performance Intelligence</div>
+    </div>
+    <nav>
+      <button class="nav-item active" data-page="home">首页</button>
+      <button class="nav-item" data-page="dashboard">分析台</button>
+      <button class="nav-item" data-page="guide">指标口径</button>
+    </nav>
+    <button id="uploadTop" class="button primary">＋ 导入报告</button>
+  </header>
+
+  <main>
+    <section id="emptyState" class="empty-state">
+      <div class="empty-copy">
+        <p class="eyebrow">AMAZON BRAND ANALYTICS</p>
+        <h1>把搜索查询，变成下一步行动。</h1>
+        <p class="lead">批量导入品牌视图或 ASIN 视图 CSV。系统会识别对象与周期，按正确口径合并指标，并找出该守、该抢、该修的搜索词。</p>
+        <div class="drop-zone" id="dropZone">
+          <div class="upload-icon">↥</div>
+          <strong>拖入一个或多个 SQP CSV 报告</strong>
+          <span>支持周 / 月 / 季度报告；数据仅在当前浏览器中处理</span>
+          <div class="upload-actions">
+            <button class="button primary" id="chooseFiles">选择文件</button>
+            <button class="button secondary" id="restoreFromEmpty">恢复备份</button>
+          </div>
+        </div>
+        <div id="savedActions" class="saved-actions hidden">
+          <span><b id="savedReportCount">0</b> 份本机记录可继续分析</span>
+          <button class="button primary" id="continueAnalysis">继续分析</button>
+          <button class="button secondary" id="manageFromHome">管理记录</button>
+        </div>
+      </div>
+      <div class="empty-visual">
+        <div class="signal-card signal-main">
+          <span>搜索机会</span><strong>示例搜索查询</strong>
+          <div class="signal-row"><em>查询趋势</em><b>待导入</b><i>自动识别</i></div>
+          <div class="signal-row"><em>购买份额</em><b>—</b><i class="warn">待分析</i></div>
+        </div>
+        <div class="signal-card signal-a"><span>趋势周期</span><strong>自动合并</strong></div>
+        <div class="signal-card signal-b"><span>机会词</span><strong>自动发现</strong></div>
+      </div>
+    </section>
+
+    <section id="dashboard" class="dashboard hidden">
+      <aside class="sidebar">
+        <div class="side-title"><span>数据集</span><span class="side-actions"><button id="manageRecordsSide" title="管理记录">≡</button><button id="addFiles" title="添加报告">＋</button></span></div>
+        <div id="datasetList"></div>
+        <div class="privacy-note"><b>本地分析</b><br>文件不会上传到服务器</div>
+      </aside>
+
+      <div class="workspace">
+        <div class="workspace-head">
+          <div>
+            <p class="eyebrow" id="scopeLabel">品牌视图</p>
+            <h1 id="entityTitle">搜索查询绩效</h1>
+            <p id="periodSummary">—</p>
+          </div>
+          <div class="head-actions">
+            <label class="control-label">周期范围
+              <select id="periodMode">
+                <option value="all">合并所选周期</option>
+                <option value="latest">仅看最新周期</option>
+                <option value="custom">自定义周期</option>
+              </select>
+            </label>
+            <button class="button secondary" id="manageRecords">记录管理</button>
+          </div>
+        </div>
+
+        <div class="period-pills" id="periodPills"></div>
+        <p class="period-hint hidden" id="periodHint"></p>
+
+        <details class="usage-guide">
+          <summary>
+            <span class="guide-icon">?</span>
+            <span><b>这个工具能帮运营做什么？</b><small>查看分析思路、指标含义与使用边界</small></span>
+            <span class="summary-arrow">⌄</span>
+          </summary>
+          <div class="usage-content">
+            <div class="usage-intro">
+              <span class="section-kicker">HOW TO USE</span>
+              <h3>从“买家搜了什么”追踪到“最终买了谁”</h3>
+              <p>SQP Lens 将 Amazon 搜索查询绩效报告里的曝光、点击、加购、购买串成完整漏斗，并把不同周期按正确口径合并。它适合发现需求变化和流量承接问题，不替代广告归因或业务报告中的销售额。</p>
+            </div>
+            <div class="usage-actions">
+              <article><b>01 看需求</b><p>用搜索查询量和查询排名判断类目需求、趋势词及季节变化。</p></article>
+              <article><b>02 看可见度</b><p>曝光份额偏低时，优先检查收录、自然排名、广告覆盖和关键词相关性。</p></article>
+              <article><b>03 看吸引力</b><p>有曝光但点击份额弱，重点检查主图、标题、价格、评价与配送速度。</p></article>
+              <article><b>04 看转化</b><p>有点击却没有加购或购买，重点检查详情页表达、价格、优惠和产品匹配度。</p></article>
+              <article><b>05 定优先级</b><p>结合搜索规模和购买份额，把词分为优势防守、高潜增长、转化修复和持续观察。</p></article>
+              <article><b>06 做周期复盘</b><p>比较周、月或季度变化；报告外缺失词只代表未进入 Top N，不自动记为零。</p></article>
+            </div>
+            <div class="usage-boundary"><b>汇总原则：</b>CTR、加购率、购买率及品牌/ASIN 份额均用各周期次数之和重新计算，不直接平均百分比。品牌与 ASIN 视图分开分析，不混合相加。</div>
+          </div>
+        </details>
+
+        <section class="kpi-grid" id="kpiGrid"></section>
+
+        <section class="insight-strip" id="insightStrip"></section>
+
+        <div class="two-col">
+          <section class="panel">
+            <div class="panel-head">
+              <div><span class="section-kicker">PERFORMANCE</span><h2>规模与转化趋势</h2></div>
+              <div class="legend"><span class="dot navy"></span>搜索量 <span class="dot mint"></span>购买率</div>
+            </div>
+            <p class="panel-purpose" id="trendPurpose"></p>
+            <div id="trendChart" class="chart"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-head"><div><span class="section-kicker">FUNNEL</span><h2>市场与所选对象漏斗</h2></div></div>
+            <p class="panel-purpose"><b>用途：</b>定位对象在曝光、点击、加购、购买的哪一层份额偏弱；后段份额高于前段，通常说明承接能力较好。</p>
+            <div id="funnelChart" class="funnel"></div>
+          </section>
+        </div>
+
+        <section class="panel classification-panel">
+          <div class="panel-head">
+            <div><span class="section-kicker">PLAYBOOK & RULES</span><h2>分群规则与运营用法</h2></div>
+            <div class="map-legend">先按优先级找词，再结合漏斗、价格与周期趋势确认动作</div>
+          </div>
+          <div class="classification-layout">
+            <div class="strategy-manual">
+              <article class="manual-card growth"><div class="manual-title"><span>01</span><b>高潜增长</b></div><p><strong>如何判定</strong>搜索量进入设定的高位范围，但对象购买份额未达到较强门槛，且未先触发“转化修复”。</p><p><strong>怎么行动</strong>先看对象曝光和点击：无曝光就检查收录、相关性与广告覆盖；有曝光无点击则优化主图、标题和点击价格。</p><p><strong>如何复核</strong>观察后续 2–3 个同粒度周期的曝光、点击及购买份额是否同步提升。</p></article>
+              <article class="manual-card fix"><div class="manual-title"><span>02</span><b>转化修复</b></div><p><strong>如何判定</strong>对象点击达到最低点击门槛，但对象购买仍为 0。为避免小样本误判，可提高最低点击数。</p><p><strong>怎么行动</strong>对比对象与市场点击中位价，并检查优惠、详情页说服力、评价、变体、库存及配送承诺。</p><p><strong>如何复核</strong>先看加购是否恢复，再看购买；若点击仍少，暂不把零购买直接判断为转化问题。</p></article>
+              <article class="manual-card defend"><div class="manual-title"><span>03</span><b>优势防守</b></div><p><strong>如何判定</strong>搜索量和对象购买份额同时达到当前门槛，且市场购买量至少为 3，避免把偶然的 1 单误判为稳定优势。</p><p><strong>怎么行动</strong>保持库存、价格和核心广告稳定，保护自然排名；避免因断货、提价或预算中断损失份额。</p><p><strong>如何复核</strong>重点监控购买份额、周期覆盖和搜索量趋势；份额连续回落时再进入专项排查。</p></article>
+              <article class="manual-card watch"><div class="manual-title"><span>04</span><b>持续观察</b></div><p><strong>如何判定</strong>搜索规模或对象信号尚未达到其他三类标准，不等于关键词无价值。</p><p><strong>怎么行动</strong>控制投入，结合词义相关性、广告搜索词和自然排名决定是否保留测试。</p><p><strong>如何复核</strong>等待更多同粒度周期；未进入某期 Top N 属于缺失，不能当作 0 计算趋势。</p></article>
+            </div>
+            <aside class="rule-workbench">
+              <div class="highlight-title">本次分群口径 <span>随所选周期动态计算</span></div>
+              <div id="mapHighlights"></div>
+              <details class="rule-settings">
+                <summary>调整分群标准 <span>⌄</span></summary>
+                <div class="rule-controls">
+                  <p class="rule-help">三个设置共同参与分流，并不是每个群各设一个数字。没有经验时建议直接使用“推荐”。</p>
+                  <div class="rule-presets"><button data-rule-preset data-volume="20" data-clicks="3">推荐</button><button data-rule-preset data-volume="10" data-clicks="5">聚焦少量重点</button><button data-rule-preset data-volume="30" data-clicks="2">扩大观察范围</button></div>
+                  <label>高搜索量范围<small><i class="growth"></i><i class="defend"></i>影响高潜增长和优势防守</small><select id="ruleVolumeTop"><option value="10">前 10% · 更聚焦</option><option value="20">前 20% · 推荐</option><option value="30">前 30% · 更宽松</option></select></label>
+                  <label>较强购买份额 %<small><i class="growth"></i><i class="defend"></i>决定高潜增长与优势防守的分界</small><input id="ruleShareThreshold" type="number" min="0" max="100" step="0.1" placeholder="留空则随数据自动计算"></label>
+                  <label>转化修复最低点击<small><i class="fix"></i>只影响转化修复；越大越谨慎</small><input id="ruleMinFixClicks" type="number" min="1" step="1" value="3"></label>
+                  <div class="rule-buttons"><button class="button primary" id="applyRules">应用自定义</button><button class="text-button" id="resetRules">恢复推荐</button></div>
+                </div>
+              </details>
+              <div id="ruleFlow" class="rule-flow"></div>
+              <p class="highlight-note">分群用于安排运营优先级，不判断关键词相关性。自定义只改变分群结果，不修改原始数据。</p>
+            </aside>
+          </div>
+        </section>
+
+        <section class="panel opportunity-panel">
+          <div class="panel-head">
+            <div><span class="section-kicker">DECISION MAP</span><h2>关键词机会地图</h2></div>
+            <div class="map-legend">按当前数据分布自适应分群 · 点击关键词查看周期趋势</div>
+          </div>
+          <div class="map-layout">
+            <div id="opportunityMap" class="opportunity-map"></div>
+          </div>
+        </section>
+
+        <section class="panel table-panel">
+          <div class="panel-head table-tools">
+            <div><span class="section-kicker">QUERY WORKBENCH</span><h2>搜索词决策台</h2></div>
+            <div class="filters">
+              <span class="table-export-actions"><button class="button secondary" id="exportCsv">导出当前列表</button><button class="button primary" id="exportSelected" disabled>导出选中项 <span id="selectedCount">0</span></button></span>
+              <input id="querySearch" type="search" placeholder="搜索关键词">
+              <select id="segmentFilter">
+                <option value="all">全部策略</option>
+                <option value="defend">优势防守</option>
+                <option value="growth">高潜增长</option>
+                <option value="fix">转化修复</option>
+                <option value="watch">持续观察</option>
+              </select>
+              <button class="button secondary filter-toggle" id="toggleAdvanced">更多筛选</button>
+            </div>
+          </div>
+          <div id="advancedFilters" class="advanced-filters hidden">
+            <label>最低搜索量<input id="minVolume" type="number" min="0" step="1" placeholder="不限"></label>
+            <label>最低对象购买份额 %<input id="minBuyShare" type="number" min="0" max="100" step="0.1" placeholder="不限"></label>
+            <label>周期覆盖
+              <select id="coverageFilter"><option value="all">全部</option><option value="continuous">全部所选周期</option><option value="multi">至少 2 个周期</option><option value="single">仅单周期出现</option></select>
+            </label>
+            <label>对象信号
+              <select id="signalFilter"><option value="all">全部</option><option value="hasBuy">已有对象购买</option><option value="clickNoBuy">有点击无购买</option><option value="hasVisibility">已有对象曝光</option><option value="noVisibility">尚无对象曝光</option></select>
+            </label>
+            <button class="text-button" id="resetFilters">清除筛选</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th class="selection-col"><input id="selectPage" type="checkbox" aria-label="选择当前页全部关键词"></th>
+                <th><span class="field-title"><button class="sort-button" data-sort="query">搜索查询</button><span class="field-help" tabindex="0">?<span class="field-tooltip"><b>搜索查询</b>买家实际输入的查询词条，Amazon 不会按主题词对其重新分组。</span></span></span></th>
+                <th><span class="field-title"><button class="sort-button" data-sort="segment">策略</button><span class="field-help" tabindex="0">?<span class="field-tooltip"><b>运营策略</b>根据搜索量、购买份额和对象点击/购买信号，自适应划分为四种运营策略。</span></span></span></th>
+                <th><span class="field-title"><button class="sort-button" data-sort="score">查询得分</button><span class="field-help" tabindex="0">?<span class="field-tooltip"><b>搜索查询得分</b>Amazon 给出的相对排名，数值越小越靠前。合并多个周期时，这里显示该词实际出现周期的平均得分。</span></span></span></th>
+                <th><span class="field-title"><button class="sort-button active" data-sort="volume">搜索量 <i>↓</i></button><span class="field-help" tabindex="0">?<span class="field-tooltip"><b>搜索查询量</b>所选周期内买家提交该查询的次数，24 小时内重复提交也分别计数。</span></span></span></th>
+                <th><span class="field-title"><button class="sort-button" data-sort="marketCTR">市场 CTR</button><span class="field-help" tabindex="0">?<span class="field-tooltip"><b>市场点击率</b>市场总点击次数 ÷ 搜索查询量，反映搜索后的整体互动程度。</span></span></span></th>
+                <th><span class="field-title"><button class="sort-button" data-sort="clickShare">对象点击份额</button><span class="field-help" tabindex="0">?<span class="field-tooltip"><b>对象点击份额</b>当前品牌或 ASIN 获得的点击次数 ÷ 市场总点击次数。</span></span></span></th>
+                <th><span class="field-title"><button class="sort-button" data-sort="marketBuy">市场购买率</button><span class="field-help" tabindex="0">?<span class="field-tooltip"><b>市场购买率</b>市场购买总次数 ÷ 搜索查询量，通常采用查询后的 24 小时归因窗口。</span></span></span></th>
+                <th><span class="field-title"><button class="sort-button" data-sort="buyShare">对象购买份额</button><span class="field-help" tabindex="0">?<span class="field-tooltip"><b>对象购买份额</b>当前品牌或 ASIN 的购买次数 ÷ 市场购买总次数。</span></span></span></th>
+                <th><span class="field-title"><button class="sort-button" data-sort="periods">周期覆盖</button><span class="field-help" tabindex="0">?<span class="field-tooltip align-right"><b>周期覆盖</b>该查询出现的报告数 ÷ 当前所选报告数。未出现表示没有进入该期 Top N，不能视为零。</span></span></span></th>
+              </tr></thead>
+              <tbody id="queryTable"></tbody>
+            </table>
+          </div>
+          <div class="table-footer"><span id="rowCount"></span><div class="pagination"><label>每页<select id="pageSize"><option value="20">20</option><option value="30">30</option><option value="50">50</option><option value="100">100</option><option value="200">200</option><option value="500">500</option><option value="all">全部</option></select></label><button id="firstPage" title="首页">«</button><button id="prevPage" title="上一页">‹</button><span id="pageNumbers"></span><button id="nextPage" title="下一页">›</button><button id="lastPage" title="末页">»</button></div></div>
+        </section>
+      </div>
+    </section>
+
+    <section id="guide" class="guide hidden">
+      <div class="guide-head"><p class="eyebrow">METRIC DICTIONARY</p><h1>指标口径与合并规则</h1><p>分析结果遵循 Amazon SQP 的查询漏斗定义，并对跨周期汇总做重新计算。</p></div>
+      <div class="guide-grid">
+        <article><b>01</b><h3>搜索查询量</h3><p>所选时间段内买家搜索该查询的次数；同一买家 24 小时内多次提交相同查询均计入。</p></article>
+        <article><b>02</b><h3>点击率 CTR</h3><p>市场点击总次数 ÷ 搜索查询量。多周期合并使用总点击之和 ÷ 总查询量之和。</p></article>
+        <article><b>03</b><h3>加购率</h3><p>市场加购总次数 ÷ 搜索查询量。加购可能来自搜索结果页之外的商品详情页。</p></article>
+        <article><b>04</b><h3>购买率</h3><p>市场购买总次数 ÷ 搜索查询量。购买归因窗口为查询发生后的 24 小时。</p></article>
+        <article><b>05</b><h3>品牌 / ASIN 份额</h3><p>所选对象在该漏斗阶段的次数 ÷ 市场总次数。跨周期必须以次数重新加权，不能平均百分比。</p></article>
+        <article><b>06</b><h3>查询得分</h3><p>Amazon 综合展示、点击、加购、购买与对象表现后给出的相对排名；数值越小排名越高。</p></article>
+        <article><b>07</b><h3>Top N 截断</h3><p>Amazon 报告只展示排名靠前的一部分查询，不同视图的行数上限可能不同。某词未出现不等于指标为零。</p></article>
+        <article><b>08</b><h3>价格与配送</h3><p>价格为搜索结果中展示商品的中位数，不含运费与税；配送速度可用于解释点击和转化差异。</p></article>
+      </div>
+    </section>
+  </main>
+
+  <input id="fileInput" type="file" accept=".csv,text/csv" multiple hidden>
+  <div id="recordModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="recordTitle">
+    <section class="record-modal">
+      <div class="record-head">
+        <div><span class="section-kicker">LOCAL DATA</span><h2 id="recordTitle">导入记录管理</h2><p>记录保存在当前设备的浏览器中，不会上传服务器；可随时备份、恢复或清空。</p></div>
+        <button id="closeRecords" class="icon-button" aria-label="关闭">×</button>
+      </div>
+      <div class="record-summary" id="recordSummary"></div>
+      <div class="quality-summary" id="qualitySummary"></div>
+      <div class="record-list" id="recordList"></div>
+      <div class="record-footer">
+        <button class="button danger-ghost" id="clearRecords">清空全部记录</button>
+        <div class="record-footer-actions">
+          <button class="button secondary" id="backupRecords">备份记录</button>
+          <button class="button secondary" id="restoreRecords">恢复备份</button>
+          <button class="button primary" id="addFromRecords">＋ 继续导入</button>
+        </div>
+      </div>
+    </section>
+  </div>
+  <input id="backupInput" type="file" accept=".json,application/json" hidden>
+  <div id="queryModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="queryDetailTitle">
+    <section class="query-modal">
+      <div class="record-head">
+        <div><span class="section-kicker">QUERY TREND</span><h2 id="queryDetailTitle">关键词周期趋势</h2><p id="queryDetailMeta"></p></div>
+        <button id="closeQueryDetail" class="icon-button" aria-label="关闭">×</button>
+      </div>
+      <div class="query-detail-controls">
+        <label>趋势指标
+          <select id="detailMetric">
+            <option value="volume">搜索查询量</option>
+            <option value="impShare">对象曝光份额</option>
+            <option value="clickShare">对象点击份额</option>
+            <option value="cartShare">对象加购份额</option>
+            <option value="buyShare">对象购买份额</option>
+                <option value="marketCTR">市场 CTR</option>
+                <option value="marketBuy">市场购买率</option>
+                <option value="priceGap">对象点击价差</option>
+                <option value="fastShipRate">市场 2 日内配送点击占比</option>
+          </select>
+        </label>
+        <div id="queryDetailSummary" class="query-detail-summary"></div>
+      </div>
+      <div id="queryTrendChart" class="query-trend-chart"></div>
+      <div class="query-period-table"><table><thead><tr><th><button class="detail-sort active" data-detail-sort="date">周期<i>↓</i></button></th><th><button class="detail-sort" data-detail-sort="score">查询得分<i></i></button></th><th><button class="detail-sort" data-detail-sort="volume">搜索量<i></i></button></th><th><button class="detail-sort" data-detail-sort="impShare">曝光份额<i></i></button></th><th><button class="detail-sort" data-detail-sort="clickShare">点击份额<i></i></button></th><th><button class="detail-sort" data-detail-sort="cartShare">加购份额<i></i></button></th><th><button class="detail-sort" data-detail-sort="buyShare">购买份额<i></i></button></th><th><button class="detail-sort" data-detail-sort="marketCTR">市场 CTR<i></i></button></th><th><button class="detail-sort" data-detail-sort="marketBuy">市场购买率<i></i></button></th><th><button class="detail-sort" data-detail-sort="priceGap">对象点击价差<i></i></button></th><th><button class="detail-sort" data-detail-sort="fastShipRate">市场 2 日内配送<i></i></button></th></tr></thead><tbody id="queryPeriodRows"></tbody></table></div>
+      <div class="query-detail-note">“未进入 Top N”不等于该周期数据为 0，因此不会用零连接趋势线。对象点击价差 =（对象点击中位价－市场点击中位价）÷ 市场点击中位价；跨周期价格为按点击次数加权的参考值。配送指标反映市场点击商品的时效结构，不代表对象自身配送表现。</div>
+    </section>
+  </div>
+  <div id="toast" class="toast"></div>
+  <footer class="site-footer">
+    © 2025 跨境工具魔方 AmzToolBox. All rights reserved.
+    <span style="margin: 0 0.5rem;">|</span>
+    <a href="/privacy">隐私说明</a>
+  </footer>
+  <script>window.TOP_AD_OPTIONS = { insertAfterSelector: '#page-top-ad-anchor' };</script>
+  <script type="module" src="/shared-top-ad.js"></script>
+  <script src="app.js"></script>
+<script>
+  var _hmt = window._hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?f41283b760f768032fa2b7990826c3c3";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MDVMB3KBBP"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-MDVMB3KBBP');
+</script>
+</body>
+</html>

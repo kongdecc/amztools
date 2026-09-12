@@ -54,6 +54,11 @@
     "description": "上传货代 Excel 报价表，按仓库、重量、税别和时效筛选头程报价。",
     "canonical": "/freight-rate-radar/index.html"
   },
+  "/sqp/index.html": {
+    "title": "SQP 搜索查询绩效分析",
+    "description": "批量导入 Amazon SQP 品牌或 ASIN 视图 CSV，分析搜索趋势、漏斗份额与关键词运营机会。",
+    "canonical": "/sqp/index.html"
+  },
   "/image-label-adder.html": {
     "title": "图片/视频标签添加工具",
     "description": "批量为图片和视频写入 contains-synthetic-performer 标签，本地处理。",
