@@ -84,6 +84,7 @@ const els = {
   warehouseCode: document.querySelector("#warehouseCode"),
   weightKg: document.querySelector("#weightKg"),
   companyFilter: document.querySelector("#companyFilter"),
+  channelFilter: document.querySelector("#channelFilter"),
   priceMax: document.querySelector("#priceMax"),
   transitMax: document.querySelector("#transitMax"),
   taxFilter: document.querySelector("#taxFilter"),
@@ -477,6 +478,7 @@ function updateStats() {
   const presetWarehouses = [...state.presetWarehouses, ...state.localWarehouses].map((row) => row.codeBase).filter(Boolean);
   const warehouses = [...new Set([...quoteWarehouses, ...presetWarehouses])].sort();
   const companies = [...new Set(activeRecords.map((r) => r.company).filter(Boolean))].sort();
+  const channels = [...new Set(activeRecords.map((r) => r.channel).filter(Boolean))].sort();
   const taxes = [...new Set(activeRecords.map((r) => r.tax_type).filter(Boolean))].sort();
   const units = [...new Set(activeRecords.map((r) => r.unit).filter(Boolean))].sort();
   els.recordCount.textContent = String(activeRecords.length);
@@ -487,6 +489,7 @@ function updateStats() {
     const info = warehouseInfo(code);
     return info ? warehouseLabel(info) : code;
   }));
+  setOptions(els.channelFilter, channels, "全部渠道");
   setOptions(els.taxFilter, taxes, "全部税别");
   setOptions(els.unitFilter, units, "全部单位");
 }
@@ -554,6 +557,7 @@ function searchQuotes() {
     return;
   }
   const company = els.companyFilter.value.trim().toLowerCase();
+  const channel = els.channelFilter?.value || "";
   const weight = els.weightKg.value ? Number(els.weightKg.value) : null;
   const priceMax = els.priceMax?.value ? Number(els.priceMax.value) : null;
   const transitMax = els.transitMax?.value ? Number(els.transitMax.value) : null;
@@ -562,6 +566,7 @@ function searchQuotes() {
   let records = state.records
     .filter((r) => r.warehouse_code.toUpperCase() === code)
     .filter((r) => !company || r.company.toLowerCase().includes(company))
+    .filter((r) => !channel || r.channel === channel)
     .filter((r) => weightMatches(r, weight))
     .filter((r) => !priceMax || Number(r.price_value) <= priceMax)
     .filter((r) => !transitMax || (transitDays(r) !== null && transitDays(r) <= transitMax))
@@ -679,7 +684,7 @@ function renderCards(records, mode = "price") {
   if (records.length > 80) {
     const more = document.createElement("div");
     more.className = "message is-muted";
-    more.textContent = `已显示前 80 条报价。可用重量或货代公司筛选来缩小结果。`;
+    more.textContent = `已显示前 80 条报价。可用重量、货代公司或渠道筛选来缩小结果。`;
     els.cardDeck.append(more);
   }
 }
@@ -913,6 +918,7 @@ function bindEvents() {
     els.warehouseCode.value = "";
     els.weightKg.value = "";
     els.companyFilter.value = "";
+    if (els.channelFilter) els.channelFilter.value = "";
     if (els.priceMax) els.priceMax.value = "";
     if (els.transitMax) els.transitMax.value = "";
     if (els.taxFilter) els.taxFilter.value = "";
@@ -937,7 +943,7 @@ function bindEvents() {
   els.warehouseCode.addEventListener("input", () => {
     els.warehouseCode.value = els.warehouseCode.value.toUpperCase();
   });
-  [els.priceMax, els.transitMax, els.taxFilter, els.unitFilter, els.viewMode, els.uniqueCompany].forEach((control) => {
+  [els.channelFilter, els.priceMax, els.transitMax, els.taxFilter, els.unitFilter, els.viewMode, els.uniqueCompany].forEach((control) => {
     control?.addEventListener("change", () => {
       if (state.lastCode && state.records.length) searchQuotes();
     });
