@@ -83,7 +83,7 @@ function renderTopAd(config: Record<string, unknown>): void {
   const target = config.openInNewTab === false ? '' : ' target="_blank" rel="noopener noreferrer"';
   let content = '';
   if (showImage) {
-    const image = `<img class="page-top-ad__image" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(String(config.alt || '页眉下广告位'))}" style="max-height:${Number(config.imageHeight || 200)}px">`;
+    const image = `<img class="page-top-ad__image" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(String(config.alt || '页眉下广告位'))}">`;
     content = linkUrl ? `<a class="page-top-ad__image-link" href="${escapeHtml(linkUrl)}"${target}>${image}</a>` : image;
   } else {
     const adText = String(config.text || '').trim();

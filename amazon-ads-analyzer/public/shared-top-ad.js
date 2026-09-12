@@ -98,7 +98,6 @@
         image.src = item.imageUrl;
         image.alt = item.alt;
         image.loading = index === 0 ? 'eager' : 'lazy';
-        image.style.maxHeight = item.imageHeight + 'px';
 
         if (item.linkUrl) {
           const link = document.createElement('a');

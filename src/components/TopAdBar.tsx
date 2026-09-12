@@ -74,7 +74,6 @@ function ImageAd({ item, eager }: { item: NormalizedTopAdImage; eager: boolean }
       src={item.imageUrl}
       alt={item.alt}
       className="block h-auto w-full bg-white object-contain"
-      style={{ maxHeight: `${item.imageHeight}px` }}
       loading={eager ? 'eager' : 'lazy'}
     />
   )
@@ -104,7 +103,8 @@ export default function TopAdBar() {
   const hasLink = Boolean(config.linkUrl)
   const target = config.openInNewTab ? '_blank' : '_self'
   const rel = config.openInNewTab ? 'noopener noreferrer' : undefined
-  // Image ads use a full-width container; the image itself still keeps its aspect ratio via w-full + h-auto.
+  // Full-width images are width-driven. A max-height would shrink their width at high browser zoom-out
+  // levels and create large side gutters, because the browser must preserve the image aspect ratio.
   const innerClassName = isImageMode
     ? 'w-full py-2 text-orange-700'
     : 'mx-auto max-w-screen-2xl px-3 py-2 text-orange-700 md:px-4'
