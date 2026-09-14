@@ -16,6 +16,7 @@ import { zipSync, strToU8 } from 'fflate';
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 export type TemplateKind = 'FBA' | 'AWD' | '未知';
+const MIXED_SKUS_GROUP = 'Mixed SKUs';
 
 export interface SourcePdf {
   file: File;
@@ -63,6 +64,12 @@ function safeFilePart(value: string): string {
 }
 
 function findSku(lines: string[]): string | undefined {
+  const joined = clean(lines.join(' '));
+  const compact = joined.replace(/[\s\-‐‑‒–—_:：/]+/g, '');
+  if (/Mixed\s*[\-‐‑‒–—_:：/]?\s*SKUs?\b/i.test(joined) || /MixedSKUs?/i.test(compact)) {
+    return MIXED_SKUS_GROUP;
+  }
+
   for (let i = 0; i < lines.length; i += 1) {
     const line = lines[i];
     const inline = line.match(/Single\s+SKU\s*[:：]?\s*(\S.+)$/i);
@@ -274,8 +281,8 @@ export async function generateZip(scan: ScanResult, options: GenerateOptions): P
     const out = await PDFDocument.create();
     const font = options.addMadeInChina ? await out.embedFont(StandardFonts.HelveticaBold) : undefined;
     out.setTitle(`Amazon 标签归集 - ${sku}`);
-    out.setSubject('按 SKU 跨仓库归集');
-    out.setCreator('Amazon 箱唛按 SKU 归集工具 Web v1.0.0');
+    out.setSubject('按 SKU 或混装类型跨仓库归集');
+    out.setCreator('Amazon 箱唛按 SKU 归集工具 Web v1.1.0');
 
     for (const label of pages) {
       const sourceDoc = sourceDocs[label.sourceIndex];
@@ -296,9 +303,9 @@ export async function generateZip(scan: ScanResult, options: GenerateOptions): P
 
   zipFiles['分组明细.csv'] = strToU8(buildCsv(scan.pages));
   zipFiles['使用说明.txt'] = strToU8(
-    'Amazon 箱唛按 SKU 归集工具 Web v1.0.0\r\n' +
+    'Amazon 箱唛按 SKU 归集工具 Web v1.1.0\r\n' +
       '文件均在您的浏览器本地处理，不会上传服务器。\r\n' +
-      `本次共处理 ${scan.sources.length} 个源文件、${scan.pages.length} 张标签、${groups.size} 个 SKU。\r\n`,
+      `本次共处理 ${scan.sources.length} 个源文件、${scan.pages.length} 张标签、${groups.size} 个归集分组。\r\n`,
   );
   return zipSync(zipFiles, { level: 6 });
 }

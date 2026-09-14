@@ -34,10 +34,10 @@ npm run build
 
 - 多 PDF、多仓库、跨文件按 SKU 归集
 - FBA `Single SKU` 模板
+- FBA `Mixed SKUs` 混装模板（统一归入 Mixed SKUs 分组）
 - AWD `SKU:` 模板
 - 可选删除 `FBA:` / `AWD:` 后面的公司名
 - 可选添加 `Made in China`
 - 生成每个 SKU 的 PDF、`分组明细.csv` 和使用说明，统一打包 ZIP
 
 加密 PDF、纯扫描图片 PDF 或未知的新模板可能无法识别；请在识别预览中核对页数和 SKU。
-

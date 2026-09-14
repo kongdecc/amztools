@@ -1,7 +1,7 @@
 import './styles.css';
 import { generateZip, scanPdfs, summarizeGroups, type ScanResult } from './pdf-engine';
 
-const VERSION = 'Web v1.0.0';
+const VERSION = 'Web v1.1.0';
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div id="site-header-container">
@@ -187,14 +187,14 @@ scanBtn.addEventListener('click', async () => {
     updateProgress(0, 1, '正在读取 PDF…');
     scanResult = await scanPdfs(selectedFiles, updateProgress);
     const groups = summarizeGroups(scanResult.pages);
-    if (groups.length === 0) throw new Error('没有识别到可归集的 SKU，请确认 PDF 是文字型 Amazon 标签。');
+    if (groups.length === 0) throw new Error('没有识别到可归集的 SKU 或 Mixed SKUs 混装标签，请确认 PDF 是文字型 Amazon 标签。');
     const skippedHtml = scanResult.skipped.length
       ? `<div class="warning">⚠ 有 ${scanResult.skipped.length} 页未识别，生成时将跳过。请核对后再下载。</div>`
       : '';
     result.innerHTML = `
-      <div class="stats"><div><strong>${selectedFiles.length}</strong><span>源文件</span></div><div><strong>${scanResult.pages.length}</strong><span>有效标签</span></div><div><strong>${groups.length}</strong><span>SKU 合集</span></div></div>
+      <div class="stats"><div><strong>${selectedFiles.length}</strong><span>源文件</span></div><div><strong>${scanResult.pages.length}</strong><span>有效标签</span></div><div><strong>${groups.length}</strong><span>归集分组</span></div></div>
       ${skippedHtml}
-      <div class="table-wrap"><table><thead><tr><th>SKU</th><th>标签数</th><th>仓库</th><th>模板</th></tr></thead><tbody>${groups.map((group) => `<tr><td><strong>${escapeHtml(group.sku)}</strong></td><td>${group.pages}</td><td>${group.warehouses.map(escapeHtml).join('、')}</td><td>${group.templates.join(' / ')}</td></tr>`).join('')}</tbody></table></div>
+      <div class="table-wrap"><table><thead><tr><th>SKU / 类型</th><th>标签数</th><th>仓库</th><th>模板</th></tr></thead><tbody>${groups.map((group) => `<tr><td><strong>${escapeHtml(group.sku)}</strong></td><td>${group.pages}</td><td>${group.warehouses.map(escapeHtml).join('、')}</td><td>${group.templates.join(' / ')}</td></tr>`).join('')}</tbody></table></div>
     `;
     result.hidden = false;
     generateBtn.hidden = false;
