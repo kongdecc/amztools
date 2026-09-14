@@ -33,6 +33,8 @@ export interface LabelPage {
   template: TemplateKind;
   companyPresent: boolean;
   madeInChinaPresent: boolean;
+  fbaCodeBox?: { y: number; height: number };
+  detailBaselineY?: number;
 }
 
 export interface ScanResult {
@@ -132,13 +134,19 @@ export async function scanPdfs(files: File[], onProgress?: GenerateOptions['onPr
     for (let pageIndex = 0; pageIndex < doc.numPages; pageIndex += 1) {
       const page = await doc.getPage(pageIndex + 1);
       const content = await page.getTextContent();
-      const lines = content.items
-        .flatMap((item) => ('str' in item ? [clean(item.str)] : []))
-        .filter(Boolean);
+      const textItems = content.items.flatMap((item) => {
+        if (!('str' in item)) return [];
+        const text = clean(item.str);
+        if (!text) return [];
+        return [{ text, transform: item.transform, height: item.height }];
+      });
+      const lines = textItems.map((item) => item.text);
       const sku = findSku(lines);
       if (!sku) {
         skipped.push({ sourceName: file.name, page: pageIndex + 1, reason: '未识别到 SKU' });
       } else {
+        const fbaCode = textItems.find((item) => /^FBA[A-Z0-9]{8,}$/i.test(item.text));
+        const detailLabel = textItems.find((item) => /^(?:Mixed\s*SKUs?|Single\s*SKU)$/i.test(item.text));
         pages.push({
           sourceIndex,
           sourceName: file.name,
@@ -148,6 +156,8 @@ export async function scanPdfs(files: File[], onProgress?: GenerateOptions['onPr
           template: identifyTemplate(lines),
           companyPresent: lines.some((line) => /^(?:FBA|AWD)\s*[:：]\s*\S+/i.test(line)),
           madeInChinaPresent: lines.some((line) => /Made\s+in\s+China/i.test(line)),
+          fbaCodeBox: fbaCode ? { y: fbaCode.transform[5], height: fbaCode.height } : undefined,
+          detailBaselineY: detailLabel?.transform[5],
         });
       }
       processed += 1;
@@ -234,19 +244,32 @@ function removeCompanyFromPage(doc: PDFDocument, page: PDFPage): boolean {
   return changed;
 }
 
-function addMadeInChina(page: PDFPage, font: PDFFont, template: TemplateKind): void {
+function addMadeInChina(page: PDFPage, font: PDFFont, label: LabelPage): void {
   const { width, height } = page.getSize();
   const sx = width / 595.72;
   const sy = height / 841.89;
   const text = 'Made in China';
   const size = 9 * Math.min(sx, sy);
   const textWidth = font.widthOfTextAtSize(text, size);
-  const areaLeft = (template === 'AWD' ? 170 : 60) * sx;
-  const areaWidth = (template === 'AWD' ? 120 : 107) * sx;
-  const yFromTop = (template === 'AWD' ? 260 : 226.56) * sy;
+  const areaLeft = (label.template === 'AWD' ? 170 : 60) * sx;
+  const areaWidth = (label.template === 'AWD' ? 120 : 107) * sx;
+  const yFromTop = (label.template === 'AWD' ? 260 : 226.56) * sy;
+  let y = height - yFromTop;
+
+  if (label.template === 'FBA' && label.fbaCodeBox) {
+    const codeBottom = label.fbaCodeBox.y;
+    const codeTop = codeBottom + label.fbaCodeBox.height;
+    const textTop = y + size;
+    const overlapsCode = textTop + 2 * sy > codeBottom && y - 2 * sy < codeTop;
+    if (overlapsCode) {
+      // Some FBA templates add a notice above the label and move the barcode ID down.
+      // Align with the right-hand SKU detail row so the left-hand area remains clear.
+      y = label.detailBaselineY ?? codeBottom - 17 * sy;
+    }
+  }
   page.drawText(text, {
     x: areaLeft + Math.max(0, (areaWidth - textWidth) / 2),
-    y: height - yFromTop,
+    y,
     size,
     font,
     color: rgb(0, 0, 0),
@@ -282,7 +305,7 @@ export async function generateZip(scan: ScanResult, options: GenerateOptions): P
     const font = options.addMadeInChina ? await out.embedFont(StandardFonts.HelveticaBold) : undefined;
     out.setTitle(`Amazon 标签归集 - ${sku}`);
     out.setSubject('按 SKU 或混装类型跨仓库归集');
-    out.setCreator('Amazon 箱唛按 SKU 归集工具 Web v1.1.0');
+    out.setCreator('Amazon 箱唛按 SKU 归集工具 Web v1.1.1');
 
     for (const label of pages) {
       const sourceDoc = sourceDocs[label.sourceIndex];
@@ -294,7 +317,7 @@ export async function generateZip(scan: ScanResult, options: GenerateOptions): P
       }
       const [copied] = await out.copyPages(sourceDoc, [label.pageIndex]);
       out.addPage(copied);
-      if (options.addMadeInChina && !label.madeInChinaPresent && font) addMadeInChina(copied, font, label.template);
+      if (options.addMadeInChina && !label.madeInChinaPresent && font) addMadeInChina(copied, font, label);
       done += 1;
       options.onProgress?.(done, scan.pages.length, `正在生成：${sku} · ${done}/${scan.pages.length}`);
     }
@@ -303,7 +326,7 @@ export async function generateZip(scan: ScanResult, options: GenerateOptions): P
 
   zipFiles['分组明细.csv'] = strToU8(buildCsv(scan.pages));
   zipFiles['使用说明.txt'] = strToU8(
-    'Amazon 箱唛按 SKU 归集工具 Web v1.1.0\r\n' +
+    'Amazon 箱唛按 SKU 归集工具 Web v1.1.1\r\n' +
       '文件均在您的浏览器本地处理，不会上传服务器。\r\n' +
       `本次共处理 ${scan.sources.length} 个源文件、${scan.pages.length} 张标签、${groups.size} 个归集分组。\r\n`,
   );

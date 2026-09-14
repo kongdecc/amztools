@@ -1,7 +1,7 @@
 import './styles.css';
 import { generateZip, scanPdfs, summarizeGroups, type ScanResult } from './pdf-engine';
 
-const VERSION = 'Web v1.1.0';
+const VERSION = 'Web v1.1.1';
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div id="site-header-container">
