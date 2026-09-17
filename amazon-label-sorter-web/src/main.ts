@@ -1,7 +1,7 @@
 import './styles.css';
 import { generateZip, scanPdfs, summarizeGroups, type ScanResult } from './pdf-engine';
 
-const VERSION = 'Web v1.1.1';
+const VERSION = 'Web v1.2.0';
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div id="site-header-container">
@@ -44,6 +44,10 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <label class="option">
         <input id="addMade" type="checkbox"><span class="check"></span>
         <span><strong>添加 Made in China</strong><small>按 FBA / AWD 模板自动放到标签安全区域</small></span>
+      </label>
+      <label class="option">
+        <input id="cropForThermal" type="checkbox"><span class="check"></span>
+        <span><strong>裁剪为热敏纸尺寸</strong><small>按标签实际内容裁剪并居中；FBA 输出 100 × 100 mm，AWD 输出 100 × 150 mm</small></span>
       </label>
     </section>
 
@@ -106,6 +110,7 @@ const generateBtn = document.querySelector<HTMLButtonElement>('#generateBtn')!;
 const resetBtn = document.querySelector<HTMLButtonElement>('#resetBtn')!;
 const removeCompany = document.querySelector<HTMLInputElement>('#removeCompany')!;
 const addMade = document.querySelector<HTMLInputElement>('#addMade')!;
+const cropForThermal = document.querySelector<HTMLInputElement>('#cropForThermal')!;
 const progressBox = document.querySelector<HTMLDivElement>('#progressBox')!;
 const progressBar = document.querySelector<HTMLDivElement>('#progressBar')!;
 const progressText = document.querySelector<HTMLSpanElement>('#progressText')!;
@@ -140,6 +145,7 @@ function setBusy(busy: boolean): void {
   chooseBtn.disabled = busy;
   removeCompany.disabled = busy;
   addMade.disabled = busy;
+  cropForThermal.disabled = busy;
 }
 
 function renderFiles(): void {
@@ -213,7 +219,7 @@ generateBtn.addEventListener('click', async () => {
   setBusy(true);
   try {
     updateProgress(0, scanResult.pages.length, '正在准备输出文件…');
-    const zip = await generateZip(scanResult, { removeCompany: removeCompany.checked, addMadeInChina: addMade.checked, onProgress: updateProgress });
+    const zip = await generateZip(scanResult, { removeCompany: removeCompany.checked, addMadeInChina: addMade.checked, cropForThermal: cropForThermal.checked, onProgress: updateProgress });
     const blob = new Blob([zip as BlobPart], { type: 'application/zip' });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');

@@ -7,6 +7,7 @@ import {
   PDFRawStream,
   StandardFonts,
   decodePDFRawStream,
+  PageBoundingBox,
   rgb,
 } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
@@ -35,6 +36,7 @@ export interface LabelPage {
   madeInChinaPresent: boolean;
   fbaCodeBox?: { y: number; height: number };
   detailBaselineY?: number;
+  contentBox?: PageBoundingBox;
 }
 
 export interface ScanResult {
@@ -53,6 +55,7 @@ export interface GroupSummary {
 export interface GenerateOptions {
   removeCompany: boolean;
   addMadeInChina: boolean;
+  cropForThermal: boolean;
   onProgress?: (done: number, total: number, message: string) => void;
 }
 
@@ -109,6 +112,41 @@ function identifyTemplate(lines: string[]): TemplateKind {
   if (/Single\s+SKU|FBA\s+STA/i.test(joined)) return 'FBA';
   if (/SSCC\s*:|^AWD\s*:/im.test(lines.join('\n')) || lines.some((line) => /^SKU\s*:/i.test(line))) return 'AWD';
   return '未知';
+}
+
+async function detectContentBox(page: pdfjsLib.PDFPageProxy): Promise<PageBoundingBox | undefined> {
+  const viewport = page.getViewport({ scale: 1, rotation: 0 });
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.ceil(viewport.width);
+  canvas.height = Math.ceil(viewport.height);
+  const context = canvas.getContext('2d', { willReadFrequently: true });
+  if (!context) return undefined;
+  await page.render({ canvas, canvasContext: context, viewport, background: 'white' }).promise;
+  const { data } = context.getImageData(0, 0, canvas.width, canvas.height);
+  let left = canvas.width;
+  let top = canvas.height;
+  let right = -1;
+  let bottom = -1;
+  for (let y = 0; y < canvas.height; y += 1) {
+    for (let x = 0; x < canvas.width; x += 1) {
+      const i = (y * canvas.width + x) * 4;
+      if (Math.min(data[i], data[i + 1], data[i + 2]) > 225) continue;
+      left = Math.min(left, x);
+      top = Math.min(top, y);
+      right = Math.max(right, x);
+      bottom = Math.max(bottom, y);
+    }
+  }
+  canvas.width = canvas.height = 0;
+  if (right < left || bottom < top) return undefined;
+  const [viewLeft, viewBottom, viewRight, viewTop] = page.view;
+  const margin = 5;
+  return {
+    left: Math.max(viewLeft, viewLeft + left - margin),
+    bottom: Math.max(viewBottom, viewTop - bottom - margin),
+    right: Math.min(viewRight, viewLeft + right + margin),
+    top: Math.min(viewTop, viewTop - top + margin),
+  };
 }
 
 export async function scanPdfs(files: File[], onProgress?: GenerateOptions['onProgress']): Promise<ScanResult> {
@@ -168,6 +206,34 @@ export async function scanPdfs(files: File[], onProgress?: GenerateOptions['onPr
   }
   onProgress?.(processed, processed, `识别完成：${pages.length} 张有效标签`);
   return { sources, pages, skipped };
+}
+
+async function locateCropBoxes(scan: ScanResult, onProgress?: GenerateOptions['onProgress']): Promise<void> {
+  let done = 0;
+  for (let sourceIndex = 0; sourceIndex < scan.sources.length; sourceIndex += 1) {
+    const labels = scan.pages.filter((label) => label.sourceIndex === sourceIndex);
+    if (labels.length === 0) continue;
+    const source = scan.sources[sourceIndex];
+    const assetBase = `${window.location.origin}${import.meta.env.BASE_URL}`;
+    const task = pdfjsLib.getDocument({
+      data: source.bytes.slice(),
+      useSystemFonts: true,
+      cMapUrl: `${assetBase}cmaps/`,
+      cMapPacked: true,
+      standardFontDataUrl: `${assetBase}standard_fonts/`,
+    });
+    const doc = await task.promise;
+    for (const label of labels) {
+      if (!label.contentBox) {
+        const page = await doc.getPage(label.pageIndex + 1);
+        label.contentBox = await detectContentBox(page);
+        page.cleanup();
+      }
+      done += 1;
+      onProgress?.(done, scan.pages.length, `正在定位裁剪区域：${source.file.name} · 第 ${label.pageIndex + 1} 页`);
+    }
+    await doc.destroy();
+  }
 }
 
 export function summarizeGroups(pages: LabelPage[]): GroupSummary[] {
@@ -256,16 +322,10 @@ function addMadeInChina(page: PDFPage, font: PDFFont, label: LabelPage): void {
   const yFromTop = (label.template === 'AWD' ? 260 : 226.56) * sy;
   let y = height - yFromTop;
 
-  if (label.template === 'FBA' && label.fbaCodeBox) {
-    const codeBottom = label.fbaCodeBox.y;
-    const codeTop = codeBottom + label.fbaCodeBox.height;
-    const textTop = y + size;
-    const overlapsCode = textTop + 2 * sy > codeBottom && y - 2 * sy < codeTop;
-    if (overlapsCode) {
-      // Some FBA templates add a notice above the label and move the barcode ID down.
-      // Align with the right-hand SKU detail row so the left-hand area remains clear.
-      y = label.detailBaselineY ?? codeBottom - 17 * sy;
-    }
+  if (label.template === 'FBA') {
+    // The barcode and its ID move between FBA templates; the SKU detail row is
+    // the reliable blank-left area, including labels with a notice above.
+    y = label.detailBaselineY ?? (label.fbaCodeBox ? label.fbaCodeBox.y - 17 * sy : y);
   }
   page.drawText(text, {
     x: areaLeft + Math.max(0, (areaWidth - textWidth) / 2),
@@ -273,6 +333,28 @@ function addMadeInChina(page: PDFPage, font: PDFFont, label: LabelPage): void {
     size,
     font,
     color: rgb(0, 0, 0),
+  });
+}
+
+async function addThermalPage(out: PDFDocument, sourcePage: PDFPage, label: LabelPage): Promise<void> {
+  if (label.template === '未知') throw new Error(`${label.sourceName} 第 ${label.pageIndex + 1} 页的模板类型未知，无法确定热敏纸尺寸。`);
+  if (!label.contentBox) throw new Error(`${label.sourceName} 第 ${label.pageIndex + 1} 页未找到可裁剪的标签内容。`);
+  const box = label.contentBox;
+  const boxWidth = box.right - box.left;
+  const boxHeight = box.top - box.bottom;
+  if (boxWidth <= 0 || boxHeight <= 0) throw new Error(`${label.sourceName} 第 ${label.pageIndex + 1} 页的裁剪区域无效。`);
+  const pointsPerMm = 72 / 25.4;
+  const pageWidth = 100 * pointsPerMm;
+  const pageHeight = (label.template === 'FBA' ? 100 : 150) * pointsPerMm;
+  const padding = 3 * pointsPerMm;
+  const scale = Math.min((pageWidth - padding * 2) / boxWidth, (pageHeight - padding * 2) / boxHeight);
+  const [embedded] = await out.embedPages([sourcePage], [box]);
+  const thermalPage = out.addPage([pageWidth, pageHeight]);
+  thermalPage.drawPage(embedded, {
+    x: (pageWidth - boxWidth * scale) / 2,
+    y: (pageHeight - boxHeight * scale) / 2,
+    width: boxWidth * scale,
+    height: boxHeight * scale,
   });
 }
 
@@ -290,6 +372,7 @@ function buildCsv(pages: LabelPage[]): string {
 }
 
 export async function generateZip(scan: ScanResult, options: GenerateOptions): Promise<Uint8Array> {
+  if (options.cropForThermal) await locateCropBoxes(scan, options.onProgress);
   const sourceDocs = await Promise.all(scan.sources.map((source) => PDFDocument.load(source.bytes.slice())));
   const groups = new Map<string, LabelPage[]>();
   for (const page of scan.pages) {
@@ -305,7 +388,7 @@ export async function generateZip(scan: ScanResult, options: GenerateOptions): P
     const font = options.addMadeInChina ? await out.embedFont(StandardFonts.HelveticaBold) : undefined;
     out.setTitle(`Amazon 标签归集 - ${sku}`);
     out.setSubject('按 SKU 或混装类型跨仓库归集');
-    out.setCreator('Amazon 箱唛按 SKU 归集工具 Web v1.1.1');
+    out.setCreator('Amazon 箱唛按 SKU 归集工具 Web v1.2.0');
 
     for (const label of pages) {
       const sourceDoc = sourceDocs[label.sourceIndex];
@@ -316,8 +399,9 @@ export async function generateZip(scan: ScanResult, options: GenerateOptions): P
         }
       }
       const [copied] = await out.copyPages(sourceDoc, [label.pageIndex]);
-      out.addPage(copied);
       if (options.addMadeInChina && !label.madeInChinaPresent && font) addMadeInChina(copied, font, label);
+      if (options.cropForThermal) await addThermalPage(out, copied, label);
+      else out.addPage(copied);
       done += 1;
       options.onProgress?.(done, scan.pages.length, `正在生成：${sku} · ${done}/${scan.pages.length}`);
     }
@@ -326,7 +410,7 @@ export async function generateZip(scan: ScanResult, options: GenerateOptions): P
 
   zipFiles['分组明细.csv'] = strToU8(buildCsv(scan.pages));
   zipFiles['使用说明.txt'] = strToU8(
-    'Amazon 箱唛按 SKU 归集工具 Web v1.1.1\r\n' +
+    'Amazon 箱唛按 SKU 归集工具 Web v1.2.0\r\n' +
       '文件均在您的浏览器本地处理，不会上传服务器。\r\n' +
       `本次共处理 ${scan.sources.length} 个源文件、${scan.pages.length} 张标签、${groups.size} 个归集分组。\r\n`,
   );

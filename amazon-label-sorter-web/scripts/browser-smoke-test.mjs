@@ -3,7 +3,7 @@ const [port, downloadPath, ...files] = process.argv.slice(2);
 if (!port || !downloadPath || files.length === 0) throw new Error('Missing debug port, download directory or PDF paths.');
 
 const targets = await fetch(`http://127.0.0.1:${port}/json`).then((response) => response.json());
-const target = targets.find((item) => item.type === 'page');
+const target = targets.find((item) => item.type === 'page' && item.url.includes('/amazon-label-sorter/'));
 if (!target) throw new Error('No browser page target found.');
 
 const socket = new WebSocket(target.webSocketDebuggerUrl);
@@ -48,6 +48,8 @@ async function waitUntil(expression, timeout = 60_000) {
 await command('Runtime.enable');
 await command('DOM.enable');
 await command('Page.enable');
+await command('Page.navigate', { url: target.url });
+await waitUntil(`Boolean(document.querySelector('#fileInput'))`);
 await command('Browser.setDownloadBehavior', { behavior: 'allow', downloadPath, eventsEnabled: true });
 const documentNode = await command('DOM.getDocument');
 const input = await command('DOM.querySelector', { nodeId: documentNode.root.nodeId, selector: '#fileInput' });
@@ -59,8 +61,7 @@ await waitUntil(`!document.querySelector('#result').hidden && !document.querySel
 const preview = await evaluate(`document.querySelector('#result').innerText`);
 console.log(preview.replace(/\n+/g, ' | '));
 
-await evaluate(`document.querySelector('#removeCompany').checked = true; document.querySelector('#addMade').checked = true; document.querySelector('#generateBtn').click()`);
+await evaluate(`document.querySelector('#removeCompany').checked = ${process.env.REMOVE_COMPANY !== '0'}; document.querySelector('#addMade').checked = true; document.querySelector('#cropForThermal').checked = ${process.env.CROP_FOR_THERMAL === '1'}; document.querySelector('#generateBtn').click()`);
 await waitUntil(`document.querySelector('#statusText').textContent.includes('生成完成')`, 120_000);
 console.log('ZIP generation completed');
 socket.close();
-
