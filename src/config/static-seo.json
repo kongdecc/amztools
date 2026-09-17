@@ -59,6 +59,11 @@
     "description": "批量导入 Amazon SQP 品牌或 ASIN 视图 CSV，分析搜索趋势、漏斗份额与关键词运营机会。",
     "canonical": "/sqp/index.html"
   },
+  "/amazon-fee-visualizer/index.html": {
+    "title": "亚马逊费用可视化查询",
+    "description": "按费用类型查询亚马逊 FBA 配送费、仓储费及其他费用，支持尺寸、重量与计费条件筛选。",
+    "canonical": "/amazon-fee-visualizer/index.html"
+  },
   "/image-label-adder.html": {
     "title": "图片/视频标签添加工具",
     "description": "批量为图片和视频写入 contains-synthetic-performer 标签，本地处理。",

@@ -173,6 +173,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
     'natural-traffic-tool': BarChart3,
     'freight-invoice-studio': FileText,
     'sqp-lens': BarChart3,
+    'amazon-fee-visualizer': Calculator,
     'amazon-label-sorter': FileText,
     'freight-rate-radar': Truck,
     'fba-warehouses': Warehouse,
