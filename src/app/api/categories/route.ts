@@ -1,12 +1,8 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { DEFAULT_CATEGORIES } from '@/lib/constants'
 
-const defaultCategories = [
-  { key: 'advertising', label: '广告工具', order: 1 },
-  { key: 'operation', label: '运营工具', order: 2 },
-  { key: 'image-text', label: '图片文本', order: 3 },
-  { key: 'other', label: '其他工具', order: 4 }
-]
+const defaultCategories = DEFAULT_CATEGORIES.map(category => ({ ...category }))
 
 export async function GET() {
   try {

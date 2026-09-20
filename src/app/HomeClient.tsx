@@ -7,7 +7,7 @@ import Head from 'next/head'
 import Link from 'next/link'
 import ToolContainer from '@/components/ToolContainer'
 import TopAdBar from '@/components/TopAdBar'
-import { DEFAULT_SITE_SETTINGS } from '@/lib/constants'
+import { DEFAULT_CATEGORIES, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 import { PERSONAL_TOP_CATEGORY_KEY, PERSONAL_TOP_CATEGORY_LABEL, PERSONAL_TOP_LIMIT, getPersonalTopModules, recordPersonalToolVisit, sortModulesWithPersonalTop, subscribePersonalToolUsage } from '@/lib/personal-top-tools'
 
 import { useRef } from 'react'
@@ -62,15 +62,9 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
     ).size
   ), [allModules])
   const [personalUsageVersion, setPersonalUsageVersion] = useState(0)
-  const defaultCategories = [
-    { key: 'advertising', label: '广告工具', order: 1 },
-    { key: 'operation', label: '运营工具', order: 2 },
-    { key: 'image-text', label: '图片文本', order: 3 },
-    { key: 'other', label: '其他工具', order: 4 }
-  ]
   const personalTopModules = useMemo(() => getPersonalTopModules(allModules, PERSONAL_TOP_LIMIT), [allModules, personalUsageVersion])
   const activeCategories = useMemo(() => {
-    const baseCategories = (categories.length > 0 ? categories : defaultCategories).slice().sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
+    const baseCategories = (categories.length > 0 ? categories : DEFAULT_CATEGORIES).slice().sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
     return personalTopModules.length > 0 ? [TOP_CATEGORY, ...baseCategories] : baseCategories
   }, [categories, personalTopModules.length])
 

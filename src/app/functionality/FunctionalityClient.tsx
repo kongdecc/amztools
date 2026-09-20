@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { LayoutDashboard, ChevronDown, Search, MoreHorizontal, Calculator, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Trash2, AlertCircle, CheckCircle, Filter, Image as ImageIcon, Crosshair, Globe, Star, Hammer, ArrowLeftRight, Activity, Users, Box, Warehouse, FileText, Languages, Shuffle } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 import TopAdBar from '@/components/TopAdBar'
-import { DEFAULT_SITE_SETTINGS } from '@/lib/constants'
+import { DEFAULT_CATEGORIES, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 import { PERSONAL_TOP_CATEGORY_KEY, PERSONAL_TOP_CATEGORY_LABEL, PERSONAL_TOP_LIMIT, getPersonalTopModules, recordPersonalToolVisit, sortModulesWithPersonalTop, subscribePersonalToolUsage } from '@/lib/personal-top-tools'
 
 const Card = ({ children, className = '', onClick, ...props }: any) => (
@@ -64,20 +64,10 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
           if (Array.isArray(d) && d.length > 0) {
             setCategories(d.filter((c: any) => c.enabled !== false))
           } else {
-            setCategories([
-              { key: 'advertising', label: '广告工具', order: 1 },
-              { key: 'operation', label: '运营工具', order: 2 },
-              { key: 'image-text', label: '图片文本', order: 3 },
-              { key: 'other', label: '其他工具', order: 4 }
-            ])
+            setCategories(DEFAULT_CATEGORIES)
           }
         } catch {
-          setCategories([
-            { key: 'advertising', label: '广告工具', order: 1 },
-            { key: 'operation', label: '运营工具', order: 2 },
-            { key: 'image-text', label: '图片文本', order: 3 },
-            { key: 'other', label: '其他工具', order: 4 }
-          ])
+          setCategories(DEFAULT_CATEGORIES)
         }
       }
     })()
