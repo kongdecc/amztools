@@ -134,7 +134,7 @@ export const DEFAULT_TOOLS = [
   { key: 'storage-fee-calc', title: '亚马逊 FBA 全能仓储费计算器', desc: '集成月度仓储费、利用率附加费及超龄库存附加费（含2026新规）', status: '启用', views: 0, color: 'blue', order: 405, category: 'fees-inventory' },
   { key: 'max-reserve-fee', title: '白嫖库容的最高预留费计算工具', desc: '根据销售额预估和库容申请计划，计算出不亏本的最高预留费单价', status: '启用', views: 0, color: 'emerald', order: 406, category: 'fees-inventory' },
 
-  { key: 'unit', title: '单位换算', desc: '长度、重量、体积等多维度单位快速换算', status: '启用', views: 0, color: 'emerald', order: 7, category: 'other' },
+  { key: 'unit', title: '单位换算', desc: '长度、重量、体积等多维度单位快速换算', status: '启用', views: 0, color: 'emerald', order: 610, category: 'text-data' },
 
   { key: 'image-compression', title: '图片压缩与格式转换', desc: '批量压缩、格式转换，本地处理不上传服务器', status: '启用', views: 0, color: 'blue', order: 501, category: 'image-media' },
   { key: 'image-resizer', title: '图片尺寸修改工具', desc: '批量修改图片尺寸、格式转换和压缩，支持JPEG/PNG/GIF', status: '启用', views: 0, color: 'indigo', order: 502, category: 'image-media' },
@@ -151,7 +151,7 @@ export const DEFAULT_TOOLS = [
 
   { key: 'carton-calc-advanced', title: '外箱装箱计算器', desc: '支持 6 种朝向 + 单层补洞混合摆放，估算更接近实际装箱结果', status: '启用', views: 0, color: 'orange', order: 306, category: 'shipping-logistics' },
   { key: 'partner-equity-calculator', title: '合伙人权益计算器', desc: '支持2人/3人合伙模式，自动计算资金股/人力股比例及股权价值，支持Excel导出和打印', status: '启用', views: 0, color: 'teal', order: 31, category: 'other' },
-  { key: 'sales-calc', title: '亚马逊销售额计算', desc: '智能计算亚马逊销售报表总金额，自动匹配历史汇率，支持多文件批量处理', status: '启用', views: 0, color: 'indigo', order: 32, category: 'other' },
+  { key: 'sales-calc', title: '亚马逊销售额计算', desc: '智能计算亚马逊销售报表总金额，自动匹配历史汇率，支持多文件批量处理', status: '启用', views: 0, color: 'indigo', order: 207, category: 'listing-operation' },
   { key: 'txt-excel-batch-converter', title: 'TXT 与 Excel 双向批量转换', desc: '支持多个 TXT 批量转 Excel，也支持多个 Excel / XLS / CSV 批量转 TXT，本地处理并支持 ZIP 下载', status: '启用', views: 0, color: 'blue', order: 609, category: 'text-data' },
   { key: 'certification-directory', title: '跨境认证大全', desc: '汇总美国、欧盟、日本、澳洲及全球常见跨境认证，支持按地区、类型和关键词快速检索', status: '启用', views: 0, color: 'teal', order: 32.8, category: 'other' },
   { key: 'image-to-pdf-batch', title: '批量图片转 PDF', desc: '批量导入图片并合并导出 PDF，支持排序、页边距、页面方向和适配方式设置', status: '启用', views: 0, color: 'blue', order: 504, category: 'image-media' },
