@@ -94,7 +94,7 @@ export default function AboutClient({ initialNavItems, initialHtml }: { initialN
                           .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
                           .map(cat => {
                           const catModules = modules
-                            .filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'image-text')))
+                            .filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'text-data')))
                             .slice()
                             .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
                           if (catModules.length === 0) return null

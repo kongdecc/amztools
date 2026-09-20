@@ -21,13 +21,6 @@ const Input = ({ className = "", ...props }: any) => (
   <input className={`flex h-9 w-full rounded-md border border-gray-300 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 ${className}`} {...props} />
 )
 
-const OTHER_SHORTCUT_LINKS = [
-  { key: 'marketing-calendar-2026', title: '2026年电商营销日历', desc: '查看全年重点营销节点、节日大促和选品运营节奏安排', status: '启用', views: 0, color: 'indigo', order: 36, category: 'other', href: '/marketing-calendar.html', isExternal: true },
-  { key: 'marketing-calendar-summary-2026', title: '2026年亚马逊全球营销日历', desc: '快速查看亚马逊全球站点营销节点与活动节奏汇总', status: '启用', views: 0, color: 'blue', order: 37, category: 'other', href: '/marketing-calendar-summary.html', isExternal: true },
-  { key: 'china-industry-belts-entry', title: '中国产业带', desc: '查看中国产业带分布信息，便于选品、找供应链和货源调研', status: '启用', views: 0, color: 'orange', order: 38, category: 'other', href: '/china-industry-belts.html', isExternal: true },
-  { key: 'cpsc-efiling-screening-tool-entry', title: 'CPSC 合规与 eFiling 筛查工具', desc: '根据品类、年龄段、材料和申报场景快速筛查 CPSC 与 eFiling 相关要求，辅助美国站合规判断', status: '启用', views: 0, color: 'red', order: 39, category: 'other', href: '/cpsc_efiling_screening_tool.html', isExternal: true }
-]
-
 const TOP_CATEGORY = { key: PERSONAL_TOP_CATEGORY_KEY, label: PERSONAL_TOP_CATEGORY_LABEL, order: -1 }
 
 function readHomeViewState(search: string, hash = '') {
@@ -53,7 +46,7 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
   const { settings } = useSettings()
   const router = useRouter()
   const safeOrigin = (typeof window !== 'undefined' && (window as any).location) ? (window as any).location.origin : ''
-  const allModules = useMemo(() => [...modules, ...OTHER_SHORTCUT_LINKS], [modules])
+  const allModules = modules
   const totalToolCount = useMemo(() => (
     new Set(
       allModules
@@ -333,7 +326,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
   const [modules, setModules] = useState<Array<any>>(initialModules || [])
   const [navItems, setNavItems] = useState<Array<any>>(initialNavItems || [])
   const [categories, setCategories] = useState<Array<any>>(initialCategories || [])
-  const allModules = useMemo(() => [...modules, ...OTHER_SHORTCUT_LINKS], [modules])
+  const allModules = modules
   const [personalUsageVersion, setPersonalUsageVersion] = useState(0)
   const personalTopModules = useMemo(() => getPersonalTopModules(allModules, PERSONAL_TOP_LIMIT), [allModules, personalUsageVersion])
   const menuCategories = useMemo(() => {
@@ -439,7 +432,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
       id: cat.key,
       label: cat.label,
       children: (cat.key === PERSONAL_TOP_CATEGORY_KEY ? personalTopModules : allModules
-        .filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'image-text'))))
+        .filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'text-data'))))
         .slice()
         .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
         .map((m: any) => ({
@@ -569,7 +562,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                             .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
                           .map(cat => {
                           const catModules = (cat.key === PERSONAL_TOP_CATEGORY_KEY ? personalTopModules : allModules
-                            .filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'image-text'))))
+                            .filter((m: any) => m.status !== '下架' && (m.category === cat.key || (!m.category && cat.key === 'text-data'))))
                             .slice()
                             .sort((a: any, b: any) => Number(a.order || 0) - Number(b.order || 0))
                           if (catModules.length === 0) return null

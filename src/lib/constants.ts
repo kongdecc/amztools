@@ -94,8 +94,9 @@ export const DEFAULT_CATEGORIES = [
   { key: 'listing-operation', label: 'Listing 运营', enabled: true, order: 3 },
   { key: 'shipping-logistics', label: '发货与物流', enabled: true, order: 4 },
   { key: 'fees-inventory', label: '费用与库存', enabled: true, order: 5 },
-  { key: 'image-text', label: '图片文本', enabled: true, order: 6 },
-  { key: 'other', label: '其他工具', enabled: true, order: 7 }
+  { key: 'image-media', label: '图片与媒体', enabled: true, order: 6 },
+  { key: 'text-data', label: '文本与数据', enabled: true, order: 7 },
+  { key: 'other', label: '其他工具', enabled: true, order: 8 }
 ]
 
 export const BLOCKED_TOOL_KEYS = ['invoice-generator']
@@ -135,26 +136,32 @@ export const DEFAULT_TOOLS = [
 
   { key: 'unit', title: '单位换算', desc: '长度、重量、体积等多维度单位快速换算', status: '启用', views: 0, color: 'emerald', order: 7, category: 'other' },
 
-  { key: 'word-count', title: '词频统计', desc: '分析英文文本，统计单词出现频率和字符数', status: '启用', views: 0, color: 'sky', order: 20, category: 'image-text' },
-  { key: 'image-compression', title: '图片压缩与格式转换', desc: '批量压缩、格式转换，本地处理不上传服务器', status: '启用', views: 0, color: 'blue', order: 21, category: 'image-text' },
-  { key: 'image-resizer', title: '图片尺寸修改工具', desc: '批量修改图片尺寸、格式转换和压缩，支持JPEG/PNG/GIF', status: '启用', views: 0, color: 'indigo', order: 22, category: 'image-text' },
-  { key: 'editor', title: '可视化编辑器', desc: '所见即所得的HTML编辑器，支持一键复制源码', status: '启用', views: 0, color: 'fuchsia', order: 23, category: 'image-text' },
-  { key: 'case', title: '大小写转换', desc: '文本大小写一键转换，支持首字母大写', status: '启用', views: 0, color: 'violet', order: 24, category: 'image-text' },
-  { key: 'char-count', title: '字符统计', desc: '统计字符并提供清理复制等操作', status: '启用', views: 0, color: 'rose', order: 25, category: 'image-text' },
-  { key: 'text-compare', title: '文本比较工具', desc: '对比两个文本的差异，显示新增、删除和修改内容，支持详细统计分析', status: '启用', views: 0, color: 'green', order: 26, category: 'image-text' },
-  { key: 'duplicate-remover', title: '去除重复文本工具', desc: '智能去重，多种模式，支持按行、空格、逗号等分隔符，支持排序和过滤', status: '启用', views: 0, color: 'purple', order: 27, category: 'image-text' },
-  { key: 'content-filter', title: '英文文本过滤工具', desc: '智能筛选和删除英文文本中的介词、连词、冠词等无实际意义的词汇', status: '启用', views: 0, color: 'teal', order: 28, category: 'image-text' },
-  { key: 'pinyin-converter', title: '汉字转拼音', desc: '支持声调/无声调拼音转换，拼音对照，语音朗读', status: '启用', views: 0, color: 'blue', order: 29, category: 'image-text' },
-  { key: 'image-info-viewer', title: '批量图片信息查看器', desc: '批量查看图片尺寸、清晰度、设备、作者、拍摄参数和完整 EXIF 元数据', status: '启用', views: 0, color: 'indigo', order: 29.5, category: 'image-text' },
+  { key: 'image-compression', title: '图片压缩与格式转换', desc: '批量压缩、格式转换，本地处理不上传服务器', status: '启用', views: 0, color: 'blue', order: 501, category: 'image-media' },
+  { key: 'image-resizer', title: '图片尺寸修改工具', desc: '批量修改图片尺寸、格式转换和压缩，支持JPEG/PNG/GIF', status: '启用', views: 0, color: 'indigo', order: 502, category: 'image-media' },
+  { key: 'image-info-viewer', title: '批量图片信息查看器', desc: '批量查看图片尺寸、清晰度、设备、作者、拍摄参数和完整 EXIF 元数据', status: '启用', views: 0, color: 'indigo', order: 503, category: 'image-media' },
+
+  { key: 'word-count', title: '词频统计', desc: '分析英文文本，统计单词出现频率和字符数', status: '启用', views: 0, color: 'sky', order: 601, category: 'text-data' },
+  { key: 'editor', title: '可视化编辑器', desc: '所见即所得的HTML编辑器，支持一键复制源码', status: '启用', views: 0, color: 'fuchsia', order: 602, category: 'text-data' },
+  { key: 'case', title: '大小写转换', desc: '文本大小写一键转换，支持首字母大写', status: '启用', views: 0, color: 'violet', order: 603, category: 'text-data' },
+  { key: 'char-count', title: '字符统计', desc: '统计字符并提供清理复制等操作', status: '启用', views: 0, color: 'rose', order: 604, category: 'text-data' },
+  { key: 'text-compare', title: '文本比较工具', desc: '对比两个文本的差异，显示新增、删除和修改内容，支持详细统计分析', status: '启用', views: 0, color: 'green', order: 605, category: 'text-data' },
+  { key: 'duplicate-remover', title: '去除重复文本工具', desc: '智能去重，多种模式，支持按行、空格、逗号等分隔符，支持排序和过滤', status: '启用', views: 0, color: 'purple', order: 606, category: 'text-data' },
+  { key: 'content-filter', title: '英文文本过滤工具', desc: '智能筛选和删除英文文本中的介词、连词、冠词等无实际意义的词汇', status: '启用', views: 0, color: 'teal', order: 607, category: 'text-data' },
+  { key: 'pinyin-converter', title: '汉字转拼音', desc: '支持声调/无声调拼音转换，拼音对照，语音朗读', status: '启用', views: 0, color: 'blue', order: 608, category: 'text-data' },
 
   { key: 'carton-calc-advanced', title: '外箱装箱计算器', desc: '支持 6 种朝向 + 单层补洞混合摆放，估算更接近实际装箱结果', status: '启用', views: 0, color: 'orange', order: 306, category: 'shipping-logistics' },
   { key: 'partner-equity-calculator', title: '合伙人权益计算器', desc: '支持2人/3人合伙模式，自动计算资金股/人力股比例及股权价值，支持Excel导出和打印', status: '启用', views: 0, color: 'teal', order: 31, category: 'other' },
   { key: 'sales-calc', title: '亚马逊销售额计算', desc: '智能计算亚马逊销售报表总金额，自动匹配历史汇率，支持多文件批量处理', status: '启用', views: 0, color: 'indigo', order: 32, category: 'other' },
-  { key: 'txt-excel-batch-converter', title: 'TXT 与 Excel 双向批量转换', desc: '支持多个 TXT 批量转 Excel，也支持多个 Excel / XLS / CSV 批量转 TXT，本地处理并支持 ZIP 下载', status: '启用', views: 0, color: 'blue', order: 32.5, category: 'other' },
+  { key: 'txt-excel-batch-converter', title: 'TXT 与 Excel 双向批量转换', desc: '支持多个 TXT 批量转 Excel，也支持多个 Excel / XLS / CSV 批量转 TXT，本地处理并支持 ZIP 下载', status: '启用', views: 0, color: 'blue', order: 609, category: 'text-data' },
   { key: 'certification-directory', title: '跨境认证大全', desc: '汇总美国、欧盟、日本、澳洲及全球常见跨境认证，支持按地区、类型和关键词快速检索', status: '启用', views: 0, color: 'teal', order: 32.8, category: 'other' },
-  { key: 'image-to-pdf-batch', title: '批量图片转 PDF', desc: '批量导入图片并合并导出 PDF，支持排序、页边距、页面方向和适配方式设置', status: '启用', views: 0, color: 'blue', order: 33, category: 'image-text' },
-  { key: 'pdf-image-watermark-redaction', title: 'PDF / 图片 水印与打码工具', desc: '支持 PDF 与图片实时预览、水印叠加、拖拽框选打码、马赛克/模糊/遮挡和导出处理后的文件', status: '启用', views: 0, color: 'violet', order: 34, category: 'image-text' },
-  { key: 'image-label-adder', title: '图片/视频标签添加工具', desc: '批量为 JPG / JPEG / PNG 图片及 MP4 / MOV 视频写入 contains-synthetic-performer 标签，视频无需转码，本地处理不上传', status: '启用', views: 0, color: 'blue', order: 34.5, category: 'image-text', href: '/image-label-adder.html', isExternal: true },
-  { key: 'avif-image-converter', title: 'AVIF 图片格式转换工具', desc: '批量将 AVIF 图片转换为 PNG、JPEG 或 WebP，支持质量调节，全部在浏览器本地完成', status: '启用', views: 0, color: 'indigo', order: 34.6, category: 'image-text', href: '/avif-image-converter.html', isExternal: true },
-  { key: 'image-batch-renamer', title: '图片批量重命名工具', desc: '批量导入图片后按关键词随机/顺序命名，支持手动编辑名称并下载重命名 ZIP', status: '启用', views: 0, color: 'indigo', order: 35, category: 'image-text' }
+  { key: 'image-to-pdf-batch', title: '批量图片转 PDF', desc: '批量导入图片并合并导出 PDF，支持排序、页边距、页面方向和适配方式设置', status: '启用', views: 0, color: 'blue', order: 504, category: 'image-media' },
+  { key: 'pdf-image-watermark-redaction', title: 'PDF / 图片 水印与打码工具', desc: '支持 PDF 与图片实时预览、水印叠加、拖拽框选打码、马赛克/模糊/遮挡和导出处理后的文件', status: '启用', views: 0, color: 'violet', order: 505, category: 'image-media' },
+  { key: 'image-label-adder', title: '图片/视频标签添加工具', desc: '批量为 JPG / JPEG / PNG 图片及 MP4 / MOV 视频写入 contains-synthetic-performer 标签，视频无需转码，本地处理不上传', status: '启用', views: 0, color: 'blue', order: 506, category: 'image-media', href: '/image-label-adder.html', isExternal: true },
+  { key: 'avif-image-converter', title: 'AVIF 图片格式转换工具', desc: '批量将 AVIF 图片转换为 PNG、JPEG 或 WebP，支持质量调节，全部在浏览器本地完成', status: '启用', views: 0, color: 'indigo', order: 507, category: 'image-media', href: '/avif-image-converter.html', isExternal: true },
+  { key: 'image-batch-renamer', title: '图片批量重命名工具', desc: '批量导入图片后按关键词随机/顺序命名，支持手动编辑名称并下载重命名 ZIP', status: '启用', views: 0, color: 'indigo', order: 508, category: 'image-media' },
+
+  { key: 'marketing-calendar-2026', title: '2026年电商营销日历', desc: '查看全年重点营销节点、节日大促和选品运营节奏安排', status: '启用', views: 0, color: 'indigo', order: 701, category: 'other', href: '/marketing-calendar.html', isExternal: true },
+  { key: 'marketing-calendar-summary-2026', title: '2026年亚马逊全球营销日历', desc: '快速查看亚马逊全球站点营销节点与活动节奏汇总', status: '启用', views: 0, color: 'blue', order: 702, category: 'other', href: '/marketing-calendar-summary.html', isExternal: true },
+  { key: 'china-industry-belts-entry', title: '中国产业带', desc: '查看中国产业带分布信息，便于选品、找供应链和货源调研', status: '启用', views: 0, color: 'orange', order: 703, category: 'other', href: '/china-industry-belts.html', isExternal: true },
+  { key: 'cpsc-efiling-screening-tool-entry', title: 'CPSC 合规与 eFiling 筛查工具', desc: '根据品类、年龄段、材料和申报场景快速筛查 CPSC 与 eFiling 相关要求，辅助美国站合规判断', status: '启用', views: 0, color: 'red', order: 704, category: 'other', href: '/cpsc_efiling_screening_tool.html', isExternal: true }
 ]
