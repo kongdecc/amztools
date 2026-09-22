@@ -76,6 +76,7 @@ export default function ClientPage({
     'freight-invoice-studio': FileText,
     'sqp-lens': BarChart3,
     'amazon-fee-visualizer': Calculator,
+    'amazon-sales-dashboard': BarChart3,
     'amazon-label-sorter': FileText,
     'freight-rate-radar': Truck,
     'fba-warehouses': Warehouse,

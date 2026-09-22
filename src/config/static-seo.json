@@ -64,6 +64,11 @@
     "description": "按费用类型查询亚马逊 FBA 配送费、仓储费及其他费用，支持尺寸、重量与计费条件筛选。",
     "canonical": "/amazon-fee-visualizer/index.html"
   },
+  "/amazon-sales-dashboard/index.html": {
+    "title": "亚马逊销售数据可视化看板",
+    "description": "导入 CSV 或 XLSX 销售报告，分析销售趋势、商品表现、地区结构、月度变化与原始明细。",
+    "canonical": "/amazon-sales-dashboard/index.html"
+  },
   "/image-label-adder.html": {
     "title": "图片/视频标签添加工具",
     "description": "批量为图片和视频写入 contains-synthetic-performer 标签，本地处理。",

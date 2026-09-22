@@ -152,6 +152,7 @@ export const DEFAULT_TOOLS = [
   { key: 'carton-calc-advanced', title: '外箱装箱计算器', desc: '支持 6 种朝向 + 单层补洞混合摆放，估算更接近实际装箱结果', status: '启用', views: 0, color: 'orange', order: 306, category: 'shipping-logistics' },
   { key: 'partner-equity-calculator', title: '合伙人权益计算器', desc: '支持2人/3人合伙模式，自动计算资金股/人力股比例及股权价值，支持Excel导出和打印', status: '启用', views: 0, color: 'teal', order: 31, category: 'other' },
   { key: 'sales-calc', title: '亚马逊销售额计算', desc: '智能计算亚马逊销售报表总金额，自动匹配历史汇率，支持多文件批量处理', status: '启用', views: 0, color: 'indigo', order: 207, category: 'listing-operation' },
+  { key: 'amazon-sales-dashboard', title: '亚马逊销售数据可视化看板', desc: '导入 CSV 或 XLSX 销售报告，分析销售趋势、商品表现、地区结构、月度变化与原始明细', status: '启用', views: 0, color: 'blue', order: 208, category: 'listing-operation', href: '/amazon-sales-dashboard/index.html', isExternal: true },
   { key: 'txt-excel-batch-converter', title: 'TXT 与 Excel 双向批量转换', desc: '支持多个 TXT 批量转 Excel，也支持多个 Excel / XLS / CSV 批量转 TXT，本地处理并支持 ZIP 下载', status: '启用', views: 0, color: 'blue', order: 609, category: 'text-data' },
   { key: 'certification-directory', title: '跨境认证大全', desc: '汇总美国、欧盟、日本、澳洲及全球常见跨境认证，支持按地区、类型和关键词快速检索', status: '启用', views: 0, color: 'teal', order: 32.8, category: 'other' },
   { key: 'image-to-pdf-batch', title: '批量图片转 PDF', desc: '批量导入图片并合并导出 PDF，支持排序、页边距、页面方向和适配方式设置', status: '启用', views: 0, color: 'blue', order: 504, category: 'image-media' },
