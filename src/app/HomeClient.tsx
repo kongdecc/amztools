@@ -7,6 +7,7 @@ import Head from 'next/head'
 import Link from 'next/link'
 import ToolContainer from '@/components/ToolContainer'
 import TopAdBar from '@/components/TopAdBar'
+import ImageAdSlot from '@/components/ImageAdSlot'
 import { DEFAULT_CATEGORIES, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 import { PERSONAL_TOP_CATEGORY_KEY, PERSONAL_TOP_CATEGORY_LABEL, PERSONAL_TOP_LIMIT, getPersonalTopModules, recordPersonalToolVisit, sortModulesWithPersonalTop, subscribePersonalToolUsage } from '@/lib/personal-top-tools'
 
@@ -743,6 +744,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
               )
             })}
           </div>
+          <ImageAdSlot placement="sidebar" />
           {process.env.NODE_ENV !== 'production' && (
             <div className="p-4 border-t border-gray-100">
               <div className="flex gap-2">
@@ -861,7 +863,10 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
                 </div>
               </div>
             ) : (
-              <ToolContainer activeTab={activeTab} />
+              <>
+                <ToolContainer activeTab={activeTab} />
+                <ImageAdSlot placement="detail-bottom" />
+              </>
             )}
           </div>
           

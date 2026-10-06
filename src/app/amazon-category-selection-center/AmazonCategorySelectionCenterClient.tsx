@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ChevronDown, ExternalLink, LayoutDashboard, MoreHorizontal } from 'lucide-react'
 import TopAdBar from '@/components/TopAdBar'
+import ImageAdSlot from '@/components/ImageAdSlot'
 import { useSettings } from '@/components/SettingsProvider'
 import { DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 
@@ -279,6 +280,7 @@ export default function AmazonCategorySelectionCenterClient({
               />
             </div>
           </div>
+          <ImageAdSlot placement="detail-bottom" />
         </div>
       </main>
 

@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation'
 import { LayoutDashboard, Calculator, Crosshair, Type, Scale, CaseSensitive, ListOrdered, BarChart3, Truck, Trash2, AlertCircle, CheckCircle, Filter, Image as ImageIcon, Globe, Star, Hammer, Search, Activity, Users, Box, Warehouse, FileText, Tags } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 import TopAdBar from '@/components/TopAdBar'
+import ImageAdSlot from '@/components/ImageAdSlot'
 import { ChevronDown } from 'lucide-react'
 import ToolContainer from '@/components/ToolContainer'
 import { DEFAULT_NAV_ITEMS, DEFAULT_TOOLS, DEFAULT_CATEGORIES, DEFAULT_SITE_SETTINGS, ensureNavItems } from '@/lib/constants'
@@ -283,6 +284,7 @@ export default function ClientPage({
       <main className="flex-1 p-8">
         <div className={key === 'amazon-ads-analyzer' || key === 'amazon-bulk-ads-tool' ? "w-full" : "max-w-7xl mx-auto"}>
           {renderTool()}
+          <ImageAdSlot placement="detail-bottom" />
         </div>
       </main>
       <div className="mt-auto text-center py-6">

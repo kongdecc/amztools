@@ -17,6 +17,41 @@
       "imageHeight": 200
     }
   ],
+  "placements": {
+    "sidebar": {
+      "enabled": true,
+      "imageUrl": "",
+      "linkUrl": "",
+      "alt": "桌面侧边栏广告",
+      "openInNewTab": true,
+      "imageWidth": 440,
+      "imageHeight": 360,
+      "notes": {
+        "usage": "填写 imageUrl 后显示；enabled=false 或 imageUrl 为空时不显示、不占位置。此开关独立于页眉广告的 enabled。支持 / 开头的本站图片路径或 HTTPS 图片地址；linkUrl 留空时图片不可点击。",
+        "location": "首页布局左侧导航分类下方；仅桌面宽度（768px 及以上）且侧边栏展开时显示。工具全屏模式及没有侧边栏的独立详情页不显示。",
+        "recommendedSize": "440×360px（2倍清晰度，对应约220×180px显示）；也可使用440×440px方图。",
+        "display": "按侧边栏可用宽度等比例显示，不裁切、不拉伸。imageWidth/imageHeight 应填写实际素材像素尺寸，用于提前预留比例、减少图片加载时的布局跳动。建议用JPG、PNG或WebP。"
+      }
+    },
+    "detail-bottom": {
+      "enabled": true,
+      "imageUrl": "",
+      "linkUrl": "",
+      "alt": "工具详情底部广告",
+      "openInNewTab": true,
+      "imageWidth": 1200,
+      "imageHeight": 240,
+      "notes": {
+        "usage": "填写 imageUrl 后显示；enabled=false 或 imageUrl 为空时不显示、不占位置。此开关独立于页眉广告的 enabled。每个广告位可单独配置图片、链接和打开方式。修改JSON后需重新构建部署。",
+        "location": "站内工具详情主体下方、页脚上方，包括首页tab打开的工具、/functionality/[key]和类目选品管理中心；首页及工具列表不显示。直接打开的独立静态HTML工具不使用此站内组件。",
+        "recommendedSize": "1200×240px（5:1横幅）；高清素材建议2400×480px。移动端可填写 mobileImageUrl 使用750×300px（5:2）的单独素材，并填写对应mobileImageWidth/mobileImageHeight。",
+        "display": "桌面和手机均按内容区域宽度等比例显示，不裁切、不拉伸。imageWidth/imageHeight 应与素材实际尺寸一致，预留空间以减少加载跳动。手机未提供单独素材时沿用桌面横幅，文案需保持简洁、大字号。"
+      },
+      "mobileImageUrl": "",
+      "mobileImageWidth": 750,
+      "mobileImageHeight": 300
+    }
+  },
   "notes": {
     "usage": "enabled=true 时显示。type 支持 auto、image、text。推荐日常用 auto：有 imageUrl 时优先显示图片，没有 imageUrl 时自动回退显示 text。",
     "quickStart": "文字广告：type=text 并填写 text。第一张图片填写 imageUrl；更多图片填写 additionalImages 数组。数组中的 imageUrl 为空时不显示，也不占位置。",
