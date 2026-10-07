@@ -40,7 +40,7 @@ export default function ImageAdSlot({ placement }: { placement: Placement }) {
         ? 'hidden shrink-0 border-t border-gray-100 p-4 md:block'
         : 'mt-8 w-full rounded-xl border border-gray-100 bg-white p-3'}
     >
-      <div className="mb-2 text-[11px] text-gray-400">广告</div>
+      {config.showLabel !== false && <div className="mb-2 text-[11px] text-gray-400">广告</div>}
       {linkUrl ? (
         <a
           href={linkUrl}

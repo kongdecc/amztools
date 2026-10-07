@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import { injectStaticImageAd } from './static-image-ad.mjs'
 
 const BAIDU_ANALYTICS_ID = 'f41283b760f768032fa2b7990826c3c3'
 const GOOGLE_ANALYTICS_ID = 'G-MDVMB3KBBP'
@@ -9,6 +10,7 @@ const HTML_SUFFIX = '.html'
 const SITE_FAVICON_SNIPPET = '<link rel="icon" href="/site-icon-v2.svg" type="image/svg+xml" />'
 const siteSeo = JSON.parse(fs.readFileSync(new URL('../src/config/site-seo.json', import.meta.url), 'utf8'))
 const staticSeo = JSON.parse(fs.readFileSync(new URL('../src/config/static-seo.json', import.meta.url), 'utf8'))
+const adConfig = JSON.parse(fs.readFileSync(new URL('../src/config/top-ad.json', import.meta.url), 'utf8'))
 const escapeHtml = value => String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
 function injectSeo(content, filePath) {
@@ -159,7 +161,8 @@ let updatedCount = 0
 
 for (const filePath of htmlFiles) {
   const original = fs.readFileSync(filePath, 'utf8')
-  const injected = injectSeo(injectAnalytics(original), filePath)
+  const pagePath = '/' + path.relative(PUBLIC_DIR, filePath).split(path.sep).join('/')
+  const injected = injectStaticImageAd(injectSeo(injectAnalytics(original), filePath), adConfig, pagePath)
 
   if (injected === original) continue
 

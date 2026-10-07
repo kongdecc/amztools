@@ -20,6 +20,7 @@
   "placements": {
     "sidebar": {
       "enabled": true,
+      "showLabel": true,
       "imageUrl": "",
       "linkUrl": "",
       "alt": "桌面侧边栏广告",
@@ -29,12 +30,14 @@
       "notes": {
         "usage": "填写 imageUrl 后显示；enabled=false 或 imageUrl 为空时不显示、不占位置。此开关独立于页眉广告的 enabled。支持 / 开头的本站图片路径或 HTTPS 图片地址；linkUrl 留空时图片不可点击。",
         "location": "首页布局左侧导航分类下方；仅桌面宽度（768px 及以上）且侧边栏展开时显示。工具全屏模式及没有侧边栏的独立详情页不显示。",
+        "label": "showLabel=true 显示左上角广告字样；false 隐藏字样，图片和链接继续显示。",
         "recommendedSize": "440×360px（2倍清晰度，对应约220×180px显示）；也可使用440×440px方图。",
         "display": "按侧边栏可用宽度等比例显示，不裁切、不拉伸。imageWidth/imageHeight 应填写实际素材像素尺寸，用于提前预留比例、减少图片加载时的布局跳动。建议用JPG、PNG或WebP。"
       }
     },
     "detail-bottom": {
       "enabled": true,
+      "showLabel": true,
       "imageUrl": "https://pub-2a43946b555a4a1d8c9fcabbb581ed41.r2.dev/zhekouma_3072x320%20(2).png",
       "linkUrl": "",
       "alt": "工具详情底部广告",
@@ -43,7 +46,8 @@
       "imageHeight": 240,
       "notes": {
         "usage": "填写 imageUrl 后显示；enabled=false 或 imageUrl 为空时不显示、不占位置。此开关独立于页眉广告的 enabled。每个广告位可单独配置图片、链接和打开方式。修改JSON后需重新构建部署。",
-        "location": "站内工具详情主体下方、页脚上方，包括首页tab打开的工具、/functionality/[key]和类目选品管理中心；首页及工具列表不显示。直接打开的独立静态HTML工具不使用此站内组件。",
+        "location": "工具详情主体下方、页脚上方，覆盖站内详情和public目录中新窗口打开的静态HTML工具（如CPSC）。静态工具通过构建脚本自动接入；iframe嵌入时不重复显示。首页及工具列表不显示。",
+        "label": "showLabel=true 显示左上角广告字样；false 隐藏字样，图片和链接继续显示。静态工具页与站内详情共用此开关。",
         "recommendedSize": "1200×240px（5:1横幅）；高清素材建议2400×480px。移动端可填写 mobileImageUrl 使用750×300px（5:2）的单独素材，并填写对应mobileImageWidth/mobileImageHeight。",
         "display": "桌面和手机均按内容区域宽度等比例显示，不裁切、不拉伸。imageWidth/imageHeight 应与素材实际尺寸一致，预留空间以减少加载跳动。手机未提供单独素材时沿用桌面横幅，文案需保持简洁、大字号。"
       },
