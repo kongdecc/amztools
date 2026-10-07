@@ -686,7 +686,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
       <div className="flex flex-1">
         {!isFull && (
         <aside className="w-64 bg-white border-r border-gray-200 flex-shrink-0 hidden md:flex flex-col">
-          <div className="p-4 space-y-1 flex-1 overflow-y-auto">
+          <div className="shrink-0 p-4 space-y-1">
             {menuItems.map((item: any) => {
               if (item.children && item.children.length > 0) {
                 const isExpanded = !!expandedCategories[item.id] // Default collapsed
