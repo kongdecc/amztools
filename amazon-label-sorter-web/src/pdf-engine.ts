@@ -7,8 +7,8 @@ import {
   PDFRawStream,
   StandardFonts,
   decodePDFRawStream,
-  PageBoundingBox,
   rgb,
+  type PageBoundingBox,
 } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
@@ -36,6 +36,7 @@ export interface LabelPage {
   madeInChinaPresent: boolean;
   fbaCodeBox?: { y: number; height: number };
   detailBaselineY?: number;
+  shipFrom?: { x: number; y: number; headingWidth: number };
   contentBox?: PageBoundingBox;
 }
 
@@ -54,6 +55,7 @@ export interface GroupSummary {
 
 export interface GenerateOptions {
   removeCompany: boolean;
+  reduceShipFrom: boolean;
   addMadeInChina: boolean;
   cropForThermal: boolean;
   onProgress?: (done: number, total: number, message: string) => void;
@@ -176,7 +178,7 @@ export async function scanPdfs(files: File[], onProgress?: GenerateOptions['onPr
         if (!('str' in item)) return [];
         const text = clean(item.str);
         if (!text) return [];
-        return [{ text, transform: item.transform, height: item.height }];
+        return [{ text, transform: item.transform, width: item.width, height: item.height }];
       });
       const lines = textItems.map((item) => item.text);
       const sku = findSku(lines);
@@ -185,6 +187,12 @@ export async function scanPdfs(files: File[], onProgress?: GenerateOptions['onPr
       } else {
         const fbaCode = textItems.find((item) => /^FBA[A-Z0-9]{8,}$/i.test(item.text));
         const detailLabel = textItems.find((item) => /^(?:Mixed\s*SKUs?|Single\s*SKU)$/i.test(item.text));
+        const shipFromHeading = textItems.find((item) => /^(?:发货地|Ship\s+from)\s*[:：]?$/i.test(item.text));
+        const shipFromCountry = shipFromHeading
+          ? textItems.find((item) => /^(?:中国|China)$/i.test(item.text)
+            && Math.abs(item.transform[4] - shipFromHeading.transform[4]) < 3
+            && item.transform[5] < shipFromHeading.transform[5])
+          : undefined;
         pages.push({
           sourceIndex,
           sourceName: file.name,
@@ -196,6 +204,11 @@ export async function scanPdfs(files: File[], onProgress?: GenerateOptions['onPr
           madeInChinaPresent: lines.some((line) => /Made\s+in\s+China/i.test(line)),
           fbaCodeBox: fbaCode ? { y: fbaCode.transform[5], height: fbaCode.height } : undefined,
           detailBaselineY: detailLabel?.transform[5],
+          shipFrom: shipFromHeading && shipFromCountry ? {
+            x: shipFromHeading.transform[4],
+            y: shipFromHeading.transform[5],
+            headingWidth: shipFromHeading.width,
+          } : undefined,
         });
       }
       processed += 1;
@@ -310,6 +323,69 @@ function removeCompanyFromPage(doc: PDFDocument, page: PDFPage): boolean {
   return changed;
 }
 
+function reduceShipFromOperators(
+  decoded: Uint8Array,
+  anchor: NonNullable<LabelPage['shipFrom']>,
+): { bytes: Uint8Array; changed: boolean } {
+  const original = bytesToBinary(decoded);
+  let changed = false;
+  const updated = original.replace(/BT[\s\S]*?\bET/g, (block) => {
+    const matrices = [...block.matchAll(/1\s+0\s+0\s+1\s+(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s+Tm/g)];
+    const isShipFromBlock = matrices.some((match) => (
+      Math.abs(Number(match[1]) - anchor.x) < 0.6 && Math.abs(Number(match[2]) - anchor.y) < 0.6
+    ));
+    if (!isShipFromBlock) return block;
+
+    const textOperators = [...block.matchAll(/\((?:\\.|[^\\)])*\)\s*Tj/g)];
+    const fontOperator = block.match(/\/[^\s]+\s+\d+(?:\.\d+)?\s+Tf/)?.[0];
+    if (textOperators.length < 2 || !fontOperator) return block;
+
+    const heading = textOperators[0][0];
+    const country = textOperators[textOperators.length - 1][0];
+    const countryX = anchor.x + anchor.headingWidth;
+    changed = true;
+    return [
+      'BT',
+      `1 0 0 1 ${anchor.x.toFixed(2)} ${anchor.y.toFixed(2)} Tm`,
+      fontOperator,
+      '0 0 0 rg',
+      heading,
+      '0 g',
+      `1 0 0 1 ${countryX.toFixed(2)} ${anchor.y.toFixed(2)} Tm`,
+      '0 0 0 rg',
+      country,
+      '0 g',
+      'ET',
+    ].join('\n');
+  });
+  return { bytes: changed ? binaryToBytes(updated) : decoded, changed };
+}
+
+function reduceShipFromOnPage(doc: PDFDocument, page: PDFPage, anchor: NonNullable<LabelPage['shipFrom']>): boolean {
+  const contents = page.node.Contents();
+  if (!contents) return false;
+  let changed = false;
+  const replaceStream = (stream: PDFRawStream): ReturnType<PDFDocument['context']['register']> | undefined => {
+    const decoded = decodePDFRawStream(stream).decode();
+    const replacement = reduceShipFromOperators(decoded, anchor);
+    if (!replacement.changed) return undefined;
+    changed = true;
+    return doc.context.register(doc.context.flateStream(replacement.bytes));
+  };
+  if (contents instanceof PDFArray) {
+    for (let i = 0; i < contents.size(); i += 1) {
+      const stream = contents.lookupMaybe(i, PDFRawStream);
+      if (!stream) continue;
+      const replacement = replaceStream(stream);
+      if (replacement) contents.set(i, replacement);
+    }
+  } else if (contents instanceof PDFRawStream) {
+    const replacement = replaceStream(contents);
+    if (replacement) page.node.set(PDFName.of('Contents'), replacement);
+  }
+  return changed;
+}
+
 function addMadeInChina(page: PDFPage, font: PDFFont, label: LabelPage): void {
   const { width, height } = page.getSize();
   const sx = width / 595.72;
@@ -388,7 +464,7 @@ export async function generateZip(scan: ScanResult, options: GenerateOptions): P
     const font = options.addMadeInChina ? await out.embedFont(StandardFonts.HelveticaBold) : undefined;
     out.setTitle(`Amazon 标签归集 - ${sku}`);
     out.setSubject('按 SKU 或混装类型跨仓库归集');
-    out.setCreator('Amazon 箱唛按 SKU 归集工具 Web v1.2.0');
+    out.setCreator('Amazon 箱唛按 SKU 归集工具 Web v1.3.0');
 
     for (const label of pages) {
       const sourceDoc = sourceDocs[label.sourceIndex];
@@ -396,6 +472,15 @@ export async function generateZip(scan: ScanResult, options: GenerateOptions): P
         const changed = removeCompanyFromPage(sourceDoc, sourceDoc.getPage(label.pageIndex));
         if (!changed) {
           throw new Error(`${label.sourceName} 第 ${label.pageIndex + 1} 页的公司名使用了暂不支持的编码。为避免只遮盖但仍可复制，已停止生成。`);
+        }
+      }
+      if (options.reduceShipFrom) {
+        if (!label.shipFrom) {
+          throw new Error(`${label.sourceName} 第 ${label.pageIndex + 1} 页未识别到包含“中国”的发货地址，无法安全精简。`);
+        }
+        const changed = reduceShipFromOnPage(sourceDoc, sourceDoc.getPage(label.pageIndex), label.shipFrom);
+        if (!changed) {
+          throw new Error(`${label.sourceName} 第 ${label.pageIndex + 1} 页的发货地址使用了暂不支持的编码，已停止生成。`);
         }
       }
       const [copied] = await out.copyPages(sourceDoc, [label.pageIndex]);
@@ -410,7 +495,7 @@ export async function generateZip(scan: ScanResult, options: GenerateOptions): P
 
   zipFiles['分组明细.csv'] = strToU8(buildCsv(scan.pages));
   zipFiles['使用说明.txt'] = strToU8(
-    'Amazon 箱唛按 SKU 归集工具 Web v1.2.0\r\n' +
+    'Amazon 箱唛按 SKU 归集工具 Web v1.3.0\r\n' +
       '文件均在您的浏览器本地处理，不会上传服务器。\r\n' +
       `本次共处理 ${scan.sources.length} 个源文件、${scan.pages.length} 张标签、${groups.size} 个归集分组。\r\n`,
   );

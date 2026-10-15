@@ -61,7 +61,8 @@ await waitUntil(`!document.querySelector('#result').hidden && !document.querySel
 const preview = await evaluate(`document.querySelector('#result').innerText`);
 console.log(preview.replace(/\n+/g, ' | '));
 
-await evaluate(`document.querySelector('#removeCompany').checked = ${process.env.REMOVE_COMPANY !== '0'}; document.querySelector('#addMade').checked = true; document.querySelector('#cropForThermal').checked = ${process.env.CROP_FOR_THERMAL === '1'}; document.querySelector('#generateBtn').click()`);
+await evaluate(`document.querySelector('#removeCompany').checked = ${process.env.REMOVE_COMPANY !== '0'}; document.querySelector('#reduceShipFrom').checked = ${process.env.REDUCE_SHIP_FROM === '1'}; document.querySelector('#addMade').checked = ${process.env.ADD_MADE_IN_CHINA !== '0'}; document.querySelector('#cropForThermal').checked = ${process.env.CROP_FOR_THERMAL === '1'}; document.querySelector('#generateBtn').click()`);
+console.log(await evaluate(`['removeCompany', 'reduceShipFrom', 'addMade', 'cropForThermal'].map((id) => id + '=' + document.querySelector('#' + id).checked).join(' | ')`));
 await waitUntil(`document.querySelector('#statusText').textContent.includes('生成完成')`, 120_000);
 console.log('ZIP generation completed');
 socket.close();

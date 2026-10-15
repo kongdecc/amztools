@@ -1,7 +1,7 @@
 import './styles.css';
 import { generateZip, scanPdfs, summarizeGroups, type ScanResult } from './pdf-engine';
 
-const VERSION = 'Web v1.2.0';
+const VERSION = 'Web v1.3.0';
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div id="site-header-container">
@@ -40,6 +40,10 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <label class="option">
         <input id="removeCompany" type="checkbox"><span class="check"></span>
         <span><strong>去掉公司名</strong><small>删除 FBA: / AWD: 后面的公司名文字，不是简单白色遮盖</small></span>
+      </label>
+      <label class="option">
+        <input id="reduceShipFrom" type="checkbox"><span class="check"></span>
+        <span><strong>精简发货地址</strong><small>删除发货人、地区、邮编和街道信息，仅保留“发货地：中国”</small></span>
       </label>
       <label class="option">
         <input id="addMade" type="checkbox"><span class="check"></span>
@@ -109,6 +113,7 @@ const scanBtn = document.querySelector<HTMLButtonElement>('#scanBtn')!;
 const generateBtn = document.querySelector<HTMLButtonElement>('#generateBtn')!;
 const resetBtn = document.querySelector<HTMLButtonElement>('#resetBtn')!;
 const removeCompany = document.querySelector<HTMLInputElement>('#removeCompany')!;
+const reduceShipFrom = document.querySelector<HTMLInputElement>('#reduceShipFrom')!;
 const addMade = document.querySelector<HTMLInputElement>('#addMade')!;
 const cropForThermal = document.querySelector<HTMLInputElement>('#cropForThermal')!;
 const progressBox = document.querySelector<HTMLDivElement>('#progressBox')!;
@@ -144,6 +149,7 @@ function setBusy(busy: boolean): void {
   generateBtn.disabled = busy;
   chooseBtn.disabled = busy;
   removeCompany.disabled = busy;
+  reduceShipFrom.disabled = busy;
   addMade.disabled = busy;
   cropForThermal.disabled = busy;
 }
@@ -219,7 +225,7 @@ generateBtn.addEventListener('click', async () => {
   setBusy(true);
   try {
     updateProgress(0, scanResult.pages.length, '正在准备输出文件…');
-    const zip = await generateZip(scanResult, { removeCompany: removeCompany.checked, addMadeInChina: addMade.checked, cropForThermal: cropForThermal.checked, onProgress: updateProgress });
+    const zip = await generateZip(scanResult, { removeCompany: removeCompany.checked, reduceShipFrom: reduceShipFrom.checked, addMadeInChina: addMade.checked, cropForThermal: cropForThermal.checked, onProgress: updateProgress });
     const blob = new Blob([zip as BlobPart], { type: 'application/zip' });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
