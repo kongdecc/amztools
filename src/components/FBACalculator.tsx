@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { getDeliverySeason } from '../lib/delivery-season';
 import { Truck, Save, RotateCcw, Copy, Trash2, ChevronDown, ChevronUp, Download } from 'lucide-react';
 
 // --- Shared UI Components (matching HomeClient.tsx) ---
@@ -718,23 +719,22 @@ export default function FBACalculatorPage() {
   }, []);
 
   useEffect(() => {
-    const now = new Date();
-    const toNum = (yy:number, mm:number, dd:number) => yy * 10000 + mm * 100 + dd;
-    const inRange = (sY:number,sM:number,sD:number,eY:number,eM:number,eD:number) => {
-      const cur = toNum(now.getFullYear(), now.getMonth()+1, now.getDate());
-      const s = toNum(sY,sM,sD);
-      const e = toNum(eY,eM,eD);
-      return cur >= s && cur <= e;
+    if (!inputs.autoSeason) return;
+    const syncSeason = () => {
+      const { season, version } = getDeliverySeason();
+      setInputs((prev: any) => {
+        if (!prev.autoSeason || (prev.season === season && prev.version === version)) return prev;
+        return { ...prev, season, version };
+      });
     };
-    if (inputs.autoSeason) {
-      let season = 'non_peak';
-      let version = '2025';
-      if (inRange(2025,10,15,2026,1,14)) { season = 'peak'; version = '2025'; }
-      else if (toNum(now.getFullYear(), now.getMonth()+1, now.getDate()) >= toNum(2026,1,15)) { season = 'non_peak'; version = '2026'; }
-      else { season = 'non_peak'; version = '2025'; }
-      setInputs((prev:any) => ({ ...prev, season, version }));
-    }
-  }, [inputs.autoSeason]);
+    syncSeason();
+    const timer = window.setInterval(syncSeason, 60_000);
+    window.addEventListener('focus', syncSeason);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener('focus', syncSeason);
+    };
+  }, [inputs.autoSeason, inputs.season, inputs.version]);
 
   // Update logic
   useEffect(() => {
