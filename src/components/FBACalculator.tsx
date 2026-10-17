@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { getDeliverySeason } from '../lib/delivery-season';
+import { calculateDeliveryFee, deliveryRateTable } from '../lib/delivery-fee';
 import { Truck, Save, RotateCcw, Copy, Trash2, ChevronDown, ChevronUp, Download } from 'lucide-react';
 
 // --- Shared UI Components (matching HomeClient.tsx) ---
@@ -71,43 +72,35 @@ const SizeClassificationTable = () => (
         </tr>
         <tr>
           <td className="border border-gray-200 p-2">小号大件</td>
-          <td className="border border-gray-200 p-2">≤70磅</td>
-          <td className="border border-gray-200 p-2">≤60英寸</td>
-          <td className="border border-gray-200 p-2">≤30英寸</td>
-          <td className="border border-gray-200 p-2">不适用</td>
-          <td className="border border-gray-200 p-2">≤130英寸</td>
-        </tr>
-        <tr>
-          <td className="border border-gray-200 p-2">中号大件</td>
-          <td className="border border-gray-200 p-2">≤150磅</td>
-          <td className="border border-gray-200 p-2">≤108英寸</td>
-          <td className="border border-gray-200 p-2">不适用</td>
-          <td className="border border-gray-200 p-2">不适用</td>
+          <td className="border border-gray-200 p-2">≤50磅</td>
+          <td className="border border-gray-200 p-2">≤37英寸</td>
+          <td className="border border-gray-200 p-2">≤28英寸</td>
+          <td className="border border-gray-200 p-2">≤20英寸</td>
           <td className="border border-gray-200 p-2">≤130英寸</td>
         </tr>
         <tr>
           <td className="border border-gray-200 p-2">大号大件</td>
-          <td className="border border-gray-200 p-2">≤150磅</td>
-          <td className="border border-gray-200 p-2">≤108英寸</td>
-          <td className="border border-gray-200 p-2">不适用</td>
-          <td className="border border-gray-200 p-2">不适用</td>
-          <td className="border border-gray-200 p-2">≤165英寸</td>
+          <td className="border border-gray-200 p-2">≤50磅</td>
+          <td className="border border-gray-200 p-2">≤59英寸</td>
+          <td className="border border-gray-200 p-2">≤33英寸</td>
+          <td className="border border-gray-200 p-2">≤33英寸</td>
+          <td className="border border-gray-200 p-2">≤130英寸</td>
         </tr>
         <tr>
-          <td className="border border-gray-200 p-2">特殊大件</td>
-          <td className="border border-gray-200 p-2">超过150磅</td>
-          <td className="border border-gray-200 p-2">超过108英寸</td>
-          <td className="border border-gray-200 p-2">不适用</td>
-          <td className="border border-gray-200 p-2">不适用</td>
-          <td className="border border-gray-200 p-2">超过165英寸</td>
+          <td className="border border-gray-200 p-2">超大件</td>
+          <td className="border border-gray-200 p-2">不满足以上分段</td>
+          <td className="border border-gray-200 p-2">按重量分档</td>
+          <td className="border border-gray-200 p-2">—</td>
+          <td className="border border-gray-200 p-2">—</td>
+          <td className="border border-gray-200 p-2">—</td>
         </tr>
       </tbody>
     </table>
     <ul className="list-disc ml-5 mt-2 text-xs text-gray-600 space-y-1">
-      <li>发货重量为商品重量或体积重量中的较大值，用于确定尺寸分段。</li>
+      <li>以下为2026年尺寸分段；小号标准尺寸使用实际重量，其余分段通常比较商品重量和体积重量。</li>
       <li>对于大号标准尺寸、大号大件和超大件（150磅以下），亚马逊使用体积重量计费（如果体积重量&gt;商品重量）。</li>
-      <li>对于小号标准尺寸、超大件（150磅及以上），仅使用商品重量计费。</li>
-      <li>体积重量计算公式：<b>体积重量(磅) = (长x宽x高，单位英寸) ÷ 139</b>，宽和高最小取2英寸。</li>
+      <li>对于小号标准尺寸、实际重量超过150磅的超大件，仅使用商品重量计费。</li>
+      <li>体积重量计算公式：<b>体积重量(磅) = (长x宽x高，单位英寸) ÷ 139</b>；大件和超大件的宽、高最小取2英寸，大号标准尺寸不设该最小值。</li>
     </ul>
 
     <div className="mt-4">
@@ -124,8 +117,8 @@ const SizeClassificationTable = () => (
        <ul className="list-disc ml-5 text-xs text-gray-600 space-y-1">
          <li><b>移动设备壳</b>：13.8×9×0.7英寸，2.88盎司 → 分段：小号标准尺寸</li>
          <li><b>T恤</b>：8.5×4.8×1英寸，6.08盎司 → 分段：大号标准尺寸（服装）</li>
-         <li><b>婴儿床</b>：24×7.5×6英寸，7.9磅 → 分段：大号大件</li>
-         <li><b>显示器</b>：54×35×3.5英寸，体积重量47.59磅 → 分段：超大件</li>
+         <li><b>婴儿床</b>：24×7.5×6英寸，7.9磅 → 分段：小号大件</li>
+         <li><b>显示器</b>：54×35×3.5英寸，体积重量约47.59磅 → 分段：超大件</li>
          <li><b>消毒液</b>：12×6×3英寸，2磅 → 分段：大号标准尺寸（危险品）</li>
        </ul>
     </div>
@@ -189,7 +182,7 @@ const FeeTable = ({ initialSeason, initialVersion }: any) => {
   useEffect(() => { setSeason(initialSeason); setVersion(initialVersion); }, [initialSeason, initialVersion]);
 
   const seasonKey = season === 'peak' ? 'peak_2025' : (version === '2026' ? 'non_peak_2026' : 'non_peak_2025');
-  const currentData = feeData[tab]?.[seasonKey];
+  const currentData = version === '2026' ? deliveryRateTable(tab, season) : feeData[tab]?.[seasonKey];
 
   const renderRows = () => {
     if (!currentData) return <tr><td colSpan={5} className="p-4 text-center text-gray-500">暂无数据</td></tr>;
@@ -238,13 +231,13 @@ const FeeTable = ({ initialSeason, initialVersion }: any) => {
     }
 
     const so = currentData.small_oversize_0_50;
-    if (so) rows.push(<tr key="so"><td className="border border-gray-200 p-2">小号大件</td><td className="border border-gray-200 p-2">0至50磅</td><td className="border border-gray-200 p-2">${so.base.lt10.toFixed(2)} + 每磅${so.per_lb.toFixed(2)}</td><td className="border border-gray-200 p-2">${so.base.mid.toFixed(2)} + 每磅${so.per_lb.toFixed(2)}</td><td className="border border-gray-200 p-2">${so.base.high.toFixed(2)} + 每磅${so.per_lb.toFixed(2)}</td></tr>);
+    if (so) rows.push(<tr key="so"><td className="border border-gray-200 p-2">小号大件</td><td className="border border-gray-200 p-2">0至50磅（超过首磅加收）</td><td className="border border-gray-200 p-2">${so.base.lt10.toFixed(2)} + 每磅${so.per_lb.toFixed(2)}</td><td className="border border-gray-200 p-2">${so.base.mid.toFixed(2)} + 每磅${so.per_lb.toFixed(2)}</td><td className="border border-gray-200 p-2">${so.base.high.toFixed(2)} + 每磅${so.per_lb.toFixed(2)}</td></tr>);
 
     const lo = currentData.large_oversize_0_50;
-    if (lo) rows.push(<tr key="lo"><td className="border border-gray-200 p-2">大号大件</td><td className="border border-gray-200 p-2">0至50磅</td><td className="border border-gray-200 p-2">${lo.base.lt10.toFixed(2)} + 每磅${lo.per_lb.toFixed(2)}</td><td className="border border-gray-200 p-2">${lo.base.mid.toFixed(2)} + 每磅${lo.per_lb.toFixed(2)}</td><td className="border border-gray-200 p-2">${lo.base.high.toFixed(2)} + 每磅${lo.per_lb.toFixed(2)}</td></tr>);
+    if (lo) rows.push(<tr key="lo"><td className="border border-gray-200 p-2">大号大件</td><td className="border border-gray-200 p-2">0至50磅（超过首磅加收）</td><td className="border border-gray-200 p-2">${lo.base.lt10.toFixed(2)} + 每磅${lo.per_lb.toFixed(2)}</td><td className="border border-gray-200 p-2">${lo.base.mid.toFixed(2)} + 每磅${lo.per_lb.toFixed(2)}</td><td className="border border-gray-200 p-2">${lo.base.high.toFixed(2)} + 每磅${lo.per_lb.toFixed(2)}</td></tr>);
 
     const su0 = currentData.super_oversize_0_50;
-    if (su0) rows.push(<tr key="su0"><td className="border border-gray-200 p-2">超大件</td><td className="border border-gray-200 p-2">0至50磅</td><td className="border border-gray-200 p-2">${su0.base.lt10.toFixed(2)} + 每磅${su0.per_lb.toFixed(2)}</td><td className="border border-gray-200 p-2">${su0.base.mid.toFixed(2)} + 每磅${su0.per_lb.toFixed(2)}</td><td className="border border-gray-200 p-2">${su0.base.high.toFixed(2)} + 每磅${su0.per_lb.toFixed(2)}</td></tr>);
+    if (su0) rows.push(<tr key="su0"><td className="border border-gray-200 p-2">超大件</td><td className="border border-gray-200 p-2">0至50磅（超过首磅加收）</td><td className="border border-gray-200 p-2">${su0.base.lt10.toFixed(2)} + 每磅${su0.per_lb.toFixed(2)}</td><td className="border border-gray-200 p-2">${su0.base.mid.toFixed(2)} + 每磅${su0.per_lb.toFixed(2)}</td><td className="border border-gray-200 p-2">${su0.base.high.toFixed(2)} + 每磅${su0.per_lb.toFixed(2)}</td></tr>);
 
     const su5070 = currentData.super_oversize_50_70;
     if (su5070) rows.push(<tr key="su5070"><td className="border border-gray-200 p-2">超大件</td><td className="border border-gray-200 p-2">50至70磅</td><td className="border border-gray-200 p-2">${su5070.base.lt10.toFixed(2)} + 超出首重{su5070.start_lb}磅每磅${su5070.per_lb.toFixed(2)}</td><td className="border border-gray-200 p-2">${su5070.base.mid.toFixed(2)} + 超出首重{su5070.start_lb}磅每磅${su5070.per_lb.toFixed(2)}</td><td className="border border-gray-200 p-2">${su5070.base.high.toFixed(2)} + 超出首重{su5070.start_lb}磅每磅${su5070.per_lb.toFixed(2)}</td></tr>);
@@ -328,7 +321,7 @@ const FeeTable = ({ initialSeason, initialVersion }: any) => {
       </div>
       <ul className="list-disc ml-5 mt-2 text-xs text-gray-600 space-y-1">
         <li>服装类商品、危险品商品配送费用与普通商品有所不同，具体见上表。</li>
-        <li>所有费用按发货重量计费，发货重量为实际重量和体积重量中的较大值。</li>
+        <li>小号标准尺寸和实际重量超过150磅的超大件使用商品重量；其余使用实际重量与体积重量中的较大值。2026费率与费用可视化页面一致，表内基础费不含锂电池费及3.5%燃油物流附加费。</li>
       </ul>
     </div>
   );
@@ -381,16 +374,6 @@ const feeData: any = {
       super_oversize_70_150: { base: { lt10: 54.04, mid: 54.81, high: 54.81 }, start_lb: 71, per_lb: 0.75 },
       super_oversize_gt_150: { base: { lt10: 194.18, mid: 194.95, high: 194.95 }, start_lb: 151, per_lb: 0.19 }
     },
-    non_peak_2026: {
-      small_standard: { steps: [2,4,6,8,10,12,14,16], lt10: [2.43,2.49,2.56,2.66,2.77,2.82,2.92,2.95], mid: [3.32,3.42,3.45,3.54,3.68,3.78,3.91,3.96], high: [3.58,3.68,3.71,3.80,3.94,4.04,4.17,4.22] },
-      large_standard: { pre3_steps_oz: [4,8,12,16,20,24,28,32,36,40,44,48], lt10_pre3: [2.91,3.13,3.38,3.78,4.22,4.60,4.75,5.00,5.10,5.28,5.44,5.85], mid_pre3: [3.73,3.95,4.20,4.60,5.04,5.42,5.57,5.82,5.92,6.10,6.26,6.67], high_pre3: [3.99,4.21,4.46,4.86,5.30,5.68,5.83,6.08,6.18,6.36,6.52,6.93], post3_base: { lt10: 6.15, mid: 6.97, high: 7.23 }, post3_increment_per_4oz: 0.08 },
-      small_oversize_0_50: { base: { lt10: 6.69, mid: 7.55, high: 7.55 }, per_lb: 0.38 },
-      large_oversize_0_50: { base: { lt10: 8.49, mid: 9.35, high: 9.35 }, per_lb: 0.38 },
-      super_oversize_0_50: { base: { lt10: 25.47, mid: 26.33, high: 26.33 }, per_lb: 0.38 },
-      super_oversize_50_70: { base: { lt10: 36.46, mid: 37.32, high: 37.32 }, start_lb: 50, per_lb: 0.75 },
-      super_oversize_70_150: { base: { lt10: 50.46, mid: 51.32, high: 51.32 }, start_lb: 71, per_lb: 0.75 },
-      super_oversize_gt_150: { base: { lt10: 194.09, mid: 194.95, high: 194.95 }, start_lb: 151, per_lb: 0.19 }
-    },
     peak_2025: {
       small_standard: { steps: [2,4,6,8,10,12,14,16], lt10: [2.48,2.57,2.67,2.76,2.87,2.97,3.05,3.10], mid: [3.25,3.34,3.44,3.53,3.64,3.74,3.82,3.87], high: [3.25,3.34,3.44,3.53,3.64,3.74,3.82,3.87] },
       large_standard: { pre3_steps_oz: [4,8,12,16,20,24,28,32,36,40,44,48], lt10_pre3: [3.15,3.39,3.66,4.07,4.52,4.91,5.07,5.33,5.47,5.67,5.84,6.26], mid_pre3: [3.92,4.16,4.43,4.84,5.29,5.68,5.84,6.10,6.24,6.44,6.61,7.03], high_pre3: [3.92,4.16,4.43,4.84,5.29,5.68,5.84,6.10,6.24,6.44,6.61,7.03], post3_base: { lt10: 6.69, mid: 7.46, high: 7.46 }, post3_increment_per_4oz: 0.08 },
@@ -413,16 +396,6 @@ const feeData: any = {
       super_oversize_70_150: { base: { lt10: 54.04, mid: 54.81, high: 54.81 }, start_lb: 71, per_lb: 0.75 },
       super_oversize_gt_150: { base: { lt10: 194.18, mid: 194.95, high: 194.95 }, start_lb: 151, per_lb: 0.19 }
     },
-    non_peak_2026: {
-      small_standard: { steps: [2,4,6,8,10,12,14,16], lt10: [2.62,2.64,2.68,2.81,3.00,3.10,3.20,3.30], mid: [3.51,3.54,3.59,3.69,3.91,4.09,4.20,4.25], high: [3.77,3.80,3.85,3.95,4.17,4.35,4.46,4.51] },
-      large_standard: { pre3_steps_oz: [4,8,12,16,24,32,40,48], lt10_pre3: [3.48,3.68,3.90,4.35,5.05,5.22,5.32,5.43], mid_pre3: [4.30,4.50,4.72,5.17,5.87,6.04,6.14,6.25], high_pre3: [4.56,4.76,4.98,5.43,6.13,6.30,6.40,6.51], post3_base: { lt10: 6.78, mid: 6.97, high: 7.55 }, post3_increment_per_half_lb: 0.16 },
-      small_oversize_0_50: { base: { lt10: 8.75, mid: 9.61, high: 9.61 }, per_lb: 0.38 },
-      large_oversize_0_50: { base: { lt10: 8.49, mid: 9.35, high: 9.35 }, per_lb: 0.38 },
-      super_oversize_0_50: { base: { lt10: 25.47, mid: 26.33, high: 26.33 }, per_lb: 0.38 },
-      super_oversize_50_70: { base: { lt10: 36.46, mid: 37.32, high: 37.32 }, start_lb: 50, per_lb: 0.75 },
-      super_oversize_70_150: { base: { lt10: 50.46, mid: 51.32, high: 51.32 }, start_lb: 71, per_lb: 0.75 },
-      super_oversize_gt_150: { base: { lt10: 194.09, mid: 194.95, high: 194.95 }, start_lb: 151, per_lb: 0.19 }
-    },
     peak_2025: {
       small_standard: { steps: [2,4,6,8,10,12,14,16], lt10: [2.73,2.73,2.90,2.90,3.22,3.22,3.50,3.50], mid: [3.50,3.50,3.67,3.67,3.99,3.99,4.27,4.27], high: [3.50,3.50,3.67,3.67,3.99,3.99,4.27,4.27] },
       large_standard: { pre3_steps_oz: [4,8,12,16,20,24,28,32,36,40,44,48], lt10_pre3: [3.79,4.00,4.23,4.69,5.50,5.50,5.76,5.76,6.27,6.27,6.50,6.50], mid_pre3: [4.56,4.77,5.00,5.46,6.27,6.27,6.53,6.53,7.04,7.04,7.27,7.27], high_pre3: [4.56,4.77,5.00,5.46,6.27,6.27,6.53,6.53,7.04,7.04,7.27,7.27], post3_base: { lt10: 6.82, mid: 7.59, high: 7.59 }, post3_increment_per_half_lb: 0.16 },
@@ -444,16 +417,6 @@ const feeData: any = {
       super_oversize_50_70: { base: { lt10: 42.56, mid: 43.33, high: 43.33 }, start_lb: 50, per_lb: 0.75 },
       super_oversize_70_150: { base: { lt10: 61.17, mid: 61.94, high: 61.94 }, start_lb: 71, per_lb: 0.75 },
       super_oversize_gt_150: { base: { lt10: 218.76, mid: 219.53, high: 219.53 }, start_lb: 151, per_lb: 0.19 }
-    },
-    non_peak_2026: {
-      small_standard: { steps: [2,4,6,8,10,12,14,16], lt10: [3.40,3.43,3.48,3.55,3.64,3.65,3.73,3.73], mid: [4.29,4.36,4.37,4.43,4.55,4.61,4.72,4.72], high: [4.55,4.62,4.63,4.69,4.81,4.87,4.98,4.98] },
-      large_standard: { pre3_steps_oz: [20,24,28,32,36,40,44,48], lt10_pre3: [4.82,5.20,5.35,5.49,5.56,5.74,5.90,6.31], mid_pre3: [5.64,6.02,6.17,6.31,6.38,6.56,6.72,7.13], high_pre3: [5.90,6.28,6.43,6.57,6.64,6.82,6.98,7.39], post3_base: { lt10: 6.61, mid: 7.43, high: 7.69 }, post3_increment_per_4oz: 0.08 },
-      small_oversize_0_50: { base: { lt10: 7.41, mid: 8.27, high: 8.27 }, per_lb: 0.38 },
-      large_oversize_0_50: { base: { lt10: 9.21, mid: 10.07, high: 10.07 }, per_lb: 0.38 },
-      super_oversize_0_50: { base: { lt10: 27.58, mid: 28.44, high: 28.44 }, per_lb: 0.38 },
-      super_oversize_50_70: { base: { lt10: 39.67, mid: 40.53, high: 40.53 }, start_lb: 50, per_lb: 0.75 },
-      super_oversize_70_150: { base: { lt10: 57.59, mid: 58.45, high: 58.45 }, start_lb: 71, per_lb: 0.75 },
-      super_oversize_gt_150: { base: { lt10: 218.67, mid: 219.53, high: 219.53 }, start_lb: 151, per_lb: 0.19 }
     },
     peak_2025: {
       small_standard: { steps: [2,4,6,8,10,12,14,16], lt10: [3.60,3.69,3.79,3.88,3.99,4.08,4.16,4.25], mid: [4.37,4.46,4.56,4.65,4.76,4.85,4.93,5.02], high: [4.37,4.46,4.56,4.65,4.76,4.85,4.93,5.02] },
@@ -506,6 +469,110 @@ const REFERRAL_RULES: any = {
   "Video Games": { name: "视频游戏和游戏配件", rate: 0.15, min: 0 },
   "Watches": { name: "钟表", type: "tiered", threshold: 1500.00, rate1: 0.16, rate2: 0.03, min: 0.30 }
 };
+
+// Keep manually selected 2025 rates available for historical comparisons.
+function calculateShipping(inputs: any) {
+  const settings = inputs.autoSeason ? getDeliverySeason() : inputs;
+  if (settings.version === '2026') return calculateDeliveryFee(inputs);
+  inputs = { ...inputs, ...settings };
+    // 1. Calculate Shipping Fee
+    let l = parseFloat(inputs.length) || 0;
+    let w = parseFloat(inputs.width) || 0;
+    let h = parseFloat(inputs.height) || 0;
+
+    if (inputs.lengthUnit === 'cm') l = cmToInch(l);
+    if (inputs.widthUnit === 'cm') w = cmToInch(w);
+    if (inputs.heightUnit === 'cm') h = cmToInch(h);
+
+    let actualWeightOz = parseFloat(inputs.actualWeight) || 0;
+    if (inputs.weightUnit === 'g') actualWeightOz = gToOz(actualWeightOz);
+    if (inputs.weightUnit === 'kg') actualWeightOz = kgToOz(actualWeightOz);
+    if (inputs.weightUnit === 'lb') actualWeightOz = lbToOz(actualWeightOz);
+
+    const getVolumeWeight = (l: number, w: number, h: number) => {
+      let volumeLb = (l * w * h) / 139;
+      return Math.max(0, volumeLb);
+    };
+
+    let volumeWeightLb = getVolumeWeight(l, w, h);
+    let volumeWeightOz = volumeWeightLb * 16;
+
+    const getTier = (l: number, w: number, h: number, shipWeightOz: number) => {
+      const { l: L, w: W, h: H } = sort3(l, w, h);
+      const sum = L + 2 * W + 2 * H;
+      if (shipWeightOz <= 16 && L <= 15 && W <= 12 && H <= 0.75) return "小号标准尺寸";
+      if (shipWeightOz <= 320 && L <= 18 && W <= 14 && H <= 8) return "大号标准尺寸";
+      const weightLb = shipWeightOz / 16;
+      if (weightLb > 150 || L > 108 || sum > 165) return "超大件";
+      if (weightLb <= 70 && L <= 60 && W <= 30 && sum <= 130) return "小号大件";
+      if (weightLb <= 50 && L <= 108 && sum <= 165) return "大号大件";
+      return "超大件";
+    };
+
+    let tierTemp = getTier(l, w, h, actualWeightOz);
+    let shipWeightOz = actualWeightOz;
+    if (!(tierTemp === "小号标准尺寸" || (tierTemp === "超大件" && actualWeightOz >= 2400))) {
+      shipWeightOz = Math.max(actualWeightOz, volumeWeightOz);
+    }
+    let tier = getTier(l, w, h, shipWeightOz);
+
+    const getFee = (productType: string, tier: string, shipWeightOz: number, price: number) => {
+      let seasonKey = inputs.season === 'peak' ? 'peak_2025' : (inputs.version === '2026' ? 'non_peak_2026' : 'non_peak_2025');
+      const dataset = feeData[productType]?.[seasonKey];
+      if (!dataset) return 'N/A';
+
+      const band = getPriceBand(price);
+      const weightLb = shipWeightOz / 16;
+
+      if (tier === '小号标准尺寸') {
+        const steps = dataset.small_standard.steps;
+        const fees = dataset.small_standard[band];
+        for (let i = 0; i < steps.length; i++) { if (shipWeightOz <= steps[i]) return fees[i]; }
+        return 'N/A';
+      }
+      if (tier === '大号标准尺寸') {
+        const ls = dataset.large_standard;
+        const steps = ls.pre3_steps_oz;
+        const fees = ls[band + '_pre3'];
+        for (let i = 0; i < steps.length; i++) { if (shipWeightOz <= steps[i]) return fees[i]; }
+        if (productType === 'apparel') {
+            if (weightLb > 3) { const base = ls.post3_base[band]; const extra = Math.ceil((shipWeightOz - 48) / 8) * (ls.post3_increment_per_half_lb || 0); return base + extra; }
+        } else {
+            if (weightLb > 3) { const base = ls.post3_base[band]; const extra = Math.ceil((shipWeightOz - 48) / 4) * (ls.post3_increment_per_4oz || 0); return base + extra; }
+        }
+        return 'N/A';
+      }
+      if (tier === '小号大件') { const cfg = dataset.small_oversize_0_50; let fee = cfg.base[band]; if (weightLb > 1) fee += Math.ceil(weightLb - 1) * cfg.per_lb; return fee; }
+      if (tier === '大号大件') { const cfg = dataset.large_oversize_0_50; let fee = cfg.base[band]; if (weightLb > 1) fee += Math.ceil(weightLb - 1) * cfg.per_lb; return fee; }
+      if (tier === '超大件') {
+        if (weightLb <= 50) { const cfg = dataset.super_oversize_0_50; let fee = cfg.base[band]; if (weightLb > 1) fee += Math.ceil(weightLb - 1) * cfg.per_lb; return fee; }
+        if (weightLb <= 70) { const cfg = dataset.super_oversize_50_70; const fee = cfg.base[band] + Math.ceil(weightLb - cfg.start_lb) * cfg.per_lb; return fee; }
+        if (weightLb <= 150) { const cfg = dataset.super_oversize_70_150; const fee = cfg.base[band] + Math.ceil(weightLb - cfg.start_lb) * cfg.per_lb; return fee; }
+        const cfg = dataset.super_oversize_gt_150; const fee = cfg.base[band] + Math.ceil(weightLb - cfg.start_lb) * cfg.per_lb; return fee;
+      }
+      return 'N/A';
+    };
+
+    const priceUSD = parseFloat(inputs.priceUSD) || 0;
+    const fee = getFee(inputs.productType, tier, shipWeightOz, priceUSD);
+
+    let feeNum = 0;
+    if (fee !== 'N/A') {
+      feeNum = typeof fee === 'number' ? fee : parseFloat(fee);
+    }
+
+    const dims = sort3(l,w,h);
+    const sum = dims.l + 2*dims.w + 2*dims.h;
+    const weightLb = shipWeightOz / 16;
+    const surchargeSuggest = (tier === '超大件' && weightLb <= 150 && (dims.l > 96 || sum > 130));
+    const surchargeUSD = parseFloat(inputs.surchargeUSD) || 0;
+    const lithiumUSD = (inputs.productType !== 'danger' && inputs.hasLithium) ? 0.11 : 0;
+    const shippingFeeBase = feeNum + surchargeUSD + lithiumUSD;
+    const fuelUSD = shippingFeeBase * FUEL_SURCHARGE_RATE;
+    const totalShippingFee = shippingFeeBase + fuelUSD;
+
+  return { tier, shipWeightOz, fee, lithiumUSD, fuelUSD, totalShippingFee, surchargeSuggest, error: '' };
+}
 
 const STORAGE_KEY = 'fba_calc_history';
 
@@ -639,6 +706,7 @@ export default function FBACalculatorPage() {
     fuelUSD: 0,
     totalShippingFee: 0,
     surchargeSuggest: false,
+    error: '',
     amazonPayout: 0,
     productCostUSD: 0,
     totalCost: 0,
@@ -755,7 +823,6 @@ export default function FBACalculatorPage() {
     if (key === 'returnRateSlider') newInputs.returnRate = value;
     if (key === 'acos') newInputs.acosSlider = value;
     if (key === 'acosSlider') newInputs.acos = value;
-    if (key === 'productType' && value === 'danger') newInputs.hasLithium = false;
     if (key === 'autoSeason' && value === false) {
       newInputs.autoSeason = false;
     }
@@ -815,101 +882,7 @@ export default function FBACalculatorPage() {
   };
 
   const calculateAll = () => {
-    // 1. Calculate Shipping Fee
-    let l = parseFloat(inputs.length) || 0;
-    let w = parseFloat(inputs.width) || 0;
-    let h = parseFloat(inputs.height) || 0;
-    
-    if (inputs.lengthUnit === 'cm') l = cmToInch(l);
-    if (inputs.widthUnit === 'cm') w = cmToInch(w);
-    if (inputs.heightUnit === 'cm') h = cmToInch(h);
-
-    let actualWeightOz = parseFloat(inputs.actualWeight) || 0;
-    if (inputs.weightUnit === 'g') actualWeightOz = gToOz(actualWeightOz);
-    if (inputs.weightUnit === 'kg') actualWeightOz = kgToOz(actualWeightOz);
-    if (inputs.weightUnit === 'lb') actualWeightOz = lbToOz(actualWeightOz);
-
-    const getVolumeWeight = (l: number, w: number, h: number) => {
-      let volumeLb = (l * w * h) / 139;
-      return Math.max(0, volumeLb);
-    };
-
-    let volumeWeightLb = getVolumeWeight(l, w, h);
-    let volumeWeightOz = volumeWeightLb * 16;
-
-    const getTier = (l: number, w: number, h: number, shipWeightOz: number) => {
-      const { l: L, w: W, h: H } = sort3(l, w, h);
-      const sum = L + 2 * W + 2 * H;
-      if (shipWeightOz <= 16 && L <= 15 && W <= 12 && H <= 0.75) return "小号标准尺寸";
-      if (shipWeightOz <= 320 && L <= 18 && W <= 14 && H <= 8) return "大号标准尺寸";
-      const weightLb = shipWeightOz / 16;
-      if (weightLb > 150 || L > 108 || sum > 165) return "超大件";
-      if (weightLb <= 70 && L <= 60 && W <= 30 && sum <= 130) return "小号大件";
-      if (weightLb <= 50 && L <= 108 && sum <= 165) return "大号大件";
-      return "超大件";
-    };
-
-    let tierTemp = getTier(l, w, h, actualWeightOz);
-    let shipWeightOz = actualWeightOz;
-    if (!(tierTemp === "小号标准尺寸" || (tierTemp === "超大件" && actualWeightOz >= 2400))) {
-      shipWeightOz = Math.max(actualWeightOz, volumeWeightOz);
-    }
-    let tier = getTier(l, w, h, shipWeightOz);
-
-    const getFee = (productType: string, tier: string, shipWeightOz: number, price: number) => {
-      let seasonKey = inputs.season === 'peak' ? 'peak_2025' : (inputs.version === '2026' ? 'non_peak_2026' : 'non_peak_2025');
-      const dataset = feeData[productType]?.[seasonKey];
-      if (!dataset) return 'N/A';
-      
-      const band = getPriceBand(price);
-      const weightLb = shipWeightOz / 16;
-
-      if (tier === '小号标准尺寸') {
-        const steps = dataset.small_standard.steps;
-        const fees = dataset.small_standard[band];
-        for (let i = 0; i < steps.length; i++) { if (shipWeightOz <= steps[i]) return fees[i]; }
-        return 'N/A';
-      }
-      if (tier === '大号标准尺寸') {
-        const ls = dataset.large_standard;
-        const steps = ls.pre3_steps_oz;
-        const fees = ls[band + '_pre3'];
-        for (let i = 0; i < steps.length; i++) { if (shipWeightOz <= steps[i]) return fees[i]; }
-        if (productType === 'apparel') {
-            if (weightLb > 3) { const base = ls.post3_base[band]; const extra = Math.ceil((shipWeightOz - 48) / 8) * (ls.post3_increment_per_half_lb || 0); return base + extra; }
-        } else {
-            if (weightLb > 3) { const base = ls.post3_base[band]; const extra = Math.ceil((shipWeightOz - 48) / 4) * (ls.post3_increment_per_4oz || 0); return base + extra; }
-        }
-        return 'N/A';
-      }
-      if (tier === '小号大件') { const cfg = dataset.small_oversize_0_50; let fee = cfg.base[band]; if (weightLb > 1) fee += Math.ceil(weightLb - 1) * cfg.per_lb; return fee; }
-      if (tier === '大号大件') { const cfg = dataset.large_oversize_0_50; let fee = cfg.base[band]; if (weightLb > 1) fee += Math.ceil(weightLb - 1) * cfg.per_lb; return fee; }
-      if (tier === '超大件') {
-        if (weightLb <= 50) { const cfg = dataset.super_oversize_0_50; let fee = cfg.base[band]; if (weightLb > 1) fee += Math.ceil(weightLb - 1) * cfg.per_lb; return fee; }
-        if (weightLb <= 70) { const cfg = dataset.super_oversize_50_70; const fee = cfg.base[band] + Math.ceil(weightLb - cfg.start_lb) * cfg.per_lb; return fee; }
-        if (weightLb <= 150) { const cfg = dataset.super_oversize_70_150; const fee = cfg.base[band] + Math.ceil(weightLb - cfg.start_lb) * cfg.per_lb; return fee; }
-        const cfg = dataset.super_oversize_gt_150; const fee = cfg.base[band] + Math.ceil(weightLb - cfg.start_lb) * cfg.per_lb; return fee;
-      }
-      return 'N/A';
-    };
-
-    const priceUSD = parseFloat(inputs.priceUSD) || 0;
-    const fee = getFee(inputs.productType, tier, shipWeightOz, priceUSD);
-    
-    let feeNum = 0;
-    if (fee !== 'N/A') {
-      feeNum = typeof fee === 'number' ? fee : parseFloat(fee);
-    }
-
-    const dims = sort3(l,w,h);
-    const sum = dims.l + 2*dims.w + 2*dims.h;
-    const weightLb = shipWeightOz / 16;
-    const surchargeSuggest = (tier === '超大件' && weightLb <= 150 && (dims.l > 96 || sum > 130));
-    const surchargeUSD = parseFloat(inputs.surchargeUSD) || 0;
-    const lithiumUSD = (inputs.productType !== 'danger' && inputs.hasLithium) ? 0.11 : 0;
-    const shippingFeeBase = feeNum + surchargeUSD + lithiumUSD;
-    const fuelUSD = shippingFeeBase * FUEL_SURCHARGE_RATE;
-    const totalShippingFee = shippingFeeBase + fuelUSD;
+    const { tier, shipWeightOz, fee, lithiumUSD, fuelUSD, totalShippingFee, surchargeSuggest, error } = calculateShipping(inputs);
 
     // 2. Profit Calculation
     const profitPrice = parseFloat(inputs.profitPrice) || 0;
@@ -970,17 +943,10 @@ export default function FBACalculatorPage() {
       }
     }
 
-    // Auto update fbaFeeInput if needed, but we rely on the one from state for calculation?
-    // In React, we should probably update the input state if it hasn't been manually touched?
-    // Or just use totalShippingFee for calculation if fbaFeeInput is not manually set.
-    // To match original behavior: It updates the input.
-    // However, triggering state update inside render/calc cycle is bad.
-    // We'll calculate profit using `totalShippingFee` unless user manually overrides.
-    // Actually, let's just use `totalShippingFee` for now as the "FBA Fee" in profit calc,
-    // and display it. If we want manual override, we'd need a separate "manualFBAFee" state or similar.
-    // For simplicity and to match the HTML behavior where it auto-updates:
-    const baseFBAFee = inputs.manualFBAFee !== null ? (parseFloat(inputs.manualFBAFee) || 0) : shippingFeeBase;
-    const finalFBAFee = baseFBAFee + (baseFBAFee * FUEL_SURCHARGE_RATE);
+    // The displayed/manual fee is already a total, including fuel surcharge.
+    const finalFBAFee = inputs.manualFBAFee !== null && String(inputs.manualFBAFee).trim() !== ''
+      ? (parseFloat(inputs.manualFBAFee) || 0)
+      : totalShippingFee;
 
     const storageFee = parseFloat(inputs.storageFee) || 0;
     const otherFee = parseFloat(inputs.otherFee) || 0;
@@ -1022,6 +988,7 @@ export default function FBACalculatorPage() {
       fuelUSD,
       totalShippingFee,
       surchargeSuggest,
+      error,
       amazonPayout,
       productCostUSD,
       totalCost: productCostUSD + referralFee + finalFBAFee + totalOperatingCost,
@@ -1048,54 +1015,7 @@ export default function FBACalculatorPage() {
   const saveToHistory = () => {
     const name = inputs.productName || '未命名商品';
     const time = new Date().toLocaleString('zh-CN', { hour12: false });
-    // 直接现算一次配送费，避免因状态未更新而保存为0
-    let l = parseFloat(inputs.length) || 0;
-    let w = parseFloat(inputs.width) || 0;
-    let h = parseFloat(inputs.height) || 0;
-    if (inputs.lengthUnit === 'cm') l = cmToInch(l);
-    if (inputs.widthUnit === 'cm') w = cmToInch(w);
-    if (inputs.heightUnit === 'cm') h = cmToInch(h);
-    let actualWeightOz = parseFloat(inputs.actualWeight) || 0;
-    if (inputs.weightUnit === 'g') actualWeightOz = gToOz(actualWeightOz);
-    if (inputs.weightUnit === 'kg') actualWeightOz = kgToOz(actualWeightOz);
-    if (inputs.weightUnit === 'lb') actualWeightOz = lbToOz(actualWeightOz);
-    const getVolumeWeight = (l: number, w: number, h: number) => { let volumeLb = (l * w * h) / 139; return Math.max(0, volumeLb); };
-    let volumeWeightOz = getVolumeWeight(l, w, h) * 16;
-    const getTier = (l: number, w: number, h: number, shipWeightOz: number) => { const { l: L, w: W, h: H } = sort3(l, w, h); const sum = L + 2 * W + 2 * H; if (shipWeightOz <= 16 && L <= 15 && W <= 12 && H <= 0.75) return "小号标准尺寸"; if (shipWeightOz <= 320 && L <= 18 && W <= 14 && H <= 8) return "大号标准尺寸"; const weightLb = shipWeightOz / 16; if (weightLb > 150 || L > 108 || sum > 165) return "超大件"; if (weightLb <= 70 && L <= 60 && W <= 30 && sum <= 130) return "小号大件"; if (weightLb <= 50 && L <= 108 && sum <= 165) return "大号大件"; return "超大件"; };
-    let tierTemp = getTier(l, w, h, actualWeightOz);
-    let shipWeightOz = actualWeightOz;
-    if (!(tierTemp === "小号标准尺寸" || (tierTemp === "超大件" && actualWeightOz >= 2400))) { shipWeightOz = Math.max(actualWeightOz, volumeWeightOz); }
-    let tier = getTier(l, w, h, shipWeightOz);
-    const priceUSD = parseFloat(inputs.priceUSD) || 0;
-    const seasonKey = inputs.season === 'peak' ? 'peak_2025' : (inputs.version === '2026' ? 'non_peak_2026' : 'non_peak_2025');
-    const dataset = feeData[inputs.productType]?.[seasonKey];
-    const band = getPriceBand(priceUSD);
-    const weightLb = shipWeightOz / 16;
-    const pickFee = () => {
-      if (!dataset) return 0;
-      if (tier === '小号标准尺寸') { const steps = dataset.small_standard.steps; const fees = dataset.small_standard[band]; for (let i = 0; i < steps.length; i++) { if (shipWeightOz <= steps[i]) return fees[i]; } return 0; }
-      if (tier === '大号标准尺寸') {
-        const ls = dataset.large_standard; const steps = ls.pre3_steps_oz; const fees = ls[band + '_pre3'];
-        for (let i = 0; i < steps.length; i++) { if (shipWeightOz <= steps[i]) return fees[i]; }
-        if (inputs.productType === 'apparel') { if (weightLb > 3) { const base = ls.post3_base[band]; const extra = Math.ceil((shipWeightOz - 48) / 8) * (ls.post3_increment_per_half_lb || 0); return base + extra; } }
-        else { if (weightLb > 3) { const base = ls.post3_base[band]; const extra = Math.ceil((shipWeightOz - 48) / 4) * (ls.post3_increment_per_4oz || 0); return base + extra; } }
-        return 0;
-      }
-      if (tier === '小号大件') { const cfg = dataset.small_oversize_0_50; let fee = cfg.base[band]; if (weightLb > 1) fee += Math.ceil(weightLb - 1) * cfg.per_lb; return fee; }
-      if (tier === '大号大件') { const cfg = dataset.large_oversize_0_50; let fee = cfg.base[band]; if (weightLb > 1) fee += Math.ceil(weightLb - 1) * cfg.per_lb; return fee; }
-      if (tier === '超大件') {
-        if (weightLb <= 50) { const cfg = dataset.super_oversize_0_50; let fee = cfg.base[band]; if (weightLb > 1) fee += Math.ceil(weightLb - 1) * cfg.per_lb; return fee; }
-        if (weightLb <= 70) { const cfg = dataset.super_oversize_50_70; return cfg.base[band] + Math.ceil(weightLb - cfg.start_lb) * cfg.per_lb; }
-        if (weightLb <= 150) { const cfg = dataset.super_oversize_70_150; return cfg.base[band] + Math.ceil(weightLb - cfg.start_lb) * cfg.per_lb; }
-        const cfg = dataset.super_oversize_gt_150; return cfg.base[band] + Math.ceil(weightLb - cfg.start_lb) * cfg.per_lb;
-      }
-      return 0;
-    };
-    let feeNum = pickFee();
-    const surchargeUSD = parseFloat(inputs.surchargeUSD) || 0;
-    const lithiumUSD = (inputs.productType !== 'danger' && inputs.hasLithium) ? 0.11 : 0;
-    const shippingFeeBaseSave = feeNum + surchargeUSD + lithiumUSD;
-    const totalShippingFeeSave = shippingFeeBaseSave + (shippingFeeBaseSave * FUEL_SURCHARGE_RATE);
+    const totalShippingFeeSave = calculateShipping(inputs).totalShippingFee;
     const finalFBAFeeForSave = inputs.manualFBAFee !== null && String(inputs.manualFBAFee).trim() !== ''
       ? (parseFloat(String(inputs.manualFBAFee)) || 0)
       : totalShippingFeeSave;
@@ -1151,54 +1071,7 @@ export default function FBACalculatorPage() {
       }
     }
     if (!(loaded as any).manualFBAFee || (parseFloat(String((loaded as any).manualFBAFee)) || 0) <= 0) {
-      // 兼容旧记录：若未保存配送费或为0，则按当前输入自动现算一遍并填充
-      let l = parseFloat(loaded.length) || 0;
-      let w = parseFloat(loaded.width) || 0;
-      let h = parseFloat(loaded.height) || 0;
-      if (loaded.lengthUnit === 'cm') l = cmToInch(l);
-      if (loaded.widthUnit === 'cm') w = cmToInch(w);
-      if (loaded.heightUnit === 'cm') h = cmToInch(h);
-      let actualWeightOz = parseFloat(loaded.actualWeight) || 0;
-      if (loaded.weightUnit === 'g') actualWeightOz = gToOz(actualWeightOz);
-      if (loaded.weightUnit === 'kg') actualWeightOz = kgToOz(actualWeightOz);
-      if (loaded.weightUnit === 'lb') actualWeightOz = lbToOz(actualWeightOz);
-      const getVolumeWeight = (l: number, w: number, h: number) => { let volumeLb = (l * w * h) / 139; return Math.max(0, volumeLb); };
-      let volumeWeightOz = getVolumeWeight(l, w, h) * 16;
-      const getTier = (l: number, w: number, h: number, shipWeightOz: number) => { const { l: L, w: W, h: H } = sort3(l, w, h); const sum = L + 2 * W + 2 * H; if (shipWeightOz <= 16 && L <= 15 && W <= 12 && H <= 0.75) return "小号标准尺寸"; if (shipWeightOz <= 320 && L <= 18 && W <= 14 && H <= 8) return "大号标准尺寸"; const weightLb = shipWeightOz / 16; if (weightLb > 150 || L > 108 || sum > 165) return "超大件"; if (weightLb <= 70 && L <= 60 && W <= 30 && sum <= 130) return "小号大件"; if (weightLb <= 50 && L <= 108 && sum <= 165) return "大号大件"; return "超大件"; };
-      let tierTemp = getTier(l, w, h, actualWeightOz);
-      let shipWeightOz = actualWeightOz;
-      if (!(tierTemp === "小号标准尺寸" || (tierTemp === "超大件" && actualWeightOz >= 2400))) { shipWeightOz = Math.max(actualWeightOz, volumeWeightOz); }
-      let tier = getTier(l, w, h, shipWeightOz);
-      const priceUSD = parseFloat(loaded.priceUSD) || 0;
-      const seasonKey = loaded.season === 'peak' ? 'peak_2025' : (loaded.version === '2026' ? 'non_peak_2026' : 'non_peak_2025');
-      const dataset = feeData[loaded.productType]?.[seasonKey];
-      const band = getPriceBand(priceUSD);
-      const weightLb = shipWeightOz / 16;
-      const pickFee = () => {
-        if (!dataset) return 0;
-        if (tier === '小号标准尺寸') { const steps = dataset.small_standard.steps; const fees = dataset.small_standard[band]; for (let i = 0; i < steps.length; i++) { if (shipWeightOz <= steps[i]) return fees[i]; } return 0; }
-        if (tier === '大号标准尺寸') {
-          const ls = dataset.large_standard; const steps = ls.pre3_steps_oz; const fees = ls[band + '_pre3'];
-          for (let i = 0; i < steps.length; i++) { if (shipWeightOz <= steps[i]) return fees[i]; }
-          if (loaded.productType === 'apparel') { if (weightLb > 3) { const base = ls.post3_base[band]; const extra = Math.ceil((shipWeightOz - 48) / 8) * (ls.post3_increment_per_half_lb || 0); return base + extra; } }
-          else { if (weightLb > 3) { const base = ls.post3_base[band]; const extra = Math.ceil((shipWeightOz - 48) / 4) * (ls.post3_increment_per_4oz || 0); return base + extra; } }
-          return 0;
-        }
-        if (tier === '小号大件') { const cfg = dataset.small_oversize_0_50; let fee = cfg.base[band]; if (weightLb > 1) fee += Math.ceil(weightLb - 1) * cfg.per_lb; return fee; }
-        if (tier === '大号大件') { const cfg = dataset.large_oversize_0_50; let fee = cfg.base[band]; if (weightLb > 1) fee += Math.ceil(weightLb - 1) * cfg.per_lb; return fee; }
-        if (tier === '超大件') {
-          if (weightLb <= 50) { const cfg = dataset.super_oversize_0_50; let fee = cfg.base[band]; if (weightLb > 1) fee += Math.ceil(weightLb - 1) * cfg.per_lb; return fee; }
-          if (weightLb <= 70) { const cfg = dataset.super_oversize_50_70; return cfg.base[band] + Math.ceil(weightLb - cfg.start_lb) * cfg.per_lb; }
-          if (weightLb <= 150) { const cfg = dataset.super_oversize_70_150; return cfg.base[band] + Math.ceil(weightLb - cfg.start_lb) * cfg.per_lb; }
-          const cfg = dataset.super_oversize_gt_150; return cfg.base[band] + Math.ceil(weightLb - cfg.start_lb) * cfg.per_lb;
-        }
-        return 0;
-      };
-      let feeNum = pickFee();
-      const surchargeUSD = parseFloat(loaded.surchargeUSD) || 0;
-      const lithiumUSD = (loaded.productType !== 'danger' && loaded.hasLithium) ? 0.11 : 0;
-      const shippingFeeBaseLoaded = feeNum + surchargeUSD + lithiumUSD;
-      (loaded as any).manualFBAFee = shippingFeeBaseLoaded + (shippingFeeBaseLoaded * FUEL_SURCHARGE_RATE);
+      loaded.manualFBAFee = calculateShipping(loaded).totalShippingFee;
     }
     setInputs(loaded);
     setShowHistory(false);
@@ -1604,7 +1477,7 @@ export default function FBACalculatorPage() {
                     </select>
                  </div>
                 <div className="flex items-center pt-5">
-                   <input type="checkbox" checked={inputs.hasLithium} onChange={(e:any) => updateInput('hasLithium', e.target.checked)} className="mr-2" disabled={inputs.productType === 'danger'} />
+                   <input type="checkbox" checked={inputs.hasLithium} onChange={(e:any) => updateInput('hasLithium', e.target.checked)} className="mr-2" />
                    <span className="text-sm text-gray-700">含锂电池</span>
                  </div>
                </div>
@@ -1646,6 +1519,7 @@ export default function FBACalculatorPage() {
              </div>
 
              {/* Result Box */}
+             {results.error && <p role="alert" className="text-sm text-red-600">{results.error}</p>}
              <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 text-sm text-gray-700 space-y-1">
                <div className="flex justify-between"><span>尺寸标准:</span> <span className="font-medium">{results.tier || 'N/A'}</span></div>
                <div className="flex justify-between"><span>配送重量:</span> <span className="font-medium">{round2(results.shipWeightOz)} oz ({round2(ozToLb(results.shipWeightOz))} lb)</span></div>
@@ -1654,7 +1528,7 @@ export default function FBACalculatorPage() {
                {parseFloat(inputs.surchargeUSD) > 0 && <div className="flex justify-between"><span>附加费:</span> <span className="font-medium">${parseFloat(inputs.surchargeUSD).toFixed(2)}</span></div>}
               <div className="flex justify-between"><span>燃油附加费(3.5%):</span> <span className="font-medium">${results.fuelUSD.toFixed(2)}</span></div>
                <div className="border-t border-blue-200 pt-2 mt-2 flex justify-between text-base font-bold text-blue-800">
-                 <span>总配送费:</span> <span>${results.totalShippingFee.toFixed(2)}</span>
+                 <span>总配送费:</span> <span>{results.error ? 'N/A' : '$' + results.totalShippingFee.toFixed(2)}</span>
                </div>
                {results.surchargeSuggest && <div className="text-xs text-yellow-600 mt-1">⚠️ 可能产生特大号附加费</div>}
              </div>
