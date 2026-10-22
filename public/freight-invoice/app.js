@@ -157,7 +157,7 @@ function applyAddressAutofill(value){
       const input=$(`[data-shipment="${key}"]`);if(input)input.value=parsed[key];changed=true;
     }
   }
-  if(changed){invalidatePreview();toast(`已识别：${[parsed.warehouseCode,parsed.city,parsed.state,parsed.postalCode,parsed.countryCode].filter(Boolean).join(' / ')}`)}
+  if(changed){refreshFieldColors($('#shipmentFields'));invalidatePreview();toast(`已识别：${[parsed.warehouseCode,parsed.city,parsed.state,parsed.postalCode,parsed.countryCode].filter(Boolean).join(' / ')}`)}
 }
 
 function requiredValueMissing(value){return value===undefined||value===null||(typeof value==='string'&&!value.trim())}
@@ -211,7 +211,7 @@ function templateOrigin(){return activeTemplateConfig().migratedFromBuiltin||sta
 function isRuichiTemplate(){return templateOrigin()==='ruichi'}
 function isYuntuoTemplate(){return templateOrigin()==='yuntuo'}
 function isCartonTemplate(){return isYuntuoTemplate()||activeTemplateConfig().rowMode==='carton'}
-function syncYuntuoBoxCountFromItems(){if(!isCartonTemplate()||!state.items.length)return;const total=state.items.reduce((sum,item)=>sum+Math.max(1,Math.floor(num(item.cartons)||1)),0);state.shipment.boxCount=total;const input=$('[data-shipment="boxCount"]');if(input)input.value=total}
+function syncYuntuoBoxCountFromItems(){if(!isCartonTemplate()||!state.items.length)return;const total=state.items.reduce((sum,item)=>sum+Math.max(1,Math.floor(num(item.cartons)||1)),0);state.shipment.boxCount=total;const input=$('[data-shipment="boxCount"]');if(input){input.value=total;refreshFieldColors($('#shipmentFields'))}}
 
 function navigate(page){
   $$('.page').forEach(el=>el.classList.toggle('active',el.id===`page-${page}`));
@@ -440,6 +440,19 @@ function renderShipmentFields(){
   const existing=new Set(fields.map(field=>field[0]));mappedCustomFields('fixed').forEach(field=>{if(!existing.has(field.key))fields.push([field.key,field.label,field.inputType||'text',''])});
   if(['ruichi','yuntuo'].includes(state.templateId))fields.forEach(([key,,type,placeholder])=>{if(state.shipment[key]===undefined&&placeholder!==''&&type!=='channel')state.shipment[key]=placeholder});
   $('#shipmentFields').innerHTML=fields.map(fieldHtml).join('');
+  refreshFieldColors($('#shipmentFields'));
+}
+
+function refreshFieldColors(root){
+  root.querySelectorAll('input:not([type="hidden"]),textarea,select').forEach(input=>{
+    input.classList.toggle('field-filled',String(input.value).trim()!=='');
+  });
+}
+
+function closeWarehouseResults(){
+  clearTimeout(searchWarehouses.timer);
+  state.warehouseSearchSequence++;
+  $('#warehouseResults').hidden=true;
 }
 
 function warehouseLocation(warehouse){
@@ -491,7 +504,7 @@ function selectWarehouse(warehouse){
   });
   state.addressAuto={city:state.shipment.city,state:state.shipment.state,postalCode:state.shipment.postalCode,countryCode:state.shipment.countryCode};
   const search=$('#warehouseSearch');if(search)search.value=warehouse.code||'';
-  $('#warehouseResults').hidden=true;
+  closeWarehouseResults();
   renderShipmentFields();renderSelectedWarehouse();invalidatePreview();updateSummary();
   toast(`已带入 ${warehouse.code} 仓库地址`);
 }
@@ -672,6 +685,12 @@ $('#historySearch').addEventListener('input',renderHistory);$('#refreshHistoryBt
 $('#deleteSelectedProductsBtn').addEventListener('click',deleteSelectedProducts);$('#deleteSelectedHistoryBtn').addEventListener('click',deleteSelectedHistory);$('#deleteSelectedTemplatesBtn').addEventListener('click',deleteSelectedTemplates);
 $('#warehouseSearch').addEventListener('input',event=>{clearTimeout(searchWarehouses.timer);searchWarehouses.timer=setTimeout(()=>searchWarehouses(event.target.value),180)});
 $('#warehouseSearch').addEventListener('focus',event=>searchWarehouses(event.target.value));
+$('#warehouseSearch').addEventListener('click',event=>{if($('#warehouseResults').hidden)searchWarehouses(event.target.value)});
+document.addEventListener('pointerdown',event=>{if(!event.target.closest('.warehouse-search-row,#warehouseResults'))closeWarehouseResults()});
+document.addEventListener('focusin',event=>{if(!event.target.closest('.warehouse-search-row,#warehouseResults'))closeWarehouseResults()});
+document.addEventListener('keydown',event=>{if(event.key==='Escape')closeWarehouseResults()});
+$('#warehouseResults').addEventListener('focusout',()=>{queueMicrotask(()=>{if(!document.activeElement.closest('.warehouse-search-row,#warehouseResults'))closeWarehouseResults()})});
+document.addEventListener('input',()=>{refreshFieldColors($('#shipmentFields'));refreshFieldColors($('#warehouseManagerForm'))});
 $('#addBlankItemBtn').addEventListener('click',()=>{state.items.push(productToItem({currency:'USD'}));syncYuntuoBoxCountFromItems();invalidatePreview();renderItems();renderProductSelect();toast('已添加临时商品，可继续选择')});
 $('#finishAddingItemsBtn').addEventListener('click',closeModals);
 $('#productSelectList').addEventListener('input',event=>{const itemId=event.target.dataset.modalCartons;if(!itemId)return;const item=state.items.find(value=>value.id===itemId);if(!item)return;item.cartons=Math.max(1,Math.floor(num(event.target.value)||1));syncYuntuoBoxCountFromItems();invalidatePreview();renderItems();updateItemModalSummary()});

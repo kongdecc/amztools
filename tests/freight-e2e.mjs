@@ -27,6 +27,7 @@ try {
       const url = new URL(route.request().url());
       if (url.origin !== 'https://invoice.test') return route.abort();
       if (url.pathname === '/api/top-ad') return route.fulfill({ json: { enabled: false } });
+      if (url.pathname === '/static-image-ad.js') return route.fulfill({ contentType: 'application/javascript', body: '' });
       if (url.pathname === '/api/freight-invoice-python') {
         const envelope = route.request().postData();
         requests.push(JSON.parse(envelope));
@@ -45,6 +46,43 @@ try {
     await page.goto('https://invoice.test/freight-invoice/index.html');
     await page.waitForFunction(() => state.config.appEdition === '浏览器独立存储版');
   }
+  // Warehouse UI: use the real local stores in an isolated browser context.
+  const page=pages[0];
+  await page.click('[data-page="invoice"]');
+  await page.locator('#warehouseSearch').click();
+  await page.waitForFunction(()=>!document.querySelector('#warehouseResults').hidden);
+  await page.locator('#pageTitle').click();
+  assert.equal(await page.locator('#warehouseResults').isVisible(),false);
+  await page.locator('#warehouseSearch').click();
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(250);
+  assert.equal(await page.locator('#warehouseResults').isVisible(),false);
+  await page.locator('#warehouseSearch').click();
+  await page.keyboard.press('Tab');
+  assert.equal(await page.locator('#warehouseResults').isVisible(),false);
+  const city=page.locator('[data-shipment="city"]');
+  await city.fill('Test City');
+  assert.equal(await city.evaluate(el=>el.classList.contains('field-filled')),true);
+  await city.fill('');
+  assert.equal(await city.evaluate(el=>el.classList.contains('field-filled')),false);
+  await page.locator('#warehouseSearch').fill('SCK4');
+  await page.waitForSelector('[data-warehouse-index]');
+  await page.locator('[data-warehouse-index]').first().click();
+  assert.equal(await page.locator('#warehouseResults').isVisible(),false);
+  assert.equal(await city.evaluate(el=>el.classList.contains('field-filled')),true);
+  await page.locator('#manageWarehousesBtn').click();
+  await page.locator('#warehouseFullAddress').fill('ZZT9, 123 Test Road, Boston, MA 02108, US');
+  await page.locator('#fillWarehouseAddressBtn').click();
+  const form=page.locator('#warehouseManagerForm');
+  assert.equal(await form.locator('[name="city"]').inputValue(),'Boston');
+  assert.equal(await form.locator('[name="postalCode"]').inputValue(),'02108');
+  await form.locator('[type="submit"]').click();
+  await page.waitForFunction(()=>document.querySelector('#warehouseManagerForm [name="code"]').value==='');
+  await page.locator('#warehouseManagerSearch').fill('ZZT9');
+  await page.waitForFunction(()=>document.querySelector('#warehouseManagerList').textContent.includes('ZZT9'));
+  await page.locator('[data-edit-warehouse]').click();
+  assert.equal(await form.locator('[name="address"]').inputValue(),'123 Test Road');
+  await page.evaluate(()=>closeModals());
   const fixture = await python(['--fixture']);
   const output = await pages[0].evaluate(async fixture => {
     async function api(url, payload) {

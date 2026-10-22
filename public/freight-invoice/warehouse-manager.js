@@ -1,4 +1,4 @@
-function resetWarehouseManagerForm(){const form=$('#warehouseManagerForm');form.reset();form.elements.id.value='';$('#warehouseManagerFormTitle').textContent='新增仓库';setTimeout(()=>form.elements.code.focus(),20)}
+function resetWarehouseManagerForm(){const form=$('#warehouseManagerForm');form.reset();form.elements.id.value='';$('#warehouseAddressStatus').textContent='支持常见美加、英国及欧洲地址；识别后请核对，未识别项请手动补充。';refreshFieldColors(form);$('#warehouseManagerFormTitle').textContent='新增仓库';setTimeout(()=>form.elements.code.focus(),20)}
 
 async function loadWarehouseManagerResults(keyword=''){
   const list=$('#warehouseManagerList');list.innerHTML='<div class="warehouse-manager-empty">正在读取仓库库…</div>';
@@ -10,7 +10,7 @@ function renderWarehouseManagerResults(total=0){const rows=state.warehouseManage
 
 async function openWarehouseManager(){openModal('warehouseManagerModal');resetWarehouseManagerForm();$('#warehouseManagerSearch').value='';await loadWarehouseManagerResults()}
 
-function editWarehouse(warehouseId){const warehouse=(state.warehouseManagerResults||[]).find(item=>item.id===warehouseId);if(!warehouse)return;const form=$('#warehouseManagerForm');for(const element of form.elements)if(element.name&&warehouse[element.name]!==undefined)element.value=warehouse[element.name]||'';$('#warehouseManagerFormTitle').textContent=`编辑 · ${warehouse.code}`;form.elements.code.focus()}
+function editWarehouse(warehouseId){const warehouse=(state.warehouseManagerResults||[]).find(item=>item.id===warehouseId);if(!warehouse)return;const form=$('#warehouseManagerForm');for(const element of form.elements)if(element.name&&warehouse[element.name]!==undefined)element.value=warehouse[element.name]||'';$('#warehouseManagerFormTitle').textContent=`编辑 · ${warehouse.code}`;refreshFieldColors(form);form.elements.code.focus()}
 
 async function saveWarehouse(event){event.preventDefault();const form=event.currentTarget,payload=Object.fromEntries(new FormData(form).entries()),button=$('button[type="submit"]',form),original=button.textContent;button.disabled=true;button.textContent='正在保存…';try{const response=await fetch('/api/warehouses',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}),data=await response.json();if(!response.ok)throw new Error(data.error||'仓库保存失败');state.config.warehouseCount=data.total||state.config.warehouseCount;resetWarehouseManagerForm();await loadWarehouseManagerResults($('#warehouseManagerSearch').value);toast('仓库预设已保存')}catch(error){toast(error.message,true)}finally{button.disabled=false;button.textContent=original}}
 
@@ -20,5 +20,16 @@ $('#manageWarehousesBtn').addEventListener('click',openWarehouseManager);
 $('#newWarehouseBtn').addEventListener('click',resetWarehouseManagerForm);
 $('#cancelWarehouseEditBtn').addEventListener('click',resetWarehouseManagerForm);
 $('#warehouseManagerForm').addEventListener('submit',saveWarehouse);
+$('#fillWarehouseAddressBtn').addEventListener('click',()=>{
+  const form=$('#warehouseManagerForm'),parsed=parseWarehouseAddress($('#warehouseFullAddress').value);
+  const entries=Object.entries(parsed).filter(([key])=>form.elements.namedItem(key));
+  if(!entries.length){$('#warehouseAddressStatus').textContent='请先粘贴完整地址，再点击识别填充。';return}
+  if(entries.some(([key,value])=>form.elements.namedItem(key).value.trim()&&form.elements.namedItem(key).value.trim()!==value)&&!confirm('识别结果将替换已有的对应字段，是否继续？'))return;
+  entries.forEach(([key,value])=>{form.elements.namedItem(key).value=value});
+  refreshFieldColors(form);
+  const missing=['code','address','city','state','postalCode','countryCode'].filter(key=>!form.elements.namedItem(key).value.trim());
+  const names={code:'仓库代码',address:'街道地址',city:'城市',state:'州 / 省',postalCode:'邮编',countryCode:'国家代码'};
+  $('#warehouseAddressStatus').textContent=`已填充 ${entries.length} 项，请核对后保存。${missing.length?'待补充：'+missing.map(key=>names[key]).join('、')+'。':''}`;
+});
 $('#warehouseManagerSearch').addEventListener('input',event=>{clearTimeout(loadWarehouseManagerResults.timer);loadWarehouseManagerResults.timer=setTimeout(()=>loadWarehouseManagerResults(event.target.value),180)});
 $('#warehouseManagerList').addEventListener('click',event=>{const edit=event.target.closest('[data-edit-warehouse]');if(edit){editWarehouse(edit.dataset.editWarehouse);return}const remove=event.target.closest('[data-delete-warehouse]');if(remove)removeWarehouse(remove.dataset.deleteWarehouse)});

@@ -10,8 +10,8 @@
   <link rel="stylesheet" href="./spreadsheet-preview.css?v=20260901-6">
   <link rel="stylesheet" href="./preview-layout-fix.css?v=20260831-5">
   <link rel="stylesheet" href="./item-picker.css?v=20260831-8">
-  <link rel="stylesheet" href="./warehouse-picker.css?v=20260901-1">
-  <link rel="stylesheet" href="./warehouse-manager.css?v=20260902-1">
+  <link rel="stylesheet" href="./warehouse-picker.css?v=20261022-1">
+  <link rel="stylesheet" href="./warehouse-manager.css?v=20261022-1">
   <link rel="stylesheet" href="./history.css?v=20260901-2">
   <link rel="stylesheet" href="./template-designer.css?v=20260902-3">
   <link rel="stylesheet" href="./field-catalog-fix.css?v=20260902-3">
@@ -123,7 +123,7 @@
                 <div class="warehouse-results" id="warehouseResults" hidden></div>
                 <div class="selected-warehouse" id="selectedWarehouse" hidden></div>
               </div>
-              <div class="form-grid" id="shipmentFields"></div>
+              <p class="field-color-legend"><span class="filled-dot"></span> 浅绿：已填写 <span class="empty-dot"></span> 白色：待填写（必填项以 * 标记）</p><div class="form-grid" id="shipmentFields"></div>
             </article>
           </div>
           <aside class="invoice-summary panel">
@@ -280,7 +280,7 @@
         <form class="warehouse-manager-form" id="warehouseManagerForm">
           <input type="hidden" name="id">
           <div><p class="eyebrow">EDIT WAREHOUSE</p><h3 id="warehouseManagerFormTitle">新增仓库</h3></div>
-          <div class="warehouse-form-grid"><label><span>仓库代码 *</span><input name="code" required maxlength="30" placeholder="例如 SCK4"></label><label><span>国家代码</span><input name="countryCode" maxlength="2" placeholder="US"></label><label><span>国家</span><input name="country" placeholder="美国"></label><label><span>地区</span><input name="region"></label><label class="span-2"><span>街道地址</span><input name="address"></label><label><span>城市</span><input name="city"></label><label><span>州 / 省代码</span><input name="state"></label><label><span>邮编</span><input name="postalCode"></label></div>
+          <div class="warehouse-address-import"><label for="warehouseFullAddress">粘贴完整仓库地址</label><textarea id="warehouseFullAddress" rows="3" placeholder="SCK4, 6001 S Austin Rd, Stockton, CA 95215, US"></textarea><button type="button" class="btn secondary" id="fillWarehouseAddressBtn">识别并填充地址</button><small id="warehouseAddressStatus" role="status">支持常见美加、英国及欧洲地址；识别后请核对，未识别项请手动补充。</small></div><div class="warehouse-form-grid"><label><span>仓库代码 *</span><input name="code" required maxlength="30" placeholder="例如 SCK4"></label><label><span>国家代码</span><input name="countryCode" maxlength="2" placeholder="US"></label><label><span>国家</span><input name="country" placeholder="美国"></label><label><span>地区</span><input name="region"></label><label class="span-2"><span>街道地址</span><input name="address"></label><label><span>城市</span><input name="city"></label><label><span>州 / 省代码</span><input name="state"></label><label><span>邮编</span><input name="postalCode"></label></div>
           <div class="warehouse-manager-form-actions"><button type="button" class="btn ghost" id="cancelWarehouseEditBtn">重置</button><button type="submit" class="btn primary">保存仓库</button></div>
         </form>
       </div>
@@ -410,9 +410,10 @@
   <script src="./warehouse-browser-store.js?v=20260902-1"></script>
   <script src="./jszip.min.js?v=3.10.1"></script>
   <script src="./browser-data-store.js?v=20260903-3"></script>
-  <script src="./app.js?v=20260903-2"></script>
+  <script src="./app.js?v=20261022-1"></script>
   <script src="./template-designer.js?v=20260903-1"></script>
-  <script src="./warehouse-manager.js?v=20260902-1"></script>
+  <script src="./warehouse-address-parser.js?v=20261022-1"></script>
+  <script src="./warehouse-manager.js?v=20261022-1"></script>
 <script>
   var _hmt = window._hmt || [];
   (function() {
