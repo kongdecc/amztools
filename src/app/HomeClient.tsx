@@ -8,6 +8,7 @@ import Link from 'next/link'
 import ToolContainer from '@/components/ToolContainer'
 import TopAdBar from '@/components/TopAdBar'
 import ImageAdSlot from '@/components/ImageAdSlot'
+import HomeTimeBar from '@/components/HomeTimeBar'
 import { DEFAULT_CATEGORIES, DEFAULT_SITE_SETTINGS } from '@/lib/constants'
 import { PERSONAL_TOP_CATEGORY_KEY, PERSONAL_TOP_CATEGORY_LABEL, PERSONAL_TOP_LIMIT, getPersonalTopModules, recordPersonalToolVisit, sortModulesWithPersonalTop, subscribePersonalToolUsage } from '@/lib/personal-top-tools'
 
@@ -228,6 +229,7 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
           </div>
         </div>
       </Card>
+      <HomeTimeBar />
       {!searchKeyword.trim() && personalTopModules.length > 0 && (
         <div className="flex items-center justify-between px-1">
           <div>
