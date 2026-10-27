@@ -84,6 +84,7 @@ export default function ClientPage({
     'fba-label-editor': FileText,
     'amazon-promotion-stacking': Tags,
     'storage-fee-calc': Warehouse,
+    'storage-fee-analyzer': Warehouse,
   }
 
   const titleOverride: Record<string, string> = {

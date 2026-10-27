@@ -112,6 +112,7 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
     'freight-rate-radar': Truck,
     'fba-warehouses': Warehouse,
     'storage-fee-calc': Warehouse,
+    'storage-fee-analyzer': Warehouse,
     'pinyin-converter': Languages,
     'keyword-combiner': Shuffle,
   }
@@ -396,6 +397,7 @@ export default function HomeLayoutClient({ initialModules, initialNavItems, init
     'sqp-lens': BarChart3,
     'amazon-fee-visualizer': Calculator,
     'amazon-sales-dashboard': BarChart3,
+    'storage-fee-analyzer': Warehouse,
     'fba-warehouses': Warehouse,
     'pinyin-converter': Languages,
     'keyword-combiner': Shuffle,

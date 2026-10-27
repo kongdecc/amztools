@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light">
+
+  <style>:root{--bg:#f5f8f6;--surface:#fff;--ink:#222a3b;--muted:#8a91a2;--line:#edf0f5;--accent:#25845f;--accent-dark:#1c6b4c;--accent-tint:#eaf5ee;--green:#259a7c;--orange:#d8924c;--sidebar:226px;--radius:14px;font-family:Inter,"Segoe UI","Microsoft YaHei",system-ui,sans-serif;color:var(--ink);font-synthesis:none}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-size:13px}button,input,select{font:inherit}button,a,select,[role=button]{-webkit-tap-highlight-color:transparent}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.5}a{color:inherit;text-decoration:none}button{color:inherit}button:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:3px solid #b0edd4;outline-offset:3px}button{border:0;background:none}button,select,input{outline-offset:3px}h1,h2,h3,p{margin:0}small{font-size:11px}.sidebar{position:fixed;inset:0 auto 0 0;width:var(--sidebar);background:white;border-right:1px solid #e9ecf3;padding:31px 19px;display:flex;flex-direction:column;z-index:20}.brand{display:flex;align-items:center;gap:11px;font-size:21px;font-weight:750;letter-spacing:-.8px;padding:0 9px}.brand-light{font-weight:450}.brand small{display:block;font-weight:400;letter-spacing:1.3px;font-size:9px;color:#979bad;margin-top:6px}.brand-icon{display:grid;place-items:center;background:var(--accent);width:33px;height:37px;border-radius:10px;color:white;font-size:24px;box-shadow:0 4px 9px #25845f24}.space-label{margin:49px 13px 18px;font-size:10px;color:#a1a6b3;letter-spacing:1.4px;display:flex;align-items:center;justify-content:space-between}.space-label span{font-size:8px;background:#f5f6fa;border:1px solid #edf0f4;padding:3px 5px;border-radius:4px;letter-spacing:1px}.nav-item{display:flex;gap:13px;align-items:center;width:100%;padding:13px 15px;margin-bottom:7px;border-radius:8px;text-align:left;font-size:12px;color:#7e8595;transition:background .15s}.nav-item i{font-style:normal;font-size:19px;width:19px;line-height:20px;color:#989faf}.nav-item:hover{background:#f7fbf9}.nav-item.active{background:var(--accent-tint);color:var(--accent);font-weight:650}.nav-item.active i{color:var(--accent)}.nav-dot{margin-left:auto;width:5px;height:5px;border-radius:50%;background:var(--accent)}.nav-separator{border-top:1px solid var(--line);margin:22px 13px}.count{margin-left:auto;background:#f2f3f7;border-radius:5px;font-size:10px;padding:2px 6px}.sidebar-bottom{margin-top:auto;padding:22px 13px 0;position:relative;font-size:10px}.local-dot{width:6px;height:6px;border-radius:50%;background:#4aaf91;display:inline-block;margin-right:6px}.sidebar-bottom b{font-size:10px;font-weight:500;color:#757d8f}.sidebar-bottom p{margin:8px 0 24px 14px;color:#a2a7b5;font-size:10px}.sidebar-bottom button{border-top:1px solid var(--line);width:100%;padding:19px 0 0;text-align:left;color:#9298a7;font-size:11px}.sidebar-bottom button span{float:right}.workspace{margin-left:var(--sidebar)}.topbar{height:74px;background:#ffffffd9;border-bottom:1px solid #e9ecf3;padding:0 38px;display:flex;align-items:center;justify-content:space-between}.breadcrumb{font-size:11px;color:#9299a9}.breadcrumb span{color:#c7ccd6;margin:0 15px}.breadcrumb b{font-weight:500;color:#616b80}.top-actions{display:flex;align-items:center;gap:20px}.local-badge{font-size:10px;color:#8b92a1}.local-badge i{display:inline-block;width:5px;height:5px;border-radius:50%;background:#58b89a;margin-right:7px}.avatar{background:#edf8f3;color:#80bfa5;border:3px solid white;box-shadow:0 0 0 1px #e7f5ef;border-radius:50%;height:29px;width:29px;display:grid;place-items:center;font-weight:600;font-size:11px}.icon-button{border:1px solid var(--line);border-radius:7px;width:30px;height:30px;font-size:16px;color:#858c9c}.icon-button:hover{background:#f3f9f7}main{max-width:1600px;padding:34px 38px 0;margin:auto}.page-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:27px}.eyebrow{font-size:9px;letter-spacing:2px;color:#9a9fb0;margin-bottom:10px;font-weight:550}h1{font-size:26px;letter-spacing:-.8px;font-weight:650;line-height:1.4}.title-dot{color:var(--accent);margin-left:3px}.page-heading p{font-size:11px;margin-top:8px;color:#9097a8}.heading-actions{display:flex;gap:10px}.button{height:37px;display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:7px;border:1px solid #e2e5ec;background:#fff;padding:0 14px;font-size:11px;font-weight:500;white-space:nowrap}.button:hover{background:#f9fcfb;border-color:#c9ecdd}.button.primary{background:var(--accent);border-color:var(--accent);color:white;box-shadow:0 3px 7px #25845f14}.button.primary:hover{background:var(--accent-dark)}.button.danger{color:#c45564;border-color:#efd7db}.button.small{height:29px;padding:0 10px;font-size:10px}.import-strip{border:1px dashed #cae8db;background:linear-gradient(110deg,#f0faf6,#f9fcfb);border-radius:10px;min-height:78px;padding:17px 21px;display:flex;align-items:center;gap:15px;cursor:pointer;transition:border-color .2s}.import-strip.drag{border:2px solid var(--accent);background:#ebfcf5}.upload-mark{width:36px;height:36px;background:white;border-radius:9px;box-shadow:0 2px 7px #68958208;display:grid;place-items:center;font-size:24px;color:#8fd0b5}.import-strip b{font-size:11px;font-weight:550;color:#658578}.import-strip p{font-size:10px;color:#9eb0a9;margin-top:7px}.strip-end{margin-left:auto;white-space:nowrap;color:#82ad9b;font-size:10px}.strip-end b{margin-left:14px}.filterbar{display:flex;align-items:center;gap:19px;margin:23px 0 21px;padding:14px 17px;border:1px solid #e9ecf1;background:white;border-radius:9px;flex-wrap:wrap}.filter{display:flex;align-items:center;gap:10px}.filter label{color:#9a9faf;font-size:10px;white-space:nowrap}select{border:0;color:#555d72;background:#f7f8fb;border-radius:5px;padding:7px 24px 7px 9px;font-size:11px;max-width:180px;cursor:pointer}.filter-status{margin-left:auto;color:#969eaf;font-size:10px}.text-button{font-size:10px;color:#8db6a5;padding:4px 0}.context-note{font-size:10px;color:#95aba2;margin:-7px 0 15px;line-height:1.8}.context-note:empty{display:none}.stats-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:21px}.stat-card{background:white;border:1px solid #e8ebf1;border-radius:11px;padding:19px 20px;position:relative;min-height:145px;overflow:hidden}.stat-card.featured{border-color:#dff5ec;box-shadow:0 3px 15px #25845f05}.stat-top{display:flex;align-items:center;gap:9px;color:#9196a7;font-size:11px}.stat-icon{width:25px;height:25px;border-radius:7px;display:grid;place-items:center;color:#8ac7ae;background:#f2fdf8;font-size:13px}.stat-icon.green{background:#edf8f4;color:#7cb69f}.stat-icon.orange{background:#fff5eb;color:#d8ac70}.stat-icon.blue{background:#edf3fc;color:#89a5cd}.stat-number{font-variant-numeric:tabular-nums;font-size:29px;letter-spacing:-.9px;font-weight:620;margin-top:13px}.stat-number small{font-size:11px;color:#9ba0ad;letter-spacing:0;font-weight:400;margin-left:5px}.stat-number .money-symbol{font-size:19px;font-weight:450;margin-right:3px;color:#709f8b}.stat-bottom{font-size:9px;color:#a4aaba;display:flex;align-items:center;gap:8px;margin-top:12px}.change{font-size:9px;border-radius:4px;padding:3px 5px;background:#eef8f3;color:#5b9f87}.change.up{background:#fff3ed;color:#ce8c6c}.change.neutral{background:#f3f4f7;color:#969eac}.mini-spark{position:absolute;right:14px;bottom:40px;opacity:.45;width:66px;height:27px}.grid-main{display:grid;grid-template-columns:minmax(0,1.95fr) minmax(270px,1fr);gap:19px;margin-bottom:20px}.panel{background:white;border:1px solid #e8ebf1;border-radius:11px;min-width:0;overflow:hidden}.panel-header{display:flex;justify-content:space-between;align-items:flex-start;padding:22px 23px 0;gap:10px}.panel h2{font-size:13px;font-weight:600;color:#4a5266;letter-spacing:.1px}.panel-subtitle{font-size:9px;color:#a2a8b6;margin-top:7px;line-height:1.7}.legend{display:flex;gap:14px;align-items:center;color:#9199aa;font-size:9px;flex-wrap:wrap}.legend span:before{content:'';display:inline-block;width:6px;height:6px;background:var(--c,var(--accent));margin-right:6px;border-radius:2px}.chart-wrap{padding:7px 12px 3px;position:relative}.chart-wrap svg{width:100%;height:auto;display:block;overflow:visible}.chart-label{font-size:10px;fill:#a0a7b6;font-family:inherit}.chart-label.small{font-size:9px}.chart-total{fill:#81899c;font-size:9px}.chart-hit{cursor:pointer}.chart-hit:hover{fill:#25845f08}.chart-footer{display:flex;justify-content:space-between;color:#a7adba;font-size:9px;padding:0 24px 18px;gap:10px}.range-chip{font-size:9px;border:1px solid #e8f0ed;border-radius:5px;color:#93aaa0;padding:5px 8px;white-space:nowrap}.donut-wrap{height:211px;display:grid;place-items:center;position:relative}.donut-wrap svg{width:176px;height:176px;transform:rotate(-90deg)}.donut-center{position:absolute;display:flex;flex-direction:column;align-items:center;gap:8px;color:#a2a7b4;font-size:9px}.donut-center b{font-size:23px;letter-spacing:-.5px;color:#515b6e;font-weight:600}.breakdown{padding:0 23px 16px}.breakdown-row{display:flex;align-items:center;font-size:10px;margin:12px 0;color:#939aab}.breakdown-row i{width:6px;height:6px;border-radius:2px;margin-right:8px;background:var(--c)}.breakdown-row strong{margin-left:auto;font-weight:550;color:#687185}.breakdown-row small{min-width:42px;text-align:right;font-size:9px;color:#adb2bf}.section-table{margin-bottom:20px}.table-tools{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.segmented{display:flex;padding:3px;background:#f5f6f9;border-radius:6px}.segmented button{font-size:9px;padding:5px 11px;color:#979dad;border-radius:4px}.segmented button.active{background:white;color:#71ad94;box-shadow:0 1px 3px #243c320a}.search-box{border:1px solid #edf0f4;border-radius:6px;padding:7px 10px;min-width:180px;font-size:10px;color:#687185;background:#fcfefd}.search-box::placeholder{color:#b2b7c3}.table-wrap{overflow-x:auto;margin-top:18px}table{border-collapse:collapse;width:100%;font-size:10px;white-space:nowrap}th{text-align:left;padding:12px 18px;background:#fafbfe;border-bottom:1px solid #eef0f6;color:#9aA1b1;font-weight:400;font-size:9px}td{padding:16px 18px;border-bottom:1px solid #f0f2f6;color:#7c8598;font-variant-numeric:tabular-nums}tr:last-child td{border-bottom:none}tbody tr:hover{background:#fbfffd}.number{text-align:right}.product-cell{display:flex;align-items:center;gap:12px;max-width:310px}.product-badge{width:32px;height:34px;flex:none;border:1px solid #e7f1ed;background:linear-gradient(145deg,#f6fcfa,#ecf5f1);border-radius:7px;display:grid;place-items:center;color:#a9c4b9;font-size:16px}.product-cell strong{display:block;color:#6a7d75;font-size:10px;font-weight:550;margin-bottom:5px}.product-cell p{font-size:9px;max-width:220px;overflow:hidden;text-overflow:ellipsis;color:#a4a9b5}.rank-number{font-size:9px;display:inline-grid;place-items:center;width:18px;height:18px;background:#f7faf9;border-radius:4px;color:#92b2a5}.fee-cell{font-weight:600;color:#63766e}.share{display:flex;align-items:center;justify-content:flex-end;gap:9px;font-size:9px;color:#a4aabb}.share-track{width:65px;background:#eef6f3;height:4px;border-radius:4px;overflow:hidden}.share-track i{display:block;background:#92bfa5;height:100%;border-radius:4px}.row-link{color:#90b9a8;font-size:11px;padding:4px}.table-bottom{padding:13px 23px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid #f0f2f7;color:#aaaebd;font-size:9px;gap:15px}.pager{display:flex;align-items:center;gap:10px}.pager button{border:1px solid #e9ecf2;width:24px;height:24px;border-radius:4px;color:#98b1a7}.insight-banner{display:flex;align-items:flex-start;gap:13px;border:1px solid #e5f4ee;border-radius:9px;background:#f1f9f6;padding:16px 19px;margin-bottom:20px}.insight-banner .insight-icon{color:#91c4af;font-size:20px;line-height:24px}.insight-banner b{font-size:10px;color:#7ea595;font-weight:550}.insight-banner p{font-size:10px;color:#9eb1a9;margin-top:6px;line-height:1.9}.insight-banner strong{color:#79a794;font-weight:600}footer{display:flex;justify-content:space-between;padding:8px 0 24px;color:#a8aeba;font-size:9px;gap:16px;line-height:1.8}.footer-dot{margin:0 7px;color:#c5d1cc}.empty{text-align:center;padding:65px 20px;color:#a0a6b4}.empty .empty-icon{font-size:32px;color:#a9cfbf;margin-bottom:12px}.empty h3{font-size:14px;font-weight:500;color:#788e85;margin-bottom:10px}.empty p{font-size:11px;line-height:1.9}.empty .button{margin-top:20px}.compare-controls{display:flex;gap:18px;align-items:center;margin:17px 23px 22px;color:#939bad;font-size:10px;flex-wrap:wrap}.heat{display:inline-block;border-radius:5px;padding:8px 10px;min-width:75px;text-align:right}.warehouse-bars{padding:20px 24px}.warehouse-row{display:grid;grid-template-columns:70px 1fr 90px;gap:18px;align-items:center;font-size:11px;margin-bottom:20px}.warehouse-track{height:9px;background:#f0f7f4;border-radius:7px;overflow:hidden}.warehouse-track i{display:block;height:100%;background:linear-gradient(90deg,#cbecde,#3e9168);border-radius:7px}.warehouse-row b{font-weight:500;color:#819a90;font-size:10px;text-align:right}dialog{border:1px solid #e3ede9;border-radius:15px;padding:0;box-shadow:0 20px 90px #25493a30;width:min(820px,94vw);max-height:85vh;color:var(--ink);background:white}dialog::backdrop{background:#29423858;backdrop-filter:blur(3px)}.modal-header{padding:25px 27px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line)}.modal-header h2{font-size:20px;font-weight:600}.modal-header .eyebrow{font-size:8px;margin-bottom:8px}#modalBody{padding:20px 27px;max-height:60vh;overflow:auto;font-size:12px;color:#858b9c;line-height:1.9}#modalBody h3{font-size:12px;margin:20px 0 6px;color:#5e756b}#modalBody p{margin-bottom:10px}.modal-actions{border-top:1px solid var(--line);padding:17px 27px;display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}.file-item{display:flex;align-items:flex-start;gap:12px;border-bottom:1px solid var(--line);padding:14px 0}.file-item:last-child{border:0}.file-icon{width:34px;height:37px;border-radius:6px;background:#f1f9f6;display:grid;place-items:center;color:#9dc6b5;font-size:17px}.file-meta{min-width:0;flex:1}.file-meta b{color:#687972;font-size:11px;font-weight:550;overflow-wrap:anywhere}.file-meta p{font-size:10px;color:#a0a6b5;margin-top:3px;margin-bottom:0}.tag{display:inline-block;padding:2px 7px;border-radius:4px;background:#eef8f4;color:#8ab8a5;font-size:9px;margin:0 5px 4px 0}.tag.warning{background:#fff4e8;color:#bd9669}.tag.success{background:#edf7f2;color:#7aa88f}.import-error{padding:12px 14px;background:#fff5f3;border:1px solid #f6e2dc;border-radius:7px;color:#b88c80;font-size:11px;margin-bottom:12px;overflow-wrap:anywhere}.import-warning{padding:12px 14px;background:#fff9ef;border:1px solid #f4ead7;border-radius:7px;color:#b09670;font-size:11px;margin-bottom:12px}.info-box{padding:13px 16px;background:#f5faf8;border:1px solid #ebf5f1;border-radius:8px;font-size:11px;color:#94ada3;margin-bottom:14px}.detail-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:17px 0}.detail-stat{padding:14px;border:1px solid var(--line);border-radius:8px;font-size:10px}.detail-stat b{display:block;color:#709586;font-size:19px;margin-top:7px;font-weight:500}.sort-btn{font-size:inherit;color:inherit;padding:0}.sort-btn:hover{color:var(--accent)}#toast{position:fixed;bottom:30px;left:calc(50% + 80px);transform:translate(-50%,20px);background:#4a5c55;color:white;padding:12px 20px;border-radius:8px;box-shadow:0 5px 20px #2f453c25;font-size:12px;opacity:0;pointer-events:none;transition:.2s;z-index:100;max-width:80vw}#toast.show{opacity:1;transform:translate(-50%,0)}#tooltip{position:fixed;z-index:200;pointer-events:none;background:#3a4c45;color:#fff;box-shadow:0 5px 20px #2f453c20;border-radius:7px;padding:10px 13px;font-size:10px;line-height:1.8;white-space:pre-line;display:none;max-width:280px}.long-title{white-space:normal;overflow-wrap:anywhere;line-height:1.8}.check-line{display:flex;align-items:flex-start;gap:9px;font-size:11px;margin:12px 0}.check-line input{accent-color:var(--accent);margin-top:5px}.prose ol{padding-left:18px}.prose li{margin:8px 0}.prose code{font-size:10px;background:#eff6f3;padding:2px 5px;border-radius:3px}.full-panel{margin-bottom:20px}.compare-chart{padding:10px 25px}.muted{color:#a0a6b4}.note-below{font-size:10px;color:#a3a8b5;padding:15px 23px;line-height:1.9;border-top:1px solid var(--line)}
+.privacy-banner{display:flex;align-items:flex-start;gap:10px;padding:14px 16px;margin-top:11px;background:#f0f8f5;border:1px solid #dfefe7;border-radius:9px;color:#739584}.privacy-mark{display:grid;place-items:center;flex:none;width:20px;height:20px;background:#e1f0e8;border-radius:50%;font-size:11px;color:#6da58b}.privacy-copy{flex:1;min-width:0}.privacy-copy strong{font-size:10px;font-weight:550;color:#608b75;line-height:20px}.privacy-copy p{font-size:10px;line-height:1.8;margin-top:2px;color:#8b9e93}.privacy-copy .sharing-hint{font-size:9px;color:#98a39b;margin-top:4px}.privacy-banner>.text-button{flex:none;color:#7b9b86;font-size:9px;white-space:nowrap;margin-top:2px}.privacy-banner.storage-warning{background:#fff8ed;border-color:#f1e2c8}.storage-warning .privacy-mark{background:#f5e8d3;color:#b58d57}.storage-warning .privacy-copy strong{color:#ad854f}.storage-warning .privacy-copy p{color:#a99679}@media(max-width:600px){.privacy-banner{padding:12px;gap:8px;flex-wrap:wrap}.privacy-copy{flex-basis:calc(100% - 30px)}.privacy-banner>.text-button{margin-left:28px}.privacy-copy p{font-size:9px}}
+@media(min-width:1600px){main{padding-top:42px}.stat-card{min-height:163px}.stat-number{font-size:33px}.panel-header{padding-top:25px}.chart-wrap{padding-top:15px}.donut-wrap{height:247px}.page-heading{margin-bottom:30px}}
+@media(max-width:1200px){:root{--sidebar:194px}main{padding:28px 25px 0}.topbar{padding:0 25px}.sidebar{padding:30px 13px}.brand{font-size:19px;padding:0 8px;gap:9px}.filterbar{gap:12px}.filter{gap:6px}.filter label{font-size:9px}.filter select{max-width:140px}.stat-card{padding:16px}.stat-number{font-size:25px}.grid-main{grid-template-columns:minmax(0,1.7fr) minmax(250px,1fr)}.panel-header{padding-left:18px;padding-right:18px}.search-box{min-width:150px;width:150px}.product-cell{max-width:240px}.product-cell p{max-width:155px}.table-tools{gap:8px}td,th{padding-left:13px;padding-right:13px}}
+@media(max-width:960px){:root{--sidebar:76px}.sidebar{padding:25px 12px}.brand{padding:0 7px}.brand>span:last-child,.space-label,.nav-item:not(.active) .count,.sidebar-bottom,.nav-dot{display:none}.nav-item{font-size:0;justify-content:center;padding:12px 8px;margin-top:10px;gap:0}.nav-item i{font-size:21px}.sidebar nav{margin-top:38px}.nav-separator{margin:20px 8px}.count{display:none}.grid-main{grid-template-columns:1fr 280px}.stats-grid{gap:10px}.stat-card{padding:14px}.stat-number{font-size:23px}.stat-top{font-size:10px}.stat-bottom{font-size:8px}.mini-spark{display:none}.filter-status{display:none}.page-heading{gap:12px}h1{font-size:24px}.heading-actions .button{padding:0 10px;font-size:10px}}
+@media(max-width:760px){.grid-main{grid-template-columns:1fr}.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.donut-panel{display:grid;grid-template-columns:1fr 1fr}.donut-panel .panel-header{grid-column:1/-1}.donut-wrap{height:190px}.breakdown{align-self:center;padding:0 20px}.page-heading{align-items:flex-start;flex-direction:column;gap:17px}.heading-actions{width:100%}.heading-actions .button{flex:1}.strip-end{display:none}.filterbar{gap:13px 20px}.filter{flex:1 1 40%}.filter label{width:47px}.filter select{flex:1}.filterbar>.text-button{margin-left:auto}.page-heading p{font-size:10px}main{padding:24px 18px 0}.topbar{height:60px;padding:0 18px}.top-actions{gap:12px}.local-badge{display:none}.import-strip{padding:15px;gap:10px}.import-strip p{font-size:9px;line-height:1.8}.import-strip b{font-size:10px}.panel-header{flex-wrap:wrap}.section-table .panel-header{gap:15px}.table-tools{width:100%;justify-content:space-between}.search-box{flex:1;max-width:220px}.stat-card{min-height:138px}.stat-number{font-size:27px}footer{flex-direction:column;gap:4px}.compare-controls{margin-left:18px;gap:10px}.compare-controls select{max-width:120px}.insight-banner p{font-size:9px}.chart-footer{font-size:8px}.detail-stats{grid-template-columns:1fr}#toast{left:50%}.breadcrumb{font-size:10px}}
+@media(max-width:420px){:root{--sidebar:0px}.sidebar{display:none}.stats-grid{gap:8px}.stat-card{padding:13px}.stat-number{font-size:24px}.topbar{padding:0 16px}main{padding-left:12px;padding-right:12px}.import-strip .upload-mark{display:none}.donut-panel{grid-template-columns:1fr}.donut-wrap{height:180px}.breakdown{padding:0 25px 12px}.stat-bottom{gap:4px}.filterbar{padding:12px}.table-bottom{padding:12px}.panel-header{padding-left:16px}.stat-icon{width:22px;height:22px}.filter{gap:5px}.top-actions{gap:8px}.breadcrumb span{margin:0 8px}.modal-header{padding:20px}#modalBody{padding:18px}.modal-actions{padding:15px}}
+@media(max-width:420px){.sidebar{display:flex;position:fixed;inset:auto 0 0;width:100%;height:59px;padding:0 8px;border-right:0;border-top:1px solid #e4efea;box-shadow:0 -3px 15px #5b746a05;background:#fffffffa}.sidebar .brand,.sidebar>.nav-item,.sidebar .nav-separator{display:none}.sidebar nav{display:flex;margin:0;height:100%;justify-content:space-around;align-items:center}.sidebar nav .nav-item{display:flex;flex-direction:column;gap:3px;font-size:9px;padding:5px 6px;margin:0;width:23%;height:46px;border-radius:7px}.sidebar nav .nav-item i{font-size:17px;height:18px;line-height:18px}.workspace footer{padding-bottom:80px}.topbar .breadcrumb{cursor:default}.stats-grid{gap:8px}#toast{bottom:77px}}
+@media print{.sidebar,.topbar,.import-strip,.heading-actions,.filterbar,.table-tools,.row-link,.pager{display:none!important}.workspace{margin-left:0}body{background:#fff}main{padding:0;max-width:none}.panel,.stat-card{break-inside:avoid;box-shadow:none}.grid-main{grid-template-columns:2fr 1fr}footer{font-size:9px}.table-wrap{overflow:visible}dialog{display:none}}
+</style>
+  <link rel="stylesheet" href="site-shell.css">
+  <link rel="icon" href="/site-icon-v2.svg" type="image/svg+xml" />
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6790643369569237" crossorigin="anonymous"></script>
+<!-- published-seo:start -->
+<title>仓储费用分析工具 - 跨境工具魔方 AmzToolBox</title>
+<meta name="description" content="导入 Amazon 月度仓储费报告，分析多月费用、商品成本、仓库分布，并支持 SKU 映射与本地备份。">
+<link rel="canonical" href="https://www.amztoolbox.top/storage-fee-analyzer/index.html">
+<meta name="robots" content="index, follow">
+<meta name="baidu-site-verification" content="codeva-TDas0V8Wan">
+<!-- published-seo:end -->
+</head>
+<body>
+  <div id="site-header-container">
+    <header class="tb-header">
+      <div class="tb-logo-area">
+        <div class="tb-logo-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+        </div>
+        <span>跨境工具魔方 AmzToolBox</span>
+      </div>
+      <nav class="tb-nav-desktop">
+        <a href="/" class="tb-nav-link">首页</a>
+        <a href="/functionality" class="tb-nav-link">功能分类</a>
+        <a href="/about" class="tb-nav-link">关于</a>
+        <a href="/blog" class="tb-nav-link">博客</a>
+        <a href="/suggest" class="tb-nav-link">提需求</a>
+        <a href="/reward" class="tb-nav-link">打赏支持</a>
+      </nav>
+    </header>
+  </div>
+  <div id="page-top-ad-anchor"></div>
+  <aside class="sidebar">
+    <a class="brand" href="#overview"><span class="brand-icon">▥</span><span>Storage<span class="brand-light">Lens</span><small>仓储费用分析工作台</small></span></a>
+    <div class="space-label">工作空间 <span>LOCAL</span></div>
+    <nav aria-label="主导航">
+      <button class="nav-item active" data-view="overview"><i>◫</i>费用总览<span class="nav-dot"></span></button>
+      <button class="nav-item" data-view="products"><i>▦</i>商品费用</button>
+      <button class="nav-item" data-view="compare"><i>▥</i>多月对比</button>
+      <button class="nav-item" data-view="warehouses"><i>▤</i>仓库分布</button>
+    </nav>
+    <div class="nav-separator"></div>
+    <button class="nav-item" id="manageFiles"><i>▱</i>数据文件<span id="fileCount" class="count">0</span></button>
+    <button class="nav-item" id="mappingBtn"><i>⇄</i>SKU 映射</button>
+    <div class="sidebar-bottom"><div class="local-dot"></div><b>数据留在你的设备</b><p>离线解析 · 无需登录</p><button id="helpBtn">使用说明 <span>↗</span></button></div>
+  </aside>
+  <div class="workspace">
+    <header class="topbar"><div class="breadcrumb">工作空间 <span>/</span> <b id="breadcrumbTitle">费用总览</b></div><div class="top-actions"><span class="local-badge"><i></i>本地工作台</span><button class="button small" id="restoreBackupBtn">↥ 导入备份</button><button class="button small" id="backupBtn" title="导出全部数据备份" aria-label="导出全部数据备份">↧ 导出备份</button><span class="avatar">S</span></div></header>
+    <main>
+      <div class="page-heading"><div><div class="eyebrow">FULFILLMENT ANALYTICS</div><h1 id="pageTitle">仓储费用总览<span class="title-dot">.</span></h1><p id="pageSubtitle">看清每一笔仓储成本，让库存决策更有依据。</p></div><div class="heading-actions"><button class="button" id="exportBtn">↧ <span>导出报表</span></button><button class="button primary" id="uploadBtn">＋ 导入费用文件</button></div></div>
+      <input type="file" id="fileInput" accept=".csv,.tsv,.txt,.json" multiple hidden>
+      <input type="file" id="backupInput" accept=".json,application/json" aria-label="选择 JSON 备份文件" hidden>
+      <section class="import-strip" id="dropzone" tabindex="0" role="button" aria-label="点击或拖入费用文件"><span class="upload-mark">↥</span><div><b>把费用文件拖到这里，分析即刻开始</b><p>支持 Amazon 原始 CSV / TSV，多文件批量导入，自动识别计费月份与费用类型</p></div><span class="strip-end">选择文件 <b>↗</b></span></section>
+      <section id="privacyBanner" class="privacy-banner" aria-label="隐私与本地保存" role="status"><span class="privacy-mark" aria-hidden="true">✓</span><div class="privacy-copy"><strong id="storageStatus">正在检查本地保存…</strong><p id="storageHint">文件在本机解析，不会上传服务器；可断网使用。</p><p id="sharingHint" class="sharing-hint"></p></div><button class="text-button" data-action="privacy">隐私与保存说明 ↗</button></section>
+      <section class="filterbar" aria-label="分析筛选"><div class="filter"><label for="monthFilter">分析月份</label><select id="monthFilter"></select></div><div class="filter"><label for="currencyFilter">币种</label><select id="currencyFilter"></select></div><div class="filter"><label for="countryFilter">站点</label><select id="countryFilter"></select></div><div class="filter"><label for="typeFilter">费用范围</label><select id="typeFilter"><option value="storage">月度仓储费</option></select></div><span class="filter-status" id="filterStatus"></span><button class="text-button" id="resetFilters">重置筛选</button></section>
+      <div id="contextNote" class="context-note"></div>
+      <div id="viewContent" aria-live="polite"></div>
+      <footer><span>Storage Lens <span class="footer-dot">•</span> 仓储成本，清晰可见</span><span id="footerStatus">原始费用字段直接汇总 · 不同币种独立分析</span></footer>
+    </main>
+  </div>
+  <dialog id="modal"><div class="modal-header"><div><div class="eyebrow" id="modalEyebrow">DATA WORKSPACE</div><h2 id="modalTitle"></h2></div><button class="icon-button" id="closeModal" aria-label="关闭">✕</button></div><div id="modalBody"></div><div id="modalActions" class="modal-actions"></div></dialog>
+  <div id="toast" role="status"></div>
+  <div id="tooltip" role="tooltip"></div>
+  <script id="bundledData" type="application/json">{"columns":["month","type","asin","fnsku","sku","name","warehouse","country","currency","fee","base","surcharge","qty","volume","size"],"names":[],"files":[],"workspaceId":"storage-lens-share-offline-v1"}</script>
+  <script>/* Storage Lens: parsing and aggregation, shared by the offline page and tests. */
+(function (root) {
+  'use strict';
+  const SCALE = 1000000;
+  const clean = v => String(v ?? '').trim();
+  const header = v => clean(v).replace(/^\uFEFF/, '').toLowerCase().replace(/[\s_\-()（）]/g, '');
+  const aliases = {
+    asin: ['asin'], fnsku: ['fnsku'], sku: ['sku', 'sellersku', 'msku', '卖家sku', '卖家编码'],
+    name: ['productname', '商品名称', '产品名称', '商品标题'],
+    warehouse: ['fulfillmentcenter', '仓库', '运营中心', '配送中心'],
+    country: ['countrycode', 'country', '国家代码', '国家', '站点'],
+    currency: ['currency', '货币', '币种'], month: ['monthofcharge', '计费月份', '收费月份', '费用月份', '月份'],
+    fee: ['estimatedmonthlystoragefee', '月度仓储费', '预估月度仓储费', '预计月度仓储费'],
+    returns: ['skureturnsfee', '退货处理费'], base: ['estbasemsf', '基础仓储费'],
+    surcharge: ['estsus', '仓储利用率附加费'], qty: ['averagequantityonhand', '平均库存数量', '日均库存量'],
+    volume: ['estimatedtotalitemvolume', '预估总体积'], volumeUnits: ['volumeunits', '体积单位'],
+    size: ['productsizetier', 'skusizetier', '商品尺寸分段'], unitVolume: ['itemvolume', '单件体积']
+  };
+  function parseCSV(text) {
+    text = text.replace(/^\uFEFF/, '');
+    const first = text.split(/\r?\n/, 1)[0];
+    const delimiter = first.includes('\t') ? '\t' : first.split(';').length > first.split(',').length ? ';' : ',';
+    const rows = []; let row = [], value = '', quoted = false, closed = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (quoted) {
+        if (c === '"' && text[i + 1] === '"') { value += '"'; i++; }
+        else if (c === '"') { quoted = false; closed = true; }
+        else value += c;
+      } else if (c === '"' && !value && !closed) quoted = true;
+      else if (c === delimiter) { row.push(value); value = ''; closed = false; }
+      else if (c === '\r' || c === '\n') {
+        if (c === '\r' && text[i + 1] === '\n') i++;
+        row.push(value); if (row.some(x => clean(x))) rows.push(row);
+        row = []; value = ''; closed = false;
+      } else if (closed && !/\s/.test(c)) throw new Error('CSV 引号后存在非法字符，请重新导出文件');
+      else if (!closed) value += c;
+    }
+    if (quoted) throw new Error('CSV 引号未闭合，请检查文件是否完整');
+    row.push(value); if (row.some(x => clean(x))) rows.push(row);
+    return rows;
+  }
+  function numeric(value) {
+    let s = clean(value).replace(/,/g, '');
+    if (!s || s === '--' || s === '—') return null;
+    if (/^\(.+\)$/.test(s)) s = '-' + s.slice(1, -1);
+    if (!/^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(s)) return null;
+    const n = Number(s); return Number.isFinite(n) ? n : null;
+  }
+  function money(value) {
+    const n = numeric(value); if (n === null) return null;
+    const v = Math.round(n * SCALE); return Number.isSafeInteger(v) ? v : null;
+  }
+  function month(value) {
+    const m = clean(value).match(/^(\d{4})[-/年](\d{1,2})(?:月|$|[-/T\s])/);
+    return m && +m[2] >= 1 && +m[2] <= 12 ? `${m[1]}-${m[2].padStart(2, '0')}` : null;
+  }
+  function filenameMonth(name) {
+    const m = name.match(/(?:^|[^\d])(\d{2}|\d{4})年(\d{1,2})月/);
+    return m ? month(`${m[1].length === 2 ? '20' : ''}${m[1]}-${m[2]}`) : null;
+  }
+  function parseReport(text, filename) {
+    const rows = parseCSV(text); if (rows.length < 2) throw new Error('文件没有数据行');
+    const hs = rows[0].map(header), cols = {};
+    for (const [key, values] of Object.entries(aliases)) cols[key] = hs.findIndex(h => values.includes(h));
+    const get = (r, k) => cols[k] < 0 ? '' : clean(r[cols[k]]);
+    if (cols.fee < 0 && cols.returns < 0 && cols.fnsku >= 0 && cols.sku >= 0) {
+      const mapping = {};
+      for (const [i, r] of rows.slice(1).entries()) {
+        const f = get(r, 'fnsku'), s = get(r, 'sku');
+        if (!f || !s) throw new Error(`映射表第 ${i + 2} 条记录缺少 FNSKU 或 SKU`);
+        if (mapping[f] && mapping[f] !== s) throw new Error(`FNSKU ${f} 对应多个 SKU，请先消除歧义`);
+        mapping[f] = s;
+      }
+      return { kind: 'mapping', mapping, name: filename, errors: [], warnings: [] };
+    }
+    if (cols.fee < 0 && cols.returns < 0) throw new Error('未找到 estimated_monthly_storage_fee 或 sku_returns_fee 费用列');
+    if (cols.asin < 0 && cols.fnsku < 0 && cols.sku < 0) throw new Error('缺少 ASIN / FNSKU / SKU 标识列');
+    if (cols.currency < 0) throw new Error('缺少 currency 币种列，无法安全汇总费用');
+    const type = cols.fee >= 0 ? 'storage' : 'returns', records = [], errors = [], warnings = [];
+    let fallbackCount = 0, unknownVolume = 0;
+    for (const [i, r] of rows.slice(1).entries()) {
+      const fee = money(get(r, type === 'storage' ? 'fee' : 'returns'));
+      let m = month(get(r, 'month'));
+      if (!m && !get(r, 'month') && filenameMonth(filename)) { m = filenameMonth(filename); fallbackCount++; }
+      const currency = get(r, 'currency').toUpperCase(), asin = get(r, 'asin'), fnsku = get(r, 'fnsku'), sku = get(r, 'sku');
+      if (r.length !== hs.length || fee === null || !m || !/^[A-Z]{3}$/.test(currency) || !(asin || fnsku || sku)) {
+        errors.push(`记录 ${i + 2}：${r.length !== hs.length ? '列数不一致' : fee === null ? '费用不是有效数字' : !m ? '计费月份无效' : !/^[A-Z]{3}$/.test(currency) ? '币种无效' : '缺少商品编号'}`);
+        continue;
+      }
+      const u = get(r, 'volumeUnits').toLowerCase();
+      const factor = ['cubic feet', 'cubic foot', 'ft3', 'ft³', '立方英尺'].includes(u) ? 1 : ['cubic meters', 'cubic metres', 'm3', 'm³', '立方米'].includes(u) ? 35.3146667 : null;
+      const rawVol = numeric(get(r, 'volume'));
+      if (rawVol !== null && factor === null) unknownVolume++;
+      records.push({ month: m, type, asin, fnsku, sku, name: get(r, 'name'),
+        warehouse: get(r, 'warehouse').replace(/^['"]|['"]$/g, '') || '未提供', country: get(r, 'country').toUpperCase() || '未提供', currency,
+        fee, base: type === 'storage' ? money(get(r, 'base')) : null, surcharge: type === 'storage' ? money(get(r, 'surcharge')) : null,
+        qty: type === 'storage' ? numeric(get(r, 'qty')) : null,
+        volume: rawVol !== null && factor !== null ? rawVol * factor : null, size: get(r, 'size') || '未提供' });
+    }
+    if (!records.length) throw new Error(`没有可用记录。${errors.slice(0, 3).join('；')}`);
+    if (fallbackCount) warnings.push(`${fallbackCount} 条记录的月份取自文件名`);
+    if (unknownVolume) warnings.push(`${unknownVolume} 条记录体积单位无法识别，体积统计已排除`);
+    return { kind: 'report', name: filename, records, errors, warnings, totalRows: rows.length - 1 };
+  }
+  function shiftMonth(m, delta) {
+    const [y, mo] = m.split('-').map(Number); const d = new Date(Date.UTC(y, mo - 1 + delta, 1));
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+  }
+  const scope = r => JSON.stringify([r.month, r.type, r.country, r.currency]);
+  const sum = (rows, key = 'fee') => rows.reduce((n, r) => n + (r[key] ?? 0), 0);
+  function group(rows, key, mapping = {}) {
+    const map = new Map();
+    for (const r of rows) {
+      const id = key === 'sku' ? r.sku || mapping[r.fnsku] || r.fnsku || '无 SKU / FNSKU' : r[key] || '未提供';
+      if (!map.has(id)) map.set(id, { id, name: r.name, rows: [], fee: 0, base: 0, surcharge: 0, qty: 0, volume: 0, asins: new Set(), fnskus: new Set(), skus: new Set() });
+      const g = map.get(id); g.rows.push(r); g.fee += r.fee; g.base += r.base ?? 0; g.surcharge += r.surcharge ?? 0;
+      g.qty += r.qty ?? 0; g.volume += r.volume ?? 0;
+      if (r.asin) g.asins.add(r.asin); if (r.fnsku) g.fnskus.add(r.fnsku); if (r.sku || mapping[r.fnsku]) g.skus.add(r.sku || mapping[r.fnsku]);
+    }
+    return [...map.values()].sort((a, b) => b.fee - a.fee);
+  }
+  function validateBackup(data) {
+    if (!data || data.version !== 1 || !Array.isArray(data.files) || typeof data.mapping !== 'object' || data.mapping === null || Array.isArray(data.mapping)) throw new Error('不是有效的 Storage Lens 备份文件');
+    const fields = ['asin','fnsku','sku','name','warehouse','country','currency','type','month'];
+    for (const f of data.files) {
+      if (typeof f.id !== 'string' || typeof f.name !== 'string' || !Array.isArray(f.records) || !f.records.length) throw new Error('备份文件结构不完整');
+      for (const r of f.records) {
+        if (fields.some(k => typeof r[k] !== 'string') || !['storage','returns'].includes(r.type) || month(r.month) !== r.month || !/^[A-Z]{3}$/.test(r.currency) || !(r.asin || r.fnsku || r.sku) || !Number.isSafeInteger(r.fee) || ['base','surcharge'].some(k => r[k] !== null && !Number.isSafeInteger(r[k])) || ['qty','volume'].some(k => r[k] !== null && !Number.isFinite(r[k]))) throw new Error('备份包含无效记录');
+      }
+    }
+    if (Object.entries(data.mapping).some(([k,v]) => !k || typeof v !== 'string' || !v)) throw new Error('备份 SKU 映射无效');
+    return data;
+  }
+  function onlyStorageFiles(files) {
+    let removedRecords = 0;
+    const kept = files.map(f => {
+      const records = f.records.filter(r => r.type === 'storage');
+      removedRecords += f.records.length - records.length;
+      return records.length === f.records.length ? f : { ...f, records };
+    }).filter(f => f.records.length);
+    return { files: kept, removedRecords };
+  }
+  const api = { SCALE, clean, header, parseCSV, numeric, money, month, parseReport, shiftMonth, scope, sum, group, validateBackup, onlyStorageFiles };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.StorageCore = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+</script>
+  <script>/* No network calls or external dependencies. */
+(function () {
+  'use strict';
+  const C = StorageCore, $ = s => document.querySelector(s);
+  const esc = v => String(v ?? '').replace(/[&<>"']/g, x => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
+  const number = (v, d = 2) => v === null || !Number.isFinite(v) ? '—' : v.toLocaleString('zh-CN', { minimumFractionDigits: d, maximumFractionDigits: d });
+  const symbols = { USD: '$', EUR: '€', GBP: '£', CNY: '¥', JPY: '¥', CAD: 'CA$', AUD: 'A$' };
+  const cash = (v, decimals = 2) => `${symbols[state.currency] || state.currency + ' '}${number(v / C.SCALE, decimals)}`;
+  const monthLabel = m => m === 'all' ? '全部已导入月份' : `${m.slice(0,4)} 年 ${+m.slice(5)} 月`;
+  const typeLabel = () => '月度仓储费';
+  const palette = ['#519d78','#94c7ab','#d0e8da','#e7b98c','#96c8b8','#a8beda'];
+  const B = JSON.parse($('#bundledData').textContent);
+  const bundled = () => B.files.map(f => ({ ...f, records: f.rows.map(a => {
+    const r = Object.fromEntries(B.columns.map((k, i) => [k, a[i]])); r.name = B.names[r.name]; return r;
+  }), rows: undefined }));
+  const state = { files: bundled(), mapping: {}, view: 'overview', month: '', currency: '', country: 'all', type: 'storage', group: 'asin', search: '', page: 1, sort: 'fee', desc: true, compareStart: '', compareEnd: '', compareMetric: 'fee' };
+  let db = null, busy = false, toastTimer, pendingImport = null;
+  let storageMode = 'checking', lastSavedAt = null;
+  let excludedRecords = 0;
+  function storageNotice(mode) {
+    storageMode=mode;
+    const banner=$('#privacyBanner');banner.classList.toggle('storage-warning',mode==='unavailable');
+    $('#storageStatus').textContent={checking:'正在检查本地保存…',saving:'正在保存到本地浏览器…',saved:'已保存到本地浏览器',unavailable:'本次数据尚未成功保存，请导出备份'}[mode];
+    $('#storageHint').textContent=mode==='unavailable'?'文件仍在本机解析，不会上传服务器。关闭页面可能丢失本次更改，请先导出备份。':'文件在本机解析，不会上传服务器。下次使用同一浏览器打开可继续；清理浏览器数据或无痕窗口关闭后可能丢失，请定期备份。';
+    $('#sharingHint').textContent=B.files.length?`当前 HTML 内置 ${B.files.length} 份项目报告，分享文件也会包含这些数据。对外分享请使用「仓储费用分析工具_分享版.html」。`:'分享版不含预置业务数据。每位使用者的数据保存在自己的浏览器中，不会自动同步给他人；新增数据不会写回 HTML 文件。';
+  }
+  function savedToast(ok,success) { toast(ok?success:'分析已更新，但本地保存失败；请先导出备份再关闭页面'); }
+  function toast(s) { $('#toast').textContent = s; $('#toast').classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => $('#toast').classList.remove('show'), 3600); }
+  function allRows() { return state.files.flatMap(f => f.records); }
+  function filtered({period = true, type = true} = {}) {
+    return allRows().filter(r => r.currency === state.currency && (state.country === 'all' || r.country === state.country) && (!type || state.type === 'all' || r.type === state.type) && (!period || state.month === 'all' || r.month === state.month));
+  }
+  function unique(rows, k) { return [...new Set(rows.map(r => r[k]).filter(Boolean))].sort(); }
+  function summary(rows) {
+    const storage = rows.filter(r => r.type === 'storage'), months = unique(storage, 'month').length || 1;
+    return { fee: C.sum(rows), qty: storage.some(r => r.qty !== null) ? C.sum(storage, 'qty') / months : null,
+      volume: storage.some(r => r.volume !== null) ? C.sum(storage, 'volume') / months : null,
+      asins: unique(rows, 'asin').length, fnskus: unique(rows, 'fnsku').length,
+      warehouses: unique(rows.filter(r => r.warehouse !== '未提供'), 'warehouse').length };
+  }
+  function setOptions(select, values, selected) { select.innerHTML = values.map(([value, label]) => `<option value="${esc(value)}"${value === selected ? ' selected' : ''}>${esc(label)}</option>`).join(''); }
+  function syncFilters() {
+    const rows = allRows(), months = unique(rows, 'month'), currencies = unique(rows, 'currency');
+    if (!months.includes(state.month) && state.month !== 'all') state.month = months.at(-1) || 'all';
+    if (!currencies.includes(state.currency)) state.currency = currencies[0] || 'USD';
+    const countries = unique(rows.filter(r => r.currency === state.currency), 'country');
+    if (!countries.includes(state.country)) state.country = 'all';
+    setOptions($('#monthFilter'), [...months.map(m => [m, monthLabel(m)]).reverse(), ['all','全部已导入月份']], state.month);
+    setOptions($('#currencyFilter'), (currencies.length ? currencies : ['USD']).map(c => [c, c]), state.currency);
+    setOptions($('#countryFilter'), [['all','全部站点'], ...countries.map(c => [c,c])], state.country);
+    $('#typeFilter').value = state.type;
+    $('#fileCount').textContent = state.files.length;
+    $('#filterStatus').textContent = `${months.length} 个月份 · ${state.files.length} 份报告`;
+    const notes = [];
+    if (state.month !== 'all' && state.month !== new Date().toLocaleDateString('sv-SE').slice(0,7)) notes.push(`当前查看 ${monthLabel(state.month)}，按报表计费月份统计`);
+    notes.push('原始字段为预估费用，最终以结算账单为准');
+    if(excludedRecords)notes.push(`已排除 ${excludedRecords} 条非月度仓储费记录，其他仓储数据已保留`);
+    $('#contextNote').textContent = notes.join(' · ');
+  }
+  function previousInfo(rows = filtered()) {
+    if (state.month === 'all') return { rows: [], exists: false, m: null };
+    const m = C.shiftMonth(state.month, -1), previous = filtered({period:false}).filter(r => r.month === m);
+    return { rows: previous, exists: previous.length > 0, m, current: C.sum(rows), fee: C.sum(previous) };
+  }
+  function change(current, previous, exists = true) {
+    if (!exists) return { text: '无上月数据', cls:'neutral', full:'缺少上一个自然月的数据' };
+    if (!previous) return { text: current ? '上期为零' : '持平', cls:'neutral', full: `变化 ${cash(current - previous)}` };
+    const p = (current - previous) / Math.abs(previous) * 100;
+    return { text:`${p > 0 ? '↗' : p < 0 ? '↘' : '→'} ${number(Math.abs(p),1)}%`, cls:p > 0 ? 'up' : '', full:`较上一自然月 ${cash(current - previous)}` };
+  }
+  function modal(title, body, actions = '', eyebrow = 'DATA WORKSPACE') {
+    $('#modalTitle').textContent = title; $('#modalBody').innerHTML = body; $('#modalActions').innerHTML = actions; $('#modalEyebrow').textContent = eyebrow;
+    if (!$('#modal').open) $('#modal').showModal();
+  }
+  function closeModal() { $('#modal').close(); pendingImport = null; }
+  function empty(message = '当前筛选下没有费用记录') {
+    return `<div class="panel empty"><div class="empty-icon">▱</div><h3>${esc(message)}</h3><p>选择其他月份或费用范围，也可以导入新的费用文件。</p><button class="button primary" data-action="upload">＋ 导入费用文件</button></div>`;
+  }
+  function sparkline(rows) {
+    const gs = C.group(rows, 'month').sort((a,b) => a.id.localeCompare(b.id)); if (gs.length < 2) return '';
+    const max = Math.max(...gs.map(g => g.fee), 1), min = Math.min(...gs.map(g => g.fee));
+    const points = gs.map((g,i) => `${i / (gs.length - 1) * 64},${25-(g.fee-min)/Math.max(max-min,1)*23}`).join(' ');
+    return `<svg class="mini-spark" viewBox="0 0 66 27" aria-hidden="true"><polyline points="${points}" fill="none" stroke="#8ebba2" stroke-width="1.7"/></svg>`;
+  }
+  function statCards(rows) {
+    const s = summary(rows), p = previousInfo(rows), ch = change(s.fee, p.fee, p.exists);
+    const volumeUnit = state.month === 'all' ? '各月平均' : '当月合计';
+    return `<div class="stats-grid">
+      <article class="stat-card featured"><div class="stat-top"><span class="stat-icon">＄</span>${state.month === 'all' ? '期间' : '当月'}${typeLabel(state.type)}</div><div class="stat-number" id="totalFee"><span class="money-symbol">${esc(symbols[state.currency] || '')}</span>${number(s.fee/C.SCALE)}<small>${esc(state.currency)}</small></div><div class="stat-bottom">${state.month === 'all' ? `<span>${unique(rows,'month').length} 个已导入计费月份累计</span>` : `<span class="change ${ch.cls}">${ch.text}</span><span>较上一自然月</span>`}</div>${sparkline(filtered({period:false}))}</article>
+      <article class="stat-card"><div class="stat-top"><span class="stat-icon green">▦</span>涉及商品</div><div class="stat-number">${s.asins}<small>个 ASIN</small></div><div class="stat-bottom">${s.fnskus} 个 FNSKU <span>·</span> ${state.month === 'all' ? '期间去重' : '当月去重'}</div></article>
+      <article class="stat-card"><div class="stat-top"><span class="stat-icon orange">▧</span>${state.month === 'all' ? '月均库存数量' : '日均库存数量'}</div><div class="stat-number">${number(s.qty,1)}<small>件</small></div><div class="stat-bottom">${s.qty === null ? '所选报告未提供库存字段' : `跨仓加总日均库存 · ${volumeUnit}`}</div></article>
+      <article class="stat-card"><div class="stat-top"><span class="stat-icon blue">▤</span>${state.month === 'all' ? '月均仓储体积' : '仓储体积'}</div><div class="stat-number">${number(s.volume,2)}<small>ft³</small></div><div class="stat-bottom">${s.volume === null ? '所选报告未提供体积字段' : `覆盖 ${s.warehouses} 个仓库 · ${volumeUnit}`}</div></article>
+    </div>`;
+  }
+  function timelineMonths(rows, limit = 60) {
+    const months = unique(rows, 'month'); if (!months.length) return [];
+    let first = months[0], last = months.at(-1); if (C.shiftMonth(last, -limit + 1) > first) first = C.shiftMonth(last, -limit + 1);
+    const out = []; for (let m = first; m <= last; m = C.shiftMonth(m,1)) out.push(m); return out;
+  }
+  function trendChart(rows, { height = 250, metric = 'fee', clickable = true } = {}) {
+    const months = timelineMonths(rows), byMonth = new Map(C.group(rows, 'month').map(g => [g.id,g]));
+    if (!months.length) return '<div class="empty"><p>没有可展示的月度数据</p></div>';
+    const w = 700, h = height, left = 52, right = 18, top = 30, bottom = 43;
+    const value = g => metric === 'fee' ? g.fee / C.SCALE : metric === 'qty' ? (g.rows.some(r => r.qty !== null) ? g.qty : null) : (g.rows.some(r => r.volume !== null) ? g.volume : null);
+    const vals = [...byMonth.values()].map(value).filter(v => v !== null), maximum = Math.max(...vals,1), minimum = Math.min(0,...vals);
+    const step = Math.pow(10, Math.floor(Math.log10(maximum - minimum))) / 2;
+    const max = Math.ceil(maximum * 1.12 / step) * step, min = Math.floor(minimum * 1.1 / step) * step;
+    const plotH = h-top-bottom, y = v => top + (max-v) / (max-min) * plotH;
+    const dx = (w-left-right)/months.length, bw = Math.min(dx*.52,35), baseline = y(0);
+    let svg = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${metric === 'fee' ? '月度费用' : '库存'}趋势图，缺失月份以破折号显示"><text x="${left}" y="13" class="chart-label small">${metric === 'fee' ? esc(state.currency) : metric === 'qty' ? '件' : 'ft³'}</text>`;
+    for (let i=0;i<5;i++) { const v = min+(max-min)*i/4, yy=y(v); svg+=`<line x1="${left}" y1="${yy}" x2="${w-right}" y2="${yy}" stroke="#eef0f6" stroke-dasharray="3 4"/><text x="${left-12}" y="${yy+3}" text-anchor="end" class="chart-label small">${number(v,Math.abs(v)<10?1:0)}</text>`; }
+    months.forEach((m,i) => {
+      const g=byMonth.get(m), x=left+dx*i+dx/2, v=g?value(g):null, active=m===state.month, label = months.length <= 18 || i%Math.ceil(months.length/12)===0;
+      if (v !== null) {
+        const yy=y(v), barH=Math.max(Math.abs(baseline-yy),v?1:0);
+        svg+=`<rect x="${x-bw/2}" y="${Math.min(baseline,yy)}" width="${bw}" height="${barH}" rx="3" fill="${active?'#33865f':'#bedcc9'}"/>`;
+        if (months.length <= 18) svg+=`<text x="${x}" y="${v>=0?yy-8:yy+13}" text-anchor="middle" class="chart-total">${number(v,metric==='fee'?0:1)}</text>`;
+      } else svg+=`<text x="${x}" y="${baseline-8}" class="chart-label small" text-anchor="middle">—</text>`;
+      if (label) svg+=`<text x="${x}" y="${h-23}" text-anchor="middle" class="chart-label small"${active?' style="fill:#51896b"':''}>${+m.slice(5)}月</text>${i===0||m.endsWith('-01')?`<text x="${x}" y="${h-8}" text-anchor="middle" class="chart-label small">${m.slice(0,4)}</text>`:''}`;
+      const tip=`${monthLabel(m)}\n${v===null?'未导入数据 / 字段未提供':`${metric==='fee'?cash(g.fee):number(v,2)+(metric==='qty'?' 件':' ft³')}\n${g.asins.size} 个 ASIN · ${g.rows.length} 条记录`}`;
+      svg+=`<rect class="chart-hit" x="${x-dx/2}" y="${top-15}" width="${dx}" height="${plotH+35}" fill="transparent" data-tip="${esc(tip)}" ${clickable&&g?`data-month="${m}" tabindex="0" role="button" aria-label="查看${monthLabel(m)}"`:''}/>`;
+    });
+    return svg+'</svg>';
+  }
+  function composition(rows) {
+    const parts = [{label:'基础仓储费',value:0,color:palette[0]},{label:'利用率附加费',value:0,color:palette[1]},{label:'其他差额 / 调整',value:0,color:palette[2]},{label:'未拆分仓储费',value:0,color:palette[4]}];
+    for (const r of rows) {
+      if (r.base === null || r.surcharge === null) parts[3].value += r.fee;
+      else { parts[0].value+=r.base; parts[1].value+=r.surcharge; parts[2].value+=r.fee-r.base-r.surcharge; }
+    }
+    const visible = parts.filter(p => p.value !== 0 || p.label === '基础仓储费' || p.label === '利用率附加费');
+    const positive = parts.reduce((a,p) => a+Math.max(0,p.value),0), total = C.sum(rows); let offset=0;
+    const rings=parts.filter(p=>p.value>0).map(p=>{const len=p.value/positive*100; const s=`<circle cx="100" cy="100" r="76" fill="none" stroke="${p.color}" stroke-width="16" pathLength="100" stroke-dasharray="${len} ${100-len}" stroke-dashoffset="${-offset}" data-tip="${esc(p.label+'\n'+cash(p.value))}"/>`;offset+=len;return s;}).join('');
+    return `<section class="panel donut-panel"><div class="panel-header"><div><h2>费用构成</h2><p class="panel-subtitle">${state.month==='all'?'所选期间':monthLabel(state.month)} · ${esc(state.currency)}</p></div><span class="range-chip">按费用类型</span></div><div class="donut-wrap"><svg viewBox="0 0 200 200" role="img" aria-label="费用构成环形图"><circle cx="100" cy="100" r="76" fill="none" stroke="#f0f7f4" stroke-width="16"/>${rings}</svg><div class="donut-center"><span>费用合计</span><b>${cash(total)}</b><span>${typeLabel(state.type)}</span></div></div><div class="breakdown">${visible.map(p=>`<div class="breakdown-row"><i style="--c:${p.color}"></i>${p.label}<strong>${cash(p.value)}</strong><small>${total>0?number(p.value/total*100,1)+'%':'—'}</small></div>`).join('')}${parts.some(p=>p.value<0)?'<p class="panel-subtitle">圆环仅绘制正向费用；中心为净费用。</p>':''}</div></section>`;
+  }
+  function insight(rows) {
+    const groups=C.group(rows,'asin'), total=C.sum(rows), top=groups[0]; if (!top) return '';
+    const p=previousInfo(rows), changeAmount=p.exists?total-p.fee:0;
+    let text=`<strong>${esc(top.id)}</strong> 为当前费用最高的商品，费用 <strong>${cash(top.fee)}</strong>${total>0?`，占所选费用的 <strong>${number(top.fee/total*100,1)}%</strong>`:''}。`;
+    if (p.exists) {
+      const old=new Map(C.group(p.rows,'asin').map(g=>[g.id,g.fee]));
+      const drivers=groups.map(g=>({...g,delta:g.fee-(old.get(g.id)||0)}));
+      for (const [id,fee] of old) if (!groups.some(g=>g.id===id)) drivers.push({id,delta:-fee});
+      drivers.sort((a,b)=>changeAmount>=0?b.delta-a.delta:a.delta-b.delta);
+      if (drivers[0] && drivers[0].delta!==0) text+=` 本月较上月${changeAmount>=0?'增加':'减少'} ${cash(Math.abs(changeAmount))}，其中 ${esc(drivers[0].id)} ${drivers[0].delta>=0?'增加':'减少'} ${cash(Math.abs(drivers[0].delta))}。`;
+    }
+    return `<div class="insight-banner"><span class="insight-icon">✧</span><div><b>费用观察</b><p>${text}</p></div></div>`;
+  }
+  function groupRows(rows) {
+    let groups = C.group(rows, state.group, state.mapping);
+    const q=state.search.toLowerCase().trim(); if(q) groups=groups.filter(g=>[g.id,g.name,...g.asins,...g.fnskus,...g.skus].some(s=>s.toLowerCase().includes(q)));
+    return groups.sort((a,b)=> (typeof a[state.sort]==='number' ? a[state.sort]-b[state.sort] : String(a[state.sort]).localeCompare(String(b[state.sort]))) * (state.desc?-1:1));
+  }
+  function groupSelect() { return `<div class="segmented"><button data-group="asin" class="${state.group==='asin'?'active':''}">ASIN</button><button data-group="sku" class="${state.group==='sku'?'active':''}">SKU / FNSKU</button></div>`; }
+  function sortable(k,label) { return `<button class="sort-btn" data-sort="${k}">${label}${state.sort===k?(state.desc?' ↓':' ↑'):' ↕'}</button>`; }
+  function productTable(rows, full = false) {
+    const gs=groupRows(rows), total=C.sum(rows), pageSize=full?15:5, pages=Math.max(1,Math.ceil(gs.length/pageSize));state.page=Math.min(state.page,pages);
+    const shown=gs.slice((state.page-1)*pageSize,state.page*pageSize), previous=previousInfo(rows), pgs=new Map(C.group(previous.rows,state.group,state.mapping).map(g=>[g.id,g.fee]));
+    return `<section class="panel section-table"><div class="panel-header"><div><h2>${full?'商品费用明细':'商品费用排行'} <span class="muted" style="font-size:10px;font-weight:400;margin-left:8px">${gs.length} 个商品</span></h2><p class="panel-subtitle">跨仓库汇总 · 点击商品查看费用走势与仓库明细${state.group==='sku'?' · 未映射的商品以 FNSKU 展示':''}</p></div><div class="table-tools">${groupSelect()}<input id="productSearch" class="search-box" placeholder="搜索 ASIN / SKU / 商品名" aria-label="搜索商品表格" value="${esc(state.search)}"></div></div><div class="table-wrap"><table><thead><tr><th style="width:35px">排名</th><th>${sortable('id','商品 / '+(state.group==='asin'?'ASIN':'SKU / FNSKU'))}</th><th class="number">${sortable('qty','日均库存')}</th><th class="number">${sortable('volume','体积 (ft³)')}</th><th class="number">${sortable('fee','费用 ('+esc(state.currency)+')')}</th><th class="number">费用占比</th><th class="number">环比</th><th></th></tr></thead><tbody>${shown.map((g,i)=>{
+      const ch=change(g.fee,pgs.get(g.id)||0,previous.exists), s=summary(g.rows), share=total>0?g.fee/total*100:0;
+      const tag = state.group==='sku' ? g.skus.size?'SKU':'FNSKU' : '';
+      return `<tr><td><span class="rank-number">${(state.page-1)*pageSize+i+1}</span></td><td><button class="product-cell" data-detail="${esc(g.id)}"><span class="product-badge">▧</span><span style="text-align:left"><strong>${esc(g.id)}${tag?` <span class="tag">${tag}</span>`:''}</strong><p title="${esc(g.name)}">${esc(g.name||'未提供商品名称')}</p></span></button></td><td class="number">${number(s.qty,1)}</td><td class="number">${number(s.volume,2)}</td><td class="number fee-cell">${cash(g.fee)}</td><td class="number"><div class="share"><span class="share-track"><i style="width:${Math.max(0,Math.min(100,share))}%"></i></span>${total>0?number(share,1)+'%':'—'}</div></td><td class="number"><span class="change ${ch.cls}" title="${esc(ch.full)}">${state.month==='all'?'—':ch.text}</span></td><td><button class="row-link" data-detail="${esc(g.id)}" aria-label="查看 ${esc(g.id)} 明细">↗</button></td></tr>`;
+    }).join('')||'<tr><td colspan="8" class="empty">没有匹配的商品</td></tr>'}</tbody></table></div><div class="table-bottom"><span>${state.month==='all'?'库存 / 体积为各商品有记录月份的均值；':'库存为报表日均值，跨仓加总；'}占比以完整筛选费用为分母</span><div class="pager"><span>共 ${gs.length} 项</span><button data-page="${state.page-1}" ${state.page<=1?'disabled':''} aria-label="上一页">‹</button><span>${state.page} / ${pages}</span><button data-page="${state.page+1}" ${state.page>=pages?'disabled':''} aria-label="下一页">›</button></div></div></section>`;
+  }
+  function overview(rows) {
+    const timeline=filtered({period:false});
+    return statCards(rows)+`<div class="grid-main"><section class="panel"><div class="panel-header"><div><h2>月度费用趋势</h2><p class="panel-subtitle">跨月追踪费用变化，点击柱形切换分析月份</p></div><div class="legend"><span>费用合计</span><span style="--c:#e6efeb">缺失月份以 — 标注</span></div></div><div class="chart-wrap">${trendChart(timeline)}</div><div class="chart-footer"><span>按计费月份 · 不对缺失月份补零</span><span>当前：${monthLabel(state.month)}</span></div></section>${composition(rows)}</div>`+productTable(rows)+insight(rows);
+  }
+  function compareView() {
+    const rows=filtered({period:false}), months=timelineMonths(rows,120), actual=unique(rows,'month');
+    if(!months.length) return empty();
+    if(!months.includes(state.compareStart))state.compareStart=months[0];if(!months.includes(state.compareEnd))state.compareEnd=months.at(-1);
+    const selected=months.filter(m=>m>=state.compareStart&&m<=state.compareEnd), inRange=rows.filter(r=>selected.includes(r.month));
+    const groups=groupRows(inRange), totals=new Map(C.group(inRange,'month').map(g=>[g.id,g]));
+    const metric=state.compareMetric, val=g=>metric==='fee'?g.fee:g.rows.some(r=>r[metric]!==null)?g[metric]:null;
+    const display=v=>v===null?'—':metric==='fee'?cash(v):number(v,metric==='qty'?1:2);
+    const max=Math.max(1,...groups.flatMap(g=>C.group(g.rows,'month').map(val).filter(v=>v!==null)));
+    return `<section class="panel full-panel"><div class="panel-header"><div><h2>把每个月，放在一起看</h2><p class="panel-subtitle">此页使用独立时间范围；沿用币种、站点与费用类型筛选，忽略顶部单月选择</p></div><span class="range-chip">${selected.filter(m=>actual.includes(m)).length} 个有效月份</span></div><div class="compare-controls"><label>起始 <select id="compareStart">${months.map(m=>`<option ${m===state.compareStart?'selected':''}>${m}</option>`).join('')}</select></label><span>→</span><label>结束 <select id="compareEnd">${months.map(m=>`<option ${m===state.compareEnd?'selected':''}>${m}</option>`).join('')}</select></label><label>指标 <select id="compareMetric"><option value="fee" ${metric==='fee'?'selected':''}>费用 (${esc(state.currency)})</option><option value="qty" ${metric==='qty'?'selected':''}>日均库存 (件)</option><option value="volume" ${metric==='volume'?'selected':''}>体积 (ft³)</option></select></label></div><div class="compare-chart">${selected.length?trendChart(inRange,{metric,height:235,clickable:false}):'<div class="empty">起始月份不能晚于结束月份</div>'}</div></section>
+      <section class="panel full-panel"><div class="panel-header"><div><h2>商品 × 月份对比矩阵</h2><p class="panel-subtitle">颜色越深，数值越高 · — 表示缺少该月报告，0 表示该月已有报告且商品无费用记录</p></div>${groupSelect()}</div><div class="table-wrap"><table><thead><tr><th>${state.group==='asin'?'ASIN':'SKU / FNSKU'}</th>${selected.map(m=>`<th class="number">${m}</th>`).join('')}<th class="number">${metric==='fee'?'期间合计':'有报告月份均值'}</th></tr></thead><tbody>${groups.map(g=>{
+        const gm=new Map(C.group(g.rows,'month').map(x=>[x.id,x]));const vs=selected.filter(m=>totals.has(m)).map(m=>gm.has(m)?val(gm.get(m)):metric==='fee'?0:totals.get(m).rows.some(r=>r[metric]!==null)?0:null).filter(v=>v!==null);
+        return `<tr><td><button class="row-link" data-detail="${esc(g.id)}">${esc(g.id)}</button></td>${selected.map(m=>{const v=!totals.has(m)?null:gm.has(m)?val(gm.get(m)):metric==='fee'?0:totals.get(m).rows.some(r=>r[metric]!==null)?0:null;return `<td class="number"><span class="heat" style="background:${v===null?'#f8fbfa':`rgba(48,137,94,${.04+Math.max(0,v)/max*.28})`}">${display(v)}</span></td>`;}).join('')}<td class="number fee-cell">${display(vs.length?vs.reduce((a,v)=>a+v,0)/(metric==='fee'?1:vs.length):null)}</td></tr>`;
+      }).join('')}<tr><td><strong>合计 / 汇总</strong></td>${selected.map(m=>`<td class="number fee-cell">${display(totals.has(m)?val(totals.get(m)):null)}</td>`).join('')}<td class="number fee-cell">${display(metric==='fee'?C.sum(inRange):summary(inRange)[metric])}</td></tr></tbody></table></div><div class="note-below">费用按报表原始金额汇总；库存和体积为各月跨仓日均值。缺失报告不按零计入均值。未出现在已有报告中的商品按该月无记录处理。费用不含未导入的其他费用类型。</div></section>${monthlyTable(inRange,selected)}`;
+  }
+  function monthlyTable(rows,months) {
+    const gs=new Map(C.group(rows,'month').map(g=>[g.id,g]));
+    const history=new Map(C.group(filtered({period:false}),'month').map(g=>[g.id,g]));
+    return `<section class="panel full-panel"><div class="panel-header"><div><h2>月度费用汇总</h2><p class="panel-subtitle">环比只比较上一个自然月；同比只比较上一年同月</p></div></div><div class="table-wrap"><table><thead><tr><th>计费月份</th><th class="number">仓储费合计</th><th class="number">ASIN 数</th><th class="number">环比</th><th class="number">同比</th></tr></thead><tbody>${months.map(m=>{
+      const g=gs.get(m), prev=history.get(C.shiftMonth(m,-1)), yoy=history.get(C.shiftMonth(m,-12));if(!g)return `<tr><td>${m}</td><td colspan="4" class="muted">未导入该月数据</td></tr>`;
+      const pc=change(g.fee,prev?.fee,!!prev),yc=change(g.fee,yoy?.fee,!!yoy);
+      return `<tr><td>${m}</td><td class="number fee-cell">${cash(g.fee)}</td><td class="number">${g.asins.size}</td><td class="number"><span class="change ${pc.cls}">${prev?pc.text:'—'}</span></td><td class="number"><span class="change ${yc.cls}">${yoy?yc.text:'—'}</span></td></tr>`;
+    }).join('')}</tbody></table></div></section>`;
+  }
+  function warehousesView(rows) {
+    const gs=C.group(rows,'warehouse'),max=Math.max(1,...gs.map(g=>g.fee)),total=C.sum(rows);
+    return statCards(rows)+`<section class="panel full-panel"><div class="panel-header"><div><h2>仓库费用分布 · TOP 15</h2><p class="panel-subtitle">同一商品在不同配送中心的费用分布；未提供仓库的记录独立列出</p></div><span class="range-chip">${gs.length} 个仓库 / 分组</span></div><div class="warehouse-bars">${gs.slice(0,15).map(g=>`<div class="warehouse-row"><span>${esc(g.id)}</span><span class="warehouse-track" data-tip="${esc(g.id+'\n'+cash(g.fee)+'\n'+g.asins.size+' 个 ASIN')}"><i style="width:${Math.max(0,g.fee/max*100)}%"></i></span><b>${cash(g.fee)}</b></div>`).join('')}</div></section><section class="panel full-panel"><div class="panel-header"><h2>全部仓库明细</h2></div><div class="table-wrap"><table><thead><tr><th>仓库 / 配送中心</th><th>站点</th><th class="number">ASIN 数</th><th class="number">日均库存</th><th class="number">体积 ft³</th><th class="number">费用</th><th class="number">费用占比</th></tr></thead><tbody>${gs.map(g=>{const s=summary(g.rows);return `<tr><td>${esc(g.id)}</td><td>${esc(unique(g.rows,'country').join(', '))}</td><td class="number">${g.asins.size}</td><td class="number">${number(s.qty,1)}</td><td class="number">${number(s.volume,2)}</td><td class="number fee-cell">${cash(g.fee)}</td><td class="number">${total>0?number(g.fee/total*100,1)+'%':'—'}</td></tr>`;}).join('')}</tbody></table></div></section>`;
+  }
+  function render() {
+    syncFilters();
+    const labels={overview:['费用总览','仓储费用总览','看清每一笔仓储成本，让库存决策更有依据。'],products:['商品费用','每个商品的仓储账单','从 ASIN 到 SKU，找到成本集中的商品。'],compare:['多月对比','费用变化，有迹可循','横向比较每个月，了解每个商品的成本变化。'],warehouses:['仓库分布','费用都发生在哪里','穿透配送中心，查看仓储成本的分布。']};
+    $('#breadcrumbTitle').textContent=labels[state.view][0];$('#pageTitle').innerHTML=labels[state.view][1]+'<span class="title-dot">.</span>';$('#pageSubtitle').textContent=labels[state.view][2];
+    document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===state.view));
+    const rows=filtered();
+    $('#viewContent').innerHTML=state.view==='compare'?compareView():!rows.length?empty():state.view==='overview'?overview(rows):state.view==='products'?statCards(rows)+productTable(rows,true)+insight(rows):warehousesView(rows);
+    $('#footerStatus').textContent=`${state.files.length} 份费用报告 · ${allRows().length.toLocaleString()} 条记录 · 不同币种独立分析`;
+  }
+  function detail(id) {
+    const match=r=>(state.group==='asin'?r.asin:r.sku||state.mapping[r.fnsku]||r.fnsku||'无 SKU / FNSKU')===id;
+    const rows=filtered().filter(match), history=filtered({period:false}).filter(match),s=summary(rows), title=rows[0]?.name||history[0]?.name||'';
+    const gs=C.group(rows,'warehouse');
+    modal(id,`<p class="long-title">${esc(title)}</p><div>${unique(history,'asin').map(a=>`<span class="tag">ASIN ${esc(a)}</span>`).join('')}${unique(history,'fnsku').map(a=>`<span class="tag">FNSKU ${esc(a)}</span>`).join('')}</div><div class="detail-stats"><div class="detail-stat">${monthLabel(state.month)}费用<b>${cash(s.fee)}</b></div><div class="detail-stat">日均库存${state.month==='all'?'（各月平均）':''}<b>${number(s.qty,1)} 件</b></div><div class="detail-stat">仓储体积${state.month==='all'?'（各月平均）':''}<b>${number(s.volume,2)} ft³</b></div></div><h3>该商品月度费用走势</h3><div class="chart-wrap">${trendChart(history,{height:220,clickable:false})}</div><h3>所选期间仓库明细</h3><div class="table-wrap"><table><thead><tr><th>仓库</th><th>记录数</th><th class="number">日均库存</th><th class="number">费用</th></tr></thead><tbody>${gs.map(g=>`<tr><td>${esc(g.id)}</td><td>${g.rows.length}</td><td class="number">${number(summary(g.rows).qty,1)}</td><td class="number fee-cell">${cash(g.fee)}</td></tr>`).join('')||'<tr><td colspan="4">所选月份无记录，可查看上方历史走势。</td></tr>'}</tbody></table></div>`,`<button class="button" data-action="close">关闭</button><button class="button primary" id="exportDetail">↧ 导出商品原始明细</button>`,'PRODUCT INSIGHT');
+    $('#exportDetail').onclick=()=>exportRaw(rows,`商品_${id}_${state.month}.csv`);
+  }
+  async function openDB() {
+    return new Promise((resolve,reject)=>{const req=indexedDB.open(B.workspaceId||'storage-lens-offline-v1',1);req.onupgradeneeded=()=>req.result.createObjectStore('workspace');req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});
+  }
+  async function save() {
+    if(!db) { storageNotice('unavailable');return false; }
+    storageNotice('saving');
+    try {
+      const timestamp=new Date().toISOString();
+      await new Promise((resolve,reject)=>{const tx=db.transaction('workspace','readwrite');tx.objectStore('workspace').put({version:1,files:state.files,mapping:state.mapping,lastSavedAt:timestamp},'data');tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});
+      lastSavedAt=timestamp;storageNotice('saved');return true;
+    }
+    catch(e){storageNotice('unavailable');return false;}
+  }
+  async function digest(bytes) {
+    if(!globalThis.crypto?.subtle)throw new Error('此浏览器不支持内容校验，请使用新版 Edge 或 Chrome 打开');
+    const buffer=await crypto.subtle.digest('SHA-256',bytes);return [...new Uint8Array(buffer)].map(n=>n.toString(16).padStart(2,'0')).join('');
+  }
+  function decode(bytes) {
+    const b=new Uint8Array(bytes);
+    if(b[0]===255&&b[1]===254)return new TextDecoder('utf-16le').decode(b);
+    if(b[0]===254&&b[1]===255)return new TextDecoder('utf-16be').decode(b);
+    try{return new TextDecoder('utf-8',{fatal:true}).decode(b);}catch{return new TextDecoder('gb18030',{fatal:true}).decode(b);}
+  }
+  async function importFiles(files) {
+    if(busy)return;busy=true;$('#uploadBtn').disabled=true;
+    const reports=[],mappings=[],failures=[],duplicates=[],seen=new Set(state.files.map(f=>f.id));let backup=null,backupExcluded=0;
+    try {
+      for(const f of files) {
+        try {
+          if(f.size>40*1024*1024)throw new Error('文件大于 40 MB，请拆分后导入');
+          if(!/\.(csv|tsv|txt|json)$/i.test(f.name))throw new Error('请使用 CSV / TSV，Excel 文件需先另存为 CSV UTF-8');
+          const bytes=await f.arrayBuffer(),text=decode(bytes);
+          if(/\.json$/i.test(f.name)){
+            if(files.length!==1)throw new Error('请单独导入一个备份 JSON 文件');
+            const validated=C.validateBackup(JSON.parse(text)),cleaned=C.onlyStorageFiles(validated.files);
+            if(cleaned.removedRecords&&!cleaned.files.length)throw new Error('备份仅包含非月度仓储费记录，没有可恢复的仓储费用；当前数据保持不变');
+            backup={...validated,files:cleaned.files};backupExcluded=cleaned.removedRecords;continue;
+          }
+          const id=await digest(bytes);if(seen.has(id)){duplicates.push(f.name);continue;}
+          const parsed=C.parseReport(text,f.name);seen.add(id);
+          if(parsed.kind==='report'&&parsed.records.some(r=>r.type!=='storage'))throw new Error('这是退货处理费等非月度仓储费报表，已拒绝导入。请上传月度仓储费报告。');
+          if(parsed.kind==='mapping')mappings.push(parsed);else reports.push({...parsed,id,importedAt:new Date().toISOString(),bytes:f.size});
+        }catch(e){failures.push({name:f.name,error:e.message});}
+      }
+      if(backup){
+        pendingImport={backup,backupExcluded};modal('恢复工作台备份',`<div class="import-warning">恢复后将替换当前工作台的所有已导入数据和 SKU 映射。</div>${backupExcluded?`<div class="info-box">已排除旧备份中的 ${backupExcluded} 条非月度仓储费记录，仅恢复仓储费用。</div>`:''}<p>备份包含 <b>${backup.files.length}</b> 份报告、${backup.files.reduce((s,f)=>s+f.records.length,0)} 条记录、${Object.keys(backup.mapping).length} 个 SKU 映射。</p><p>建议先点击页面右上角的备份按钮保存当前数据。</p>`,`<button class="button" data-action="close">取消</button><button class="button primary" id="confirmImport">确认恢复备份</button>`);$('#confirmImport').onclick=commitImport;return;
+      }
+      const incomingScopes=new Set(reports.flatMap(f=>f.records.map(C.scope)));
+      const overlap=state.files.flatMap(f=>f.records).filter(r=>incomingScopes.has(C.scope(r)));
+      const incomingSeen=new Set();let internalConflict=false;
+      for(const f of reports){for(const s of new Set(f.records.map(C.scope))){if(incomingSeen.has(s))internalConflict=true;incomingSeen.add(s);}}
+      pendingImport={reports,mappings,overlap,internalConflict};
+      let body=failures.map(f=>`<div class="import-error"><b>${esc(f.name)}</b><br>${esc(f.error)}</div>`).join('');
+      if(duplicates.length)body+=`<div class="info-box">已跳过 ${duplicates.length} 份内容完全相同的报告：${duplicates.map(esc).join('、')}</div>`;
+      if(internalConflict)body+='<div class="import-error">本批次有多个文件覆盖同一「月份 × 费用类型 × 站点 × 币种」。为避免重复累计，请分批导入，或先将分店数据整合为一份报告。</div>';
+      if(overlap.length)body+=`<div class="import-warning">检测到同一「月份 × 费用类型 × 站点 × 币种」已有 ${overlap.length} 条记录。确认导入将替换这些已有记录；请确保新文件包含该范围的完整报告。不同店铺的同站点报表请先合并，当前版本不区分店铺。</div>`;
+      body+=reports.map(f=>`<div class="file-item"><span class="file-icon">▤</span><div class="file-meta"><b>${esc(f.name)}</b><p>${f.records.length} 条有效记录 · ${unique(f.records,'month').join(' / ')} · ${unique(f.records,'currency').join(' / ')}</p><div>${f.errors.length?`<span class="tag warning">${f.errors.length} 条异常记录将跳过</span>`:'<span class="tag success">解析成功</span>'}${f.warnings.map(w=>`<span class="tag warning">${esc(w)}</span>`).join('')}</div>${f.errors.length?`<details><summary>查看异常记录</summary><p>${f.errors.slice(0,30).map(esc).join('<br>')}${f.errors.length>30?'<br>仅展示前 30 条':''}</p></details>`:''}</div></div>`).join('');
+      body+=mappings.map(f=>`<div class="file-item"><span class="file-icon">⇄</span><div class="file-meta"><b>${esc(f.name)}</b><p>SKU 映射表 · ${Object.keys(f.mapping).length} 条映射；同 FNSKU 的旧映射将更新。</p></div></div>`).join('');
+      const hasErrors=reports.some(f=>f.errors.length);
+      if(hasErrors)body+='<label class="check-line"><input type="checkbox" id="acceptPartial">我已查看异常，接受仅导入有效记录；合计可能不等于原文件全量费用。</label>';
+      const canImport=(reports.length||mappings.length)&&!internalConflict;
+      modal('检查导入文件',body||'<p>没有可导入的文件。</p>',`<button class="button" data-action="close">${canImport?'取消':'关闭'}</button>${canImport?`<button class="button primary" id="confirmImport" ${hasErrors?'disabled':''}>${overlap.length?'替换重叠范围并导入':'确认导入'}</button>`:''}`);
+      if(canImport){$('#confirmImport').onclick=commitImport;if(hasErrors)$('#acceptPartial').onchange=e=>$('#confirmImport').disabled=!e.target.checked;}
+    }finally{busy=false;$('#uploadBtn').disabled=false;$('#fileInput').value='';}
+  }
+  async function commitImport() {
+    const p=pendingImport;if(!p)return;
+    if(p.backup){state.files=p.backup.files;state.mapping=p.backup.mapping;excludedRecords=p.backupExcluded||0;}
+    else {
+      if(p.internalConflict)return;
+      const scopes=new Set(p.reports.flatMap(f=>f.records.map(C.scope)));
+      state.files=state.files.map(f=>({...f,records:f.records.filter(r=>!scopes.has(C.scope(r)))})).filter(f=>f.records.length);
+      state.files.push(...p.reports);for(const m of p.mappings)Object.assign(state.mapping,m.mapping);
+      if(p.reports.length)state.month=unique(p.reports.flatMap(f=>f.records),'month').at(-1);
+    }
+    state.search='';state.page=1;closeModal();render();savedToast(await save(),'数据已导入，并保存到本地浏览器');
+  }
+  function fileManager() {
+    const moneyByCurrency=rows=>C.group(rows,'currency').map(g=>`${g.id} ${number(g.fee/C.SCALE)}`).join(' · ');
+    modal('数据文件管理',`<div class="info-box">文件在本机解析，不上传服务器。${storageMode==='saved'?'当前数据已保存到本地浏览器。':'当前数据尚未成功保存，请先导出备份。'}清理浏览器数据、更换浏览器或无痕窗口关闭可能导致数据丢失；请定期导出备份。<button class="text-button" data-action="privacy">查看隐私与保存说明 ↗</button></div><p class="muted">按文件移除会同步更新全部分析。重复内容自动跳过；重叠范围的新版报告替换旧记录。</p>${state.files.map((f,i)=>`<div class="file-item"><span class="file-icon">▤</span><div class="file-meta"><b>${esc(f.name)}</b><p>${f.records.length} 条记录 · ${unique(f.records,'month').join(' / ')} · ${esc(unique(f.records,'type').map(typeLabel).join(' / '))}</p><p>${moneyByCurrency(f.records)}</p>${f.errors?.length?`<span class="tag warning">导入时已排除 ${f.errors.length} 条异常记录</span>`:''}</div><button class="button small danger" data-remove-file="${i}">移除</button></div>`).join('')||'<p>尚未导入文件</p>'}`,`<button class="button" id="restoreBuiltIn">${B.files.length?'恢复项目初始数据':'清空本地工作台'}</button><button class="button" data-action="restore-backup">↥ 导入备份</button><button class="button" data-action="backup">↧ 导出备份</button><button class="button primary" data-action="upload">＋ 导入文件</button>`);
+    $('#restoreBuiltIn').onclick=()=>modal(B.files.length?'恢复项目初始数据':'清空本地工作台',`<p>${B.files.length?`此操作会将工作台恢复为项目内置的 ${B.files.length} 份报告`:'此操作会清空本工作台的所有费用记录'}，清除后续导入文件和 SKU 映射。原始 CSV 文件不受影响。请先导出需要保留的数据备份。</p>`,`<button class="button" id="backToFiles">取消</button><button class="button primary" id="doRestore">${B.files.length?'确认恢复':'确认清空'}</button>`);
+  }
+  function privacy() {
+    modal('隐私与本地保存',`<div class="info-box"><b>本工具不上传你的费用文件或分析结果。</b><br>解析、计算和图表展示均在当前设备的浏览器内完成，无需账号、无需联网，也没有云端同步。</div><h3>当前保存状态</h3><p>${storageMode==='saved'?`已保存到当前浏览器${lastSavedAt?'，最近保存：'+esc(new Date(lastSavedAt).toLocaleString('zh-CN')):''}。`:storageMode==='saving'?'正在保存，请等待页面显示「已保存到本地浏览器」后再关闭。':'本次数据尚未成功保存。可继续分析，但请先导出备份再关闭页面。'}</p><h3>下次打开与备份</h3><p>使用同一设备、同一浏览器及浏览器用户配置打开原文件，可继续查看已保存的数据。无痕模式关闭、清理浏览器数据、浏览器自动清理，或移动 / 重命名 HTML 文件，都可能导致原有本地数据不可用。</p><p>请定期点击「导出全部数据备份」保存 JSON；在新设备或其他浏览器中，通过右上角「导入备份」选择 JSON 文件即可恢复。备份内含费用数据，请自行妥善保存。本地保存不代表加密保险箱，同一浏览器配置的使用者可能看到已保存的数据。</p><h3>分享 HTML 时会带走什么？</h3><p>${B.files.length?`此文件内置了 ${B.files.length} 份项目费用报告，直接分享会包含这些内置数据。对外提供工具时，请分享不含业务数据的「仓储费用分析工具_分享版.html」。`:'本分享版不含预置业务数据；收件人打开后可导入自己的费用报告。'}</p><p>后续导入的文件及 SKU 映射保存在本地浏览器，不会写回 HTML。复制或发送 HTML 不会自动带走这些新增数据，也不会让不同人的数据互相同步；需要迁移或分享分析数据时，另行导出备份或 CSV 报表。</p>`,`<button class="button" data-action="files">管理本地数据</button>${storageMode==='unavailable'?'<button class="button" id="retrySave">重试本地保存</button>':''}<button class="button" data-action="restore-backup">↥ 导入备份</button><button class="button primary" data-action="backup">↧ 导出全部数据备份</button>`,'PRIVACY & LOCAL STORAGE');
+    if($('#retrySave'))$('#retrySave').onclick=async()=>{try{if(!db)db=await openDB();}catch{}const ok=await save();privacy();savedToast(ok,'已成功保存到本地浏览器');};
+  }
+  function mappingModal() {
+    const entries=Object.entries(state.mapping);
+    modal('关联你的卖家 SKU',`<div class="info-box">项目内的原始费用报表只有 ASIN 与 FNSKU，无法直接推断卖家 SKU。导入 FNSKU → SKU 映射表后，商品页可按卖家 SKU 汇总；未映射商品继续显示 FNSKU。</div><p>CSV 表头使用 <b>fnsku,sku</b>，每个 FNSKU 对应一个 SKU。也支持从含有卖家 SKU 列的费用报表直接读取。已导入 ${entries.length} 条映射。</p><div class="table-wrap"><table><thead><tr><th>FNSKU</th><th>卖家 SKU</th></tr></thead><tbody>${entries.slice(0,200).map(([f,s])=>`<tr><td>${esc(f)}</td><td>${esc(s)}</td></tr>`).join('')||'<tr><td colspan="2">暂无 SKU 映射</td></tr>'}</tbody></table></div>`,`<button class="button" id="mappingTemplate">↧ 下载映射模板</button>${entries.length?'<button class="button danger" id="clearMapping">清空映射</button>':''}<button class="button primary" data-action="upload">导入映射 CSV</button>`);
+    $('#mappingTemplate').onclick=()=>download('FNSKU_SKU映射模板.csv','\uFEFFfnsku,sku\r\n','text/csv;charset=utf-8');
+    if($('#clearMapping'))$('#clearMapping').onclick=()=>modal('清空 SKU 映射','<p>清空后，商品费用将继续按原始 ASIN / FNSKU 展示。</p>','<button class="button" data-action="close">取消</button><button class="button danger" id="confirmClearMapping">确认清空</button>');
+  }
+  function help() {
+    modal('使用说明',`<div class="prose"><p>这是一份可离线运行的费用分析工具。文件在当前浏览器内处理，无需账号，不上传到服务器。</p><h3>开始分析</h3><ol><li>首次打开会加载项目内置的 ${B.files.length} 份原始费用报告；后续打开优先恢复本浏览器保存的数据。</li><li>点击「导入费用文件」或拖入 CSV / TSV，可一次导入多个月份。Excel 请先另存为「CSV UTF-8」。也支持 UTF-8 / GB18030 / 带 BOM 的 UTF-16 文本。</li><li>月份优先读取 <code>month_of_charge</code>。月份为空时，可从「26年9月…」式文件名提取，并在导入预览提示。库存/体积为空时显示 —。</li><li>在费用总览查看所选月份；商品费用支持 ASIN 与 SKU / FNSKU 分组及商品详情；多月对比页有独立日期范围、矩阵和月度汇总。</li><li>导出报表保存当前筛选结果；右上角备份按钮可导出全部报告和 SKU 映射，点击右上角「导入备份」可恢复 JSON 备份。浏览器可能清理本地缓存，建议保留备份。</li></ol><h3>费用与统计口径</h3><p>月度仓储费直接合计 <code>estimated_monthly_storage_fee</code>，不再次加上基础费或附加费。本工具仅分析月度仓储费，非仓储费报告不会导入。「其他差额 / 调整」为总费减基础费与附加费的差值，不推断具体原因。原字段是预估费用，不能替代最终账单。</p><p>原始金额以百万分之一货币单位累计，界面保留两位小数。不同币种独立筛选，不做汇率换算。站点为 <code>country_code</code>，缺失站点保留为「未提供」。</p><p>日均库存与体积在单月内跨仓库加总；查看全部月份时显示有记录月份的月均值，库存不是销量，也不是月末库存。体积统一为 ft³，无法识别单位时排除并提示。缺失月份显示 —，环比只比较上一自然月，同比只比较上一年同月。</p><h3>重复与覆盖</h3><p>完全相同文件按内容跳过。同一「月份 × 费用类型 × 站点 × 币种」的新文件会在预览后替换旧记录，请上传完整报表。当前版本不含店铺维度，多店同站点报告应先合并。单次导入多个重叠文件会被拦截。异常记录须确认后才会跳过，导入文件页保留提示。</p><h3>文件安全</h3><p>CSV 导出对以 =、+、-、@ 开头的文本字段进行转义。原始 CSV 文件不会被修改。HTML 内置了真实费用数据，请仅分享给有权查看这些数据的人。</p></div>`,'<button class="button primary" data-action="close">开始使用</button>','QUICK GUIDE');
+  }
+  function download(filename,content,type) {
+    const url=URL.createObjectURL(new Blob([content],{type})),a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);
+  }
+  function exportCSV(filename,headers,rows) {
+    const cell=v=>{let s=String(v??'');if(typeof v==='string'&&/^[\s]*[=+\-@]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';};
+    download(filename,'\uFEFF'+[headers,...rows].map(r=>r.map(cell).join(',')).join('\r\n'),'text/csv;charset=utf-8');toast('报表已导出');
+  }
+  function exportRaw(rows,filename) {
+    const keys=['month','type','asin','fnsku','sku','name','warehouse','country','currency','fee','base','surcharge','qty','volume'];
+    exportCSV(filename,['计费月份','费用类型','ASIN','FNSKU','卖家SKU','商品名称','仓库','站点','币种','费用','基础仓储费','利用率附加费','日均库存','体积ft³'],rows.map(r=>keys.map(k=>['fee','base','surcharge'].includes(k)?r[k]===null?'':r[k]/C.SCALE:k==='sku'?r.sku||state.mapping[r.fnsku]||'':r[k])));
+  }
+  function exportReport() {
+    if(!allRows().length){toast('暂无可导出数据');return;}
+    if(state.view==='compare') {
+      const rows=filtered({period:false}).filter(r=>r.month>=state.compareStart&&r.month<=state.compareEnd),months=timelineMonths(filtered({period:false}),120).filter(m=>m>=state.compareStart&&m<=state.compareEnd),groups=groupRows(rows),existing=new Set(rows.map(r=>r.month));
+      const metric=state.compareMetric;
+      exportCSV(`多月对比_${state.compareStart}_${state.compareEnd}_${state.currency}.csv`,[state.group==='asin'?'ASIN':'SKU/FNSKU',`指标:${metric} / ${metric==='fee'?state.currency:metric==='qty'?'件':'ft3'}`,...months],groups.map(g=>{const gm=new Map(C.group(g.rows,'month').map(x=>[x.id,x]));return [g.id,'',...months.map(m=>{if(!existing.has(m))return '缺少报告';const a=gm.get(m);if(metric==='fee')return (a?.fee||0)/C.SCALE;return a?a.rows.some(r=>r[metric]!==null)?a[metric]:'未提供':rows.some(r=>r.month===m&&r[metric]!==null)?0:'未提供';})];}));
+    } else if(state.view==='warehouses') {
+      exportCSV(`仓库费用_${state.month}_${state.currency}.csv`,['仓库','费用','币种','ASIN数','日均库存','体积ft3'],C.group(filtered(),'warehouse').map(g=>{const s=summary(g.rows);return[g.id,g.fee/C.SCALE,state.currency,g.asins.size,s.qty,s.volume];}));
+    } else {
+      const rows=filtered(),groups=groupRows(rows);
+      exportCSV(`商品费用_${state.month}_${state.currency}.csv`,[state.group==='asin'?'ASIN':'SKU/FNSKU','商品名称','币种','费用','费用占比','日均库存','体积ft3','ASIN','FNSKU'],groups.map(g=>{const s=summary(g.rows);return [g.id,g.name,state.currency,g.fee/C.SCALE,C.sum(rows)>0?g.fee/C.sum(rows):'',s.qty,s.volume,[...g.asins].join(';'),[...g.fnskus].join(';')];}));
+    }
+  }
+  function backup() { download('仓储费用工作台备份_'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify({version:1,files:state.files,mapping:state.mapping}),'application/json');toast('全部数据备份已导出'); }
+  function restoreBackup() { if($('#modal').open)closeModal();$('#backupInput').click(); }
+  $('#restoreBackupBtn').onclick=restoreBackup;
+  $('#backupInput').onchange=async e=>{
+    const file=e.target.files[0];if(!file)return;
+    try {
+      if(!/\.json$/i.test(file.name)){modal('无法导入备份','<p>请选择本工具导出的 JSON 备份文件。费用 CSV 请使用「导入费用文件」。</p>','<button class="button primary" data-action="close">关闭</button>');return;}
+      await importFiles([file]);
+    }finally{e.target.value='';}
+  };
+  function upload() { if($('#modal').open)closeModal();$('#fileInput').click(); }
+  $('#uploadBtn').onclick=upload;$('#fileInput').onchange=e=>importFiles([...e.target.files]);
+  $('#dropzone').onclick=upload;$('#dropzone').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();upload();}};
+  const dropzone=$('#dropzone');
+  document.addEventListener('dragover',e=>{e.preventDefault();dropzone.classList.add('drag');});
+  document.addEventListener('dragleave',e=>{if(!e.relatedTarget)dropzone.classList.remove('drag');});
+  document.addEventListener('drop',e=>{e.preventDefault();dropzone.classList.remove('drag');if(e.dataTransfer.files.length)importFiles([...e.dataTransfer.files]);});
+  $('#exportBtn').onclick=exportReport;$('#backupBtn').onclick=backup;$('#manageFiles').onclick=fileManager;$('#mappingBtn').onclick=mappingModal;$('#helpBtn').onclick=help;$('#closeModal').onclick=closeModal;
+  $('#modal').addEventListener('click',e=>{if(e.target===$('#modal')){const r=$('#modal').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeModal();}});
+  for(const [id,key] of [['monthFilter','month'],['currencyFilter','currency'],['countryFilter','country'],['typeFilter','type']])$('#'+id).onchange=e=>{state[key]=e.target.value;state.page=1;render();};
+  $('#resetFilters').onclick=()=>{state.month='';state.currency='';state.country='all';state.type='storage';state.search='';state.page=1;render();};
+  document.addEventListener('click',async e=>{
+    const b=e.target.closest('button,[data-month]');if(!b)return;
+    if(b.dataset.view){state.view=b.dataset.view;state.page=1;state.search='';render();}
+    if(b.dataset.group){state.group=b.dataset.group;state.page=1;render();}
+    if(b.dataset.sort){if(state.sort===b.dataset.sort)state.desc=!state.desc;else{state.sort=b.dataset.sort;state.desc=true;}render();}
+    if(b.dataset.page){state.page=+b.dataset.page;render();}
+    if(b.dataset.detail)detail(b.dataset.detail);
+    if(b.dataset.month){state.month=b.dataset.month;state.page=1;render();}
+    if(b.dataset.action==='close')closeModal();if(b.dataset.action==='upload')upload();if(b.dataset.action==='backup')backup();if(b.dataset.action==='restore-backup')restoreBackup();if(b.dataset.action==='privacy')privacy();if(b.dataset.action==='files')fileManager();
+    if(b.dataset.removeFile!==undefined){
+      const i=+b.dataset.removeFile,f=state.files[i];modal('移除数据文件',`<p>确认从工作台移除 <b>${esc(f.name)}</b> 的 ${f.records.length} 条费用记录？原始 CSV 文件会保留。</p>`,`<button class="button" id="backToFiles">取消</button><button class="button danger" id="confirmRemove">确认移除</button>`);$('#confirmRemove').onclick=async()=>{state.files.splice(i,1);render();const ok=await save();fileManager();savedToast(ok,'已移除报告并保存到本地浏览器');};
+    }
+    if(b.id==='backToFiles')fileManager();
+    if(b.id==='doRestore'){state.files=bundled();state.mapping={};state.month='';state.search='';state.group='asin';state.page=1;closeModal();render();savedToast(await save(),B.files.length?'已恢复项目初始数据':'本地工作台已清空');}
+    if(b.id==='confirmClearMapping'){state.mapping={};closeModal();render();savedToast(await save(),'SKU 映射已清空');}
+  });
+  document.addEventListener('input',e=>{
+    if(e.target.id==='productSearch'){
+      const start=e.target.selectionStart;state.search=e.target.value;state.page=1;render();const input=$('#productSearch');input.focus();input.setSelectionRange(start,start);
+    }
+  });
+  document.addEventListener('change',e=>{const keys={compareStart:'compareStart',compareEnd:'compareEnd',compareMetric:'compareMetric'};if(keys[e.target.id]){state[keys[e.target.id]]=e.target.value;render();}});
+  document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.dataset.month){e.preventDefault();state.month=e.target.dataset.month;render();}});
+  document.addEventListener('pointermove',e=>{const el=e.target.closest('[data-tip]'),tt=$('#tooltip');if(!el){tt.style.display='none';return;}tt.textContent=el.dataset.tip;tt.style.display='block';tt.style.left=Math.min(e.clientX+14,innerWidth-tt.offsetWidth-12)+'px';tt.style.top=Math.max(8,Math.min(e.clientY+14,innerHeight-tt.offsetHeight-12))+'px';});
+  document.addEventListener('scroll',()=>$('#tooltip').style.display='none',true);
+  async function init() {
+    storageNotice('checking');
+    try {db=await openDB();const saved=await new Promise((resolve,reject)=>{const r=db.transaction('workspace').objectStore('workspace').get('data');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});if(saved){C.validateBackup(saved);const cleaned=C.onlyStorageFiles(saved.files);state.files=cleaned.files;state.mapping=saved.mapping;excludedRecords=cleaned.removedRecords;}await save();}
+    catch(e){db=null;storageNotice('unavailable');toast('本地数据未能恢复；请导出本次结果备份，或导入此前的 JSON 备份');}
+    render();document.documentElement.dataset.ready='true';
+  }
+  init();
+})();
+</script>
+  <footer class="site-footer">
+    © 2025 跨境工具魔方 AmzToolBox. All rights reserved.
+    <span style="margin:0 .5rem">|</span>
+    <a href="/privacy">隐私说明</a>
+  </footer>
+  <script>window.TOP_AD_OPTIONS={insertAfterSelector:'#page-top-ad-anchor'};</script>
+  <script type="module" src="/shared-top-ad.js"></script>
+  <script>
+  (() => {
+    const root = document.documentElement;
+    let observedAd = null;
+    const syncSidebarOffset = () => {
+      const header = document.getElementById('site-header-container');
+      const ad = document.getElementById('shared-top-ad-root');
+      const shellHeight = (header?.offsetHeight || 0) + (ad?.offsetHeight || 0);
+      root.style.setProperty('--storage-shell-top', `${Math.max(0, shellHeight - window.scrollY)}px`);
+      if (ad && ad !== observedAd && 'ResizeObserver' in window) {
+        observedAd = ad;
+        new ResizeObserver(syncSidebarOffset).observe(ad);
+      }
+    };
+    new MutationObserver(syncSidebarOffset).observe(document.body, { childList: true });
+    window.addEventListener('scroll', syncSidebarOffset, { passive: true });
+    window.addEventListener('resize', syncSidebarOffset);
+    syncSidebarOffset();
+  })();
+  </script>
+<script>
+  var _hmt = window._hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?f41283b760f768032fa2b7990826c3c3";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MDVMB3KBBP"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-MDVMB3KBBP');
+</script>
+<!-- static-image-ad:start -->
+<script id="static-image-ad-config" type="application/json">{"enabled":true,"showLabel":false,"imageUrl":"https://pub-2a43946b555a4a1d8c9fcabbb581ed41.r2.dev/dabao_1200x200.png","linkUrl":"","alt":"工具详情底部广告","openInNewTab":true,"imageWidth":1200,"imageHeight":240,"mobileImageUrl":"","mobileImageWidth":750,"mobileImageHeight":300,"pagePath":"/storage-fee-analyzer/index.html"}</script>
+<script src="/static-image-ad.js" defer></script>
+<!-- static-image-ad:end -->
+</body>
+</html>

@@ -69,6 +69,11 @@
     "description": "导入 CSV 或 XLSX 销售报告，分析销售趋势、商品表现、地区结构、月度变化与原始明细。",
     "canonical": "/amazon-sales-dashboard/index.html"
   },
+  "/storage-fee-analyzer/index.html": {
+    "title": "仓储费用分析工具",
+    "description": "导入 Amazon 月度仓储费报告，分析多月费用、商品成本、仓库分布，并支持 SKU 映射与本地备份。",
+    "canonical": "/storage-fee-analyzer/index.html"
+  },
   "/image-label-adder.html": {
     "title": "图片/视频标签添加工具",
     "description": "批量为图片和视频写入 contains-synthetic-performer 标签，本地处理。",

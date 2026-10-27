@@ -165,6 +165,7 @@ export default function FunctionalityClient({ initialNavItems, initialModules, i
     'pinyin-converter': Languages,
     'keyword-combiner': Shuffle,
     'storage-fee-calc': Warehouse,
+    'storage-fee-analyzer': Warehouse,
   }
 
   const colorOverride: Record<string, string> = {
