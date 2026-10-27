@@ -56,6 +56,17 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
         .map((m: any) => String(m.key))
     ).size
   ), [allModules])
+  const latestUploadedTool = useMemo(() => (
+    allModules
+      .filter((m: any) => m.status !== '下架' && String(m.uploadedAt || '').trim())
+      .slice()
+      .sort((a: any, b: any) => Date.parse(String(b.uploadedAt)) - Date.parse(String(a.uploadedAt)))[0] || null
+  ), [allModules])
+  const latestUploadedCategory = useMemo(() => {
+    if (!latestUploadedTool) return ''
+    const source = categories.length > 0 ? categories : DEFAULT_CATEGORIES
+    return source.find((category: any) => category.key === latestUploadedTool.category)?.label || '其他工具'
+  }, [categories, latestUploadedTool])
   const [personalUsageVersion, setPersonalUsageVersion] = useState(0)
   const personalTopModules = useMemo(() => getPersonalTopModules(allModules, PERSONAL_TOP_LIMIT), [allModules, personalUsageVersion])
   const activeCategories = useMemo(() => {
@@ -217,7 +228,15 @@ const HomePage = ({ onNavigate, modules, categories = [] }: { onNavigate: (id: s
             onChange={(e) => setSearchKeyword(e.target.value)}
           />
           <div className="text-center mt-3 text-sm text-gray-500 font-medium flex flex-col items-center justify-center gap-2">
-            <span>已经累计上传：<span className="text-indigo-600 font-bold">{totalToolCount}</span> 个工具</span>
+            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+              <span>已经累计上传：<span className="text-indigo-600 font-bold">{totalToolCount}</span> 个工具</span>
+              {latestUploadedTool && (
+                <>
+                  <span className="hidden sm:inline text-gray-300">|</span>
+                  <span>最后上传：<span className="text-indigo-600 font-bold">{latestUploadedTool.title}</span> <span className="text-gray-400">（{latestUploadedCategory}）</span></span>
+                </>
+              )}
+            </div>
             <div className="flex flex-wrap items-center justify-center gap-4">
               <a href="https://amzlink.top/documents" target="_blank" rel="noopener noreferrer" className="text-red-600 hover:text-red-700 flex items-center gap-1 transition-colors">
                 <span>→海量免费运营资料免费下载←</span>

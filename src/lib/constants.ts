@@ -132,7 +132,7 @@ export const DEFAULT_TOOLS = [
   { key: 'amazon-eu-fba-calculator', title: 'Amazon EU FBA 费用计算器', desc: '欧洲站配送费/仓储费/弃置退仓/多站点对比的一体化计算', status: '启用', views: 0, color: 'orange', order: 403, category: 'fees-inventory' },
   { key: 'amazon-fee-visualizer', title: '亚马逊费用可视化查询', desc: '按费用类型查询亚马逊 FBA 配送费、仓储费及其他费用，支持尺寸、重量与计费条件筛选', status: '启用', views: 0, color: 'blue', order: 404, category: 'fees-inventory', href: '/amazon-fee-visualizer/index.html', isExternal: true },
   { key: 'storage-fee-calc', title: '亚马逊 FBA 全能仓储费计算器', desc: '集成月度仓储费、利用率附加费及超龄库存附加费（含2026新规）', status: '启用', views: 0, color: 'blue', order: 405, category: 'fees-inventory' },
-  { key: 'storage-fee-analyzer', title: '仓储费用分析工具', desc: '导入 Amazon 月度仓储费报告，分析多月费用、商品成本、仓库分布，并支持 SKU 映射与本地备份', status: '启用', views: 0, color: 'emerald', order: 405.5, category: 'fees-inventory', href: '/storage-fee-analyzer/index.html', isExternal: true },
+  { key: 'storage-fee-analyzer', title: '仓储费用分析工具', desc: '导入 Amazon 月度仓储费报告，分析多月费用、商品成本、仓库分布，并支持 SKU 映射与本地备份', status: '启用', views: 0, color: 'emerald', order: 405.5, category: 'fees-inventory', href: '/storage-fee-analyzer/index.html', isExternal: true, uploadedAt: '2026-10-27' },
   { key: 'max-reserve-fee', title: '白嫖库容的最高预留费计算工具', desc: '根据销售额预估和库容申请计划，计算出不亏本的最高预留费单价', status: '启用', views: 0, color: 'emerald', order: 406, category: 'fees-inventory' },
 
   { key: 'unit', title: '单位换算', desc: '长度、重量、体积等多维度单位快速换算', status: '启用', views: 0, color: 'emerald', order: 610, category: 'text-data' },
