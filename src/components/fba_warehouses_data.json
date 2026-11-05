@@ -5650,5 +5650,2714 @@
     "城市": "Dubai",
     "洲/省": "Dubai",
     "邮编": "0"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "TFC1",
+    "地址": "4750 W. Mohave St Phoenix AZ 85043,USA",
+    "城市": "Phoenix",
+    "洲/省": "AZ",
+    "邮编": "85043"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "BNA5",
+    "地址": "50 Airways Blvd.Nashville TN 37217,USA",
+    "城市": "Nashville",
+    "洲/省": "TN",
+    "邮编": "37217"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "PIT5",
+    "地址": "2250 Roswell Drive Pittsburgh PA 15205,USA",
+    "城市": "Pittsburgh",
+    "洲/省": "PA",
+    "邮编": "15205"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "AVP8",
+    "地址": "250 Enterprise Way Pittston PA 18640,USA",
+    "城市": "Pittston",
+    "洲/省": "PA",
+    "邮编": "18640"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "BOS6",
+    "地址": "201 Beacham Street Celsea MA 02150,USA",
+    "城市": "Celsea",
+    "洲/省": "MA",
+    "邮编": "02150"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HTX2",
+    "地址": "4221 Way Out West Drive Houston TX 77092,USA",
+    "城市": "Houston",
+    "洲/省": "TX",
+    "邮编": "77092"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "BWI6",
+    "地址": "5617 Industrial Dr Springfield VA 22151,USA",
+    "城市": "Springfield",
+    "洲/省": "VA",
+    "邮编": "22151"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "UTX5",
+    "地址": "4848 Perrin Creek #680 San Antonio TX 78217,USA",
+    "城市": "SAN ANTONIO",
+    "洲/省": "TX",
+    "邮编": "78217"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "UVA1",
+    "地址": "5617 Industrial Dr. Springfiled,VA 22151,USA",
+    "城市": "Springfiled",
+    "洲/省": "VA",
+    "邮编": "22151"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "UOR1",
+    "地址": "2250 NW 22nd Ave, Portland OR 97210,USA",
+    "城市": "Portland",
+    "洲/省": "OR",
+    "邮编": "97210"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "UNC2",
+    "地址": "1590 Wolfpack Ln Raleigh NC 27609,USA",
+    "城市": "Raleigh",
+    "洲/省": "NC",
+    "邮编": "27609"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "USA9",
+    "地址": "2934 Ramona Ave Sacramento CA 95826,USA",
+    "城市": "Sacramento",
+    "洲/省": "CA",
+    "邮编": "95826"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "UAZ1",
+    "地址": "500 S 48th St Phoenix AZ 85034,USA",
+    "城市": "Phoenix",
+    "洲/省": "AZ",
+    "邮编": "85034"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "HCA6",
+    "地址": "2727 Kurtz St, San Diego CA 92110,USA",
+    "城市": "San Diego",
+    "洲/省": "CA",
+    "邮编": "92110"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HIL2",
+    "地址": "1111 North Cherry Ave Chicago IL 60642,USA",
+    "城市": "Chicago",
+    "洲/省": "IL",
+    "邮编": "60642"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "DAL6",
+    "地址": "4601 Gold Spike Drive Fort Worth TX 76106,USA",
+    "城市": "Fort Worth",
+    "洲/省": "TX",
+    "邮编": "76106"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "DEN6",
+    "地址": "480 East 55th Avenue Denver CO 80216,USA",
+    "城市": "Denver",
+    "洲/省": "CO",
+    "邮编": "80216"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "XUSM",
+    "地址": "610 Chelsea Rd Aberdeen MD 21001,USA",
+    "城市": "Aberdeen",
+    "洲/省": "MD",
+    "邮编": "21001"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "XUSO",
+    "地址": "657 West Nance Street Perris CA 92571,USA",
+    "城市": "Perris",
+    "洲/省": "CA",
+    "邮编": "92571"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "XSP1",
+    "地址": "1117 Vaughn Parkway Portland TN 37148,USA",
+    "城市": "Portland",
+    "洲/省": "TN",
+    "邮编": "37148"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "XUSF",
+    "地址": "901 West Landstreet Road Orlando FL 32834,USA",
+    "城市": "Orlando",
+    "洲/省": "FL",
+    "邮编": "32834"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "LAX6",
+    "地址": "5119 District Blvd Vernon CA 90058,USA",
+    "城市": "Vernon",
+    "洲/省": "CA",
+    "邮编": "90058"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "MCI7",
+    "地址": "27200 W 157th Street New Century KS 66031,USA",
+    "城市": "New Century",
+    "洲/省": "KS",
+    "邮编": "66031"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "MIA6",
+    "地址": "3200 NW 67th Ave, Miam FL 33122,USA",
+    "城市": "Miam",
+    "洲/省": "FL",
+    "邮编": "33122"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "STL7",
+    "地址": "3931 Lakeview Corporate Drive. Edwardsville IL 62025,USA",
+    "城市": "Edwardsville",
+    "洲/省": "IL",
+    "邮编": "62025"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "STL6",
+    "地址": "3931 Lakeview Corporate Drive. Edwardsville IL 62025,USA",
+    "城市": "Edwardsville",
+    "洲/省": "IL",
+    "邮编": "62025"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "STL4",
+    "地址": "3050 Gateway Commerce Center Dr S. Edwardsville IL 62025,USA",
+    "城市": "Edwardsville",
+    "洲/省": "IL",
+    "邮编": "62025"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "TEB3",
+    "地址": "2651 Oldmans Creek Rd,Swedesboro NJ 08085,USA",
+    "城市": "Swedesboro",
+    "洲/省": "NJ",
+    "邮编": "08085"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "TEB6",
+    "地址": "22 Highstown Cranbury State Road Cranbury NJ 08512,USA",
+    "城市": "Cranbury",
+    "洲/省": "NJ",
+    "邮编": "08512"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "ATL9",
+    "地址": "2232 Northmont Parkway Duluth GA 30096,USA",
+    "城市": "Duluth",
+    "洲/省": "GA",
+    "邮编": "30096"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "VUKF",
+    "地址": "18120 Bishop Ave Carson CA 90746,USA",
+    "城市": "Carson",
+    "洲/省": "CA",
+    "邮编": "90746"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "VUTD",
+    "地址": "8291 Milliken Ave Rancho Cucamonga CA 91730,USA",
+    "城市": "Rancho Cucamonga",
+    "洲/省": "CA",
+    "邮编": "91730"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "VUHB",
+    "地址": "700 Chase Street Gary IN 46404,USA",
+    "城市": "Gary",
+    "洲/省": "IN",
+    "邮编": "46404"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "VUGE",
+    "地址": "13537 Aurora Ave N Seattle CA 91752,USA",
+    "城市": "Seattle",
+    "洲/省": "CA",
+    "邮编": "91752"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "UWA2",
+    "地址": "11710 118th Ave Kirkland WA 98133,USA",
+    "城市": "Kirkland",
+    "洲/省": "WA",
+    "邮编": "98133"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "UWA1",
+    "地址": "5617 Industrial Dr. Springfiled VA 98034,USA",
+    "城市": "Springfiled",
+    "洲/省": "VA",
+    "邮编": "98034"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "XBC1",
+    "地址": "15750 Mountain Avs Chino CA 91708,USA",
+    "城市": "Chino",
+    "洲/省": "CA",
+    "邮编": "91708"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "BFL7",
+    "地址": "1901 140th Ave E Sumner WA 98390,USA",
+    "城市": "Sumner",
+    "洲/省": "WA",
+    "邮编": "98390"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "BFL6",
+    "地址": "20280 84th Ave S Kent WA 98032,USA",
+    "城市": "Kent",
+    "洲/省": "WA",
+    "邮编": "98032"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "TEB9",
+    "地址": "601 Randolph Road SOMERSET,NJ 08873,USA",
+    "城市": "SOMERSET",
+    "洲/省": "NJ",
+    "邮编": "08873"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "STL3",
+    "地址": "3200 E SAWYER RD,REPUBLIC MO 65738,USA",
+    "城市": "REPUBLIC",
+    "洲/省": "MO",
+    "邮编": "65738"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "AZA4",
+    "地址": "3333 S 59TH AVE PHOENIX, AZ 85043,USA",
+    "城市": "Phoenix",
+    "洲/省": "AZ",
+    "邮编": "85043"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "TEB4",
+    "地址": "747 COURSES LANDING RD PENNS GROVE,NJ 08069,USA",
+    "城市": "PENNS GROVE",
+    "洲/省": "NJ",
+    "邮编": "08069"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "SWF1",
+    "地址": "635 INTERNATIONAL BLVD,ROCK TAVERN,NY 12575,USA",
+    "城市": "ROCK TAVERN",
+    "洲/省": "NY",
+    "邮编": "12575"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "LIT1",
+    "地址": "7001 ZEUBER RD,LITTLE ROCK,AR 72206,USA",
+    "城市": "LITTLE ROCK",
+    "洲/省": "AR",
+    "邮编": "72206"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "STL8",
+    "地址": "4000 Premier Parkway SAINT PETERS,MO 63376,USA",
+    "城市": "SAINT PETERS",
+    "洲/省": "MO",
+    "邮编": "63376"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "FAR1",
+    "地址": "3701 40TH AVE N FARGO,ND 58102,USA",
+    "城市": "Fargo",
+    "洲/省": "ND",
+    "邮编": "58102"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "SNA4",
+    "地址": "2496 W Walnut Ave Rialto,CA 92376,USA",
+    "城市": "Rialto",
+    "洲/省": "CA",
+    "邮编": "92376"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "GEG1",
+    "地址": "10010 W Geiger Blvd, Spokane,WA 99224,USA",
+    "城市": "Spokane",
+    "洲/省": "WA",
+    "邮编": "99224"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "XLX2",
+    "地址": "3565 N AIRPORT WAY MANTECAA,CA 95336,USA",
+    "城市": "MANTECAA",
+    "洲/省": "CA",
+    "邮编": "95336"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "TPA6",
+    "地址": "3400 NW 35th Avenue Road OCALA,FL 34475,USA",
+    "城市": "Ocala",
+    "洲/省": "FL",
+    "邮编": "34475"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "OLM1",
+    "地址": "3300 HOGUM BAY RD NE OLYMPIA,WA 98516,USA",
+    "城市": "Olympia",
+    "洲/省": "WA",
+    "邮编": "98516"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "CLT6",
+    "地址": "12220 Carolina Logistics Drive PINEVILLE, NC 28134,USA",
+    "城市": "PINEVILLE",
+    "洲/省": "NC",
+    "邮编": "28134"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "FTW8",
+    "地址": "3351 Balmorhea Dr. Dallas,TX 75241,USA",
+    "城市": "Dallas",
+    "洲/省": "TX",
+    "邮编": "75241"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "IUSL",
+    "地址": "600 Principio Parkway West North East MD 21901,USA",
+    "城市": "North East",
+    "洲/省": "MD",
+    "邮编": "21901"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "KRB6",
+    "地址": "4200 FERRY RD,Aurora,IL 60502,USA",
+    "城市": "Aurora",
+    "洲/省": "IL",
+    "邮编": "60502"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "KRB5",
+    "地址": "600 Principio Parkway West North East MD 21901,USA",
+    "城市": "North East",
+    "洲/省": "MD",
+    "邮编": "21901"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "IUSM",
+    "地址": "4200 FERRY RD,Aurora,IL 60502,USA",
+    "城市": "Aurora",
+    "洲/省": "IL",
+    "邮编": "60502"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "RFD4",
+    "地址": "11400 Venture Court HUNTLEY,IL 60142,USA",
+    "城市": "HUNTLEY",
+    "洲/省": "IL",
+    "邮编": "60142"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "MEM8",
+    "地址": "850 GATEWAY GLOBAL DR, BYHALIA, MS 38611,USA",
+    "城市": "BYHALIA",
+    "洲/省": "MS",
+    "邮编": "38611"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "JFK7",
+    "地址": "7 W. 34th St., New York,NY 10001,USA",
+    "城市": "New York",
+    "洲/省": "NY",
+    "邮编": "10001"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "CHO1",
+    "地址": "32 TRADER RD,FISHERSVILLE,VA 22939,USA",
+    "城市": "FISHERSVILLE",
+    "洲/省": "VA",
+    "邮编": "22939"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "MCI3",
+    "地址": "2361 S Withers Rd, Liberty, MO 64068,USA",
+    "城市": "Liberty",
+    "洲/省": "MO",
+    "邮编": "64068"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HSV2",
+    "地址": "28869 Fanning Dr NW MADISON,AL 35756,USA",
+    "城市": "Madison",
+    "洲/省": "AL",
+    "邮编": "35756"
+  },
+  {
+    "国家": "加拿大",
+    "地区": "CAC",
+    "Code": "YYC6",
+    "地址": "9705 68 ST SE Calgary, AB T2C5V8,CA",
+    "城市": "Calgary",
+    "洲/省": "AB",
+    "邮编": "T2C 5V8"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "IUSJ",
+    "地址": "36900 West 4th Street BEAUMONT,CA 92223,USA",
+    "城市": "Beaumont",
+    "洲/省": "CA",
+    "邮编": "92223"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "SWF2",
+    "地址": "76 Patriot Way Hopewell Junction, NY 12533,USA",
+    "城市": "Hopewell Junction",
+    "洲/省": "NY",
+    "邮编": "12533"
+  },
+  {
+    "国家": "加拿大",
+    "地区": "加拿大",
+    "Code": "YGK1",
+    "地址": "640 COLLEGE ST E,BELLEVILLE,ON K8N 0V2,CA",
+    "城市": "BELLEVILLE",
+    "洲/省": "ON",
+    "邮编": "K8N 0V2"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "PBI2",
+    "地址": "14490 CORPORATE RD N JUPITER FL 33478,USA",
+    "城市": "Jupiter",
+    "洲/省": "FL",
+    "邮编": "33478"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "XLX3",
+    "地址": "21590 Needham Ranch Pkwy,Santa Clarita,CA 91321,USA",
+    "城市": "Santa Clarita",
+    "洲/省": "CA",
+    "邮编": "91321"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "IUSP",
+    "地址": "8140 Caliente Rd,HESPERIA,CA92344,USA",
+    "城市": "HESPERIA",
+    "洲/省": "CA",
+    "邮编": "92344"
+  },
+  {
+    "国家": "英国",
+    "地区": "英国",
+    "Code": "LCY3",
+    "地址": "UNIT 1 POWERHOUSE DRIVE,DARTFORD,DA1 5XU,GB",
+    "城市": "DARTFORD",
+    "洲/省": "",
+    "邮编": "DA1 5XU"
+  },
+  {
+    "国家": "英国",
+    "地区": "英国",
+    "Code": "NCL1",
+    "地址": "17 FOLLINGSBY LN,GATESHEAD,NE10 8YA,GB",
+    "城市": "GATESHEAD",
+    "洲/省": "",
+    "邮编": "NE10 8YA"
+  },
+  {
+    "国家": "英国",
+    "地区": "英国",
+    "Code": "XBH3",
+    "地址": "OPTIMUS POINT,LEICESTER,LE3 8JT,GB",
+    "城市": "LEICESTER",
+    "洲/省": "",
+    "邮编": "LE3 8JT"
+  },
+  {
+    "国家": "西班牙",
+    "地区": "西班牙",
+    "Code": "BCN8",
+    "地址": "CARRER CA N'ALZINA,161,SABADELL,08210,ES",
+    "城市": "SABADELL",
+    "洲/省": "",
+    "邮编": "08210"
+  },
+  {
+    "国家": "西班牙",
+    "地区": "西班牙",
+    "Code": "ZAZ1",
+    "地址": "POLÍGONO – PLATAFORMA LOGÍSTICA DE,ALI-28 Y ALI-2,ZARAGOZA,50197,ES",
+    "城市": "ZARAGOZA",
+    "洲/省": "",
+    "邮编": "50197"
+  },
+  {
+    "国家": "德国",
+    "地区": "德国",
+    "Code": "XFR3",
+    "地址": "STADTRING 265,MICHELSTADT, DARMSTADT,MICHELSTADT,64720,DE",
+    "城市": "MICHELSTADT",
+    "洲/省": "",
+    "邮编": "64720"
+  },
+  {
+    "国家": "德国",
+    "地区": "德国",
+    "Code": "DTM3",
+    "地址": "WARMBREITBANDSTRASSE,3,DORTMUND,44145,DE",
+    "城市": "DORTMUND",
+    "洲/省": "",
+    "邮编": "44145"
+  },
+  {
+    "国家": "西班牙",
+    "地区": "西班牙",
+    "Code": "VLC1",
+    "地址": "CALLE PANAMA,28ONDA,CASTELLON,12200,ES",
+    "城市": "CASTELLON",
+    "洲/省": "",
+    "邮编": "12200"
+  },
+  {
+    "国家": "法国",
+    "地区": "法国",
+    "Code": "XFRN",
+    "地址": "7 RUE DES QUATRES ROUTES,GEODISST,QUENTIN FALLAVIER,38070,FR",
+    "城市": "QUENTIN FALLAVIER",
+    "洲/省": "",
+    "邮编": "38070"
+  },
+  {
+    "国家": "西班牙",
+    "地区": "西班牙",
+    "Code": "RMU1",
+    "地址": "CALLE ISIDRO VIVANCOS MUNOZPARQUE,LOGISTICO DEL SURESTE,MURCIA,30156,ES",
+    "城市": "MURCIA",
+    "洲/省": "",
+    "邮编": "30156"
+  },
+  {
+    "国家": "德国",
+    "地区": "德国",
+    "Code": "XDEA",
+    "地址": "ROBERT-GUTHMANN-STR.,30,KOENIGS WUSTERHAUSEN,15713,DE",
+    "城市": "KOENIGS WUSTERHAUSEN",
+    "洲/省": "",
+    "邮编": "15713"
+  },
+  {
+    "国家": "法国",
+    "地区": "法国",
+    "Code": "ETZ2",
+    "地址": "1, RUE DE LA CROIX DE,LORRAINE,AUGNY,57685,FR",
+    "城市": "AUGNY",
+    "洲/省": "",
+    "邮编": "57685"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "IUSQ",
+    "地址": "2125 W San Bernardino Ave,REDLANDS,CA 92374-United States",
+    "城市": "Redlands",
+    "洲/省": "CA",
+    "邮编": "92374"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "DPX1",
+    "地址": "500 S 48th St,Phoenix,AZ 85034,US",
+    "城市": "Phoenix",
+    "洲/省": "AZ",
+    "邮编": "85034"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "PCA1",
+    "地址": "7700 W Fillmore St,Phoenix,AZ 85043,US",
+    "城市": "Phoenix",
+    "洲/省": "AZ",
+    "邮编": "85043"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "DCA2",
+    "地址": "5250 Goodman Way,Eastvale,CA 91752,US",
+    "城市": "Eastvale",
+    "洲/省": "CA",
+    "邮编": "91752"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "DLA9",
+    "地址": "2900 Alton Pkwy,lrvine,CA 92606,US",
+    "城市": "lrvine",
+    "洲/省": "CA",
+    "邮编": "92606"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "DSF3",
+    "地址": "1700 Montague Expy,San Jose,CA 95131,US",
+    "城市": "San Jose",
+    "洲/省": "CA",
+    "邮编": "95131"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "SJC8",
+    "地址": "46724 Lakeview Blvd,Fremont,CA 94538,US",
+    "城市": "Fremont",
+    "洲/省": "CA",
+    "邮编": "94538"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "SLA5",
+    "地址": "5250 Goodman Way,Eastvale,CA 91752,US",
+    "城市": "Eastvale",
+    "洲/省": "CA",
+    "邮编": "91752"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "UCA5",
+    "地址": "3334 N. San Fernando Road,Los Angeles,CA 90065,US",
+    "城市": "Los Angeles",
+    "洲/省": "CA",
+    "邮编": "90065"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "USC1",
+    "地址": "3640 Ramos Dr,WEST SACRAMENTO,CA 95691,US",
+    "城市": "WEST SACRAMENTO",
+    "洲/省": "CA",
+    "邮编": "95691"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "XIX2",
+    "地址": "2020 E Central Ave,San Bernardino,CA 92408,US",
+    "城市": "SAN BERNARDINO",
+    "洲/省": "CA",
+    "邮编": "92408"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "XIX6",
+    "地址": "10681 Production Ave,San Bernardino,CA 92337,US",
+    "城市": "SAN BERNARDINO",
+    "洲/省": "CA",
+    "邮编": "92337"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "DDV5",
+    "地址": "2889 Himalaya Dr,Aurora,CO 80011,US",
+    "城市": "Aurora",
+    "洲/省": "CO",
+    "邮编": "80011"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "DEN4",
+    "地址": "4222 Integration Loop,COLORADO SPRINGS,CO 80916,US",
+    "城市": "COLORADO SPRINGS",
+    "洲/省": "CO",
+    "邮编": "80916"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "GGE3",
+    "地址": "14601 Grant St,Broomfield,CO 80023,US",
+    "城市": "Broomfield",
+    "洲/省": "CO",
+    "邮编": "80023"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "XEW2",
+    "地址": "6855 SHANNON PKWY,UNION CITY,GA 30291,US",
+    "城市": "Union City",
+    "洲/省": "GA",
+    "邮编": "30291"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "DSM5",
+    "地址": "500 32nd Street SW,BONDURANT,IA 50035,US",
+    "城市": "BONDURANT",
+    "洲/省": "IA",
+    "邮编": "50035"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "IND7",
+    "地址": "9101 Orly Drive,Indianapolis,IN 46241,US",
+    "城市": "Indianapolis",
+    "洲/省": "IN",
+    "邮编": "46241"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "MCI1",
+    "地址": "113th St and Renner Blvd,Lenexa,KS 66219,US",
+    "城市": "Lenexa",
+    "洲/省": "KS",
+    "邮编": "66219"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "BOS2",
+    "地址": "1000 Tech Centre,Dr Stoughton,Massachusetts,MA 02072,US",
+    "城市": "Stoughton",
+    "洲/省": "MA",
+    "邮编": "02072"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "DTW5",
+    "地址": "19991 Brownstown Center Dr,Brownstown,Charter Twp,MI 48183,US",
+    "城市": "Brownstown Charter Twp",
+    "洲/省": "MI",
+    "邮编": "48183"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "SMI1",
+    "地址": "1400 E 10 MILE RD,HAZEL PARK,MI 48030,US",
+    "城市": "HAZEL PARK",
+    "洲/省": "MI",
+    "邮编": "48030"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "MSP6",
+    "地址": "9800 217th Street West,LAKEVILLE,MN 55044,US",
+    "城市": "LAKEVILLE",
+    "洲/省": "MN",
+    "邮编": "55044"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "LGA9",
+    "地址": "2170 Route 27,Edison,NJ 08817,US",
+    "城市": "Edison",
+    "洲/省": "NJ",
+    "邮编": "08817"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "BUF5",
+    "地址": "4201 Walden Ave,Lancaster,NY 14086,US",
+    "城市": "Lancaster",
+    "洲/省": "NY",
+    "邮编": "14086"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "CMH7",
+    "地址": "1245 Beech Rd SW,New Albany,OH 43054,US",
+    "城市": "New Albany",
+    "洲/省": "OH",
+    "邮编": "43054"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "AVP2",
+    "地址": "298 First Ave,Covington Township,PA 18424,US",
+    "城市": "Covington Township",
+    "洲/省": "PA",
+    "邮编": "18424"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "AVP6",
+    "地址": "1 Commerce Rd,Pittston,PA 18640,US",
+    "城市": "Pittston",
+    "洲/省": "PA",
+    "邮编": "18640"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "MEM4",
+    "地址": "4055 NEW ALLEN RD,MEMPHIS,TN 38128,US",
+    "城市": "Memphis",
+    "洲/省": "TN",
+    "邮编": "38128"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "IAH1",
+    "地址": "9155 SOUTHLINK DR,DALLAS,TX 75241,US",
+    "城市": "Dallas",
+    "洲/省": "TX",
+    "邮编": "75241"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "BFI5",
+    "地址": "Building B,20526 59th Pi S,Kent,WA 98032,US",
+    "城市": "Kent",
+    "洲/省": "WA",
+    "邮编": "98032"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "MKE2",
+    "地址": "9700 S 13th Street,OAK CREEK,WI 53154,US",
+    "城市": "OAK CREEK",
+    "洲/省": "WI",
+    "邮编": "53154"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "IUSF",
+    "地址": "3351 Balmorhea Dr.,DALLAS TX 75241,US",
+    "城市": "Dallas",
+    "洲/省": "TX",
+    "邮编": "75241"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "IUST",
+    "地址": "15651 Greenmount Rd,GREENCASTLE,PA 17225,US",
+    "城市": "GREENCASTLE",
+    "洲/省": "PA",
+    "邮编": "17225"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "XRI3",
+    "地址": "4949 Commerce Rd,RICHMOND,VA 23234,US",
+    "城市": "Richmond",
+    "洲/省": "VA",
+    "邮编": "23234"
+  },
+  {
+    "国家": "英国",
+    "地区": "英国",
+    "Code": "LBA8",
+    "地址": "Unit 3,Logic Leeds Skelton Moor Way,LS150BF,Leeds,UK",
+    "城市": "Leeds",
+    "洲/省": "",
+    "邮编": "LS150BF"
+  },
+  {
+    "国家": "德国",
+    "地区": "德国",
+    "Code": "XDEV",
+    "地址": "Groner Siekanger 3 Building A/north37081,Goettingen,Niedersachsen,DE",
+    "城市": "Goettingen",
+    "洲/省": "Niedersachsen",
+    "邮编": "37081"
+  },
+  {
+    "国家": "德国",
+    "地区": "德国",
+    "Code": "STR2",
+    "地址": "Oggenhauser Hauptstrasse 151 Heidenheim an der Brenz,Baden Wurttemberg 89522,DE",
+    "城市": "Heidenheim an der Brenz",
+    "洲/省": "Baden Wurttemberg",
+    "邮编": "89522"
+  },
+  {
+    "国家": "英国",
+    "地区": "英国",
+    "Code": "EMA3",
+    "地址": "Amazon EU SARL UK 10 Oyster Road Eastwood Nottingham,Nottinghamshire UK NG16 3UA GB",
+    "城市": "Eastwood Nottingham",
+    "洲/省": "",
+    "邮编": "NG16 3UA"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "EL96",
+    "地址": "10 sigle lane,unit b,Dayton,NJ 08810,US",
+    "城市": "Dayton",
+    "洲/省": "NJ",
+    "邮编": "08810"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "GGE1",
+    "地址": "217 Patriot Place,Foxborough,MA 02035,US",
+    "城市": "Foxborough",
+    "洲/省": "MA",
+    "邮编": "02035"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "GGE2",
+    "地址": "134 Main Street Port,Jefferson,NY 11777,US",
+    "城市": "Port Jefferson",
+    "洲/省": "NY",
+    "邮编": "11777"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "GGE4",
+    "地址": "34 Middle Neck Road,Great Neck,NY 11021,US",
+    "城市": "Great Neck",
+    "洲/省": "NY",
+    "邮编": "11021"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "GGE5",
+    "地址": "837 Franklin Avenue,Garden City,NY 11530,US",
+    "城市": "Garden City",
+    "洲/省": "NY",
+    "邮编": "11530"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "GGE6",
+    "地址": "265 Market Street #2040,Yonkers,NY 10710,US",
+    "城市": "Yonkers",
+    "洲/省": "NY",
+    "邮编": "10710"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "GGE7",
+    "地址": "329 Greenwich Street,New York,NY 10013,US",
+    "城市": "New York",
+    "洲/省": "NY",
+    "邮编": "10013"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "GGE8",
+    "地址": "2920 District Ave,#100 Fairfax,VA 22031,US",
+    "城市": "Fairfax",
+    "洲/省": "VA",
+    "邮编": "22031"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "LFSI",
+    "地址": "761 Fifth Ave.,King of Prussia,PA 19406,US",
+    "城市": "King of Prussia",
+    "洲/省": "PA",
+    "邮编": "19406"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "XHH3",
+    "地址": "130 Pinder Point Rd,Savannah,GA 31407,US",
+    "城市": "Savannah",
+    "洲/省": "GA",
+    "邮编": "31407"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "IUSR",
+    "地址": "1120 Mt Olive Rd,COWPENS,SC 29330,US",
+    "城市": "COWPENS",
+    "洲/省": "SC",
+    "邮编": "29330"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "FWA6",
+    "地址": "5510 Flaugh Road,Fort Wayne,IN 46818,US",
+    "城市": "Fort Wayne",
+    "洲/省": "IN",
+    "邮编": "46818"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "SBD6",
+    "地址": "4707 S. Baker Ave,Ontario,CA 91761,US",
+    "城市": "ONTARIO",
+    "洲/省": "CA",
+    "邮编": "91761"
+  },
+  {
+    "国家": "美国",
+    "地区": "美国",
+    "Code": "ABQ1",
+    "地址": "12907 Tempur Pedic Pkwy.,ALBUQUERQUE,NW 87120,US",
+    "城市": "ALBUQUERQUE",
+    "洲/省": "",
+    "邮编": "87120"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "XMI3",
+    "地址": "7101 NW 32nd Ave,Miami,FL 33147,US",
+    "城市": "Miami",
+    "洲/省": "FL",
+    "邮编": "33147"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "SAV4",
+    "地址": "800 Pine Meadow Dr,Pooler,GA 31322,US",
+    "城市": "Pooler",
+    "洲/省": "GA",
+    "邮编": "31322"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "AGS1",
+    "地址": "2150 Discovery Drive,Appling,GA 30802,US",
+    "城市": "Appling",
+    "洲/省": "GA",
+    "邮编": "30802"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "TLH2",
+    "地址": "2635 Vineland Driver,Leon,Tallahassee,FL 32308,US",
+    "城市": "Tallahassee",
+    "洲/省": "FL",
+    "邮编": "32308"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "TPA4",
+    "地址": "8727 Harney Road,Temple Terrace,FL 33637,US",
+    "城市": "Temple Terrace",
+    "洲/省": "FL",
+    "邮编": "33637"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "FSD1",
+    "地址": "6700 N Marion Rd,Sioux Falls,SD 57107,US",
+    "城市": "Sioux Falls",
+    "洲/省": "SD",
+    "邮编": "57107"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "IGQ1",
+    "地址": "15924 WESTERN AVE,MARKHAM,IL 60428,US",
+    "城市": "MARKHAM",
+    "洲/省": "IL",
+    "邮编": "60428"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "MLI1",
+    "地址": "2022 Research Parkway,Davenport,IA 52806,US",
+    "城市": "Davenport",
+    "洲/省": "IA",
+    "邮编": "52806"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "OMA2",
+    "地址": "14248 HIGHWAY 370,OMAHA,NE 68138,US",
+    "城市": "OMAHA",
+    "洲/省": "NE",
+    "邮编": "68138"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "ORD5",
+    "地址": "7001 VOLLMER RD,MATTESON,IL 60443,US",
+    "城市": "MATTESON",
+    "洲/省": "IL",
+    "邮编": "60443"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "MTN1",
+    "地址": "801 BOXWOOD RD,WILMINGTON,DE 19804,US",
+    "城市": "WILMINGTON",
+    "洲/省": "DE",
+    "邮编": "19804"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "ORF3",
+    "地址": "2020 NORTHGATE COMMERCE PKWY,SUFFOLK,VT 23435,US",
+    "城市": "SUFFOLK",
+    "洲/省": "VT",
+    "邮编": "23435"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "RIC4",
+    "地址": "5901 Richmond Henrico Turnpike,Richmond,VA 23227,US",
+    "城市": "Richmond",
+    "洲/省": "VA",
+    "邮编": "23227"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "AGS2",
+    "地址": "429 Toy Wright Rd.,Jefferson,GA 30549,US",
+    "城市": "Jefferson",
+    "洲/省": "GA",
+    "邮编": "30549"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "BTR1",
+    "地址": "9001 Cortana Place,Baton Rouge,LA 70815,US",
+    "城市": "Baton Rouge",
+    "洲/省": "LA",
+    "邮编": "70815"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "MQY1",
+    "地址": "6060 GOLDEN BEAR GTWY,MOUNT JULIET,TN 37122,US",
+    "城市": "MOUNT JULIET",
+    "洲/省": "TN",
+    "邮编": "37122"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "TYS1",
+    "地址": "4101 S Singleton Station Rd,Alcoa,Rockford,TN 37853,US",
+    "城市": "Rockford",
+    "洲/省": "TN",
+    "邮编": "37853"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "DET3",
+    "地址": "1200 Featherstone Road,Pontiac,MI 48342,US",
+    "城市": "Pontiac",
+    "洲/省": "MI",
+    "邮编": "48342"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "DET6",
+    "地址": "20110 Woodward Ave,Detroit,MI 48203,US",
+    "城市": "Detroit",
+    "洲/省": "MI",
+    "邮编": "48203"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "LUK2",
+    "地址": "10791 DOG LEG RD,VANDALIA,OH 45377,US",
+    "城市": "VANDALIA",
+    "洲/省": "OH",
+    "邮编": "45377"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "BOS3",
+    "地址": "1600 Osgood St.,North Andover,MA 01845,US",
+    "城市": "North Andover",
+    "洲/省": "MA",
+    "邮编": "01845"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "ROC1",
+    "地址": "2600 Manitou Road,Gates,Rochester,NY 14624,US",
+    "城市": "Rochester",
+    "洲/省": "NY",
+    "邮编": "14624"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "SYR1",
+    "地址": "7211 Morgan Road,Liverpool,Clay,NY 13090,US",
+    "城市": "Clay",
+    "洲/省": "NY",
+    "邮编": "13090"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "PAE2",
+    "地址": "4983-4931 172nd St NE,Arlington,WA 98223,US",
+    "城市": "Arlington",
+    "洲/省": "WA",
+    "邮编": "98223"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "OXR1",
+    "地址": "3100 Sakioka Dr,OXNARD,CA 93030,US",
+    "城市": "OXNARD",
+    "洲/省": "CA",
+    "邮编": "93030"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "PSP1",
+    "地址": "1010 West Fourth Street,Beaumont,CA 92223,US",
+    "城市": "Beaumont",
+    "洲/省": "CA",
+    "邮编": "92223"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "SAN3",
+    "地址": "6971 OTAY MESA RD,SAN DIEGO,CA 92154,US",
+    "城市": "SAN DIEGO",
+    "洲/省": "CA",
+    "邮编": "92154"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "SCK6",
+    "地址": "500 E Grant Line Rd,Tracy,CA 95304,US",
+    "城市": "Tracy",
+    "洲/省": "CA",
+    "邮编": "95304"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "VGT1",
+    "地址": "5802 E Tropical Parkway,LAS VEGAS,NV 89115,US",
+    "城市": "Las Vegas",
+    "洲/省": "NV",
+    "邮编": "89115"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "AUS2",
+    "地址": "2000 E PECAN ST,PFLUGERVILLE,TX 78660,US",
+    "城市": "PFLUGERVILLE",
+    "洲/省": "TX",
+    "邮编": "78660"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "AUS3",
+    "地址": "1618 EXCHANGE PKWY,WACO,TX 76712,US",
+    "城市": "WACO",
+    "洲/省": "TX",
+    "邮编": "76712"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "ELP1",
+    "地址": "2101 EMERALD PASS DR,EL PASO,TX 79928,US",
+    "城市": "EL PASO",
+    "洲/省": "TX",
+    "邮编": "79928"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HOU6",
+    "地址": "10507 HARLEM RD,RICHMOND,TX 77407,US",
+    "城市": "Richmond",
+    "洲/省": "TX",
+    "邮编": "77407"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "SAT3",
+    "地址": "6806 Cal Turner Drive,Bexar,San Antonio,TX 78220,US",
+    "城市": "SAN ANTONIO",
+    "洲/省": "TX",
+    "邮编": "78220"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "XBN3",
+    "地址": "2400 Stateline Rd W,Southaven,MS 38671,US",
+    "城市": "Southaven",
+    "洲/省": "MS",
+    "邮编": "38671"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "TCY2",
+    "地址": "6201 Newcastle Rd,STOCKTON,CA 95215,US",
+    "城市": "STOCKTON",
+    "洲/省": "CA",
+    "邮编": "95215"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "TCY5",
+    "地址": "Promontory Pkwy,Tracy,CA 95377,US",
+    "城市": "Tracy",
+    "洲/省": "CA",
+    "邮编": "95377"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "TCY9",
+    "地址": "4500 Wilbur Ave,Oakley,CA 94561,US",
+    "城市": "OAKLEY",
+    "洲/省": "CA",
+    "邮编": "94561"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "TCY1",
+    "地址": "2690 East Arch Airport Road,STOCKTON,CA 95206,US",
+    "城市": "STOCKTON",
+    "洲/省": "CA",
+    "邮编": "95206"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "XCH2",
+    "地址": "2150 Dean Forest Road,Garden City,GA 31408,US",
+    "城市": "Garden City",
+    "洲/省": "GA",
+    "邮编": "31408"
+  },
+  {
+    "国家": "德国",
+    "地区": "德国",
+    "Code": "XFR7",
+    "地址": "Oggenhauser Hauptstrasse 151,Heidenheim an der Brenz,Baden Wurttemberg,89522,Germany",
+    "城市": "Heidenheim an der Brenz",
+    "洲/省": "Baden Wurttemberg",
+    "邮编": "89522"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "XEW5",
+    "地址": "995 Taylors Ln,Cinnaminson,NJ 08077-2015,US",
+    "城市": "Cinnaminson",
+    "洲/省": "NJ",
+    "邮编": "08077-2015"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "HBF4",
+    "地址": "6311 36th Ave. West,Everett,WA(98203),US",
+    "城市": "Everett",
+    "洲/省": "WA",
+    "邮编": "98203"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "HBF5",
+    "地址": "2201 140th Ave. E,Sumner,WA(98390),US",
+    "城市": "Sumner",
+    "洲/省": "WA",
+    "邮编": "98390"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "HBF9",
+    "地址": "2201 140th Ave. E,Sumner,WA(98390),US",
+    "城市": "Sumner",
+    "洲/省": "WA",
+    "邮编": "98390"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HBM3",
+    "地址": "2501 3rd Place West,Birmingham,AL(35204),US",
+    "城市": "Birmingham",
+    "洲/省": "AL",
+    "邮编": "35204"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HBN2",
+    "地址": "1701 Lebanon Pike Circle,Nashville,TN(37210),US",
+    "城市": "Nashville",
+    "洲/省": "TN",
+    "邮编": "37210"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HBN9",
+    "地址": "1701 Lebanon Pike Circle,Nashville,TN(37210),US",
+    "城市": "Nashville",
+    "洲/省": "TN",
+    "邮编": "37210"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HBO1",
+    "地址": "350 Revolutionary Dr.,Taunton,MA(02718),US",
+    "城市": "Taunton",
+    "洲/省": "MA",
+    "邮编": "02718"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HBO2",
+    "地址": "34 Market St,Everett,MA(02149),US",
+    "城市": "Everett",
+    "洲/省": "MA",
+    "邮编": "02149"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HCE1",
+    "地址": "Cornerstone Bld. #2,Twinsburg,OH(44087),US",
+    "城市": "Twinsburg",
+    "洲/省": "OH",
+    "邮编": "44087"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HCE2",
+    "地址": "23371 Aurora Rd.,Bedford Heights,OH(44146),US",
+    "城市": "Bedford Heights",
+    "洲/省": "OH",
+    "邮编": "44146"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HCH2",
+    "地址": "2350 South Wood St.,Chicago,IL(60608),US",
+    "城市": "Chicago",
+    "洲/省": "IL",
+    "邮编": "60608"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HCH3",
+    "地址": "540 Frontenac Rd.,Naperville,IL(60504),US",
+    "城市": "Naperville",
+    "洲/省": "IL",
+    "邮编": "60504"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HCI1",
+    "地址": "2500 Heinz Rd.,Iowa City,IA(52240),US",
+    "城市": "Iowa City",
+    "洲/省": "IA",
+    "邮编": "52240"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HCT1",
+    "地址": "7200 Discovery Dr.,Chattanooga,TN(37421),US",
+    "城市": "Chattanooga",
+    "洲/省": "TN",
+    "邮编": "37421"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HCT2",
+    "地址": "4400 Amnicola Highway,Chattanooga,TN(37406),US",
+    "城市": "Chattanooga",
+    "洲/省": "TN",
+    "邮编": "37406"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HDA3",
+    "地址": "9186 Van Horn Dr,Dallas,TX(75241),US",
+    "城市": "Dallas",
+    "洲/省": "TX",
+    "邮编": "75241"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HDA8",
+    "地址": "9186 Van Horn Dr,Dallas,TX(75241),US",
+    "城市": "Dallas",
+    "洲/省": "TX",
+    "邮编": "75241"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HDA9",
+    "地址": "9186 Van Horn Dr,Dallas,TX(75241),US",
+    "城市": "Dallas",
+    "洲/省": "TX",
+    "邮编": "75241"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HDC1",
+    "地址": "6885 Commercial Dr.,Springfield,VA(22151),US",
+    "城市": "Springfield",
+    "洲/省": "VA",
+    "邮编": "22151"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "HDE1",
+    "地址": "19799 East 36th Dr.,Aurora,CO(80011),US",
+    "城市": "Aurora",
+    "洲/省": "CO",
+    "邮编": "80011"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HDS1",
+    "地址": "200 South East 37th St.,Grimes,IA(50111),US",
+    "城市": "Grimes",
+    "洲/省": "IA",
+    "邮编": "50111"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HDS9",
+    "地址": "200 South East 37th St.,Grimes,IA(50111),US",
+    "城市": "Grimes",
+    "洲/省": "IA",
+    "邮编": "50111"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HDT2",
+    "地址": "12795 Premier Center Ct.,Plymouth,MI(48170),US",
+    "城市": "Plymouth",
+    "洲/省": "MI",
+    "邮编": "48170"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HDT3",
+    "地址": "33701 Prescott St.,Romulus,MI(48174),US",
+    "城市": "Romulus",
+    "洲/省": "MI",
+    "邮编": "48174"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HDT9",
+    "地址": "12795 Premier Center Ct.,Plymouth,MI(48170),US",
+    "城市": "Plymouth",
+    "洲/省": "MI",
+    "邮编": "48170"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HDY1",
+    "地址": "45 Lau Pkwy,Englewood,OH(45315),US",
+    "城市": "Englewood",
+    "洲/省": "OH",
+    "邮编": "45315"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HDY9",
+    "地址": "45 Lau Pkwy,Englewood,OH(45315),US",
+    "城市": "Englewood",
+    "洲/省": "OH",
+    "邮编": "45315"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "HEU1",
+    "地址": "33468 Eagle Rd.,Tangent,OR(97389),US",
+    "城市": "Tangent",
+    "洲/省": "OR",
+    "邮编": "97389"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HEW2",
+    "地址": "100 Forge Way,Rockaway,NJ(07866),US",
+    "城市": "Rockaway",
+    "洲/省": "NJ",
+    "邮编": "07866"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HEW4",
+    "地址": "343 Half Acre Rd.,Cranbury,NJ(08512),US",
+    "城市": "Cranbury",
+    "洲/省": "NJ",
+    "邮编": "08512"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "HFA2",
+    "地址": "3523 S Northpointe Dr,Fresno,CA(93725),US",
+    "城市": "Fresno",
+    "洲/省": "CA",
+    "邮编": "93725"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "HGE1",
+    "地址": "2700 E Ferry Ave,Spokane,WA(99202),US",
+    "城市": "Spokane",
+    "洲/省": "WA",
+    "邮编": "99202"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HGR1",
+    "地址": "5199 68th St. South East,Caledonia,MI(49316),US",
+    "城市": "Caledonia",
+    "洲/省": "MI",
+    "邮编": "49316"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HHO1",
+    "地址": "8120 Humble Westfield Rd.,Humble,TX(77338),US",
+    "城市": "Humble",
+    "洲/省": "TX",
+    "邮编": "77338"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HHO2",
+    "地址": "6911 Fairbanks North Houston Rd.,Houston,TX(77040),US",
+    "城市": "Houston",
+    "洲/省": "TX",
+    "邮编": "77040"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HIN2",
+    "地址": "19 Bob Glidden Blvd.,Whiteland,IN(46184),US",
+    "城市": "Whiteland",
+    "洲/省": "IN",
+    "邮编": "46184"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HIN3",
+    "地址": "3507 Olive Rd.,South Bend,IN(46628),US",
+    "城市": "South Bend",
+    "洲/省": "IN",
+    "邮编": "46628"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HJX1",
+    "地址": "2780 Lloyd Rd.,Jacksonville,FL(32254),US",
+    "城市": "Jacksonville",
+    "洲/省": "FL",
+    "邮编": "32254"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HJX9",
+    "地址": "2780 Lloyd Rd.,Jacksonville,FL(32254),US",
+    "城市": "Jacksonville",
+    "洲/省": "FL",
+    "邮编": "32254"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HKX1",
+    "地址": "4825 Lumber Lane,Knoxville,TN(37921),US",
+    "城市": "Knoxville",
+    "洲/省": "TN",
+    "邮编": "37921"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "HLA1",
+    "地址": "5650 Dolly Ave.,Buena Park,CA(90621),US",
+    "城市": "Buena Park",
+    "洲/省": "CA",
+    "邮编": "90621"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "HLA2",
+    "地址": "21420 Needham Ranch Pkwy.,Santa Clarita,CA(91321),US",
+    "城市": "Santa Clarita",
+    "洲/省": "CA",
+    "邮编": "91321"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "HLA3",
+    "地址": "4375 North Perris Boulevard,Perris,CA(92571),US",
+    "城市": "Perris",
+    "洲/省": "CA",
+    "邮编": "92571"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "HLA8",
+    "地址": "21420 Needham Ranch Pkwy.,Santa Clarita,CA(91321),US",
+    "城市": "Santa Clarita",
+    "洲/省": "CA",
+    "邮编": "91321"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "HLS1",
+    "地址": "4410 Nexus Way,Las Vegas,NV(89115),US",
+    "城市": "Las Vegas",
+    "洲/省": "NV",
+    "邮编": "89115"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "HLV1",
+    "地址": "3649-3777 Marion Dr,Las Vegas,NV(89115),US",
+    "城市": "Las Vegas",
+    "洲/省": "NV",
+    "邮编": "89115"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HMC1",
+    "地址": "27200 West 157th St.,New Century,KS(66031),US",
+    "城市": "New Century",
+    "洲/省": "KS",
+    "邮编": "66031"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HMC9",
+    "地址": "2361 S Withers RD,Liberty,MO(64068),US",
+    "城市": "Liberty",
+    "洲/省": "MO",
+    "邮编": "64068"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HME3",
+    "地址": "850 Gateway Global Dr,Byhalia,MS(38611),US",
+    "城市": "BYHALIA",
+    "洲/省": "MS",
+    "邮编": "38611"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HME9",
+    "地址": "850 Gateway Global Dr,Byhalia,MS(38611),US",
+    "城市": "BYHALIA",
+    "洲/省": "MS",
+    "邮编": "38611"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HMI2",
+    "地址": "3340 NW 67th Ave.,Miami,FL(33122),US",
+    "城市": "Miami",
+    "洲/省": "FL",
+    "邮编": "33122"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HMK2",
+    "地址": "5004 Tradewinds Pkwy.,Madison,WI(53718),US",
+    "城市": "Madison",
+    "洲/省": "WI",
+    "邮编": "53718"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HMK4",
+    "地址": "16555 W Small Rd,New Berlin,WI(53151),US",
+    "城市": "New Berlin",
+    "洲/省": "WI",
+    "邮编": "53151"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HMK9",
+    "地址": "16555 W Small Rd,New Berlin,WI(53151),US",
+    "城市": "New Berlin",
+    "洲/省": "WI",
+    "邮编": "53151"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HMO2",
+    "地址": "8050 Vista Reserve,Orlando,FL(32822),US",
+    "城市": "Orlando",
+    "洲/省": "FL",
+    "邮编": "32822"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HMO9",
+    "地址": "8050 Vista Reserve,Orlando,FL(32822),US",
+    "城市": "Orlando",
+    "洲/省": "FL",
+    "邮编": "32822"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HMY1",
+    "地址": "10057 Airline Highway,St. Rose,LA(70087),US",
+    "城市": "St. Rose",
+    "洲/省": "LA",
+    "邮编": "70087"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HNY1",
+    "地址": "80 Grumman Rd. West,Bethpage,NY(11714),US",
+    "城市": "Bethpage",
+    "洲/省": "NY",
+    "邮编": "11714"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HNY2",
+    "地址": "56-85 49th St. (aka 1 RailRd. Place),Maspeth,NY(11378),US",
+    "城市": "Maspeth",
+    "洲/省": "NY",
+    "邮编": "11378"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HNY3",
+    "地址": "5 Warehouse Lane,Elmsford,NY(10523),US",
+    "城市": "Elmsford",
+    "洲/省": "NY",
+    "邮编": "10523"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HNY5",
+    "地址": "125 North St.,Teterboro,NJ(07608),US",
+    "城市": "Teterboro",
+    "洲/省": "NJ",
+    "邮编": "07608"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HOK1",
+    "地址": "1414 South Council Rd.,Oklahoma City,OK(73128),US",
+    "城市": "OKLAHOMA CITY",
+    "洲/省": "OK",
+    "邮编": "73128"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HOK2",
+    "地址": "3401 S Council Rd,Oklahoma City,OK(73179),US",
+    "城市": "OKLAHOMA CITY",
+    "洲/省": "OK",
+    "邮编": "73179"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HOM1",
+    "地址": "5606 Lindbergh Dr.,Omaha,NE(68110),US",
+    "城市": "Omaha",
+    "洲/省": "NE",
+    "邮编": "68110"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HPB2",
+    "地址": "14490 Corporate Rd N,Jupiter,FL(33478),US",
+    "城市": "Jupiter",
+    "洲/省": "FL",
+    "邮编": "33478"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HPH2",
+    "地址": "120 W Pumping Station Rd,Quakertown,PA(18951),US",
+    "城市": "Quakertown",
+    "洲/省": "PA",
+    "邮编": "18951"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HPH4",
+    "地址": "1500 Johnson Way,New Castle,DE(19720),US",
+    "城市": "New Castle",
+    "洲/省": "DE",
+    "邮编": "19720"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HPT1",
+    "地址": "4800 McClaren Woods Dr.,Coraopolis,PA(15108),US",
+    "城市": "Coraopolis",
+    "洲/省": "PA",
+    "邮编": "15108"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "HPX1",
+    "地址": "3333 South 7th St.,Phoenix,AZ(85040),US",
+    "城市": "Phoenix",
+    "洲/省": "AZ",
+    "邮编": "85040"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "HPX2",
+    "地址": "3333 South 59th Ave.,Phoenix,AZ(85043),US",
+    "城市": "Phoenix",
+    "洲/省": "AZ",
+    "邮编": "85043"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "HPX3",
+    "地址": "1343 N Colorado St,Gilbert,AZ(85233),US",
+    "城市": "Gilbert",
+    "洲/省": "AZ",
+    "邮编": "85233"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HRC1",
+    "地址": "4949 Commerce Rd.,Richmond,VA(23234),US",
+    "城市": "Richmond",
+    "洲/省": "VA",
+    "邮编": "23234"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HRD2",
+    "地址": "805 South Briggs Ave.,Durham,NC(27703),US",
+    "城市": "Durham",
+    "洲/省": "NC",
+    "邮编": "27703"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HRO1",
+    "地址": "1777 East Henrietta Rd.,Rochester,NY(14623),US",
+    "城市": "Rochester",
+    "洲/省": "NY",
+    "邮编": "14623"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HRS1",
+    "地址": "7916 Drew Circle,Fort Myers,FL(33967),US",
+    "城市": "Fort Myers",
+    "洲/省": "FL",
+    "邮编": "33967"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HSA1",
+    "地址": "2367 Tremont Rd.,Savannah,GA(31405),US",
+    "城市": "Savannah",
+    "洲/省": "GA",
+    "邮编": "31405"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "HSD2",
+    "地址": "8150 Airway Rd,San Diego,CA(92154),US",
+    "城市": "San Diego",
+    "洲/省": "CA",
+    "邮编": "92154"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "HSF2",
+    "地址": "44051 Osgood Rd.,Fremont,CA(94539),US",
+    "城市": "Fremont",
+    "洲/省": "CA",
+    "邮编": "94539"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "HSF3",
+    "地址": "4800 Midway Rd.,Vacaville,CA(95688),US",
+    "城市": "Vacaville",
+    "洲/省": "CA",
+    "邮编": "95688"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "HSF9",
+    "地址": "44051 Osgood Rd.,Fremont,CA(94539),US",
+    "城市": "Fremont",
+    "洲/省": "CA",
+    "邮编": "94539"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "HSL1",
+    "地址": "355 North John Glenn Rd.,Salt Lake City,UT(84116),US",
+    "城市": "Salt Lake City",
+    "洲/省": "UT",
+    "邮编": "84116"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "HSM1",
+    "地址": "3640 Ramos Dr.,Sacramento,CA(95691),US",
+    "城市": "Sacramento",
+    "洲/省": "CA",
+    "邮编": "95691"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HSY1",
+    "地址": "6804 Manlius Center Rd.,East Syracuse,NY(13057),US",
+    "城市": "East Syracuse",
+    "洲/省": "NY",
+    "邮编": "13057"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HTP9",
+    "地址": "3400 North West 35th St.,Ocala,FL(34475),US",
+    "城市": "Ocala",
+    "洲/省": "FL",
+    "邮编": "34475"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HVB1",
+    "地址": "804 Greenbrier Circle,Chesapeake,VA(23320),US",
+    "城市": "CHESAPEAKE",
+    "洲/省": "VA",
+    "邮编": "23320"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HVB2",
+    "地址": "103 Industrial Dr,Suffolk,VA(23435),US",
+    "城市": "Suffolk",
+    "洲/省": "VA",
+    "邮编": "23435"
+  },
+  {
+    "国家": "加拿大",
+    "地区": "CAC",
+    "Code": "HYC1",
+    "地址": "292083 Crosspointe Rd.,Rocky View County County,AB(T4A 0S3),CA",
+    "城市": "Rocky View County County",
+    "洲/省": "AB",
+    "邮编": "T4A 0S3"
+  },
+  {
+    "国家": "加拿大",
+    "地区": "CAC",
+    "Code": "HYE1",
+    "地址": "3675 - 11th St.,Nisku,AB(T9E 1C6),CA",
+    "城市": "Nisku",
+    "洲/省": "AB",
+    "邮编": "T9E 1C6"
+  },
+  {
+    "国家": "加拿大",
+    "地区": "CAD",
+    "Code": "HYU1",
+    "地址": "5799 Route de l'Aeroport,Quebec,QC(J3Y 8Y9),CA",
+    "城市": "Quebec",
+    "洲/省": "QC",
+    "邮编": "J3Y 8Y9"
+  },
+  {
+    "国家": "加拿大",
+    "地区": "CAB",
+    "Code": "HYV1",
+    "地址": "Unit 200 & 300 Ã¢Â€Â” 1650 Brigantine Dr.,Coquitlam,BC(V3K 7B5),CA",
+    "城市": "Coquitlam",
+    "洲/省": "BC",
+    "邮编": "V3K 7B5"
+  },
+  {
+    "国家": "加拿大",
+    "地区": "CAA",
+    "Code": "HYZ1",
+    "地址": "529 Michigan Dr,Oakville,ON(L6L 0G4),CA",
+    "城市": "Oakville",
+    "洲/省": "ON",
+    "邮编": "L6L 0G4"
+  },
+  {
+    "国家": "加拿大",
+    "地区": "CAA",
+    "Code": "HYZ2",
+    "地址": "1271 Tapscott Rd.,Toronto,ON(M1X 1S9),CA",
+    "城市": "Toronto",
+    "洲/省": "ON",
+    "邮编": "M1X 1S9"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "LAU2",
+    "地址": "7000 Metropolis Dr.,Austin,TX(78744),US",
+    "城市": "Austin",
+    "洲/省": "TX",
+    "邮编": "78744"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "LTX8",
+    "地址": "4825 Eisenhauer Rd.,Windcrest,TX(78218),US",
+    "城市": "Windcrest",
+    "洲/省": "TX",
+    "邮编": "78218"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "WTH1",
+    "地址": "6990 Airport Dr,Orland,CA(95963),US",
+    "城市": "Orland",
+    "洲/省": "CA",
+    "邮编": "95963"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "XLX4",
+    "地址": "5155 Citation Dr.,Memphis,TN(38118),US",
+    "城市": "Memphis",
+    "洲/省": "TN",
+    "邮编": "38118"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HAL1",
+    "地址": "30 B Post Rd.,Albany,NY(12205),US",
+    "城市": "Albany",
+    "洲/省": "NY",
+    "邮编": "12205"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HAT2",
+    "地址": "7520 Factory Shoals Rd.,Austell,GA(30168),US",
+    "城市": "Austell",
+    "洲/省": "GA",
+    "邮编": "30168"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HAT9",
+    "地址": "7520 Factory Shoals Rd.,Austell,GA(30168),US",
+    "城市": "Austell",
+    "洲/省": "GA",
+    "邮编": "30168"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "HAU1",
+    "地址": "5811 Trade Center Dr.,Austin,TX(78744),US",
+    "城市": "Austin",
+    "洲/省": "TX",
+    "邮编": "78744"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HBA2",
+    "地址": "3510 Washington Blvd.,Halethorpe,MD(21227),US",
+    "城市": "Halethorpe",
+    "洲/省": "MD",
+    "邮编": "21227"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "HBA3",
+    "地址": "1115 WESEL BLVD.,Hagerstown,MD(21740),US",
+    "城市": "Hagerstown",
+    "洲/省": "MD",
+    "邮编": "21740"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "XAV3",
+    "地址": "120 Crossgate Dr,Port Wentworth,GA(31407),US",
+    "城市": "Port Wentworth",
+    "洲/省": "GA",
+    "邮编": "31407"
+  },
+  {
+    "国家": "墨西哥",
+    "地区": "墨西哥",
+    "Code": "MEX1",
+    "地址": "Cam. a Coacalco 11A,Axotlan,54715,Cuautitlán Izcalli,MX",
+    "城市": "Cuautitlán Izcalli",
+    "洲/省": "",
+    "邮编": "54715"
+  },
+  {
+    "国家": "墨西哥",
+    "地区": "墨西哥",
+    "Code": "MEX2",
+    "地址": "Manzana 005,54769,Cuautitlán Izcalli,MX",
+    "城市": "Cuautitlán Izcalli",
+    "洲/省": "",
+    "邮编": "54769"
+  },
+  {
+    "国家": "墨西哥",
+    "地区": "墨西哥",
+    "Code": "MEX3",
+    "地址": "Manzana 008,54607,Tepotzotlán,MX",
+    "城市": "Tepotzotlán",
+    "洲/省": "",
+    "邮编": "54607"
+  },
+  {
+    "国家": "墨西哥",
+    "地区": "墨西哥",
+    "Code": "MEX6",
+    "地址": "Camino a XOYOACAC,Fracc B Nav Jerusalem,TEPOTZOTLAN 54607,MX",
+    "城市": "TEPOTZOTLAN",
+    "洲/省": "",
+    "邮编": "54607"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "IUTI",
+    "地址": "1901 California St,REDLANDS,CA 92374,US",
+    "城市": "Redlands",
+    "洲/省": "CA",
+    "邮编": "92374"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "XPB2",
+    "地址": "4661 Apopka Logistics Pkwy,Apopka,FL 32712,US",
+    "城市": "Apopka",
+    "洲/省": "FL",
+    "邮编": "32712"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "QXY8",
+    "地址": "3611 S NORTHPOINTE DR,FRESNO,CA 93725-1962,US",
+    "城市": "Fresno",
+    "洲/省": "CA",
+    "邮编": "93725-1962"
+  },
+  {
+    "国家": "加拿大",
+    "地区": "CAA",
+    "Code": "XYY1",
+    "地址": "221 Church St S,Ajax,ON L1S 0A1,CA",
+    "城市": "Ajax",
+    "洲/省": "ON",
+    "邮编": "L1S 0A1"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "IUSW",
+    "地址": "8130 Caliente Rd,Hesperia,CA 92344,US",
+    "城市": "Hesperia",
+    "洲/省": "CA",
+    "邮编": "92344"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "IUTE",
+    "地址": "16155 W Elwood St,GOODYEAR,AZ 85338,US",
+    "城市": "GOODYEAR",
+    "洲/省": "AZ",
+    "邮编": "85338"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "IUTH",
+    "地址": "1346 Fortuna Rd,SAN MARCOS,TX 78666,US",
+    "城市": "San Marcos",
+    "洲/省": "TX",
+    "邮编": "78666"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "XIN5",
+    "地址": "8838 E COUNTY ROAD 100 S,Avon,IN 46123-1700,US",
+    "城市": "Avon",
+    "洲/省": "IN",
+    "邮编": "46123-1700"
+  },
+  {
+    "国家": "德国",
+    "地区": "德国",
+    "Code": "XDU5",
+    "地址": "Steinmuhle 1 Logistikpark,Diemelstadt 34474,DE",
+    "城市": "Diemelstadt",
+    "洲/省": "",
+    "邮编": "34474"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "PSP3",
+    "地址": "64165 19th AVE,DESERT HOT SPRINGS,CA 92240,US",
+    "城市": "DESERT HOT SPRINGS",
+    "洲/省": "CA",
+    "邮编": "92240"
+  },
+  {
+    "国家": "美国",
+    "地区": "美中",
+    "Code": "AFW5",
+    "地址": "12374 LAKE JUNE RD,BALCH SPRINGS,TX 75180-1636,US",
+    "城市": "BALCH SPRINGS",
+    "洲/省": "TX",
+    "邮编": "75180-1636"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "TYS5",
+    "地址": "210 Partnership Parkway,MARYVILLE,TN 37801,US",
+    "城市": "MARYVILLE",
+    "洲/省": "TN",
+    "邮编": "37801"
+  },
+  {
+    "国家": "德国",
+    "地区": "德国",
+    "Code": "KTW5",
+    "地址": "Am Zeugamt 6,Oschatz,04758,DE",
+    "城市": "Oschatz",
+    "洲/省": "",
+    "邮编": "04758"
+  },
+  {
+    "国家": "英国",
+    "地区": "英国",
+    "Code": "XBH9",
+    "地址": "Panattoni Park Avonmouth,Bristol,BS10 7SD,GB",
+    "城市": "Bristol",
+    "洲/省": "",
+    "邮编": "BS10 7SD"
+  },
+  {
+    "国家": "美国",
+    "地区": "美西",
+    "Code": "XON1",
+    "地址": "2290 Palmetto Ave,Redlands,CA 92374,US",
+    "城市": "Redlands",
+    "洲/省": "CA",
+    "邮编": "92374"
+  },
+  {
+    "国家": "美国",
+    "地区": "美东",
+    "Code": "MLB1",
+    "地址": "3655 GRISSOM PKWY,COCOA,FL 32926,US",
+    "城市": "COCOA",
+    "洲/省": "FL",
+    "邮编": "32926"
   }
 ]
