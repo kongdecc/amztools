@@ -1640,7 +1640,7 @@
   {
     "国家": "美国",
     "地区": "美西",
-    "Code": "KRB7",
+    "Code": "KRB7[AWD]",
     "地址": "KRB7 - 36900 W 4th St 92223 - BEAUMONT, CA - United States",
     "城市": "Beaumont",
     "洲/省": "CA",
@@ -6140,7 +6140,7 @@
   {
     "国家": "美国",
     "地区": "美东",
-    "Code": "IUSL",
+    "Code": "IUSL[AWD]",
     "地址": "600 Principio Parkway West North East MD 21901,USA",
     "城市": "North East",
     "洲/省": "MD",
@@ -6167,7 +6167,7 @@
   {
     "国家": "美国",
     "地区": "美中",
-    "Code": "IUSM",
+    "Code": "IUSM[AWD]",
     "地址": "4200 FERRY RD,Aurora,IL 60502,USA",
     "城市": "Aurora",
     "洲/省": "IL",
@@ -6239,7 +6239,7 @@
   {
     "国家": "美国",
     "地区": "美西",
-    "Code": "IUSJ",
+    "Code": "IUSJ[AWD]",
     "地址": "36900 West 4th Street BEAUMONT,CA 92223,USA",
     "城市": "Beaumont",
     "洲/省": "CA",
@@ -6284,7 +6284,7 @@
   {
     "国家": "美国",
     "地区": "美西",
-    "Code": "IUSP",
+    "Code": "IUSP[AWD]",
     "地址": "8140 Caliente Rd,HESPERIA,CA92344,USA",
     "城市": "HESPERIA",
     "洲/省": "CA",
@@ -6401,7 +6401,7 @@
   {
     "国家": "美国",
     "地区": "美西",
-    "Code": "IUSQ",
+    "Code": "IUSQ[AWD]",
     "地址": "2125 W San Bernardino Ave,REDLANDS,CA 92374-United States",
     "城市": "Redlands",
     "洲/省": "CA",
@@ -6689,7 +6689,7 @@
   {
     "国家": "美国",
     "地区": "美中",
-    "Code": "IUSF",
+    "Code": "IUSF[AWD]",
     "地址": "3351 Balmorhea Dr.,DALLAS TX 75241,US",
     "城市": "Dallas",
     "洲/省": "TX",
@@ -6698,7 +6698,7 @@
   {
     "国家": "美国",
     "地区": "美东",
-    "Code": "IUST",
+    "Code": "IUST[AWD]",
     "地址": "15651 Greenmount Rd,GREENCASTLE,PA 17225,US",
     "城市": "GREENCASTLE",
     "洲/省": "PA",
@@ -6842,7 +6842,7 @@
   {
     "国家": "美国",
     "地区": "美东",
-    "Code": "IUSR",
+    "Code": "IUSR[AWD]",
     "地址": "1120 Mt Olive Rd,COWPENS,SC 29330,US",
     "城市": "COWPENS",
     "洲/省": "SC",
@@ -8219,7 +8219,7 @@
   {
     "国家": "美国",
     "地区": "美西",
-    "Code": "IUTI",
+    "Code": "IUTI[AWD]",
     "地址": "1901 California St,REDLANDS,CA 92374,US",
     "城市": "Redlands",
     "洲/省": "CA",
@@ -8255,7 +8255,7 @@
   {
     "国家": "美国",
     "地区": "美西",
-    "Code": "IUSW",
+    "Code": "IUSW[AWD]",
     "地址": "8130 Caliente Rd,Hesperia,CA 92344,US",
     "城市": "Hesperia",
     "洲/省": "CA",
@@ -8264,7 +8264,7 @@
   {
     "国家": "美国",
     "地区": "美西",
-    "Code": "IUTE",
+    "Code": "IUTE[AWD]",
     "地址": "16155 W Elwood St,GOODYEAR,AZ 85338,US",
     "城市": "GOODYEAR",
     "洲/省": "AZ",
@@ -8273,7 +8273,7 @@
   {
     "国家": "美国",
     "地区": "美中",
-    "Code": "IUTH",
+    "Code": "IUTH[AWD]",
     "地址": "1346 Fortuna Rd,SAN MARCOS,TX 78666,US",
     "城市": "San Marcos",
     "洲/省": "TX",
