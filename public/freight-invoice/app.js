@@ -459,7 +459,7 @@ function warehouseLocation(warehouse){
   return [warehouse.city,warehouse.state,warehouse.postalCode,warehouse.countryCode].filter(Boolean).join(', ');
 }
 
-function normalizedWarehouseCode(warehouse){const raw=String(warehouse?.code||'').trim().toUpperCase();const token=raw.match(/[A-Z0-9]{3,6}/)?.[0]||raw;return /[A-Z]/.test(token)&&/\d/.test(token)?token:raw}
+function normalizedWarehouseCode(warehouse){const raw=String(warehouse?.code||'').trim().toUpperCase().replace(/\s*\[AWD\]$/,'');const token=raw.match(/[A-Z0-9]{3,6}/)?.[0]||raw;return /[A-Z]/.test(token)&&/\d/.test(token)?token:raw}
 
 function syncSelectedWarehouseCode(){if(!state.selectedWarehouse||String(state.shipment.warehouseCode||'').trim())return;state.shipment.warehouseCode=normalizedWarehouseCode(state.selectedWarehouse)}
 
