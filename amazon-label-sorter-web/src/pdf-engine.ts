@@ -55,6 +55,7 @@ export interface GroupSummary {
 }
 
 export interface GenerateOptions {
+  preserveSourceFiles: boolean;
   removeCompany: boolean;
   reduceShipFrom: boolean;
   addMadeInChina: boolean;
@@ -508,6 +509,10 @@ function buildCsv(pages: LabelPage[]): string {
 }
 
 export async function generateZip(scan: ScanResult, options: GenerateOptions): Promise<Uint8Array> {
+  if (options.preserveSourceFiles && options.cropForThermal && scan.skipped.length > 0) {
+    const first = scan.skipped[0];
+    throw new Error(`${first.sourceName} 第 ${first.page} 页未识别，无法在保持源文件完整的同时裁剪为热敏纸尺寸。`);
+  }
   if (options.cropForThermal) await locateCropBoxes(scan, options.onProgress);
   const sourceDocs = await Promise.all(scan.sources.map((source) => PDFDocument.load(source.bytes.slice())));
   const groups = new Map<string, LabelPage[]>();
@@ -517,47 +522,79 @@ export async function generateZip(scan: ScanResult, options: GenerateOptions): P
     groups.set(page.sku, group);
   }
   const zipFiles: Record<string, Uint8Array> = {};
+  const usedNames = new Set<string>();
+  const uniquePdfName = (value: string): string => {
+    const base = safeFilePart(value.replace(/\.pdf$/i, ''));
+    let candidate = `${base}.pdf`;
+    let suffix = 2;
+    while (usedNames.has(candidate.toLowerCase())) candidate = `${base}_${suffix++}.pdf`;
+    usedNames.add(candidate.toLowerCase());
+    return candidate;
+  };
+  const units = options.preserveSourceFiles
+    ? scan.sources.map((source, sourceIndex) => {
+      const labels = new Map(scan.pages
+        .filter((page) => page.sourceIndex === sourceIndex)
+        .map((page) => [page.pageIndex, page]));
+      return {
+        fileName: uniquePdfName(source.file.name),
+        title: `Amazon 标签处理 - ${source.file.name}`,
+        subject: '保持源文件页序处理',
+        progressName: source.file.name,
+        pages: Array.from({ length: source.pageCount }, (_, pageIndex) => ({ sourceIndex, pageIndex, label: labels.get(pageIndex) })),
+      };
+    })
+    : [...groups].map(([sku, pages]) => ({
+      fileName: `${safeFilePart(sku)}_${pages.length}张.pdf`,
+      title: `Amazon 标签归集 - ${sku}`,
+      subject: '按 SKU 或混装类型跨仓库归集',
+      progressName: sku,
+      pages: pages.map((label) => ({ sourceIndex: label.sourceIndex, pageIndex: label.pageIndex, label })),
+    }));
+  const totalPages = units.reduce((sum, unit) => sum + unit.pages.length, 0);
   let done = 0;
 
-  for (const [sku, pages] of groups) {
+  for (const unit of units) {
     const out = await PDFDocument.create();
     const font = options.addMadeInChina ? await out.embedFont(StandardFonts.HelveticaBold) : undefined;
-    out.setTitle(`Amazon 标签归集 - ${sku}`);
-    out.setSubject('按 SKU 或混装类型跨仓库归集');
-    out.setCreator('Amazon 箱唛按 SKU 归集工具 Web v1.3.1');
+    out.setTitle(unit.title);
+    out.setSubject(unit.subject);
+    out.setCreator('Amazon 箱唛按 SKU 归集工具 Web v1.4.0');
 
-    for (const label of pages) {
-      const sourceDoc = sourceDocs[label.sourceIndex];
-      if (options.removeCompany && label.companyPresent) {
-        const changed = removeCompanyFromPage(sourceDoc, sourceDoc.getPage(label.pageIndex), label.shipFromCompany);
+    for (const item of unit.pages) {
+      const sourceDoc = sourceDocs[item.sourceIndex];
+      const label = item.label;
+      if (label && options.removeCompany && label.companyPresent) {
+        const changed = removeCompanyFromPage(sourceDoc, sourceDoc.getPage(item.pageIndex), label.shipFromCompany);
         if (!changed) {
-          throw new Error(`${label.sourceName} 第 ${label.pageIndex + 1} 页的公司名使用了暂不支持的编码。为避免只遮盖但仍可复制，已停止生成。`);
+          throw new Error(`${label.sourceName} 第 ${item.pageIndex + 1} 页的公司名使用了暂不支持的编码。为避免只遮盖但仍可复制，已停止生成。`);
         }
       }
-      if (options.reduceShipFrom) {
+      if (label && options.reduceShipFrom) {
         if (!label.shipFrom) {
-          throw new Error(`${label.sourceName} 第 ${label.pageIndex + 1} 页未识别到包含“中国”的发货地址，无法安全精简。`);
+          throw new Error(`${label.sourceName} 第 ${item.pageIndex + 1} 页未识别到包含“中国”的发货地址，无法安全精简。`);
         }
-        const changed = reduceShipFromOnPage(sourceDoc, sourceDoc.getPage(label.pageIndex), label.shipFrom);
+        const changed = reduceShipFromOnPage(sourceDoc, sourceDoc.getPage(item.pageIndex), label.shipFrom);
         if (!changed) {
-          throw new Error(`${label.sourceName} 第 ${label.pageIndex + 1} 页的发货地址使用了暂不支持的编码，已停止生成。`);
+          throw new Error(`${label.sourceName} 第 ${item.pageIndex + 1} 页的发货地址使用了暂不支持的编码，已停止生成。`);
         }
       }
-      const [copied] = await out.copyPages(sourceDoc, [label.pageIndex]);
-      if (options.addMadeInChina && !label.madeInChinaPresent && font) addMadeInChina(copied, font, label);
-      if (options.cropForThermal) await addThermalPage(out, copied, label);
+      const [copied] = await out.copyPages(sourceDoc, [item.pageIndex]);
+      if (label && options.addMadeInChina && !label.madeInChinaPresent && font) addMadeInChina(copied, font, label);
+      if (label && options.cropForThermal) await addThermalPage(out, copied, label);
       else out.addPage(copied);
       done += 1;
-      options.onProgress?.(done, scan.pages.length, `正在生成：${sku} · ${done}/${scan.pages.length}`);
+      options.onProgress?.(done, totalPages, `正在生成：${unit.progressName} · ${done}/${totalPages}`);
     }
-    zipFiles[`${safeFilePart(sku)}_${pages.length}张.pdf`] = await out.save();
+    zipFiles[unit.fileName] = await out.save();
   }
 
   zipFiles['分组明细.csv'] = strToU8(buildCsv(scan.pages));
   zipFiles['使用说明.txt'] = strToU8(
-    'Amazon 箱唛按 SKU 归集工具 Web v1.3.1\r\n' +
+    'Amazon 箱唛按 SKU 归集工具 Web v1.4.0\r\n' +
       '文件均在您的浏览器本地处理，不会上传服务器。\r\n' +
-      `本次共处理 ${scan.sources.length} 个源文件、${scan.pages.length} 张标签、${groups.size} 个归集分组。\r\n`,
+      `输出模式：${options.preserveSourceFiles ? '保持源文件，不归集' : '按 SKU 归集'}。\r\n` +
+      `本次共处理 ${scan.sources.length} 个源文件、${scan.pages.length} 张有效标签、${groups.size} 个 SKU 分组。\r\n`,
   );
   return zipSync(zipFiles, { level: 6 });
 }

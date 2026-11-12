@@ -1,7 +1,7 @@
 import './styles.css';
 import { generateZip, scanPdfs, summarizeGroups, type ScanResult } from './pdf-engine';
 
-const VERSION = 'Web v1.3.1';
+const VERSION = 'Web v1.4.0';
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div id="site-header-container">
@@ -38,6 +38,10 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <section class="card options-card">
       <div class="step-head"><span class="step">02</span><div><h2>处理选项</h2><p>根据出货要求自由勾选</p></div></div>
       <label class="option">
+        <input id="preserveSourceFiles" type="checkbox"><span class="check"></span>
+        <span><strong>不归集，保持源文件</strong><small>每个上传 PDF 分别输出并保持原页序，仍应用下方所选处理</small></span>
+      </label>
+      <label class="option">
         <input id="removeCompany" type="checkbox"><span class="check"></span>
         <span><strong>去掉公司名</strong><small>删除 FBA: / AWD: 后面及发货地址中的公司名，不是简单白色遮盖</small></span>
       </label>
@@ -56,7 +60,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     </section>
 
     <section class="card action-card">
-      <div class="step-head"><span class="step">03</span><div><h2>识别并归集</h2><p>先预览识别结果，再生成下载包</p></div></div>
+      <div class="step-head"><span class="step">03</span><div><h2>识别并处理</h2><p>先预览识别结果，再生成下载包</p></div></div>
       <div class="actions">
         <button id="scanBtn" class="button primary" type="button" disabled>开始识别</button>
         <button id="generateBtn" class="button success" type="button" hidden>生成并下载 ZIP</button>
@@ -112,6 +116,7 @@ const fileList = document.querySelector<HTMLDivElement>('#fileList')!;
 const scanBtn = document.querySelector<HTMLButtonElement>('#scanBtn')!;
 const generateBtn = document.querySelector<HTMLButtonElement>('#generateBtn')!;
 const resetBtn = document.querySelector<HTMLButtonElement>('#resetBtn')!;
+const preserveSourceFiles = document.querySelector<HTMLInputElement>('#preserveSourceFiles')!;
 const removeCompany = document.querySelector<HTMLInputElement>('#removeCompany')!;
 const reduceShipFrom = document.querySelector<HTMLInputElement>('#reduceShipFrom')!;
 const addMade = document.querySelector<HTMLInputElement>('#addMade')!;
@@ -148,6 +153,7 @@ function setBusy(busy: boolean): void {
   scanBtn.disabled = busy || selectedFiles.length === 0;
   generateBtn.disabled = busy;
   chooseBtn.disabled = busy;
+  preserveSourceFiles.disabled = busy;
   removeCompany.disabled = busy;
   reduceShipFrom.disabled = busy;
   addMade.disabled = busy;
@@ -201,16 +207,19 @@ scanBtn.addEventListener('click', async () => {
     const groups = summarizeGroups(scanResult.pages);
     if (groups.length === 0) throw new Error('没有识别到可归集的 SKU 或 Mixed SKUs 混装标签，请确认 PDF 是文字型 Amazon 标签。');
     const skippedHtml = scanResult.skipped.length
-      ? `<div class="warning">⚠ 有 ${scanResult.skipped.length} 页未识别，生成时将跳过。请核对后再下载。</div>`
+      ? `<div class="warning">⚠ 有 ${scanResult.skipped.length} 页未识别，${preserveSourceFiles.checked ? '将按原页保留；若同时选择热敏纸裁剪，生成会停止并提示' : '归集生成时将跳过'}。请核对后再下载。</div>`
       : '';
+    const outputStat = preserveSourceFiles.checked
+      ? `<div><strong>${selectedFiles.length}</strong><span>源文件输出</span></div>`
+      : `<div><strong>${groups.length}</strong><span>归集分组</span></div>`;
     result.innerHTML = `
-      <div class="stats"><div><strong>${selectedFiles.length}</strong><span>源文件</span></div><div><strong>${scanResult.pages.length}</strong><span>有效标签</span></div><div><strong>${groups.length}</strong><span>归集分组</span></div></div>
+      <div class="stats"><div><strong>${selectedFiles.length}</strong><span>源文件</span></div><div><strong>${scanResult.pages.length}</strong><span>有效标签</span></div>${outputStat}</div>
       ${skippedHtml}
       <div class="table-wrap"><table><thead><tr><th>SKU / 类型</th><th>标签数</th><th>仓库</th><th>模板</th></tr></thead><tbody>${groups.map((group) => `<tr><td><strong>${escapeHtml(group.sku)}</strong></td><td>${group.pages}</td><td>${group.warehouses.map(escapeHtml).join('、')}</td><td>${group.templates.join(' / ')}</td></tr>`).join('')}</tbody></table></div>
     `;
     result.hidden = false;
     generateBtn.hidden = false;
-    updateProgress(1, 1, '识别完成，可以生成下载包');
+    updateProgress(1, 1, preserveSourceFiles.checked ? '识别完成，可以按源文件生成下载包' : '识别完成，可以按 SKU 归集');
   } catch (error) {
     result.innerHTML = `<div class="error">${escapeHtml(error instanceof Error ? error.message : String(error))}</div>`;
     result.hidden = false;
@@ -225,12 +234,12 @@ generateBtn.addEventListener('click', async () => {
   setBusy(true);
   try {
     updateProgress(0, scanResult.pages.length, '正在准备输出文件…');
-    const zip = await generateZip(scanResult, { removeCompany: removeCompany.checked, reduceShipFrom: reduceShipFrom.checked, addMadeInChina: addMade.checked, cropForThermal: cropForThermal.checked, onProgress: updateProgress });
+    const zip = await generateZip(scanResult, { preserveSourceFiles: preserveSourceFiles.checked, removeCompany: removeCompany.checked, reduceShipFrom: reduceShipFrom.checked, addMadeInChina: addMade.checked, cropForThermal: cropForThermal.checked, onProgress: updateProgress });
     const blob = new Blob([zip as BlobPart], { type: 'application/zip' });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;
-    anchor.download = `Amazon箱唛按SKU归集_${new Date().toISOString().slice(0, 10)}.zip`;
+    anchor.download = `${preserveSourceFiles.checked ? 'Amazon箱唛源文件处理' : 'Amazon箱唛按SKU归集'}_${new Date().toISOString().slice(0, 10)}.zip`;
     anchor.click();
     setTimeout(() => URL.revokeObjectURL(url), 30_000);
     updateProgress(scanResult.pages.length, scanResult.pages.length, '生成完成，下载已开始');
