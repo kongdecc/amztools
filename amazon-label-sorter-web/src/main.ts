@@ -1,7 +1,7 @@
 import './styles.css';
 import { generateZip, scanPdfs, summarizeGroups, type ScanResult } from './pdf-engine';
 
-const VERSION = 'Web v1.3.0';
+const VERSION = 'Web v1.3.1';
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div id="site-header-container">
@@ -39,7 +39,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <div class="step-head"><span class="step">02</span><div><h2>处理选项</h2><p>根据出货要求自由勾选</p></div></div>
       <label class="option">
         <input id="removeCompany" type="checkbox"><span class="check"></span>
-        <span><strong>去掉公司名</strong><small>删除 FBA: / AWD: 后面的公司名文字，不是简单白色遮盖</small></span>
+        <span><strong>去掉公司名</strong><small>删除 FBA: / AWD: 后面及发货地址中的公司名，不是简单白色遮盖</small></span>
       </label>
       <label class="option">
         <input id="reduceShipFrom" type="checkbox"><span class="check"></span>

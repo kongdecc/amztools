@@ -36,7 +36,8 @@ export interface LabelPage {
   madeInChinaPresent: boolean;
   fbaCodeBox?: { y: number; height: number };
   detailBaselineY?: number;
-  shipFrom?: { x: number; y: number; headingWidth: number };
+  shipFrom?: { x: number; y: number; headingWidth: number; bottomY: number };
+  shipFromCompany?: { x: number; y: number };
   contentBox?: PageBoundingBox;
 }
 
@@ -189,10 +190,21 @@ export async function scanPdfs(files: File[], onProgress?: GenerateOptions['onPr
         const detailLabel = textItems.find((item) => /^(?:Mixed\s*SKUs?|Single\s*SKU)$/i.test(item.text));
         const shipFromHeading = textItems.find((item) => /^(?:发货地|Ship\s+from)\s*[:：]?$/i.test(item.text));
         const shipFromCountry = shipFromHeading
-          ? textItems.find((item) => /^(?:中国|China)$/i.test(item.text)
-            && Math.abs(item.transform[4] - shipFromHeading.transform[4]) < 3
+          ? textItems.find((item) => /(?:中国|China)\s*$/i.test(item.text)
+            && item.transform[4] >= shipFromHeading.transform[4] - 3
+            && item.transform[4] <= shipFromHeading.transform[4] + 130
             && item.transform[5] < shipFromHeading.transform[5])
           : undefined;
+        const shipFromCompany = shipFromHeading && shipFromCountry
+          ? textItems
+            .filter((item) => item.transform[4] >= shipFromHeading.transform[4] - 3
+              && item.transform[4] <= shipFromHeading.transform[4] + 130
+              && item.transform[5] < shipFromHeading.transform[5]
+              && item.transform[5] >= shipFromCountry.transform[5])
+            .sort((a, b) => b.transform[5] - a.transform[5])
+            .find((item) => /\b(?:company|co\.?|ltd\.?|llc|inc\.?)\b|youxiangongsi|有限公司/i.test(item.text))
+          : undefined;
+        const prefixedCompanyPresent = lines.some((line) => /^(?:FBA|AWD)\s*[:：]\s*\S+/i.test(line));
         pages.push({
           sourceIndex,
           sourceName: file.name,
@@ -200,7 +212,7 @@ export async function scanPdfs(files: File[], onProgress?: GenerateOptions['onPr
           sku,
           warehouse: findWarehouse(lines, file.name),
           template: identifyTemplate(lines),
-          companyPresent: lines.some((line) => /^(?:FBA|AWD)\s*[:：]\s*\S+/i.test(line)),
+          companyPresent: prefixedCompanyPresent || Boolean(shipFromCompany),
           madeInChinaPresent: lines.some((line) => /Made\s+in\s+China/i.test(line)),
           fbaCodeBox: fbaCode ? { y: fbaCode.transform[5], height: fbaCode.height } : undefined,
           detailBaselineY: detailLabel?.transform[5],
@@ -208,7 +220,9 @@ export async function scanPdfs(files: File[], onProgress?: GenerateOptions['onPr
             x: shipFromHeading.transform[4],
             y: shipFromHeading.transform[5],
             headingWidth: shipFromHeading.width,
+            bottomY: shipFromCountry.transform[5],
           } : undefined,
+          shipFromCompany: shipFromCompany ? { x: shipFromCompany.transform[4], y: shipFromCompany.transform[5] } : undefined,
         });
       }
       processed += 1;
@@ -279,12 +293,32 @@ function binaryToBytes(value: string): Uint8Array {
   return result;
 }
 
-function removeCompanyOperators(decoded: Uint8Array): { bytes: Uint8Array; changed: boolean } {
+function getTextMatrices(block: string): RegExpMatchArray[] {
+  return [...block.matchAll(/(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s+Tm/g)];
+}
+
+function getTextShowOperators(block: string): RegExpMatchArray[] {
+  return [...block.matchAll(/\((?:\\.|[^\\)])*\)\s*Tj|\[[\s\S]*?\]\s*TJ/g)];
+}
+
+function matrixMatchesAnchor(match: RegExpMatchArray, anchor: { x: number; y: number }): boolean {
+  return Math.abs(Number(match[5]) - anchor.x) < 0.6 && Math.abs(Number(match[6]) - anchor.y) < 0.6;
+}
+
+function removeCompanyOperators(
+  decoded: Uint8Array,
+  shipFromCompany?: NonNullable<LabelPage['shipFromCompany']>,
+): { bytes: Uint8Array; changed: boolean } {
   const original = bytesToBinary(decoded);
   let changed = false;
   let updated = original.replace(/\((FBA|AWD):\s(?:\\.|[^\\)])*\)\s*Tj/g, (_all, prefix: string) => {
     changed = true;
     return `(${prefix}:)Tj`;
+  });
+
+  updated = updated.replace(/\[\s*\((FBA|AWD):\s(?:\\.|[^\\)])*\)\s*\]\s*TJ/g, (_all, prefix: string) => {
+    changed = true;
+    return `[(${prefix}:)] TJ`;
   });
 
   const awdPrefix = '\x00\xbc\x00\xd2\x00\xbf\x00\x05';
@@ -293,17 +327,30 @@ function removeCompanyOperators(decoded: Uint8Array): { bytes: Uint8Array; chang
     changed = true;
     return `(${awdPrefix})Tj`;
   });
+
+  if (shipFromCompany) {
+    updated = updated.replace(/BT[\s\S]*?\bET/g, (block) => {
+      const companyMatrix = getTextMatrices(block).find((match) => matrixMatchesAnchor(match, shipFromCompany));
+      if (!companyMatrix || companyMatrix.index === undefined) return block;
+      changed = true;
+      return `${block.slice(0, companyMatrix.index).trimEnd()}\nET`;
+    });
+  }
   return { bytes: changed ? binaryToBytes(updated) : decoded, changed };
 }
 
-function removeCompanyFromPage(doc: PDFDocument, page: PDFPage): boolean {
+function removeCompanyFromPage(
+  doc: PDFDocument,
+  page: PDFPage,
+  shipFromCompany?: NonNullable<LabelPage['shipFromCompany']>,
+): boolean {
   const contents = page.node.Contents();
   if (!contents) return false;
   let changed = false;
 
   const replaceStream = (stream: PDFRawStream): ReturnType<PDFDocument['context']['register']> | undefined => {
     const decoded = decodePDFRawStream(stream).decode();
-    const replacement = removeCompanyOperators(decoded);
+    const replacement = removeCompanyOperators(decoded, shipFromCompany);
     if (!replacement.changed) return undefined;
     changed = true;
     return doc.context.register(doc.context.flateStream(replacement.bytes));
@@ -328,37 +375,50 @@ function reduceShipFromOperators(
   anchor: NonNullable<LabelPage['shipFrom']>,
 ): { bytes: Uint8Array; changed: boolean } {
   const original = bytesToBinary(decoded);
-  let changed = false;
-  const updated = original.replace(/BT[\s\S]*?\bET/g, (block) => {
-    const matrices = [...block.matchAll(/1\s+0\s+0\s+1\s+(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s+Tm/g)];
-    const isShipFromBlock = matrices.some((match) => (
-      Math.abs(Number(match[1]) - anchor.x) < 0.6 && Math.abs(Number(match[2]) - anchor.y) < 0.6
-    ));
-    if (!isShipFromBlock) return block;
+  const blocks = [...original.matchAll(/BT[\s\S]*?\bET/g)];
+  const inShipFromRegion = (match: RegExpMatchArray): boolean => {
+    const x = Number(match[5]);
+    const y = Number(match[6]);
+    return x >= anchor.x - 3 && x <= anchor.x + 135 && y >= anchor.bottomY - 2 && y <= anchor.y + 2;
+  };
+  const headingBlock = blocks.find((match) => getTextMatrices(match[0]).some((matrix) => matrixMatchesAnchor(matrix, anchor)));
+  const countryBlock = [...blocks].reverse().find((match) => (
+    getTextMatrices(match[0]).some((matrix) => inShipFromRegion(matrix) && Math.abs(Number(matrix[6]) - anchor.bottomY) < 0.6)
+    && getTextShowOperators(match[0]).length > 0
+  ));
+  if (!headingBlock || !countryBlock) return { bytes: decoded, changed: false };
 
-    const textOperators = [...block.matchAll(/\((?:\\.|[^\\)])*\)\s*Tj/g)];
-    const fontOperator = block.match(/\/[^\s]+\s+\d+(?:\.\d+)?\s+Tf/)?.[0];
-    if (textOperators.length < 2 || !fontOperator) return block;
+  const headingMatrix = getTextMatrices(headingBlock[0]).find((match) => matrixMatchesAnchor(match, anchor));
+  const headingOperator = getTextShowOperators(headingBlock[0])[0];
+  const countryOperators = getTextShowOperators(countryBlock[0]);
+  const countryOperator = countryOperators[countryOperators.length - 1];
+  if (!headingMatrix || headingOperator.index === undefined || !countryOperator) return { bytes: decoded, changed: false };
 
-    const heading = textOperators[0][0];
-    const country = textOperators[textOperators.length - 1][0];
-    const countryX = anchor.x + anchor.headingWidth;
-    changed = true;
-    return [
-      'BT',
-      `1 0 0 1 ${anchor.x.toFixed(2)} ${anchor.y.toFixed(2)} Tm`,
-      fontOperator,
-      '0 0 0 rg',
-      heading,
-      '0 g',
-      `1 0 0 1 ${countryX.toFixed(2)} ${anchor.y.toFixed(2)} Tm`,
-      '0 0 0 rg',
-      country,
-      '0 g',
-      'ET',
-    ].join('\n');
-  });
-  return { bytes: changed ? binaryToBytes(updated) : decoded, changed };
+  const countryFont = [...countryBlock[0].matchAll(/\/[^\s]+\s+\d+(?:\.\d+)?\s+Tf/g)].at(-1)?.[0];
+  const countryX = anchor.x + anchor.headingWidth;
+  const replacement = [
+    headingBlock[0].slice(0, headingOperator.index + headingOperator[0].length),
+    countryFont,
+    '0 Tc',
+    '0 0 0 rg',
+    `${headingMatrix[1]} ${headingMatrix[2]} ${headingMatrix[3]} ${headingMatrix[4]} ${countryX.toFixed(2)} ${anchor.y.toFixed(2)} Tm`,
+    countryOperator[0],
+    '0 g',
+    'ET',
+  ].filter(Boolean).join('\n');
+
+  let cursor = 0;
+  let updated = '';
+  for (const block of blocks) {
+    if (block.index === undefined) continue;
+    updated += original.slice(cursor, block.index);
+    const touchesShipFrom = getTextMatrices(block[0]).some(inShipFromRegion);
+    if (block.index === headingBlock.index) updated += replacement;
+    else if (!touchesShipFrom) updated += block[0];
+    cursor = block.index + block[0].length;
+  }
+  updated += original.slice(cursor);
+  return { bytes: binaryToBytes(updated), changed: true };
 }
 
 function reduceShipFromOnPage(doc: PDFDocument, page: PDFPage, anchor: NonNullable<LabelPage['shipFrom']>): boolean {
@@ -464,12 +524,12 @@ export async function generateZip(scan: ScanResult, options: GenerateOptions): P
     const font = options.addMadeInChina ? await out.embedFont(StandardFonts.HelveticaBold) : undefined;
     out.setTitle(`Amazon 标签归集 - ${sku}`);
     out.setSubject('按 SKU 或混装类型跨仓库归集');
-    out.setCreator('Amazon 箱唛按 SKU 归集工具 Web v1.3.0');
+    out.setCreator('Amazon 箱唛按 SKU 归集工具 Web v1.3.1');
 
     for (const label of pages) {
       const sourceDoc = sourceDocs[label.sourceIndex];
       if (options.removeCompany && label.companyPresent) {
-        const changed = removeCompanyFromPage(sourceDoc, sourceDoc.getPage(label.pageIndex));
+        const changed = removeCompanyFromPage(sourceDoc, sourceDoc.getPage(label.pageIndex), label.shipFromCompany);
         if (!changed) {
           throw new Error(`${label.sourceName} 第 ${label.pageIndex + 1} 页的公司名使用了暂不支持的编码。为避免只遮盖但仍可复制，已停止生成。`);
         }
@@ -495,7 +555,7 @@ export async function generateZip(scan: ScanResult, options: GenerateOptions): P
 
   zipFiles['分组明细.csv'] = strToU8(buildCsv(scan.pages));
   zipFiles['使用说明.txt'] = strToU8(
-    'Amazon 箱唛按 SKU 归集工具 Web v1.3.0\r\n' +
+    'Amazon 箱唛按 SKU 归集工具 Web v1.3.1\r\n' +
       '文件均在您的浏览器本地处理，不会上传服务器。\r\n' +
       `本次共处理 ${scan.sources.length} 个源文件、${scan.pages.length} 张标签、${groups.size} 个归集分组。\r\n`,
   );

@@ -36,7 +36,7 @@ npm run build
 - FBA `Single SKU` 模板
 - FBA `Mixed SKUs` 混装模板（统一归入 Mixed SKUs 分组）
 - AWD `SKU:` 模板
-- 可选删除 `FBA:` / `AWD:` 后面的公司名
+- 可选删除 `FBA:` / `AWD:` 后面及发货地址中的公司名，兼容 `Tj` / `TJ` 编码模板
 - 可选精简发货地址，删除姓名及详细地址，仅保留“发货地：中国”
 - 可选添加 `Made in China`，会避开因顶部提示下移的 FBA 箱号文字
 - 可选按实际标签内容裁剪，并输出 FBA 100 × 100 mm、AWD 100 × 150 mm 热敏纸 PDF；保留原始文字和条码的矢量质量
